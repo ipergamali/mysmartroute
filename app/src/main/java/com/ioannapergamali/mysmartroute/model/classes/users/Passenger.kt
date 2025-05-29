@@ -1,4 +1,7 @@
-package com.ioannapergamali.mysmartroute.model.classes
+package com.ioannapergamali.mysmartroute.model.classes.users
+
+import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
+import com.ioannapergamali.mysmartroute.model.interfaces.User
 
 class Passenger (
     override val id: String,

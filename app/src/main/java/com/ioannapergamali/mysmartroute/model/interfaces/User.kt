@@ -1,4 +1,8 @@
-package com.ioannapergamali.mysmartroute.model.classes;
+package com.ioannapergamali.mysmartroute.model.interfaces;
+
+import com.ioannapergamali.mysmartroute.model.classes.users.UserAddress
+import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
+
 interface User {
 
     val id: String

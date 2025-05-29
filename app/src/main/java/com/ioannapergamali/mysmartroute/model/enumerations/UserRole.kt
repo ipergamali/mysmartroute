@@ -1,4 +1,4 @@
-package com.ioannapergamali.mysmartroute.model.classes
+package com.ioannapergamali.mysmartroute.model.enumerations
 
 enum class UserRole {
     PASSENGER,

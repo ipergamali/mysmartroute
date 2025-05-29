@@ -1,6 +1,9 @@
-package com.ioannapergamali.mysmartroute.model.classes
+package com.ioannapergamali.mysmartroute.model.classes.users
 
-class Driver (
+import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
+import com.ioannapergamali.mysmartroute.model.interfaces.User
+
+class Admin(
     override val id: String,
     override val name: String,
     override val email: String,
@@ -11,5 +14,5 @@ class Driver (
     override val password: String
 
 ) : User {
-    override fun getRole() = UserRole.DRIVER
+    override fun getRole() = UserRole.ADMIN
 }

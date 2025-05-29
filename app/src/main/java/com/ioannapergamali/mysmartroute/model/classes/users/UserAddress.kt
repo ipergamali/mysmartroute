@@ -1,4 +1,4 @@
-package com.ioannapergamali.mysmartroute.model.classes
+package com.ioannapergamali.mysmartroute.model.classes.users
 
 data class UserAddress(
     private var city : String = "" ,

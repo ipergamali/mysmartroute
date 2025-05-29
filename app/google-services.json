@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "3402954436",
+    "project_id": "mysmartroute-26a64",
+    "storage_bucket": "mysmartroute-26a64.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:3402954436:android:301f0b515a45d3d4033b91",
+        "android_client_info": {
+          "package_name": "com.ioannapergamali.mysmartroute"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAjrLzdIcwjsQideLOI_Ly3oThdYVNr-5U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
