@@ -1,4 +1,4 @@
-package com.ioannapergamali.mysmartroute.modelview
+package com.ioannapergamali.mysmartroute.viewmodel
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

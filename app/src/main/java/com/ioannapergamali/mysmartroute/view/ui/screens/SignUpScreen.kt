@@ -11,9 +11,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ioannapergamali.movewise.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
+import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 
 @Composable
 fun SignUpScreen(
@@ -21,6 +23,9 @@ fun SignUpScreen(
     onSignUpSuccess: () -> Unit,
     onSignUpFailure: (String) -> Unit
 ) {
+    val viewModel: AuthenticationViewModel = viewModel()
+    val uiState by viewModel.signUpState.collectAsState()
+
     var name by remember { mutableStateOf("") }
     var surname by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
@@ -34,9 +39,6 @@ fun SignUpScreen(
     var postalCodeInput by remember { mutableStateOf("") }
 
     var selectedRole by remember { mutableStateOf(UserRole.PASSENGER) }
-    var signupError by remember { mutableStateOf("") }
-
-    val scrollState = rememberScrollState()
 
     Scaffold(
         topBar = {
@@ -46,12 +48,15 @@ fun SignUpScreen(
             )
         }
     ) { paddingValues ->
+        val scrollState = rememberScrollState()
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .verticalScroll(scrollState)
-                .padding(16.dp),
+                .padding(16.dp)
+               .verticalScroll(scrollState),
+
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -80,21 +85,16 @@ fun SignUpScreen(
             Spacer(Modifier.height(16.dp))
             Text("Select Role", style = MaterialTheme.typography.titleMedium)
             Row {
-                RadioButton(
-                    selected = selectedRole == UserRole.DRIVER,
-                    onClick = { selectedRole = UserRole.DRIVER }
-                )
+                RadioButton(selected = selectedRole == UserRole.DRIVER, onClick = { selectedRole = UserRole.DRIVER })
                 Text("Driver", modifier = Modifier.padding(end = 16.dp))
-                RadioButton(
-                    selected = selectedRole == UserRole.PASSENGER,
-                    onClick = { selectedRole = UserRole.PASSENGER }
-                )
+                RadioButton(selected = selectedRole == UserRole.PASSENGER, onClick = { selectedRole = UserRole.PASSENGER })
                 Text("Passenger")
             }
 
-            if (signupError.isNotEmpty()) {
+            if (uiState is AuthenticationViewModel.SignUpState.Error) {
+                val message = (uiState as AuthenticationViewModel.SignUpState.Error).message
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(text = signupError, color = MaterialTheme.colorScheme.error)
+                Text(text = message, color = MaterialTheme.colorScheme.error)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -102,22 +102,24 @@ fun SignUpScreen(
                 val streetNum = streetNumInput.toIntOrNull()
                 val postalCode = postalCodeInput.toIntOrNull()
 
-                if (
-                    name.isNotBlank() && surname.isNotBlank() && username.isNotBlank() &&
-                    email.isNotBlank() && phoneNum.isNotBlank() && password.isNotBlank() &&
-                    city.isNotBlank() && streetName.isNotBlank() &&
-                    streetNum != null && postalCode != null
-                ) {
-                    onSignUpSuccess()
-                } else {
-                    signupError = "All fields are required and must be valid"
-                    onSignUpFailure(signupError)
+                if (streetNum != null && postalCode != null) {
+                    viewModel.signUp(
+                        name, surname, username, email, phoneNum, password,
+                        com.ioannapergamali.mysmartroute.model.classes.users.UserAddress(city, streetName, streetNum, postalCode),
+                        selectedRole
+                    )
                 }
             }) {
                 Text("Sign Up")
             }
+        }
+    }
 
-            Spacer(modifier = Modifier.height(32.dp)) // extra bottom space
+    LaunchedEffect(uiState) {
+        when (uiState) {
+            is AuthenticationViewModel.SignUpState.Success -> onSignUpSuccess()
+            is AuthenticationViewModel.SignUpState.Error -> onSignUpFailure((uiState as AuthenticationViewModel.SignUpState.Error).message)
+            else -> {}
         }
     }
 }

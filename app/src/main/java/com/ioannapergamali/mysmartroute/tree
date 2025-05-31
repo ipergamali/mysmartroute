@@ -1,0 +1,50 @@
+mysmartroute/
+├── app/
+│   ├── src/
+│   │   └── main/
+│   │       ├── java/
+│   │       │   └── com/ioannapergamali/mysmartroute/
+│   │       │       ├── model/
+│   │       │       │   ├── classes/
+│   │       │       │   │   ├── User.kt
+│   │       │       │   │   ├── Admin.kt
+│   │       │       │   │   ├── Passenger.kt
+│   │       │       │   │   └── Driver.kt
+│   │       │       │   ├── enumeration/
+│   │       │       │   │   ├── UserRole.kt
+│   │       │       │   │   └── VehicleType.kt
+│   │       │       │   └── interfaces/
+│   │       │       │       ├── UserInterface.kt
+│   │       │       │       └── VehicleInterface.kt
+│   │       │       ├── modelview/
+│   │       │       │   ├── AuthenticationViewModel.kt
+│   │       │       │   └── SettingsViewModel.kt
+│   │       │       ├── navigation/
+│   │       │       │   └── NavigationHost.kt
+│   │       │       └── view/ui/
+│   │       │           ├── screens/
+│   │       │           │   ├── HomeScreen.kt
+│   │       │           │   └── SignUpScreen.kt
+│   │       │           ├── components/
+│   │       │           │   └── TopBar.kt
+│   │       │           └── animation/
+│   │       │               └── BreathingAnimation.kt
+│   │       ├── res/
+│   │       │   ├── drawable/
+│   │       │   │   ├── sr.png
+│   │       │   │   └── bc.png
+│   │       │   ├── layout/
+│   │       │   │   └── activity_main.xml
+│   │       │   └── values/
+│   │       │       ├── colors.xml
+│   │       │       ├── strings.xml
+│   │       │       └── themes.xml
+│   │       └── AndroidManifest.xml
+├── build.gradle.kts
+├── settings.gradle.kts
+├── google-services.json
+├── gradle/
+│   └── wrapper/
+│       └── gradle-wrapper.properties
+├── gradlew
+└── gradlew.bat
