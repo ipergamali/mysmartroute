@@ -10,7 +10,5 @@ data class BasicPoI(
     override val id: String,
     override val description: String,
     override val type: PoIType
-) : PoI {
-    override fun getType(): PoIType = type
-}
+) : PoI
 
