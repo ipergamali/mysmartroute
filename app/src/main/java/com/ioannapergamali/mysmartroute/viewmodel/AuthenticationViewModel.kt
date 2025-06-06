@@ -1,11 +1,18 @@
 package com.ioannapergamali.mysmartroute.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
+import com.ioannapergamali.mysmartroute.data.local.UserEntity
+import com.ioannapergamali.mysmartroute.model.classes.users.Admin
+import com.ioannapergamali.mysmartroute.model.classes.users.Driver
+import com.ioannapergamali.mysmartroute.model.classes.users.Passenger
 import com.ioannapergamali.mysmartroute.model.classes.users.UserAddress
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
+import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -26,6 +33,7 @@ class AuthenticationViewModel : ViewModel() {
     val currentUserRole: StateFlow<UserRole?> = _currentUserRole
 
     fun signUp(
+        context: Context,
         name: String,
         surname: String,
         username: String,
@@ -47,41 +55,70 @@ class AuthenticationViewModel : ViewModel() {
                 return@launch
             }
 
-            auth.createUserWithEmailAndPassword(email, password)
-                .addOnSuccessListener { result ->
-                    val userId = result.user?.uid ?: UUID.randomUUID().toString()
-                    val userData = hashMapOf(
-                        "id" to userId,
-                        "name" to name,
-                        "surname" to surname,
-                        "username" to username,
-                        "email" to email,
-                        "phoneNum" to phoneNum,
-                        "password" to password,
-                        "role" to role.name,
-                        "address" to mapOf(
-                            "city" to address.city,
-                            "streetName" to address.streetName,
-                            "streetNum" to address.streetNum,
-                            "postalCode" to address.postalCode
-                        )
-                    )
+            val userIdLocal = UUID.randomUUID().toString()
+            val userEntity = UserEntity(
+                userIdLocal,
+                name,
+                surname,
+                username,
+                email,
+                phoneNum,
+                password,
+                role.name,
+                address.city,
+                address.streetName,
+                address.streetNum,
+                address.postalCode
+            )
+            val dao = MySmartRouteDatabase.getInstance(context).userDao()
 
-                    db.collection("users")
-                        .document(userId)
-                        .set(userData)
-                        .addOnSuccessListener {
-                            result.user?.sendEmailVerification()
-                            _signUpState.value = SignUpState.Success
-                            loadCurrentUserRole()
-                        }
-                        .addOnFailureListener { e ->
-                            _signUpState.value = SignUpState.Error(e.localizedMessage ?: "Sign-up failed")
-                        }
-                }
-                .addOnFailureListener { e ->
-                    _signUpState.value = SignUpState.Error(e.localizedMessage ?: "Sign-up failed")
-                }
+            val user = when (role) {
+                UserRole.DRIVER -> Driver(userIdLocal, name, email, surname, address, phoneNum, username, password)
+                UserRole.PASSENGER -> Passenger(userIdLocal, name, email, surname, address, phoneNum, username, password)
+                UserRole.ADMIN -> Admin(userIdLocal, name, email, surname, address, phoneNum, username, password)
+            }
+
+            if (NetworkUtils.isInternetAvailable(context)) {
+                auth.createUserWithEmailAndPassword(email, password)
+                    .addOnSuccessListener { result ->
+                        val uid = result.user?.uid ?: userIdLocal
+                        val userData = hashMapOf(
+                            "id" to uid,
+                            "name" to name,
+                            "surname" to surname,
+                            "username" to username,
+                            "email" to email,
+                            "phoneNum" to phoneNum,
+                            "password" to password,
+                            "role" to role.name,
+                            "address" to mapOf(
+                                "city" to address.city,
+                                "streetName" to address.streetName,
+                                "streetNum" to address.streetNum,
+                                "postalCode" to address.postalCode
+                            )
+                        )
+
+                        db.collection("users")
+                            .document(uid)
+                            .set(userData)
+                            .addOnSuccessListener {
+                                result.user?.sendEmailVerification()
+                                viewModelScope.launch { dao.insert(userEntity.copy(id = uid)) }
+                                _signUpState.value = SignUpState.Success
+                                loadCurrentUserRole()
+                            }
+                            .addOnFailureListener { e ->
+                                _signUpState.value = SignUpState.Error(e.localizedMessage ?: "Sign-up failed")
+                            }
+                    }
+                    .addOnFailureListener { e ->
+                        _signUpState.value = SignUpState.Error(e.localizedMessage ?: "Sign-up failed")
+                    }
+            } else {
+                dao.insert(userEntity)
+                _signUpState.value = SignUpState.Success
+            }
         }
     }
 
