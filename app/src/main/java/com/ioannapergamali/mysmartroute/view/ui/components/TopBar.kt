@@ -32,7 +32,7 @@ fun TopBar(
         actions = {
             if (showLogout) {
                 IconButton(onClick = onLogout) {
-                    Icon(Icons.Default.Logout, contentDescription = "logout")
+                    Icon(Icons.Filled.Logout, contentDescription = "logout")
                 }
             }
         }
