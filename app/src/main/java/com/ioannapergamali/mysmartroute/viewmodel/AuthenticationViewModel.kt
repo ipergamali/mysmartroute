@@ -2,6 +2,7 @@ package com.ioannapergamali.mysmartroute.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.model.classes.users.UserAddress
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
@@ -13,6 +14,7 @@ import java.util.UUID
 class AuthenticationViewModel : ViewModel() {
 
     private val db = FirebaseFirestore.getInstance()
+    private val auth = FirebaseAuth.getInstance()
 
     private val _signUpState = MutableStateFlow<SignUpState>(SignUpState.Idle)
     val signUpState: StateFlow<SignUpState> = _signUpState
@@ -42,29 +44,36 @@ class AuthenticationViewModel : ViewModel() {
                 return@launch
             }
 
-            val userId = UUID.randomUUID().toString()
-            val userData = hashMapOf(
-                "id" to userId,
-                "name" to name,
-                "surname" to surname,
-                "username" to username,
-                "email" to email,
-                "phoneNum" to phoneNum,
-                "password" to password,
-                "role" to role.name,
-                "address" to mapOf(
-                    "city" to address.city,
-                    "streetName" to address.streetName,
-                    "streetNum" to address.streetNum,
-                    "postalCode" to address.postalCode
-                )
-            )
+            auth.createUserWithEmailAndPassword(email, password)
+                .addOnSuccessListener { result ->
+                    val userId = result.user?.uid ?: UUID.randomUUID().toString()
+                    val userData = hashMapOf(
+                        "id" to userId,
+                        "name" to name,
+                        "surname" to surname,
+                        "username" to username,
+                        "email" to email,
+                        "phoneNum" to phoneNum,
+                        "password" to password,
+                        "role" to role.name,
+                        "address" to mapOf(
+                            "city" to address.city,
+                            "streetName" to address.streetName,
+                            "streetNum" to address.streetNum,
+                            "postalCode" to address.postalCode
+                        )
+                    )
 
-            db.collection("users")
-                .document(userId)
-                .set(userData)
-                .addOnSuccessListener {
-                    _signUpState.value = SignUpState.Success
+                    db.collection("users")
+                        .document(userId)
+                        .set(userData)
+                        .addOnSuccessListener {
+                            result.user?.sendEmailVerification()
+                            _signUpState.value = SignUpState.Success
+                        }
+                        .addOnFailureListener { e ->
+                            _signUpState.value = SignUpState.Error(e.localizedMessage ?: "Sign-up failed")
+                        }
                 }
                 .addOnFailureListener { e ->
                     _signUpState.value = SignUpState.Error(e.localizedMessage ?: "Sign-up failed")
@@ -72,28 +81,22 @@ class AuthenticationViewModel : ViewModel() {
         }
     }
 
-    fun login(username: String, password: String) {
+    fun login(email: String, password: String) {
         viewModelScope.launch {
             _loginState.value = LoginState.Loading
 
-            if (username.isBlank() || password.isBlank()) {
-                _loginState.value = LoginState.Error("Username and password are required")
+            if (email.isBlank() || password.isBlank()) {
+                _loginState.value = LoginState.Error("Email and password are required")
                 return@launch
             }
 
-            db.collection("users")
-                .whereEqualTo("username", username)
-                .get()
-                .addOnSuccessListener { documents ->
-                    if (documents.isEmpty) {
-                        _loginState.value = LoginState.Error("User not found")
+            auth.signInWithEmailAndPassword(email, password)
+                .addOnSuccessListener { result ->
+                    val user = result.user
+                    if (user != null && user.isEmailVerified) {
+                        _loginState.value = LoginState.Success
                     } else {
-                        val storedPassword = documents.documents[0].getString("password")
-                        if (storedPassword == password) {
-                            _loginState.value = LoginState.Success
-                        } else {
-                            _loginState.value = LoginState.Error("Incorrect password")
-                        }
+                        _loginState.value = LoginState.Error("Email not verified")
                     }
                 }
                 .addOnFailureListener { e ->

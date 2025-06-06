@@ -21,7 +21,7 @@ fun LoginScreen(
     val viewModel: AuthenticationViewModel = viewModel()
     val uiState by viewModel.loginState.collectAsState()
 
-    var username by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
     Scaffold(
@@ -40,9 +40,9 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             TextField(
-                value = username,
-                onValueChange = { username = it },
-                label = { Text("Username") },
+                value = email,
+                onValueChange = { email = it },
+                label = { Text("Email") },
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(Modifier.height(8.dp))
@@ -63,7 +63,7 @@ fun LoginScreen(
             }
 
             Spacer(Modifier.height(16.dp))
-            Button(onClick = { viewModel.login(username, password) }) {
+            Button(onClick = { viewModel.login(email, password) }) {
                 Text("Login")
             }
         }
