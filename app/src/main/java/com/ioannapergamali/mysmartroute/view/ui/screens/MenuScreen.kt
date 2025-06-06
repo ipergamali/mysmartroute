@@ -35,7 +35,7 @@ fun MenuScreen(navController: NavController) {
                 .padding(16.dp)
         ) {
             when (role) {
-                UserRole.PASSENGER -> PassengerMenu()
+                UserRole.PASSENGER -> PassengerMenu(viewModel, navController)
                 UserRole.DRIVER -> DriverMenu()
                 UserRole.ADMIN -> AdminMenu()
                 null -> {
@@ -47,7 +47,7 @@ fun MenuScreen(navController: NavController) {
 }
 
 @Composable
-private fun PassengerMenu() {
+private fun PassengerMenu(viewModel: AuthenticationViewModel, navController: NavController) {
     val actions = listOf(
         "Sign out",
         "Manage Favorite Means of Transport",
@@ -62,7 +62,17 @@ private fun PassengerMenu() {
         "View, Rank and Comment on Completed Transports",
         "Shut Down the System"
     )
-    ActionList(actions)
+    PassengerActionList(actions) { index ->
+        when (index) {
+            0 -> {
+                viewModel.signOut()
+                navController.navigate("home") {
+                    popUpTo("menu") { inclusive = true }
+                }
+            }
+            // TODO: handle other passenger actions
+        }
+    }
 }
 
 @Composable
@@ -102,5 +112,19 @@ private fun AdminMenu() {
 private fun ActionList(actions: List<String>) {
     actions.forEachIndexed { index, action ->
         Text(text = "${index + 1}. $action", modifier = Modifier.padding(4.dp))
+    }
+}
+
+@Composable
+private fun PassengerActionList(actions: List<String>, onActionSelected: (Int) -> Unit) {
+    actions.forEachIndexed { index, action ->
+        Button(
+            onClick = { onActionSelected(index) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp)
+        ) {
+            Text(text = "${index + 1}. $action")
+        }
     }
 }
