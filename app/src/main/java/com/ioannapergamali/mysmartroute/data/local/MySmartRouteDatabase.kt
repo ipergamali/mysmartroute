@@ -5,9 +5,12 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [UserEntity::class], version = 1)
+import com.ioannapergamali.mysmartroute.data.local.VehicleEntity
+
+@Database(entities = [UserEntity::class, VehicleEntity::class], version = 2)
 abstract class MySmartRouteDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
+    abstract fun vehicleDao(): VehicleDao
 
     companion object {
         @Volatile
