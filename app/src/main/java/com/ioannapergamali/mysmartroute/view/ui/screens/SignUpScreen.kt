@@ -15,7 +15,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.compose.ui.platform.LocalContext
 import android.widget.Toast
-import com.ioannapergamali.movewise.ui.components.TopBar
+import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 

@@ -11,7 +11,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.ioannapergamali.movewise.ui.components.TopBar
+import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.view.ui.animation.rememberBreathingAnimation
 import com.ioannapergamali.mysmartroute.view.ui.animation.rememberSlideFadeInAnimation
