@@ -94,7 +94,21 @@ class AuthenticationViewModel : ViewModel() {
                 .addOnSuccessListener { result ->
                     val user = result.user
                     if (user != null && user.isEmailVerified) {
-                        _loginState.value = LoginState.Success
+                        db.collection("users")
+                            .document(user.uid)
+                            .get()
+                            .addOnSuccessListener { document ->
+                                val roleString = document.getString("role") ?: UserRole.PASSENGER.name
+                                val role = try {
+                                    UserRole.valueOf(roleString)
+                                } catch (_: IllegalArgumentException) {
+                                    UserRole.PASSENGER
+                                }
+                                _loginState.value = LoginState.Success(role)
+                            }
+                            .addOnFailureListener { e ->
+                                _loginState.value = LoginState.Error(e.localizedMessage ?: "Login failed")
+                            }
                     } else {
                         _loginState.value = LoginState.Error("Email not verified")
                     }
@@ -115,7 +129,7 @@ class AuthenticationViewModel : ViewModel() {
     sealed class LoginState {
         object Idle : LoginState()
         object Loading : LoginState()
-        object Success : LoginState()
+        data class Success(val role: UserRole) : LoginState()
         data class Error(val message: String) : LoginState()
     }
 }

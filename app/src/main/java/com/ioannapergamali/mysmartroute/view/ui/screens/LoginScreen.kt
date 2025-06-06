@@ -11,11 +11,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ioannapergamali.movewise.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
+import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 
 @Composable
 fun LoginScreen(
     navController: NavController,
-    onLoginSuccess: () -> Unit,
+    onLoginSuccess: (UserRole) -> Unit,
     onLoginFailure: (String) -> Unit
 ) {
     val viewModel: AuthenticationViewModel = viewModel()
@@ -70,9 +71,9 @@ fun LoginScreen(
     }
 
     LaunchedEffect(uiState) {
-        when (uiState) {
-            is AuthenticationViewModel.LoginState.Success -> onLoginSuccess()
-            is AuthenticationViewModel.LoginState.Error -> onLoginFailure((uiState as AuthenticationViewModel.LoginState.Error).message)
+        when (val state = uiState) {
+            is AuthenticationViewModel.LoginState.Success -> onLoginSuccess(state.role)
+            is AuthenticationViewModel.LoginState.Error -> onLoginFailure(state.message)
             else -> {}
         }
     }

@@ -9,6 +9,8 @@ import androidx.navigation.compose.composable
 import com.ioannapergamali.mysmartroute.view.ui.screens.HomeScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.SignUpScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.LoginScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.MenuScreen
+import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 
 
 
@@ -35,8 +37,13 @@ fun NavigationHost(navController : NavHostController) {
         composable("login") {
             LoginScreen(
                 navController = navController ,
-                onLoginSuccess = {
-                    navController.navigate("home") {
+                onLoginSuccess = { role ->
+                    val destination = when (role) {
+                        UserRole.DRIVER -> "menu/DRIVER"
+                        UserRole.PASSENGER -> "menu/PASSENGER"
+                        UserRole.ADMIN -> "menu/ADMIN"
+                    }
+                    navController.navigate(destination) {
                         popUpTo("login") { inclusive = true }
                     }
                 } ,
@@ -65,6 +72,16 @@ fun NavigationHost(navController : NavHostController) {
                     Toast.makeText(context , errorMessage , Toast.LENGTH_SHORT).show()
                 }
             )
+        }
+
+        composable("menu/{role}") { backStackEntry ->
+            val roleArg = backStackEntry.arguments?.getString("role") ?: UserRole.PASSENGER.name
+            val role = try {
+                UserRole.valueOf(roleArg)
+            } catch (_: IllegalArgumentException) {
+                UserRole.PASSENGER
+            }
+            MenuScreen(navController = navController, role = role)
         }
 
 
