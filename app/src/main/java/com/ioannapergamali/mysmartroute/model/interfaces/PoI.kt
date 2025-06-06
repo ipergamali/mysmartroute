@@ -6,6 +6,4 @@ interface PoI {
     val id: String
     val description: String
     val type: PoIType
-
-    fun getType(): PoIType
 }
