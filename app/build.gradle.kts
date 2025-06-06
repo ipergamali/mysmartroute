@@ -1,4 +1,5 @@
 plugins {
+    id("kotlin-kapt")
     id("com.android.application")
     id("com.google.gms.google-services")
     id("org.jetbrains.kotlin.android")
@@ -62,6 +63,10 @@ dependencies {
     implementation("com.google.firebase:firebase-analytics")
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.firebase.auth.ktx)
+
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    kapt(libs.androidx.room.compiler)
 
     // Testing
     testImplementation("junit:junit:4.13.2")
