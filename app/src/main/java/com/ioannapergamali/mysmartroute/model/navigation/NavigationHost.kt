@@ -8,6 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.ioannapergamali.mysmartroute.view.ui.screens.HomeScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.SignUpScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.LoginScreen
 
 
 
@@ -24,26 +25,26 @@ fun NavigationHost(navController : NavHostController) {
                 navController = navController ,
                 onNavigateToSignUp = {
                     navController.navigate("Signup")
+                },
+                onNavigateToLogin = {
+                    navController.navigate("login")
                 }
             )
         }
-//        // Login Screen
-//        composable("login") {
-//            LoginScreen(
-//                navController = navController ,
-//                onLoginSuccess = {
-//                    navController.navigate("menu") {
-//                        popUpTo("login") { inclusive = true }
-//                    }
-//                } ,
-//                onLoginFailure = { errorMessage ->
-//                    Toast.makeText(context , errorMessage , Toast.LENGTH_SHORT).show()
-//                } ,
-//                onNavigateToSettings = {
-//                    navController.navigate("settings")
-//                }
-//            )
-//        }
+
+        composable("login") {
+            LoginScreen(
+                navController = navController ,
+                onLoginSuccess = {
+                    navController.navigate("home") {
+                        popUpTo("login") { inclusive = true }
+                    }
+                } ,
+                onLoginFailure = { errorMessage ->
+                    Toast.makeText(context , errorMessage , Toast.LENGTH_SHORT).show()
+                }
+            )
+        }
 
 
 
@@ -51,7 +52,12 @@ fun NavigationHost(navController : NavHostController) {
             SignUpScreen(
                 navController = navController ,
                 onSignUpSuccess = {
-                    navController.navigate("menu") {
+                    Toast.makeText(
+                        context,
+                        "Sign up successful! Please verify your email and log in.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    navController.navigate("login") {
                         popUpTo("signup") { inclusive = true }
                     }
                 } ,
