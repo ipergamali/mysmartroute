@@ -3,7 +3,7 @@ plugins {
     id("com.android.application")
     id("com.google.gms.google-services")
     id("org.jetbrains.kotlin.android")
-    // Compose plugin is not required here
+    id("org.jetbrains.kotlin.plugin.compose")
 
 }
 
@@ -45,9 +45,6 @@ dependencies {
     implementation("com.google.android.material:material:1.10.0")
     implementation("androidx.activity:activity-ktx:1.8.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
-
-    // Compose Compiler plugin συμβατός με Kotlin 2.1.0
-    implementation("androidx.compose.compiler:compiler:1.5.11")
 
     // Jetpack Compose
     implementation("androidx.compose.material3:material3:1.2.1")
