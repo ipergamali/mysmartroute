@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
+import com.google.maps.android.compose.rememberMarkerState
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -78,8 +79,12 @@ fun AnnounceTransportScreen(navController: NavController) {
                 }
             }
         ) {
-            startLatLng?.let { Marker(position = it, title = "From") }
-            endLatLng?.let { Marker(position = it, title = "To") }
+            startLatLng?.let {
+                Marker(state = rememberMarkerState(position = it), title = "From")
+            }
+            endLatLng?.let {
+                Marker(state = rememberMarkerState(position = it), title = "To")
+            }
         }
 
         Spacer(modifier = Modifier.height(8.dp))
