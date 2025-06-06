@@ -57,7 +57,7 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             Image(
-                painter = painterResource(id = R.drawable.sr),
+                painter = painterResource(id = R.drawable.logo),
                 contentDescription = "Animated Logo",
                 modifier = Modifier
                     .size(180.dp)
