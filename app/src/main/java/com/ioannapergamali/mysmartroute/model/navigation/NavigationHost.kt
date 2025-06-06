@@ -36,7 +36,7 @@ fun NavigationHost(navController : NavHostController) {
             LoginScreen(
                 navController = navController ,
                 onLoginSuccess = {
-                    navController.navigate("menu") {
+                    navController.navigate("home") {
                         popUpTo("login") { inclusive = true }
                     }
                 } ,
@@ -52,7 +52,12 @@ fun NavigationHost(navController : NavHostController) {
             SignUpScreen(
                 navController = navController ,
                 onSignUpSuccess = {
-                    navController.navigate("menu") {
+                    Toast.makeText(
+                        context,
+                        "Sign up successful! Please verify your email and log in.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    navController.navigate("login") {
                         popUpTo("signup") { inclusive = true }
                     }
                 } ,
