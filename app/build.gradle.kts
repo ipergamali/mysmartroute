@@ -3,7 +3,7 @@ plugins {
     id("com.android.application")
     id("com.google.gms.google-services")
     id("org.jetbrains.kotlin.android")
-    alias(libs.plugins.compose.compiler)
+    // Compose plugin is not required here
 
 }
 
