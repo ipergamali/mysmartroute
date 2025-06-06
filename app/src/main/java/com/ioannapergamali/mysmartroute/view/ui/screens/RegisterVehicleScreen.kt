@@ -5,6 +5,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import android.widget.Toast
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -94,6 +95,11 @@ fun RegisterVehicleScreen(navController: NavController) {
 
     LaunchedEffect(state) {
         if (state is VehicleViewModel.RegisterState.Success) {
+            Toast.makeText(
+                context,
+                "Vehicle registered successfully",
+                Toast.LENGTH_SHORT
+            ).show()
             navController.popBackStack()
         }
     }
