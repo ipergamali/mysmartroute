@@ -10,6 +10,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.platform.LocalContext
+import android.widget.Toast
 import androidx.navigation.NavController
 import com.ioannapergamali.movewise.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
@@ -24,9 +26,22 @@ fun MenuScreen(navController: NavController) {
         viewModel.loadCurrentUserRole()
     }
 
+    val context = LocalContext.current
+
     Scaffold(
         topBar = {
-            TopBar(title = "Menu", navController = navController)
+            TopBar(
+                title = "Menu",
+                navController = navController,
+                showLogout = true,
+                onLogout = {
+                    viewModel.signOut()
+                    Toast.makeText(context, "Logged out", Toast.LENGTH_SHORT).show()
+                    navController.navigate("home") {
+                        popUpTo("menu") { inclusive = true }
+                    }
+                }
+            )
         }
     ) { paddingValues ->
         Column(
@@ -67,6 +82,7 @@ private fun PassengerMenu(viewModel: AuthenticationViewModel, navController: Nav
         when (index) {
             0 -> {
                 viewModel.signOut()
+                Toast.makeText(LocalContext.current, "Logged out", Toast.LENGTH_SHORT).show()
                 navController.navigate("home") {
                     popUpTo("menu") { inclusive = true }
                 }

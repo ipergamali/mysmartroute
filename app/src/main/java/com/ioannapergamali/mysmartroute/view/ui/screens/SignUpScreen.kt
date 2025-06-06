@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.compose.ui.platform.LocalContext
+import android.widget.Toast
 import com.ioannapergamali.movewise.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
@@ -22,7 +23,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 fun SignUpScreen(
     navController: NavController,
     onSignUpSuccess: () -> Unit,
-    onSignUpFailure: (String) -> Unit
+    onSignUpFailure: (String) -> Unit = {}
 ) {
     val viewModel: AuthenticationViewModel = viewModel()
     val uiState by viewModel.signUpState.collectAsState()
@@ -120,8 +121,19 @@ fun SignUpScreen(
 
     LaunchedEffect(uiState) {
         when (uiState) {
-            is AuthenticationViewModel.SignUpState.Success -> onSignUpSuccess()
-            is AuthenticationViewModel.SignUpState.Error -> onSignUpFailure((uiState as AuthenticationViewModel.SignUpState.Error).message)
+            is AuthenticationViewModel.SignUpState.Success -> {
+                Toast.makeText(
+                    context,
+                    "User created and stored successfully",
+                    Toast.LENGTH_SHORT
+                ).show()
+                onSignUpSuccess()
+            }
+            is AuthenticationViewModel.SignUpState.Error -> {
+                val message = (uiState as AuthenticationViewModel.SignUpState.Error).message
+                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                onSignUpFailure(message)
+            }
             else -> {}
         }
     }

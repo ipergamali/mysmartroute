@@ -1,8 +1,6 @@
 package com.ioannapergamali.mysmartroute.model.navigation
 
-import android.widget.Toast
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -15,9 +13,6 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.MenuScreen
 
 @Composable
 fun NavigationHost(navController : NavHostController) {
-
-    val context = LocalContext.current
-
 
     NavHost(navController = navController , startDestination = "home") {
 
@@ -40,9 +35,6 @@ fun NavigationHost(navController : NavHostController) {
                     navController.navigate("menu") {
                         popUpTo("login") { inclusive = true }
                     }
-                } ,
-                onLoginFailure = { errorMessage ->
-                    Toast.makeText(context , errorMessage , Toast.LENGTH_SHORT).show()
                 }
             )
         }
@@ -56,9 +48,6 @@ fun NavigationHost(navController : NavHostController) {
                     navController.navigate("menu") {
                         popUpTo("signup") { inclusive = true }
                     }
-                } ,
-                onSignUpFailure = { errorMessage ->
-                    Toast.makeText(context , errorMessage , Toast.LENGTH_SHORT).show()
                 }
             )
         }

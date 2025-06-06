@@ -11,15 +11,18 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ioannapergamali.movewise.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun LoginScreen(
     navController: NavController,
     onLoginSuccess: () -> Unit,
-    onLoginFailure: (String) -> Unit
+    onLoginFailure: (String) -> Unit = {}
 ) {
     val viewModel: AuthenticationViewModel = viewModel()
     val uiState by viewModel.loginState.collectAsState()
+    val context = LocalContext.current
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -71,8 +74,15 @@ fun LoginScreen(
 
     LaunchedEffect(uiState) {
         when (uiState) {
-            is AuthenticationViewModel.LoginState.Success -> onLoginSuccess()
-            is AuthenticationViewModel.LoginState.Error -> onLoginFailure((uiState as AuthenticationViewModel.LoginState.Error).message)
+            is AuthenticationViewModel.LoginState.Success -> {
+                Toast.makeText(context, "Login successful", Toast.LENGTH_SHORT).show()
+                onLoginSuccess()
+            }
+            is AuthenticationViewModel.LoginState.Error -> {
+                val message = (uiState as AuthenticationViewModel.LoginState.Error).message
+                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                onLoginFailure(message)
+            }
             else -> {}
         }
     }
