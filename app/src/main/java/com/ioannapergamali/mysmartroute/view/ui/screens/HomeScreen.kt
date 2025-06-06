@@ -54,8 +54,6 @@ fun HomeScreen(
                 }
             )
 
-            Spacer(modifier = Modifier.height(4.dp))
-
             Image(
                 painter = painterResource(id = R.drawable.sr),
                 contentDescription = "Animated Logo",
@@ -68,13 +66,13 @@ fun HomeScreen(
                     }
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             Button(onClick = { onNavigateToLogin() }) {
                 Text("Login")
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             Row {
                 Text("If you don't have account ")
