@@ -14,7 +14,7 @@ import androidx.navigation.NavController
 import com.ioannapergamali.movewise.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.view.ui.animation.rememberBreathingAnimation
-import com.ioannapergamali.mysmartroute.view.ui.animation.rememberTextPulseAnimation
+import com.ioannapergamali.mysmartroute.view.ui.animation.rememberSlideFadeInAnimation
 
 @Composable
 fun HomeScreen(
@@ -37,23 +37,24 @@ fun HomeScreen(
             .padding(16.dp)
 
         val (logoScale, logoAlpha) = rememberBreathingAnimation()
-        val (textScale, textAlpha) = rememberTextPulseAnimation()
+        val (textOffset, textAlpha) = rememberSlideFadeInAnimation()
 
         Column(
             modifier = contentModifier,
-            verticalArrangement = Arrangement.Center,
+            verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 text = "Welcome",
                 style = MaterialTheme.typography.headlineLarge,
                 modifier = Modifier
+                    .offset(y = textOffset)
                     .graphicsLayer {
-                        scaleX = textScale
-                        scaleY = textScale
                         this.alpha = textAlpha
                     }
             )
+
+            Spacer(modifier = Modifier.height(12.dp))
 
             Image(
                 painter = painterResource(id = R.drawable.sr),
