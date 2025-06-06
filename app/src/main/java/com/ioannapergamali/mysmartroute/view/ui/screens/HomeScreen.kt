@@ -1,14 +1,8 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.clickable
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,6 +14,7 @@ import androidx.navigation.NavController
 import com.ioannapergamali.movewise.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.view.ui.animation.rememberBreathingAnimation
+import com.ioannapergamali.mysmartroute.view.ui.animation.rememberTextPulseAnimation
 
 @Composable
 fun HomeScreen(
@@ -41,18 +36,25 @@ fun HomeScreen(
             .padding(paddingValues)
             .padding(16.dp)
 
-        val (scale, alpha) = rememberBreathingAnimation()
+        val (logoScale, logoAlpha) = rememberBreathingAnimation()
+        val (textScale, textAlpha) = rememberTextPulseAnimation()
 
         Column(
             modifier = contentModifier,
-            verticalArrangement = Arrangement.SpaceBetween,
+            verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Welcome to",
+                text = "WELCOME TO",
                 style = MaterialTheme.typography.headlineLarge,
-                modifier = Modifier.padding(vertical = 8.dp)
+                modifier = Modifier.graphicsLayer {
+                    scaleX = textScale
+                    scaleY = textScale
+                    this.alpha = textAlpha
+                }
             )
+
+            Spacer(modifier = Modifier.height(4.dp))
 
             Image(
                 painter = painterResource(id = R.drawable.sr),
@@ -60,21 +62,27 @@ fun HomeScreen(
                 modifier = Modifier
                     .size(180.dp)
                     .graphicsLayer {
-                        scaleX = scale
-                        scaleY = scale
-                        this.alpha = alpha
+                        scaleX = logoScale
+                        scaleY = logoScale
+                        this.alpha = logoAlpha
                     }
-                    .padding(vertical = 8.dp)
             )
 
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Button(onClick = { onNavigateToSignUp() }) {
-                    Text("Sign Up")
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(onClick = { onNavigateToLogin() }) {
-                    Text("Login")
-                }
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(onClick = { onNavigateToLogin() }) {
+                Text("Login")
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row {
+                Text("If you don't have account ")
+                Text(
+                    text = "Sign Up",
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.clickable { onNavigateToSignUp() }
+                )
             }
         }
     }
