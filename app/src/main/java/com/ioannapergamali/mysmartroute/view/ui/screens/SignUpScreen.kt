@@ -13,6 +13,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.compose.ui.platform.LocalContext
 import com.ioannapergamali.movewise.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
@@ -25,6 +26,7 @@ fun SignUpScreen(
 ) {
     val viewModel: AuthenticationViewModel = viewModel()
     val uiState by viewModel.signUpState.collectAsState()
+    val context = LocalContext.current
 
     var name by remember { mutableStateOf("") }
     var surname by remember { mutableStateOf("") }
@@ -104,6 +106,7 @@ fun SignUpScreen(
 
                 if (streetNum != null && postalCode != null) {
                     viewModel.signUp(
+                        context,
                         name, surname, username, email, phoneNum, password,
                         com.ioannapergamali.mysmartroute.model.classes.users.UserAddress(city, streetName, streetNum, postalCode),
                         selectedRole
