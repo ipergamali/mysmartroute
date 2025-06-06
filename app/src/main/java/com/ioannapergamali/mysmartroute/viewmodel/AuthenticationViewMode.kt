@@ -17,6 +17,9 @@ class AuthenticationViewModel : ViewModel() {
     private val _signUpState = MutableStateFlow<SignUpState>(SignUpState.Idle)
     val signUpState: StateFlow<SignUpState> = _signUpState
 
+    private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)
+    val loginState: StateFlow<LoginState> = _loginState
+
     fun signUp(
         name: String,
         surname: String,
@@ -69,10 +72,47 @@ class AuthenticationViewModel : ViewModel() {
         }
     }
 
+    fun login(username: String, password: String) {
+        viewModelScope.launch {
+            _loginState.value = LoginState.Loading
+
+            if (username.isBlank() || password.isBlank()) {
+                _loginState.value = LoginState.Error("Username and password are required")
+                return@launch
+            }
+
+            db.collection("users")
+                .whereEqualTo("username", username)
+                .get()
+                .addOnSuccessListener { documents ->
+                    if (documents.isEmpty) {
+                        _loginState.value = LoginState.Error("User not found")
+                    } else {
+                        val storedPassword = documents.documents[0].getString("password")
+                        if (storedPassword == password) {
+                            _loginState.value = LoginState.Success
+                        } else {
+                            _loginState.value = LoginState.Error("Incorrect password")
+                        }
+                    }
+                }
+                .addOnFailureListener { e ->
+                    _loginState.value = LoginState.Error(e.localizedMessage ?: "Login failed")
+                }
+        }
+    }
+
     sealed class SignUpState {
         object Idle : SignUpState()
         object Loading : SignUpState()
         object Success : SignUpState()
         data class Error(val message: String) : SignUpState()
+    }
+
+    sealed class LoginState {
+        object Idle : LoginState()
+        object Loading : LoginState()
+        object Success : LoginState()
+        data class Error(val message: String) : LoginState()
     }
 }
