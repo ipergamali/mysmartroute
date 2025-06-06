@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">mysmartroute</string>
     <string name="google_maps_key">YOUR_API_KEY</string>
+    <string name="map_api_key_missing">Google Maps API key is missing. Please set 'google_maps_key' in res/values/strings.xml</string>
 </resources>
