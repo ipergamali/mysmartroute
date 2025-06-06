@@ -9,6 +9,7 @@ import androidx.navigation.compose.composable
 import com.ioannapergamali.mysmartroute.view.ui.screens.HomeScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.SignUpScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.LoginScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.MenuScreen
 
 
 
@@ -60,6 +61,9 @@ fun NavigationHost(navController : NavHostController) {
                     Toast.makeText(context , errorMessage , Toast.LENGTH_SHORT).show()
                 }
             )
+        }
+        composable("menu") {
+            MenuScreen(navController = navController)
         }
 
 

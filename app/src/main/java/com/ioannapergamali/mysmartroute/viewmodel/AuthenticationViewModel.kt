@@ -22,6 +22,9 @@ class AuthenticationViewModel : ViewModel() {
     private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)
     val loginState: StateFlow<LoginState> = _loginState
 
+    private val _currentUserRole = MutableStateFlow<UserRole?>(null)
+    val currentUserRole: StateFlow<UserRole?> = _currentUserRole
+
     fun signUp(
         name: String,
         surname: String,
@@ -70,6 +73,7 @@ class AuthenticationViewModel : ViewModel() {
                         .addOnSuccessListener {
                             result.user?.sendEmailVerification()
                             _signUpState.value = SignUpState.Success
+                            loadCurrentUserRole()
                         }
                         .addOnFailureListener { e ->
                             _signUpState.value = SignUpState.Error(e.localizedMessage ?: "Sign-up failed")
@@ -95,6 +99,7 @@ class AuthenticationViewModel : ViewModel() {
                     val user = result.user
                     if (user != null && user.isEmailVerified) {
                         _loginState.value = LoginState.Success
+                        loadCurrentUserRole()
                     } else {
                         _loginState.value = LoginState.Error("Email not verified")
                     }
@@ -117,5 +122,16 @@ class AuthenticationViewModel : ViewModel() {
         object Loading : LoginState()
         object Success : LoginState()
         data class Error(val message: String) : LoginState()
+    }
+
+    fun loadCurrentUserRole() {
+        val uid = auth.currentUser?.uid ?: return
+        db.collection("users")
+            .document(uid)
+            .get()
+            .addOnSuccessListener { document ->
+                val roleName = document.getString("role")
+                _currentUserRole.value = roleName?.let { UserRole.valueOf(it) }
+            }
     }
 }
