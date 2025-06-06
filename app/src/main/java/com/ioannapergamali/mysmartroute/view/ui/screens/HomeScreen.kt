@@ -24,7 +24,8 @@ import com.ioannapergamali.mysmartroute.view.ui.animation.rememberBreathingAnima
 @Composable
 fun HomeScreen(
     navController: NavController,
-    onNavigateToSignUp: () -> Unit
+    onNavigateToSignUp: () -> Unit,
+    onNavigateToLogin: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -69,6 +70,10 @@ fun HomeScreen(
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Button(onClick = { onNavigateToSignUp() }) {
                     Text("Sign Up")
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(onClick = { onNavigateToLogin() }) {
+                    Text("Login")
                 }
             }
         }
