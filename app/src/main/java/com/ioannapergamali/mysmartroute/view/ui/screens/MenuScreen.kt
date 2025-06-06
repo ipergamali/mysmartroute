@@ -1,5 +1,6 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -62,7 +63,7 @@ private fun PassengerMenu(viewModel: AuthenticationViewModel, navController: Nav
         "View, Rank and Comment on Completed Transports",
         "Shut Down the System"
     )
-    PassengerActionList(actions) { index ->
+    MenuTable(actions) { index ->
         when (index) {
             0 -> {
                 viewModel.signOut()
@@ -85,7 +86,7 @@ private fun DriverMenu() {
         "Print Passenger List for Scheduled Transports",
         "Print Passenger List for Completed Transports"
     )
-    ActionList(actions)
+    MenuTable(actions)
 }
 
 @Composable
@@ -105,26 +106,28 @@ private fun AdminMenu() {
         "View Users",
         "Advance Date"
     )
-    ActionList(actions)
+    MenuTable(actions)
 }
 
 @Composable
-private fun ActionList(actions: List<String>) {
-    actions.forEachIndexed { index, action ->
-        Text(text = "${index + 1}. $action", modifier = Modifier.padding(4.dp))
-    }
-}
-
-@Composable
-private fun PassengerActionList(actions: List<String>, onActionSelected: (Int) -> Unit) {
-    actions.forEachIndexed { index, action ->
-        Button(
-            onClick = { onActionSelected(index) },
-            modifier = Modifier
+private fun MenuTable(actions: List<String>, onActionSelected: ((Int) -> Unit)? = null) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        actions.forEachIndexed { index, action ->
+            Row(modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 4.dp)
-        ) {
-            Text(text = "${index + 1}. $action")
+                .padding(vertical = 4.dp)) {
+                Text(text = "${index + 1}.", modifier = Modifier.width(24.dp))
+                if (onActionSelected != null) {
+                    Text(
+                        text = action,
+                        modifier = Modifier
+                            .clickable { onActionSelected(index) }
+                            .weight(1f)
+                    )
+                } else {
+                    Text(text = action, modifier = Modifier.weight(1f))
+                }
+            }
         }
     }
 }
