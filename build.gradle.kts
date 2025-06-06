@@ -2,7 +2,9 @@
 
 plugins {
     id("com.android.application") version "8.9.2" apply false
-    id("org.jetbrains.kotlin.android") version "2.0.0" apply false
-    id("org.jetbrains.kotlin.plugin.compose") version "1.5.11" apply false
+    // Compose compiler plugin is bundled with Kotlin 1.9.x so we don't need the
+    // separate Compose plugin. Use the Kotlin version from the version catalog
+    // to keep it aligned with the rest of the project.
+    id("org.jetbrains.kotlin.android") version "1.9.22" apply false
     id("com.google.gms.google-services") version "4.4.2" apply false
 }
