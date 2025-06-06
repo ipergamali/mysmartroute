@@ -41,13 +41,13 @@ fun HomeScreen(
 
         Column(
             modifier = contentModifier,
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "Welcome",
-                style = MaterialTheme.typography.headlineLarge,
-                modifier = Modifier
+                text = "WELCOME TO",
+                modifier = Modifier.graphicsLayer {
+                    scaleX = textScale
+                    scaleY = textScale
+                    this.alpha = textAlpha
+                }
+            Spacer(modifier = Modifier.height(4.dp))
                     .graphicsLayer {
                         scaleX = textScale
                         scaleY = textScale
