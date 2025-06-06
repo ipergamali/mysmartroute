@@ -134,4 +134,9 @@ class AuthenticationViewModel : ViewModel() {
                 _currentUserRole.value = roleName?.let { UserRole.valueOf(it) }
             }
     }
+
+    fun signOut() {
+        auth.signOut()
+        _currentUserRole.value = null
+    }
 }
