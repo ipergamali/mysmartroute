@@ -31,7 +31,7 @@ mysmartroute/
 │   │       │               └── BreathingAnimation.kt
 │   │       ├── res/
 │   │       │   ├── drawable/
-│   │       │   │   ├── sr.png
+│   │       │   │   ├── logo.png
 │   │       │   │   └── bc.png
 │   │       │   ├── layout/
 │   │       │   │   └── activity_main.xml
