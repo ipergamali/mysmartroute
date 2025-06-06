@@ -64,6 +64,8 @@ fun MenuScreen(navController: NavController) {
 
 @Composable
 private fun PassengerMenu(viewModel: AuthenticationViewModel, navController: NavController) {
+    val context = LocalContext.current
+
     val actions = listOf(
         "Sign out",
         "Manage Favorite Means of Transport",
@@ -82,7 +84,7 @@ private fun PassengerMenu(viewModel: AuthenticationViewModel, navController: Nav
         when (index) {
             0 -> {
                 viewModel.signOut()
-                Toast.makeText(LocalContext.current, "Logged out", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Logged out", Toast.LENGTH_SHORT).show()
                 navController.navigate("home") {
                     popUpTo("menu") { inclusive = true }
                 }
