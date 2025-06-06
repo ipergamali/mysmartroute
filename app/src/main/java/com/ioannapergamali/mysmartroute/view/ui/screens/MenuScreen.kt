@@ -107,6 +107,7 @@ private fun DriverMenu(navController: NavController) {
     MenuTable(actions) { index ->
         when (index) {
             0 -> navController.navigate("registerVehicle")
+            1 -> navController.navigate("announceTransport")
             // TODO: handle other driver actions
         }
     }
