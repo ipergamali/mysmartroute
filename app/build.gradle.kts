@@ -57,8 +57,6 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended:1.6.4")
 
     // Firebase
-    implementation(platform("com.google.firebase:firebase-bom:33.14.0"))
-    implementation("com.google.firebase:firebase-analytics")
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.firebase.auth.ktx)
 
