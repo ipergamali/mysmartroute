@@ -19,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
@@ -52,10 +53,11 @@ fun AnnounceTransportScreen(navController: NavController) {
         position = CameraPosition.fromLatLngZoom(LatLng(37.9838, 23.7275), 9f)
     }
 
+    val apiKey = context.getString(R.string.google_maps_key)
+    val isKeyMissing = apiKey.isBlank() || apiKey == "YOUR_API_KEY"
+
     LaunchedEffect(startLatLng, endLatLng) {
-        if (startLatLng != null && endLatLng != null) {
-            // Replace with your real API key
-            val apiKey = context.getString(R.string.google_maps_key)
+        if (!isKeyMissing && startLatLng != null && endLatLng != null) {
             durationMinutes = MapsUtils.fetchDuration(startLatLng!!, endLatLng!!, apiKey)
         }
     }
@@ -64,26 +66,30 @@ fun AnnounceTransportScreen(navController: NavController) {
         TopBar(title = "Announce Transport", navController = navController)
         Spacer(modifier = Modifier.height(16.dp))
 
-        GoogleMap(
-            modifier = Modifier.weight(1f),
-            cameraPositionState = cameraPositionState,
-            onMapClick = { latLng ->
-                if (startLatLng == null) {
-                    startLatLng = latLng
-                    cameraPositionState.position = CameraPosition.fromLatLngZoom(latLng, 10f)
-                } else if (endLatLng == null) {
-                    endLatLng = latLng
-                } else {
-                    startLatLng = latLng
-                    endLatLng = null
+        if (isKeyMissing) {
+            Text(text = stringResource(R.string.map_api_key_missing))
+        } else {
+            GoogleMap(
+                modifier = Modifier.weight(1f),
+                cameraPositionState = cameraPositionState,
+                onMapClick = { latLng ->
+                    if (startLatLng == null) {
+                        startLatLng = latLng
+                        cameraPositionState.position = CameraPosition.fromLatLngZoom(latLng, 10f)
+                    } else if (endLatLng == null) {
+                        endLatLng = latLng
+                    } else {
+                        startLatLng = latLng
+                        endLatLng = null
+                    }
                 }
-            }
-        ) {
-            startLatLng?.let {
-                Marker(state = rememberMarkerState(position = it), title = "From")
-            }
-            endLatLng?.let {
-                Marker(state = rememberMarkerState(position = it), title = "To")
+            ) {
+                startLatLng?.let {
+                    Marker(state = rememberMarkerState(position = it), title = "From")
+                }
+                endLatLng?.let {
+                    Marker(state = rememberMarkerState(position = it), title = "To")
+                }
             }
         }
 
