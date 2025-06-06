@@ -52,7 +52,7 @@ fun MenuScreen(navController: NavController) {
         ) {
             when (role) {
                 UserRole.PASSENGER -> PassengerMenu(viewModel, navController)
-                UserRole.DRIVER -> DriverMenu()
+                UserRole.DRIVER -> DriverMenu(navController)
                 UserRole.ADMIN -> AdminMenu()
                 null -> {
                     CircularProgressIndicator()
@@ -95,7 +95,7 @@ private fun PassengerMenu(viewModel: AuthenticationViewModel, navController: Nav
 }
 
 @Composable
-private fun DriverMenu() {
+private fun DriverMenu(navController: NavController) {
     val actions = listOf(
         "Register Vehicle",
         "Announce Availability for a specific Transport",
@@ -104,7 +104,12 @@ private fun DriverMenu() {
         "Print Passenger List for Scheduled Transports",
         "Print Passenger List for Completed Transports"
     )
-    MenuTable(actions)
+    MenuTable(actions) { index ->
+        when (index) {
+            0 -> navController.navigate("registerVehicle")
+            // TODO: handle other driver actions
+        }
+    }
 }
 
 @Composable
