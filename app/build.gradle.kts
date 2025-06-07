@@ -5,11 +5,6 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
-repositories {
-    flatDir {
-        dirs("libs")
-    }
-}
 
 
 android {
