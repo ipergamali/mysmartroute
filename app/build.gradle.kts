@@ -47,7 +47,8 @@ android {
 dependencies {
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation(name = "material-1.11.1", ext = "aar")
+    // Use local AAR since the build environment lacks internet access
+    implementation(files("libs/material-1.11.1.aar"))
     implementation("androidx.activity:activity-ktx:1.8.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
 
