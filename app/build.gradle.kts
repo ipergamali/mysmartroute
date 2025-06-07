@@ -3,8 +3,14 @@ plugins {
     id("com.android.application")
     id("com.google.gms.google-services")
     id("org.jetbrains.kotlin.android")
-
 }
+
+repositories {
+    flatDir {
+        dirs("libs")
+    }
+}
+
 
 android {
     namespace = "com.ioannapergamali.mysmartroute"
@@ -41,7 +47,7 @@ android {
 dependencies {
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("com.google.android.material:material:1.11.0")
+    implementation(name = "material-1.11.1", ext = "aar")
     implementation("androidx.activity:activity-ktx:1.8.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
 
