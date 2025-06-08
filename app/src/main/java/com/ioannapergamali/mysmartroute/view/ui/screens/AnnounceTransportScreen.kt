@@ -169,6 +169,17 @@ fun AnnounceTransportScreen(navController: NavController) {
                     Polyline(points = routePoints)
                 }
             }
+
+            if (startLatLng != null && endLatLng != null) {
+                val start = "${'$'}{startLatLng!!.latitude},${'$'}{startLatLng!!.longitude}"
+                val end = "${'$'}{endLatLng!!.latitude},${'$'}{endLatLng!!.longitude}"
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(onClick = {
+                    navController.navigate("directionsMap/${'$'}start/${'$'}end")
+                }) {
+                    Text("View Directions Map")
+                }
+            }
         }
 
         Spacer(modifier = Modifier.height(8.dp))
