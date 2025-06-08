@@ -11,7 +11,6 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.LoginScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.MenuScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.RegisterVehicleScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.AnnounceTransportScreen
-import com.ioannapergamali.mysmartroute.view.ui.screens.DirectionsMapScreen
 
 
 
@@ -67,17 +66,6 @@ fun NavigationHost(navController : NavHostController) {
             AnnounceTransportScreen(navController = navController)
         }
 
-        composable(
-            route = "directionsMap/{start}/{end}",
-            arguments = listOf(
-                navArgument("start") { defaultValue = "" },
-                navArgument("end") { defaultValue = "" }
-            )
-        ) { backStackEntry ->
-            val start = backStackEntry.arguments?.getString("start") ?: ""
-            val end = backStackEntry.arguments?.getString("end") ?: ""
-            DirectionsMapScreen(navController = navController, start = start, end = end)
-        }
 
 
 

@@ -23,6 +23,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Place
+import android.webkit.WebView
+import android.webkit.WebViewClient
+import androidx.compose.ui.viewinterop.AndroidView
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
@@ -174,11 +177,18 @@ fun AnnounceTransportScreen(navController: NavController) {
                 val start = "${'$'}{startLatLng!!.latitude},${'$'}{startLatLng!!.longitude}"
                 val end = "${'$'}{endLatLng!!.latitude},${'$'}{endLatLng!!.longitude}"
                 Spacer(modifier = Modifier.height(8.dp))
-                Button(onClick = {
-                    navController.navigate("directionsMap/${'$'}start/${'$'}end")
-                }) {
-                    Text("View Directions Map")
-                }
+                AndroidView(
+                    factory = { context ->
+                        WebView(context).apply {
+                            webViewClient = WebViewClient()
+                            settings.javaScriptEnabled = true
+                            loadUrl("https://www.google.com/maps/dir/${'$'}start/${'$'}end")
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(250.dp)
+                )
             }
         }
 
