@@ -9,6 +9,11 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.ExposedDropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.menuAnchor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -26,6 +31,8 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import android.location.Address
+import android.location.Geocoder
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.model.classes.routes.Route
@@ -34,14 +41,30 @@ import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.TransportAnnouncementViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.VehicleViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AnnounceTransportScreen(navController: NavController) {
     val viewModel: TransportAnnouncementViewModel = viewModel()
+    val vehicleViewModel: VehicleViewModel = viewModel()
     val state by viewModel.state.collectAsState()
+    val vehicles by vehicleViewModel.vehicles.collectAsState()
 
     val context = LocalContext.current
+
+    var fromQuery by remember { mutableStateOf("") }
+    var fromExpanded by remember { mutableStateOf(false) }
+    var fromSuggestions by remember { mutableStateOf<List<Address>>(emptyList()) }
+
+    var toQuery by remember { mutableStateOf("") }
+    var toExpanded by remember { mutableStateOf(false) }
+    var toSuggestions by remember { mutableStateOf<List<Address>>(emptyList()) }
+
+    var selectedVehicleType by remember { mutableStateOf<VehicleType?>(null) }
 
     var startLatLng by remember { mutableStateOf<LatLng?>(null) }
     var endLatLng by remember { mutableStateOf<LatLng?>(null) }
@@ -56,9 +79,33 @@ fun AnnounceTransportScreen(navController: NavController) {
     val apiKey = context.getString(R.string.google_maps_key)
     val isKeyMissing = apiKey.isBlank() || apiKey == "YOUR_API_KEY"
 
+    LaunchedEffect(Unit) {
+        vehicleViewModel.loadRegisteredVehicles(context)
+    }
+
     LaunchedEffect(startLatLng, endLatLng) {
         if (!isKeyMissing && startLatLng != null && endLatLng != null) {
             durationMinutes = MapsUtils.fetchDuration(startLatLng!!, endLatLng!!, apiKey)
+        }
+    }
+
+    LaunchedEffect(fromQuery) {
+        if (fromQuery.length > 3) {
+            fromSuggestions = withContext(Dispatchers.IO) {
+                try { Geocoder(context).getFromLocationName(fromQuery, 5) ?: emptyList() } catch (e: Exception) { emptyList() }
+            }
+        } else {
+            fromSuggestions = emptyList()
+        }
+    }
+
+    LaunchedEffect(toQuery) {
+        if (toQuery.length > 3) {
+            toSuggestions = withContext(Dispatchers.IO) {
+                try { Geocoder(context).getFromLocationName(toQuery, 5) ?: emptyList() } catch (e: Exception) { emptyList() }
+            }
+        } else {
+            toSuggestions = emptyList()
         }
     }
 
@@ -66,29 +113,94 @@ fun AnnounceTransportScreen(navController: NavController) {
         TopBar(title = "Announce Transport", navController = navController)
         Spacer(modifier = Modifier.height(16.dp))
 
-        if (isKeyMissing) {
-            Text(text = stringResource(R.string.map_api_key_missing))
-        } else {
+        if (!isKeyMissing) {
             GoogleMap(
                 modifier = Modifier.weight(1f),
-                cameraPositionState = cameraPositionState,
-                onMapClick = { latLng ->
-                    if (startLatLng == null) {
-                        startLatLng = latLng
-                        cameraPositionState.position = CameraPosition.fromLatLngZoom(latLng, 10f)
-                    } else if (endLatLng == null) {
-                        endLatLng = latLng
-                    } else {
-                        startLatLng = latLng
-                        endLatLng = null
-                    }
-                }
+                cameraPositionState = cameraPositionState
             ) {
                 startLatLng?.let {
                     Marker(state = rememberMarkerState(position = it), title = "From")
                 }
                 endLatLng?.let {
                     Marker(state = rememberMarkerState(position = it), title = "To")
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        ExposedDropdownMenuBox(expanded = fromExpanded, onExpandedChange = { fromExpanded = !fromExpanded }) {
+            TextField(
+                value = fromQuery,
+                onValueChange = { fromQuery = it; fromExpanded = true },
+                label = { Text("From") },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = fromExpanded) },
+                modifier = Modifier.menuAnchor().fillMaxWidth()
+            )
+            ExposedDropdownMenu(expanded = fromExpanded, onDismissRequest = { fromExpanded = false }) {
+                fromSuggestions.forEach { address ->
+                    DropdownMenuItem(
+                        text = { Text(address.getAddressLine(0) ?: "") },
+                        onClick = {
+                            fromQuery = address.getAddressLine(0) ?: ""
+                            startLatLng = LatLng(address.latitude, address.longitude)
+                            cameraPositionState.position = CameraPosition.fromLatLngZoom(startLatLng!!, 10f)
+                            fromExpanded = false
+                        }
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        ExposedDropdownMenuBox(expanded = toExpanded, onExpandedChange = { toExpanded = !toExpanded }) {
+            TextField(
+                value = toQuery,
+                onValueChange = { toQuery = it; toExpanded = true },
+                label = { Text("To") },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = toExpanded) },
+                modifier = Modifier.menuAnchor().fillMaxWidth()
+            )
+            ExposedDropdownMenu(expanded = toExpanded, onDismissRequest = { toExpanded = false }) {
+                toSuggestions.forEach { address ->
+                    DropdownMenuItem(
+                        text = { Text(address.getAddressLine(0) ?: "") },
+                        onClick = {
+                            toQuery = address.getAddressLine(0) ?: ""
+                            endLatLng = LatLng(address.latitude, address.longitude)
+                            toExpanded = false
+                        }
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        var vehicleMenuExpanded by remember { mutableStateOf(false) }
+
+        ExposedDropdownMenuBox(expanded = vehicleMenuExpanded, onExpandedChange = { vehicleMenuExpanded = !vehicleMenuExpanded }) {
+            TextField(
+                value = selectedVehicleType?.name ?: "",
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Vehicle") },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = vehicleMenuExpanded) },
+                modifier = Modifier.menuAnchor().fillMaxWidth()
+            )
+            ExposedDropdownMenu(expanded = vehicleMenuExpanded, onDismissRequest = { vehicleMenuExpanded = false }) {
+                vehicles.forEach { entity ->
+                    val type = try { VehicleType.valueOf(entity.type) } catch (e: Exception) { null }
+                    type?.let {
+                        DropdownMenuItem(
+                            text = { Text(it.name) },
+                            onClick = {
+                                selectedVehicleType = it
+                                vehicleMenuExpanded = false
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -106,7 +218,8 @@ fun AnnounceTransportScreen(navController: NavController) {
             val start = startLatLng?.let { "${it.latitude},${it.longitude}" } ?: ""
             val end = endLatLng?.let { "${it.latitude},${it.longitude}" } ?: ""
             val route = Route(start, end, cost)
-            viewModel.announce(route, VehicleType.CAR, date, cost, durationMinutes)
+            val type = selectedVehicleType ?: VehicleType.CAR
+            viewModel.announce(route, type, date, cost, durationMinutes)
         }) {
             Text("Announce")
         }
