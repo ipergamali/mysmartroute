@@ -30,6 +30,9 @@ import com.google.maps.android.compose.rememberMarkerState
 import com.google.maps.android.compose.Polyline
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import android.webkit.WebView
+import android.webkit.WebViewClient
+import androidx.compose.ui.viewinterop.AndroidView
 import android.location.Address
 import android.location.Geocoder
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -168,6 +171,23 @@ fun AnnounceTransportScreen(navController: NavController) {
                 if (routePoints.isNotEmpty()) {
                     Polyline(points = routePoints)
                 }
+            }
+
+            if (startLatLng != null && endLatLng != null) {
+                val url = "https://www.google.com/maps/dir/${'$'}{startLatLng!!.latitude},${'$'}{startLatLng!!.longitude}/${'$'}{endLatLng!!.latitude},${'$'}{endLatLng!!.longitude}"
+                Spacer(modifier = Modifier.height(8.dp))
+                AndroidView(
+                    factory = { context ->
+                        WebView(context).apply {
+                            webViewClient = WebViewClient()
+                            settings.javaScriptEnabled = true
+                            loadUrl(url)
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(300.dp)
+                )
             }
         }
 
