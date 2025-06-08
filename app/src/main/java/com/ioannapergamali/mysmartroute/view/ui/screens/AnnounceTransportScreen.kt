@@ -9,6 +9,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExposedDropdownMenu
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -32,6 +36,7 @@ import com.ioannapergamali.mysmartroute.model.classes.routes.Route
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
+import androidx.compose.material3.menuAnchor
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.TransportAnnouncementViewModel
 
@@ -45,9 +50,13 @@ fun AnnounceTransportScreen(navController: NavController) {
 
     var startLatLng by remember { mutableStateOf<LatLng?>(null) }
     var endLatLng by remember { mutableStateOf<LatLng?>(null) }
+    var startAddress by remember { mutableStateOf("") }
+    var endAddress by remember { mutableStateOf("") }
     var costInput by remember { mutableStateOf("") }
     var durationMinutes by remember { mutableStateOf(0) }
     var dateInput by remember { mutableStateOf("") }
+    var vehicleExpanded by remember { mutableStateOf(false) }
+    var vehicleType by remember { mutableStateOf(VehicleType.CAR) }
 
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(LatLng(37.9838, 23.7275), 9f)
@@ -56,14 +65,40 @@ fun AnnounceTransportScreen(navController: NavController) {
     val apiKey = context.getString(R.string.google_maps_key)
     val isKeyMissing = apiKey.isBlank() || apiKey == "YOUR_API_KEY"
 
-    LaunchedEffect(startLatLng, endLatLng) {
+    LaunchedEffect(startAddress) {
+        if (!isKeyMissing && startAddress.isNotBlank()) {
+            startLatLng = MapsUtils.geocode(startAddress, apiKey)
+        }
+    }
+
+    LaunchedEffect(endAddress) {
+        if (!isKeyMissing && endAddress.isNotBlank()) {
+            endLatLng = MapsUtils.geocode(endAddress, apiKey)
+        }
+    }
+
+    LaunchedEffect(startLatLng, endLatLng, vehicleType) {
         if (!isKeyMissing && startLatLng != null && endLatLng != null) {
-            durationMinutes = MapsUtils.fetchDuration(startLatLng!!, endLatLng!!, apiKey)
+            val mode = MapsUtils.vehicleTypeToMode(vehicleType)
+            durationMinutes = MapsUtils.fetchDuration(startLatLng!!, endLatLng!!, apiKey, mode)
         }
     }
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         TopBar(title = "Announce Transport", navController = navController)
+        Spacer(modifier = Modifier.height(16.dp))
+
+        TextField(
+            value = startAddress,
+            onValueChange = { startAddress = it },
+            label = { Text("From address") }
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        TextField(
+            value = endAddress,
+            onValueChange = { endAddress = it },
+            label = { Text("To address") }
+        )
         Spacer(modifier = Modifier.height(16.dp))
 
         if (isKeyMissing) {
@@ -98,6 +133,28 @@ fun AnnounceTransportScreen(navController: NavController) {
         Spacer(modifier = Modifier.height(8.dp))
         Text(text = "Duration: $durationMinutes min")
         Spacer(modifier = Modifier.height(8.dp))
+        ExposedDropdownMenuBox(expanded = vehicleExpanded, onExpandedChange = { vehicleExpanded = !vehicleExpanded }) {
+            TextField(
+                value = vehicleType.name,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Vehicle") },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = vehicleExpanded) },
+                modifier = Modifier.menuAnchor().fillMaxWidth()
+            )
+            ExposedDropdownMenu(expanded = vehicleExpanded, onDismissRequest = { vehicleExpanded = false }) {
+                VehicleType.values().forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(option.name) },
+                        onClick = {
+                            vehicleType = option
+                            vehicleExpanded = false
+                        }
+                    )
+                }
+            }
+        }
+        Spacer(modifier = Modifier.height(8.dp))
         TextField(value = dateInput, onValueChange = { dateInput = it }, label = { Text("Date") })
         Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = {
@@ -106,7 +163,7 @@ fun AnnounceTransportScreen(navController: NavController) {
             val start = startLatLng?.let { "${it.latitude},${it.longitude}" } ?: ""
             val end = endLatLng?.let { "${it.latitude},${it.longitude}" } ?: ""
             val route = Route(start, end, cost)
-            viewModel.announce(route, VehicleType.CAR, date, cost, durationMinutes)
+            viewModel.announce(route, vehicleType, date, cost, durationMinutes)
         }) {
             Text("Announce")
         }
