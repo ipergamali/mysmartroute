@@ -14,14 +14,20 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
+import androidx.compose.foundation.layout.Row
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Place
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
+import com.google.maps.android.compose.Polyline
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import android.location.Address
@@ -39,6 +45,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+private enum class MapSelectionMode { FROM, TO }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AnnounceTransportScreen(navController: NavController) {
@@ -48,6 +56,11 @@ fun AnnounceTransportScreen(navController: NavController) {
     val vehicles by vehicleViewModel.vehicles.collectAsState()
 
     val context = LocalContext.current
+
+    val coroutineScope = rememberCoroutineScope()
+
+    var mapSelectionMode by remember { mutableStateOf<MapSelectionMode?>(null) }
+    var routePoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
 
     var fromQuery by remember { mutableStateOf("") }
     var fromExpanded by remember { mutableStateOf(false) }
@@ -76,9 +89,18 @@ fun AnnounceTransportScreen(navController: NavController) {
         vehicleViewModel.loadRegisteredVehicles(context)
     }
 
-    LaunchedEffect(startLatLng, endLatLng) {
+    LaunchedEffect(startLatLng, endLatLng, selectedVehicleType) {
         if (!isKeyMissing && startLatLng != null && endLatLng != null) {
-            durationMinutes = MapsUtils.fetchDuration(startLatLng!!, endLatLng!!, apiKey)
+            val result = MapsUtils.fetchDurationAndPath(startLatLng!!, endLatLng!!, apiKey)
+            val factor = when (selectedVehicleType) {
+                VehicleType.BICYCLE -> 1.5
+                VehicleType.MOTORBIKE -> 0.8
+                VehicleType.BIGBUS -> 1.2
+                VehicleType.SMALLBUS -> 1.1
+                else -> 1.0
+            }
+            durationMinutes = (result.first * factor).toInt()
+            routePoints = result.second
         }
     }
 
@@ -109,13 +131,41 @@ fun AnnounceTransportScreen(navController: NavController) {
         if (!isKeyMissing) {
             GoogleMap(
                 modifier = Modifier.weight(1f),
-                cameraPositionState = cameraPositionState
+                cameraPositionState = cameraPositionState,
+                onMapClick = { latLng ->
+                    when (mapSelectionMode) {
+                        MapSelectionMode.FROM -> {
+                            startLatLng = latLng
+                            coroutineScope.launch {
+                                val addr = withContext(Dispatchers.IO) {
+                                    Geocoder(context).getFromLocation(latLng.latitude, latLng.longitude, 1)?.firstOrNull()
+                                }
+                                fromQuery = addr?.getAddressLine(0) ?: "${latLng.latitude},${latLng.longitude}"
+                            }
+                            mapSelectionMode = null
+                        }
+                        MapSelectionMode.TO -> {
+                            endLatLng = latLng
+                            coroutineScope.launch {
+                                val addr = withContext(Dispatchers.IO) {
+                                    Geocoder(context).getFromLocation(latLng.latitude, latLng.longitude, 1)?.firstOrNull()
+                                }
+                                toQuery = addr?.getAddressLine(0) ?: "${latLng.latitude},${latLng.longitude}"
+                            }
+                            mapSelectionMode = null
+                        }
+                        null -> {}
+                    }
+                }
             ) {
                 startLatLng?.let {
                     Marker(state = rememberMarkerState(position = it), title = "From")
                 }
                 endLatLng?.let {
                     Marker(state = rememberMarkerState(position = it), title = "To")
+                }
+                if (routePoints.isNotEmpty()) {
+                    Polyline(points = routePoints)
                 }
             }
         }
@@ -127,7 +177,28 @@ fun AnnounceTransportScreen(navController: NavController) {
                 value = fromQuery,
                 onValueChange = { fromQuery = it; fromExpanded = true },
                 label = { Text("From") },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = fromExpanded) },
+                trailingIcon = {
+                    Row {
+                        IconButton(onClick = {
+                            coroutineScope.launch {
+                                val addr = withContext(Dispatchers.IO) {
+                                    Geocoder(context).getFromLocationName(fromQuery, 1)?.firstOrNull()
+                                }
+                                addr?.let {
+                                    startLatLng = LatLng(it.latitude, it.longitude)
+                                    fromQuery = it.getAddressLine(0) ?: fromQuery
+                                    cameraPositionState.position = CameraPosition.fromLatLngZoom(startLatLng!!, 10f)
+                                }
+                            }
+                        }) {
+                            Icon(Icons.Default.Check, contentDescription = "Set From")
+                        }
+                        IconButton(onClick = { mapSelectionMode = MapSelectionMode.FROM }) {
+                            Icon(Icons.Default.Place, contentDescription = "Pick From on Map")
+                        }
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = fromExpanded)
+                    }
+                },
                 modifier = Modifier.menuAnchor().fillMaxWidth()
             )
             ExposedDropdownMenu(expanded = fromExpanded, onDismissRequest = { fromExpanded = false }) {
@@ -152,7 +223,28 @@ fun AnnounceTransportScreen(navController: NavController) {
                 value = toQuery,
                 onValueChange = { toQuery = it; toExpanded = true },
                 label = { Text("To") },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = toExpanded) },
+                trailingIcon = {
+                    Row {
+                        IconButton(onClick = {
+                            coroutineScope.launch {
+                                val addr = withContext(Dispatchers.IO) {
+                                    Geocoder(context).getFromLocationName(toQuery, 1)?.firstOrNull()
+                                }
+                                addr?.let {
+                                    endLatLng = LatLng(it.latitude, it.longitude)
+                                    toQuery = it.getAddressLine(0) ?: toQuery
+                                    cameraPositionState.position = CameraPosition.fromLatLngZoom(endLatLng!!, 10f)
+                                }
+                            }
+                        }) {
+                            Icon(Icons.Default.Check, contentDescription = "Set To")
+                        }
+                        IconButton(onClick = { mapSelectionMode = MapSelectionMode.TO }) {
+                            Icon(Icons.Default.Place, contentDescription = "Pick To on Map")
+                        }
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = toExpanded)
+                    }
+                },
                 modifier = Modifier.menuAnchor().fillMaxWidth()
             )
             ExposedDropdownMenu(expanded = toExpanded, onDismissRequest = { toExpanded = false }) {
@@ -162,6 +254,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                         onClick = {
                             toQuery = address.getAddressLine(0) ?: ""
                             endLatLng = LatLng(address.latitude, address.longitude)
+                            cameraPositionState.position = CameraPosition.fromLatLngZoom(endLatLng!!, 10f)
                             toExpanded = false
                         }
                     )
