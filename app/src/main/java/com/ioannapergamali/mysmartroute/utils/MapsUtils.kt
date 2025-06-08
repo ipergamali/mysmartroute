@@ -6,6 +6,7 @@ import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
+import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 
 object MapsUtils {
     private val client = OkHttpClient()
@@ -44,10 +45,22 @@ object MapsUtils {
         return poly
     }
 
-    private fun buildDirectionsUrl(origin: LatLng, destination: LatLng, apiKey: String): String {
+    private fun vehicleToMode(vehicleType: VehicleType): String = when (vehicleType) {
+        VehicleType.BICYCLE -> "bicycling"
+        VehicleType.BIGBUS, VehicleType.SMALLBUS -> "transit"
+        else -> "driving"
+    }
+
+    private fun buildDirectionsUrl(
+        origin: LatLng,
+        destination: LatLng,
+        apiKey: String,
+        vehicleType: VehicleType
+    ): String {
         val originParam = "${origin.latitude},${origin.longitude}"
         val destParam = "${destination.latitude},${destination.longitude}"
-        return "https://maps.googleapis.com/maps/api/directions/json?origin=$originParam&destination=$destParam&key=$apiKey"
+        val modeParam = vehicleToMode(vehicleType)
+        return "https://maps.googleapis.com/maps/api/directions/json?origin=$originParam&destination=$destParam&mode=$modeParam&key=$apiKey"
     }
 
     private fun parseDuration(json: String): Int {
@@ -72,8 +85,13 @@ object MapsUtils {
         return durationSec / 60 to decodePolyline(encoded)
     }
 
-    suspend fun fetchDuration(origin: LatLng, destination: LatLng, apiKey: String): Int = withContext(Dispatchers.IO) {
-        val request = Request.Builder().url(buildDirectionsUrl(origin, destination, apiKey)).build()
+    suspend fun fetchDuration(
+        origin: LatLng,
+        destination: LatLng,
+        apiKey: String,
+        vehicleType: VehicleType
+    ): Int = withContext(Dispatchers.IO) {
+        val request = Request.Builder().url(buildDirectionsUrl(origin, destination, apiKey, vehicleType)).build()
         client.newCall(request).execute().use { response ->
             if (!response.isSuccessful) return@withContext 0
             val body = response.body?.string() ?: return@withContext 0
@@ -81,8 +99,13 @@ object MapsUtils {
         }
     }
 
-    suspend fun fetchDurationAndPath(origin: LatLng, destination: LatLng, apiKey: String): Pair<Int, List<LatLng>> = withContext(Dispatchers.IO) {
-        val request = Request.Builder().url(buildDirectionsUrl(origin, destination, apiKey)).build()
+    suspend fun fetchDurationAndPath(
+        origin: LatLng,
+        destination: LatLng,
+        apiKey: String,
+        vehicleType: VehicleType
+    ): Pair<Int, List<LatLng>> = withContext(Dispatchers.IO) {
+        val request = Request.Builder().url(buildDirectionsUrl(origin, destination, apiKey, vehicleType)).build()
         client.newCall(request).execute().use { response ->
             if (!response.isSuccessful) return@withContext (0 to emptyList())
             val body = response.body?.string() ?: return@withContext (0 to emptyList())
