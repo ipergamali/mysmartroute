@@ -18,6 +18,9 @@ class VehicleViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
+    private val _vehicles = MutableStateFlow<List<VehicleEntity>>(emptyList())
+    val vehicles: StateFlow<List<VehicleEntity>> = _vehicles
+
     private val _registerState = MutableStateFlow<RegisterState>(RegisterState.Idle)
     val registerState: StateFlow<RegisterState> = _registerState
 
@@ -68,6 +71,14 @@ class VehicleViewModel : ViewModel() {
                 dao.insert(entity)
                 _registerState.value = RegisterState.Success
             }
+        }
+    }
+
+    fun loadRegisteredVehicles(context: Context) {
+        viewModelScope.launch {
+            val userId = auth.currentUser?.uid ?: return@launch
+            val dao = MySmartRouteDatabase.getInstance(context).vehicleDao()
+            _vehicles.value = dao.getVehiclesForUser(userId)
         }
     }
 
