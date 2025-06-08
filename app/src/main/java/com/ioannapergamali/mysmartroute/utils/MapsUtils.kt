@@ -10,6 +10,40 @@ import org.json.JSONObject
 object MapsUtils {
     private val client = OkHttpClient()
 
+    private fun decodePolyline(encoded: String): List<LatLng> {
+        val poly = mutableListOf<LatLng>()
+        var index = 0
+        val len = encoded.length
+        var lat = 0
+        var lng = 0
+
+        while (index < len) {
+            var b: Int
+            var shift = 0
+            var result = 0
+            do {
+                b = encoded[index++].code - 63
+                result = result or ((b and 0x1f) shl shift)
+                shift += 5
+            } while (b >= 0x20)
+            val dLat = if ((result and 1) != 0) (result shr 1).inv() else result shr 1
+            lat += dLat
+
+            shift = 0
+            result = 0
+            do {
+                b = encoded[index++].code - 63
+                result = result or ((b and 0x1f) shl shift)
+                shift += 5
+            } while (b >= 0x20)
+            val dLng = if ((result and 1) != 0) (result shr 1).inv() else result shr 1
+            lng += dLng
+
+            poly.add(LatLng(lat / 1e5, lng / 1e5))
+        }
+        return poly
+    }
+
     private fun buildDirectionsUrl(origin: LatLng, destination: LatLng, apiKey: String): String {
         val originParam = "${origin.latitude},${origin.longitude}"
         val destParam = "${destination.latitude},${destination.longitude}"
@@ -26,12 +60,33 @@ object MapsUtils {
         return durationSec / 60
     }
 
+    private fun parseDurationAndPolyline(json: String): Pair<Int, List<LatLng>> {
+        val jsonObj = JSONObject(json)
+        val routes = jsonObj.getJSONArray("routes")
+        if (routes.length() == 0) return 0 to emptyList()
+        val route = routes.getJSONObject(0)
+        val legs = route.getJSONArray("legs")
+        if (legs.length() == 0) return 0 to emptyList()
+        val durationSec = legs.getJSONObject(0).getJSONObject("duration").getInt("value")
+        val encoded = route.getJSONObject("overview_polyline").getString("points")
+        return durationSec / 60 to decodePolyline(encoded)
+    }
+
     suspend fun fetchDuration(origin: LatLng, destination: LatLng, apiKey: String): Int = withContext(Dispatchers.IO) {
         val request = Request.Builder().url(buildDirectionsUrl(origin, destination, apiKey)).build()
         client.newCall(request).execute().use { response ->
             if (!response.isSuccessful) return@withContext 0
             val body = response.body?.string() ?: return@withContext 0
             return@withContext parseDuration(body)
+        }
+    }
+
+    suspend fun fetchDurationAndPath(origin: LatLng, destination: LatLng, apiKey: String): Pair<Int, List<LatLng>> = withContext(Dispatchers.IO) {
+        val request = Request.Builder().url(buildDirectionsUrl(origin, destination, apiKey)).build()
+        client.newCall(request).execute().use { response ->
+            if (!response.isSuccessful) return@withContext (0 to emptyList())
+            val body = response.body?.string() ?: return@withContext (0 to emptyList())
+            return@withContext parseDurationAndPolyline(body)
         }
     }
 }
