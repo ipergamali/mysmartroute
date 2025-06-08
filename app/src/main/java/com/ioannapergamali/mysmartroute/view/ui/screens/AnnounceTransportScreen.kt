@@ -91,7 +91,8 @@ fun AnnounceTransportScreen(navController: NavController) {
 
     LaunchedEffect(startLatLng, endLatLng, selectedVehicleType) {
         if (!isKeyMissing && startLatLng != null && endLatLng != null) {
-            val result = MapsUtils.fetchDurationAndPath(startLatLng!!, endLatLng!!, apiKey)
+            val type = selectedVehicleType ?: VehicleType.CAR
+            val result = MapsUtils.fetchDurationAndPath(startLatLng!!, endLatLng!!, apiKey, type)
             val factor = when (selectedVehicleType) {
                 VehicleType.BICYCLE -> 1.5
                 VehicleType.MOTORBIKE -> 0.8
