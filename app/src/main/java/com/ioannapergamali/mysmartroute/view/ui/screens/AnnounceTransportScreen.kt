@@ -264,6 +264,17 @@ fun AnnounceTransportScreen(navController: NavController) {
         }
 
         Spacer(modifier = Modifier.height(8.dp))
+        Button(onClick = {
+            if (CoordinateUtils.isValid(startLatLng) && CoordinateUtils.isValid(endLatLng)) {
+                Toast.makeText(context, context.getString(R.string.coordinates_valid), Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(context, context.getString(R.string.coordinates_missing), Toast.LENGTH_SHORT).show()
+            }
+        }) {
+            Text(stringResource(R.string.check_coordinates))
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
 
         ExposedDropdownMenuBox(expanded = fromExpanded, onExpandedChange = { fromExpanded = !fromExpanded }) {
             TextField(
