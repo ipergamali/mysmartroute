@@ -23,9 +23,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Place
-import android.webkit.WebView
-import android.webkit.WebViewClient
-import androidx.compose.ui.viewinterop.AndroidView
+import android.content.Intent
+import android.net.Uri
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
@@ -177,18 +176,16 @@ fun AnnounceTransportScreen(navController: NavController) {
                 val start = "${'$'}{startLatLng!!.latitude},${'$'}{startLatLng!!.longitude}"
                 val end = "${'$'}{endLatLng!!.latitude},${'$'}{endLatLng!!.longitude}"
                 Spacer(modifier = Modifier.height(8.dp))
-                AndroidView(
-                    factory = { context ->
-                        WebView(context).apply {
-                            webViewClient = WebViewClient()
-                            settings.javaScriptEnabled = true
-                            loadUrl("https://www.google.com/maps/dir/${'$'}start/${'$'}end")
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(250.dp)
-                )
+                Button(onClick = {
+                    val uri = Uri.parse(
+                        "https://www.google.com/maps/dir/?api=1&origin=${'$'}start&destination=${'$'}end"
+                    )
+                    val intent = Intent(Intent.ACTION_VIEW, uri)
+                    intent.setPackage("com.google.android.apps.maps")
+                    context.startActivity(intent)
+                }) {
+                    Text(text = stringResource(R.string.open_in_maps))
+                }
             }
         }
 
