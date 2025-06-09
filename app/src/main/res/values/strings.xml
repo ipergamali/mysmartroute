@@ -10,8 +10,10 @@
     <string name="open_in_maps">Άνοιγμα στο Google Maps</string>
     <string name="directions">Οδηγίες</string>
     <string name="no_internet">Δεν υπάρχει σύνδεση στο διαδίκτυο</string>
+    <string name="internet_available">Η σύνδεση στο διαδίκτυο είναι ενεργή</string>
     <string name="invalid_coordinates">Μη έγκυρες συντεταγμένες</string>
     <string name="check_coordinates">Έλεγχος συντεταγμένων</string>
+    <string name="check_internet">Έλεγχος Internet</string>
     <string name="coordinates_valid">Οι συντεταγμένες είναι έγκυρες</string>
     <string name="coordinates_missing">Πρέπει να οριστούν και οι δύο συντεταγμένες</string>
 </resources>

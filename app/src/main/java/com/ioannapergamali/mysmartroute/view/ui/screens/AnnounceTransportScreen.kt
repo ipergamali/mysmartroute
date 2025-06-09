@@ -275,6 +275,17 @@ fun AnnounceTransportScreen(navController: NavController) {
         }
 
         Spacer(modifier = Modifier.height(8.dp))
+        Button(onClick = {
+            if (NetworkUtils.isInternetAvailable(context)) {
+                Toast.makeText(context, context.getString(R.string.internet_available), Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(context, context.getString(R.string.no_internet), Toast.LENGTH_SHORT).show()
+            }
+        }) {
+            Text(stringResource(R.string.check_internet))
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
 
         ExposedDropdownMenuBox(expanded = fromExpanded, onExpandedChange = { fromExpanded = !fromExpanded }) {
             TextField(
