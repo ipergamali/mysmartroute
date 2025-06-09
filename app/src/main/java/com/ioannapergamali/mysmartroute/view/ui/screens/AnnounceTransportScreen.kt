@@ -43,6 +43,7 @@ import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
+import com.ioannapergamali.mysmartroute.utils.CoordinateUtils
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.TransportAnnouncementViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleViewModel
@@ -111,7 +112,10 @@ fun AnnounceTransportScreen(navController: NavController) {
     }
 
     LaunchedEffect(startLatLng, endLatLng, selectedVehicleType) {
-        if (!isKeyMissing && startLatLng != null && endLatLng != null) {
+        if (!isKeyMissing &&
+            CoordinateUtils.isValid(startLatLng) &&
+            CoordinateUtils.isValid(endLatLng)
+        ) {
             if (NetworkUtils.isInternetAvailable(context)) {
                 showRoute = false
                 val type = selectedVehicleType ?: VehicleType.CAR
@@ -128,6 +132,8 @@ fun AnnounceTransportScreen(navController: NavController) {
             } else {
                 Toast.makeText(context, context.getString(R.string.no_internet), Toast.LENGTH_SHORT).show()
             }
+        } else if (startLatLng != null || endLatLng != null) {
+            Toast.makeText(context, context.getString(R.string.invalid_coordinates), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -210,7 +216,10 @@ fun AnnounceTransportScreen(navController: NavController) {
                 coroutineScope.launch {
                     Log.d(TAG, "Fetching directions from $startLatLng to $endLatLng")
                     Toast.makeText(context, "Αναζήτηση διαδρομής...", Toast.LENGTH_SHORT).show()
-                    if (!isKeyMissing && startLatLng != null && endLatLng != null) {
+                    if (!isKeyMissing &&
+                        CoordinateUtils.isValid(startLatLng) &&
+                        CoordinateUtils.isValid(endLatLng)
+                    ) {
                         if (NetworkUtils.isInternetAvailable(context)) {
                             val type = selectedVehicleType ?: VehicleType.CAR
                             val (duration, points) = MapsUtils.fetchDurationAndPath(startLatLng!!, endLatLng!!, apiKey, type)
@@ -233,6 +242,8 @@ fun AnnounceTransportScreen(navController: NavController) {
                         } else {
                             Toast.makeText(context, context.getString(R.string.no_internet), Toast.LENGTH_SHORT).show()
                         }
+                    } else {
+                        Toast.makeText(context, context.getString(R.string.invalid_coordinates), Toast.LENGTH_SHORT).show()
                     }
                     showRoute = true
                     Log.d(TAG, "Displaying route on map")
