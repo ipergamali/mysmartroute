@@ -173,6 +173,8 @@ fun AnnounceTransportScreen(navController: NavController) {
             }
 
             // Removed external maps button; map is shown directly on screen
+        } else {
+            Text(stringResource(R.string.map_api_key_missing))
         }
 
         Spacer(modifier = Modifier.height(8.dp))
