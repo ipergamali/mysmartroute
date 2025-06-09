@@ -11,4 +11,7 @@
     <string name="directions">Οδηγίες</string>
     <string name="no_internet">Δεν υπάρχει σύνδεση στο διαδίκτυο</string>
     <string name="invalid_coordinates">Μη έγκυρες συντεταγμένες</string>
+    <string name="check_coordinates">Έλεγχος συντεταγμένων</string>
+    <string name="coordinates_valid">Οι συντεταγμένες είναι έγκυρες</string>
+    <string name="coordinates_missing">Πρέπει να οριστούν και οι δύο συντεταγμένες</string>
 </resources>
