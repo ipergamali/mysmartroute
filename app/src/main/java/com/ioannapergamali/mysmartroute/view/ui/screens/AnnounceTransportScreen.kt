@@ -23,8 +23,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Place
-import android.content.Intent
-import android.net.Uri
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
@@ -63,6 +61,7 @@ fun AnnounceTransportScreen(navController: NavController) {
 
     var mapSelectionMode by remember { mutableStateOf<MapSelectionMode?>(null) }
     var routePoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
+    var showRoute by remember { mutableStateOf(false) }
 
     var fromQuery by remember { mutableStateOf("") }
     var fromExpanded by remember { mutableStateOf(false) }
@@ -94,7 +93,7 @@ fun AnnounceTransportScreen(navController: NavController) {
     LaunchedEffect(startLatLng, endLatLng, selectedVehicleType) {
         if (!isKeyMissing && startLatLng != null && endLatLng != null) {
             val type = selectedVehicleType ?: VehicleType.CAR
-            val result = MapsUtils.fetchDurationAndPath(startLatLng!!, endLatLng!!, apiKey, type)
+            val duration = MapsUtils.fetchDuration(startLatLng!!, endLatLng!!, apiKey, type)
             val factor = when (selectedVehicleType) {
                 VehicleType.BICYCLE -> 1.5
                 VehicleType.MOTORBIKE -> 0.8
@@ -102,8 +101,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                 VehicleType.SMALLBUS -> 1.1
                 else -> 1.0
             }
-            durationMinutes = (result.first * factor).toInt()
-            routePoints = result.second
+            durationMinutes = (duration * factor).toInt()
         }
     }
 
@@ -139,6 +137,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                     when (mapSelectionMode) {
                         MapSelectionMode.FROM -> {
                             startLatLng = latLng
+                            showRoute = false
                             coroutineScope.launch {
                                 val addr = withContext(Dispatchers.IO) {
                                     Geocoder(context).getFromLocation(latLng.latitude, latLng.longitude, 1)?.firstOrNull()
@@ -149,6 +148,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                         }
                         MapSelectionMode.TO -> {
                             endLatLng = latLng
+                            showRoute = false
                             coroutineScope.launch {
                                 val addr = withContext(Dispatchers.IO) {
                                     Geocoder(context).getFromLocation(latLng.latitude, latLng.longitude, 1)?.firstOrNull()
@@ -167,7 +167,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                 endLatLng?.let {
                     Marker(state = rememberMarkerState(position = it), title = "To")
                 }
-                if (routePoints.isNotEmpty()) {
+                if (showRoute && routePoints.isNotEmpty()) {
                     Polyline(points = routePoints)
                 }
             }
@@ -180,9 +180,22 @@ fun AnnounceTransportScreen(navController: NavController) {
         if (startLatLng != null && endLatLng != null) {
             Spacer(modifier = Modifier.height(8.dp))
             Button(onClick = {
-                val start = "${startLatLng!!.latitude},${startLatLng!!.longitude}"
-                val end = "${endLatLng!!.latitude},${endLatLng!!.longitude}"
-                navController.navigate("directionsMap/$start/$end")
+                coroutineScope.launch {
+                    val start = startLatLng!!
+                    val end = endLatLng!!
+                    val type = selectedVehicleType ?: VehicleType.CAR
+                    val result = MapsUtils.fetchDurationAndPath(start, end, apiKey, type)
+                    val factor = when (selectedVehicleType) {
+                        VehicleType.BICYCLE -> 1.5
+                        VehicleType.MOTORBIKE -> 0.8
+                        VehicleType.BIGBUS -> 1.2
+                        VehicleType.SMALLBUS -> 1.1
+                        else -> 1.0
+                    }
+                    durationMinutes = (result.first * factor).toInt()
+                    routePoints = result.second
+                    showRoute = true
+                }
             }) {
                 Text(stringResource(R.string.directions))
             }
@@ -204,6 +217,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                                 }
                                 addr?.let {
                                     startLatLng = LatLng(it.latitude, it.longitude)
+                                    showRoute = false
                                     fromQuery = it.getAddressLine(0) ?: fromQuery
                                     cameraPositionState.position = CameraPosition.fromLatLngZoom(startLatLng!!, 10f)
                                 }
@@ -226,6 +240,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                         onClick = {
                             fromQuery = address.getAddressLine(0) ?: ""
                             startLatLng = LatLng(address.latitude, address.longitude)
+                            showRoute = false
                             cameraPositionState.position = CameraPosition.fromLatLngZoom(startLatLng!!, 10f)
                             fromExpanded = false
                         }
@@ -250,6 +265,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                                 }
                                 addr?.let {
                                     endLatLng = LatLng(it.latitude, it.longitude)
+                                    showRoute = false
                                     toQuery = it.getAddressLine(0) ?: toQuery
                                     cameraPositionState.position = CameraPosition.fromLatLngZoom(endLatLng!!, 10f)
                                 }
@@ -272,6 +288,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                         onClick = {
                             toQuery = address.getAddressLine(0) ?: ""
                             endLatLng = LatLng(address.latitude, address.longitude)
+                            showRoute = false
                             cameraPositionState.position = CameraPosition.fromLatLngZoom(endLatLng!!, 10f)
                             toExpanded = false
                         }
@@ -301,6 +318,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                             text = { Text(it.name) },
                             onClick = {
                                 selectedVehicleType = it
+                                showRoute = false
                                 vehicleMenuExpanded = false
                             }
                         )
