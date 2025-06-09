@@ -7,9 +7,16 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
+import android.util.Log
 
 object MapsUtils {
     private val client = OkHttpClient()
+
+    data class DirectionsResult(
+        val durationMinutes: Int,
+        val points: List<LatLng>,
+        val errorMessage: String? = null
+    )
 
     private fun decodePolyline(encoded: String): List<LatLng> {
         val poly = mutableListOf<LatLng>()
@@ -73,16 +80,25 @@ object MapsUtils {
         return durationSec / 60
     }
 
-    private fun parseDurationAndPolyline(json: String): Pair<Int, List<LatLng>> {
+    private fun parseDurationAndPolyline(json: String): DirectionsResult {
         val jsonObj = JSONObject(json)
+        val status = jsonObj.optString("status")
+        if (status != "OK") {
+            val msg = jsonObj.optString("error_message")
+            Log.w("MapsUtils", "Directions API error: $status $msg")
+            return DirectionsResult(0, emptyList(), if (msg.isNotBlank()) msg else status)
+        }
+
         val routes = jsonObj.getJSONArray("routes")
-        if (routes.length() == 0) return 0 to emptyList()
+        if (routes.length() == 0) return DirectionsResult(0, emptyList(), "ZERO_RESULTS")
+
         val route = routes.getJSONObject(0)
         val legs = route.getJSONArray("legs")
-        if (legs.length() == 0) return 0 to emptyList()
+        if (legs.length() == 0) return DirectionsResult(0, emptyList(), "ZERO_LEGS")
+
         val durationSec = legs.getJSONObject(0).getJSONObject("duration").getInt("value")
         val encoded = route.getJSONObject("overview_polyline").getString("points")
-        return durationSec / 60 to decodePolyline(encoded)
+        return DirectionsResult(durationSec / 60, decodePolyline(encoded))
     }
 
     suspend fun fetchDuration(
@@ -104,11 +120,19 @@ object MapsUtils {
         destination: LatLng,
         apiKey: String,
         vehicleType: VehicleType
-    ): Pair<Int, List<LatLng>> = withContext(Dispatchers.IO) {
-        val request = Request.Builder().url(buildDirectionsUrl(origin, destination, apiKey, vehicleType)).build()
+    ): DirectionsResult = withContext(Dispatchers.IO) {
+        val request = Request.Builder()
+            .url(buildDirectionsUrl(origin, destination, apiKey, vehicleType))
+            .build()
         client.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) return@withContext (0 to emptyList())
-            val body = response.body?.string() ?: return@withContext (0 to emptyList())
+            val body = response.body?.string() ?: return@withContext DirectionsResult(0, emptyList(), "No response")
+            if (!response.isSuccessful) {
+                val json = JSONObject(body)
+                val status = json.optString("status", response.code.toString())
+                val msg = json.optString("error_message")
+                Log.w("MapsUtils", "Directions call failed: $status $msg")
+                return@withContext DirectionsResult(0, emptyList(), if (msg.isNotBlank()) msg else status)
+            }
             return@withContext parseDurationAndPolyline(body)
         }
     }
