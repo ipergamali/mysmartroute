@@ -6,5 +6,6 @@ enum class VehicleType {
     BIGBUS,
     SMALLBUS,
     BICYCLE,
-    MOTORBIKE
+    MOTORBIKE,
+    WALKING
 }

@@ -125,6 +125,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                     VehicleType.MOTORBIKE -> 0.8
                     VehicleType.BIGBUS -> 1.2
                     VehicleType.SMALLBUS -> 1.1
+                    VehicleType.WALKING -> 1.0
                     else -> 1.0
                 }
                 durationMinutes = (result.duration * factor).toInt()
@@ -231,6 +232,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                                 VehicleType.MOTORBIKE -> 0.8
                                 VehicleType.BIGBUS -> 1.2
                                 VehicleType.SMALLBUS -> 1.1
+                                VehicleType.WALKING -> 1.0
                                 else -> 1.0
                             }
                             durationMinutes = (result.duration * factor).toInt()
