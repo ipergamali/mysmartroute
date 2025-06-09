@@ -66,12 +66,12 @@ dependencies {
     kapt(libs.androidx.room.compiler)
 
     // Google Maps
-    implementation("com.google.android.gms:play-services-maps:18.2.0")
-    implementation("com.google.maps.android:maps-compose:2.11.4")
-    implementation("com.google.android.gms:play-services-location:21.0.1")
+    implementation("com.google.android.gms:play-services-maps:19.2.0")
+    implementation("com.google.maps.android:maps-compose:6.6.0")
+    implementation("com.google.android.gms:play-services-location:21.3.0")
 
     // Networking for Directions API
-    implementation("com.squareup.okhttp3:okhttp:4.10.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
     // Testing
     testImplementation("junit:junit:4.13.2")
