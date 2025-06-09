@@ -18,7 +18,6 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    // ✅ replaces deprecated `resourceConfigurations`
     androidResources {
         localeFilters.add("en")
     }
@@ -28,7 +27,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.14"
+        kotlinCompilerExtensionVersion = "1.5.14" // Matches Compose Compiler for Kotlin 1.9.x
     }
 
     compileOptions {
@@ -41,12 +40,14 @@ android {
     }
 }
 
-// ✅ Ensures Java 11 used consistently with Kotlin
 kotlin {
-    jvmToolchain(11)
+    jvmToolchain(21)
 }
 
 dependencies {
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.24")
+
+    // Android core
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.11.0")
@@ -62,19 +63,25 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.7.1")
     implementation("androidx.compose.material:material-icons-extended:1.6.4")
 
-    // Firebase (make sure your `libs.versions.toml` defines these)
-    implementation(libs.firebase.firestore.ktx)
-    implementation(libs.firebase.auth.ktx)
+    // Firebase
+    implementation("com.google.firebase:firebase-auth-ktx:22.3.1")
+    implementation("com.google.firebase:firebase-firestore-ktx:24.11.1")
 
-    // Room (with kapt)
-    implementation(libs.androidx.room.runtime)
-    implementation(libs.androidx.room.ktx)
-    kapt(libs.androidx.room.compiler)
+    // Room
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+    kapt("androidx.room:room-compiler:2.6.1")
 
     // Google Maps
     implementation("com.google.android.gms:play-services-maps:19.2.0")
-    implementation("com.google.maps.android:maps-compose:6.6.0")
+    implementation("com.google.maps.android:maps-compose:6.2.0") // ✅ downgrade
+    implementation("com.google.maps.android:maps-ktx:4.3.0")     // ✅ downgrade
     implementation("com.google.android.gms:play-services-location:21.3.0")
+
+    // Coroutines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3") // ✅ downgrade
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3") // ✅ downgrade
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3") // ✅ downgrade
 
     // HTTP Networking
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
