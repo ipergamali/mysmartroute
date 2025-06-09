@@ -25,13 +25,16 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Place
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
-import com.google.maps.android.compose.Polyline
+import com.google.maps.android.compose.MapProperties
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import android.location.Address
 import android.location.Geocoder
+import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.model.classes.routes.Route
@@ -79,8 +82,22 @@ fun AnnounceTransportScreen(navController: NavController) {
     var durationMinutes by remember { mutableStateOf(0) }
     var dateInput by remember { mutableStateOf("") }
 
+    // Αρχικοποίηση του χάρτη στο Ηράκλειο με ζουμ όπως στο ζητούμενο URL
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(LatLng(37.9838, 23.7275), 9f)
+        position = CameraPosition.fromLatLngZoom(
+            LatLng(35.3325932, 25.073835),
+            13.79f
+        )
+    }
+    // Όρια για τον νομό Ηρακλείου ώστε ο χρήστης να μην πλοηγείται εκτός
+    val heraklionBounds = remember {
+        com.google.android.gms.maps.model.LatLngBounds(
+            LatLng(34.8, 24.8),
+            LatLng(35.5, 25.8)
+        )
+    }
+    val mapProperties = remember {
+        MapProperties(latLngBoundsForCameraTarget = heraklionBounds)
     }
 
     val apiKey = context.getString(R.string.google_maps_key)
@@ -135,6 +152,7 @@ fun AnnounceTransportScreen(navController: NavController) {
             GoogleMap(
                 modifier = Modifier.weight(1f),
                 cameraPositionState = cameraPositionState,
+                properties = mapProperties,
                 onMapClick = { latLng ->
                     when (mapSelectionMode) {
                         MapSelectionMode.FROM -> {
@@ -182,8 +200,11 @@ fun AnnounceTransportScreen(navController: NavController) {
         if (startLatLng != null && endLatLng != null) {
             Spacer(modifier = Modifier.height(8.dp))
             Button(onClick = {
+                Toast.makeText(context, "Υπολογισμός διαδρομής...", Toast.LENGTH_SHORT).show()
+                Log.d("AnnounceTransport", "Directions button clicked")
                 coroutineScope.launch {
                     if (!isKeyMissing && startLatLng != null && endLatLng != null) {
+                        Log.d("AnnounceTransport", "Fetching route")
                         val type = selectedVehicleType ?: VehicleType.CAR
                         val result = MapsUtils.fetchDurationAndPath(startLatLng!!, endLatLng!!, apiKey, type)
                         val factor = when (selectedVehicleType) {
@@ -195,8 +216,12 @@ fun AnnounceTransportScreen(navController: NavController) {
                         }
                         durationMinutes = (result.first * factor).toInt()
                         routePoints = result.second
+                        Log.d("AnnounceTransport", "Route fetched with ${'$'}{routePoints.size} points")
+                    } else {
+                        Log.d("AnnounceTransport", "Missing data for route")
                     }
                     showRoute = true
+                    Toast.makeText(context, "Η διαδρομή εμφανίστηκε", Toast.LENGTH_SHORT).show()
                 }
             }) {
                 Text(stringResource(R.string.directions))
