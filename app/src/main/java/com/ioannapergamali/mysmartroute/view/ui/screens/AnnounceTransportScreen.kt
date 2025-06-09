@@ -172,21 +172,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                 }
             }
 
-            if (startLatLng != null && endLatLng != null) {
-                val start = "${'$'}{startLatLng!!.latitude},${'$'}{startLatLng!!.longitude}"
-                val end = "${'$'}{endLatLng!!.latitude},${'$'}{endLatLng!!.longitude}"
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(onClick = {
-                    val uri = Uri.parse(
-                        "https://www.google.com/maps/dir/?api=1&origin=${'$'}start&destination=${'$'}end"
-                    )
-                    val intent = Intent(Intent.ACTION_VIEW, uri)
-                    intent.setPackage("com.google.android.apps.maps")
-                    context.startActivity(intent)
-                }) {
-                    Text(text = stringResource(R.string.open_in_maps))
-                }
-            }
+            // Removed external maps button; map is shown directly on screen
         }
 
         Spacer(modifier = Modifier.height(8.dp))
