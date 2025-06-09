@@ -9,12 +9,13 @@ plugins {
 
 android {
     namespace = "com.ioannapergamali.mysmartroute"
-    compileSdk = 35
+    // Η τρέχουσα σταθερή έκδοση του Android SDK
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.ioannapergamali.mysmartroute"
         minSdk = 33
-        targetSdk = 35
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
