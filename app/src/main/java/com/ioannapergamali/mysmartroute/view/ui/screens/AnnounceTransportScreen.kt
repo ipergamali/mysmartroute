@@ -182,7 +182,22 @@ fun AnnounceTransportScreen(navController: NavController) {
         if (startLatLng != null && endLatLng != null) {
             Spacer(modifier = Modifier.height(8.dp))
             Button(onClick = {
-                showRoute = true
+                coroutineScope.launch {
+                    if (!isKeyMissing && startLatLng != null && endLatLng != null) {
+                        val type = selectedVehicleType ?: VehicleType.CAR
+                        val result = MapsUtils.fetchDurationAndPath(startLatLng!!, endLatLng!!, apiKey, type)
+                        val factor = when (selectedVehicleType) {
+                            VehicleType.BICYCLE -> 1.5
+                            VehicleType.MOTORBIKE -> 0.8
+                            VehicleType.BIGBUS -> 1.2
+                            VehicleType.SMALLBUS -> 1.1
+                            else -> 1.0
+                        }
+                        durationMinutes = (result.first * factor).toInt()
+                        routePoints = result.second
+                    }
+                    showRoute = true
+                }
             }) {
                 Text(stringResource(R.string.directions))
             }
