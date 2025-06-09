@@ -177,6 +177,17 @@ fun AnnounceTransportScreen(navController: NavController) {
             Text(stringResource(R.string.map_api_key_missing))
         }
 
+        if (startLatLng != null && endLatLng != null) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Button(onClick = {
+                val start = "${startLatLng!!.latitude},${startLatLng!!.longitude}"
+                val end = "${endLatLng!!.latitude},${endLatLng!!.longitude}"
+                navController.navigate("directionsMap/$start/$end")
+            }) {
+                Text(stringResource(R.string.directions))
+            }
+        }
+
         Spacer(modifier = Modifier.height(8.dp))
 
         ExposedDropdownMenuBox(expanded = fromExpanded, onExpandedChange = { fromExpanded = !fromExpanded }) {
