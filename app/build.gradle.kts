@@ -20,6 +20,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        // Χρησιμοποιούμε μόνο τους πόρους της Αγγλικής γλώσσας για να
+        // αποφύγουμε προβλήματα με εσφαλμένες μεταφράσεις τρίτων βιβλιοθηκών
+        resourceConfigurations.add("en")
     }
 
     buildFeatures {
