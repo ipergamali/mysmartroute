@@ -139,6 +139,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                     when (mapSelectionMode) {
                         MapSelectionMode.FROM -> {
                             startLatLng = latLng
+                            showRoute = false
                             coroutineScope.launch {
                                 val addr = withContext(Dispatchers.IO) {
                                     Geocoder(context).getFromLocation(latLng.latitude, latLng.longitude, 1)?.firstOrNull()
@@ -149,6 +150,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                         }
                         MapSelectionMode.TO -> {
                             endLatLng = latLng
+                            showRoute = false
                             coroutineScope.launch {
                                 val addr = withContext(Dispatchers.IO) {
                                     Geocoder(context).getFromLocation(latLng.latitude, latLng.longitude, 1)?.firstOrNull()
@@ -202,6 +204,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                                 }
                                 addr?.let {
                                     startLatLng = LatLng(it.latitude, it.longitude)
+                                    showRoute = false
                                     fromQuery = it.getAddressLine(0) ?: fromQuery
                                     cameraPositionState.position = CameraPosition.fromLatLngZoom(startLatLng!!, 10f)
                                 }
@@ -224,6 +227,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                         onClick = {
                             fromQuery = address.getAddressLine(0) ?: ""
                             startLatLng = LatLng(address.latitude, address.longitude)
+                            showRoute = false
                             cameraPositionState.position = CameraPosition.fromLatLngZoom(startLatLng!!, 10f)
                             fromExpanded = false
                         }
@@ -248,6 +252,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                                 }
                                 addr?.let {
                                     endLatLng = LatLng(it.latitude, it.longitude)
+                                    showRoute = false
                                     toQuery = it.getAddressLine(0) ?: toQuery
                                     cameraPositionState.position = CameraPosition.fromLatLngZoom(endLatLng!!, 10f)
                                 }
@@ -270,6 +275,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                         onClick = {
                             toQuery = address.getAddressLine(0) ?: ""
                             endLatLng = LatLng(address.latitude, address.longitude)
+                            showRoute = false
                             cameraPositionState.position = CameraPosition.fromLatLngZoom(endLatLng!!, 10f)
                             toExpanded = false
                         }
@@ -299,6 +305,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                             text = { Text(it.name) },
                             onClick = {
                                 selectedVehicleType = it
+                                showRoute = false
                                 vehicleMenuExpanded = false
                             }
                         )
