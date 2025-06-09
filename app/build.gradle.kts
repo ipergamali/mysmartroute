@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 plugins {
     id("kotlin-kapt")
     id("com.android.application")
@@ -25,9 +23,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         // Χρησιμοποιούμε μόνο τους πόρους της Αγγλικής γλώσσας για να
         // αποφύγουμε προβλήματα με εσφαλμένες μεταφράσεις τρίτων βιβλιοθηκών
-        resourceConfigurations.apply {
-            add("en")
-        }
+        resourceConfigurations.add("en")
     }
 
     buildFeatures {
