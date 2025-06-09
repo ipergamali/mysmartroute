@@ -113,7 +113,7 @@ fun AnnounceTransportScreen(navController: NavController) {
         if (!isKeyMissing && startLatLng != null && endLatLng != null) {
             showRoute = false
             val type = selectedVehicleType ?: VehicleType.CAR
-            val result = MapsUtils.fetchDurationAndPath(startLatLng!!, endLatLng!!, apiKey, type)
+            val (duration, path) = MapsUtils.fetchDurationAndPath(startLatLng!!, endLatLng!!, apiKey, type)
             val factor = when (selectedVehicleType) {
                 VehicleType.BICYCLE -> 1.5
                 VehicleType.MOTORBIKE -> 0.8
@@ -121,8 +121,8 @@ fun AnnounceTransportScreen(navController: NavController) {
                 VehicleType.SMALLBUS -> 1.1
                 else -> 1.0
             }
-            durationMinutes = (result.first * factor).toInt()
-            routePoints = result.second
+            durationMinutes = (duration * factor).toInt()
+            routePoints = path
         }
     }
 
@@ -207,7 +207,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                     Toast.makeText(context, "Αναζήτηση διαδρομής...", Toast.LENGTH_SHORT).show()
                     if (!isKeyMissing && startLatLng != null && endLatLng != null) {
                         val type = selectedVehicleType ?: VehicleType.CAR
-                        val result = MapsUtils.fetchDurationAndPath(startLatLng!!, endLatLng!!, apiKey, type)
+                        val (duration, path) = MapsUtils.fetchDurationAndPath(startLatLng!!, endLatLng!!, apiKey, type)
                         val factor = when (selectedVehicleType) {
                             VehicleType.BICYCLE -> 1.5
                             VehicleType.MOTORBIKE -> 0.8
@@ -215,8 +215,8 @@ fun AnnounceTransportScreen(navController: NavController) {
                             VehicleType.SMALLBUS -> 1.1
                             else -> 1.0
                         }
-                        durationMinutes = (result.first * factor).toInt()
-                        routePoints = result.second
+                        durationMinutes = (duration * factor).toInt()
+                        routePoints = path
                         if (routePoints.isNotEmpty()) {
                             Log.d(TAG, "Route received with ${routePoints.size} points, duration $durationMinutes")
                             Toast.makeText(context, "Διαδρομή βρέθηκε", Toast.LENGTH_SHORT).show()
