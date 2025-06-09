@@ -23,22 +23,17 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         // Χρησιμοποιούμε μόνο τους πόρους της Αγγλικής γλώσσας για να
         // αποφύγουμε προβλήματα με εσφαλμένες μεταφράσεις τρίτων βιβλιοθηκών
-        resourceConfigurations.add("en")
+        //resourceConfigurations.add("en")
     }
-
+    // ✅ Νέο API για επιλογή locale
+    androidResources {
+        localeFilters.add("en")
+    }
     buildFeatures {
         compose = true
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.11"
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-
     kotlinOptions {
         jvmTarget = "11"
     }
@@ -83,4 +78,4 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 }
-apply(plugin = "com.google.gms.google-services")
+apply(plugin = "com.google.gms.google-services")}
