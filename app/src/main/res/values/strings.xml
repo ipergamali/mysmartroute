@@ -10,4 +10,5 @@
     <string name="open_in_maps">Άνοιγμα στο Google Maps</string>
     <string name="directions">Οδηγίες</string>
     <string name="no_internet">Δεν υπάρχει σύνδεση στο διαδίκτυο</string>
+    <string name="invalid_coordinates">Μη έγκυρες συντεταγμένες</string>
 </resources>
