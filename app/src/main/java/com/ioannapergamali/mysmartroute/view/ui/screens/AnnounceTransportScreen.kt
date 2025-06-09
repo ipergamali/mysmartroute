@@ -92,8 +92,9 @@ fun AnnounceTransportScreen(navController: NavController) {
 
     LaunchedEffect(startLatLng, endLatLng, selectedVehicleType) {
         if (!isKeyMissing && startLatLng != null && endLatLng != null) {
+            showRoute = false
             val type = selectedVehicleType ?: VehicleType.CAR
-            val duration = MapsUtils.fetchDuration(startLatLng!!, endLatLng!!, apiKey, type)
+            val result = MapsUtils.fetchDurationAndPath(startLatLng!!, endLatLng!!, apiKey, type)
             val factor = when (selectedVehicleType) {
                 VehicleType.BICYCLE -> 1.5
                 VehicleType.MOTORBIKE -> 0.8
@@ -101,7 +102,8 @@ fun AnnounceTransportScreen(navController: NavController) {
                 VehicleType.SMALLBUS -> 1.1
                 else -> 1.0
             }
-            durationMinutes = (duration * factor).toInt()
+            durationMinutes = (result.first * factor).toInt()
+            routePoints = result.second
         }
     }
 
@@ -180,22 +182,7 @@ fun AnnounceTransportScreen(navController: NavController) {
         if (startLatLng != null && endLatLng != null) {
             Spacer(modifier = Modifier.height(8.dp))
             Button(onClick = {
-                coroutineScope.launch {
-                    val start = startLatLng!!
-                    val end = endLatLng!!
-                    val type = selectedVehicleType ?: VehicleType.CAR
-                    val result = MapsUtils.fetchDurationAndPath(start, end, apiKey, type)
-                    val factor = when (selectedVehicleType) {
-                        VehicleType.BICYCLE -> 1.5
-                        VehicleType.MOTORBIKE -> 0.8
-                        VehicleType.BIGBUS -> 1.2
-                        VehicleType.SMALLBUS -> 1.1
-                        else -> 1.0
-                    }
-                    durationMinutes = (result.first * factor).toInt()
-                    routePoints = result.second
-                    showRoute = true
-                }
+                showRoute = true
             }) {
                 Text(stringResource(R.string.directions))
             }
