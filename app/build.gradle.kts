@@ -1,7 +1,7 @@
 plugins {
-    id("kotlin-kapt")
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("kotlin-kapt")
     id("com.google.gms.google-services")
 }
 
@@ -16,9 +16,9 @@ android {
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        //resourceConfigurations.add("en")
     }
 
+    // ✅ replaces deprecated `resourceConfigurations`
     androidResources {
         localeFilters.add("en")
     }
@@ -31,9 +31,19 @@ android {
         kotlinCompilerExtensionVersion = "1.5.14"
     }
 
-    kotlinOptions {
-        jvmTarget = "11"
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
+
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+}
+
+// ✅ Ensures Java 11 used consistently with Kotlin
+kotlin {
+    jvmToolchain(11)
 }
 
 dependencies {
@@ -52,10 +62,11 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.7.1")
     implementation("androidx.compose.material:material-icons-extended:1.6.4")
 
-    // Firebase
+    // Firebase (make sure your `libs.versions.toml` defines these)
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.firebase.auth.ktx)
 
+    // Room (with kapt)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     kapt(libs.androidx.room.compiler)
@@ -65,7 +76,7 @@ dependencies {
     implementation("com.google.maps.android:maps-compose:6.6.0")
     implementation("com.google.android.gms:play-services-location:21.3.0")
 
-    // Networking for Directions API
+    // HTTP Networking
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
     // Testing
@@ -73,5 +84,3 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 }
-
-apply(plugin = "com.google.gms.google-services")
