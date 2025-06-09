@@ -178,18 +178,23 @@ fun AnnounceTransportScreen(navController: NavController) {
                 val end = "${'$'}{endLatLng!!.latitude},${'$'}{endLatLng!!.longitude}"
                 Spacer(modifier = Modifier.height(8.dp))
                 AndroidView(
-                    factory = { context ->
-                        WebView(context).apply {
+                    factory = { ctx ->
+                        WebView(ctx).apply {
                             webViewClient = WebViewClient()
                             settings.javaScriptEnabled = true
-                            loadUrl("https://www.google.com/maps/dir/${'$'}start/${'$'}end")
+                            loadUrl(
+                                "https://www.google.com/maps/embed/v1/directions?key=${apiKey}&origin=${'$'}start&destination=${'$'}end"
+                            )
                         }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(250.dp)
                 )
+
             }
+        } else {
+            Text(text = stringResource(R.string.map_api_key_missing))
         }
 
         Spacer(modifier = Modifier.height(8.dp))
