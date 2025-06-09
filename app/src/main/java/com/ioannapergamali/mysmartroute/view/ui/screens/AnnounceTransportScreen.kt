@@ -79,8 +79,12 @@ fun AnnounceTransportScreen(navController: NavController) {
     var durationMinutes by remember { mutableStateOf(0) }
     var dateInput by remember { mutableStateOf("") }
 
+    // Αρχικοποίηση του χάρτη στο Ηράκλειο με ζουμ όπως στο ζητούμενο URL
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(LatLng(37.9838, 23.7275), 9f)
+        position = CameraPosition.fromLatLngZoom(
+            LatLng(35.3325932, 25.073835),
+            13.79f
+        )
     }
 
     val apiKey = context.getString(R.string.google_maps_key)
