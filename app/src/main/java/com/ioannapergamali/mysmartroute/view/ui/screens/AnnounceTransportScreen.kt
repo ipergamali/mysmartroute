@@ -121,8 +121,8 @@ fun AnnounceTransportScreen(navController: NavController) {
                 VehicleType.SMALLBUS -> 1.1
                 else -> 1.0
             }
-            durationMinutes = (result.durationMinutes * factor).toInt()
-            routePoints = result.points
+            durationMinutes = (result.first * factor).toInt()
+            routePoints = result.second
         }
     }
 
@@ -215,15 +215,14 @@ fun AnnounceTransportScreen(navController: NavController) {
                             VehicleType.SMALLBUS -> 1.1
                             else -> 1.0
                         }
-                        durationMinutes = (result.durationMinutes * factor).toInt()
-                        routePoints = result.points
+                        durationMinutes = (result.first * factor).toInt()
+                        routePoints = result.second
                         if (routePoints.isNotEmpty()) {
                             Log.d(TAG, "Route received with ${routePoints.size} points, duration $durationMinutes")
                             Toast.makeText(context, "Διαδρομή βρέθηκε", Toast.LENGTH_SHORT).show()
                         } else {
-                            Log.w(TAG, "Route not found: ${result.errorMessage}")
-                            val msg = result.errorMessage ?: "Δεν βρέθηκε διαδρομή"
-                            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                            Log.w(TAG, "Route not found or API error")
+                            Toast.makeText(context, "Δεν βρέθηκε διαδρομή", Toast.LENGTH_SHORT).show()
                         }
                     }
                     showRoute = true
