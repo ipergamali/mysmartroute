@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -28,8 +30,10 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
 import com.google.maps.android.compose.Polyline
+import com.google.maps.android.compose.MapProperties
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
 import android.location.Address
 import android.location.Geocoder
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -46,6 +50,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 private enum class MapSelectionMode { FROM, TO }
+
+private const val TAG = "AnnounceTransport"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -87,6 +93,15 @@ fun AnnounceTransportScreen(navController: NavController) {
         )
     }
 
+    val heraklionBounds = remember {
+        LatLngBounds(
+            LatLng(34.9, 24.8), // Southwest corner
+            LatLng(35.5, 25.9)  // Northeast corner
+        )
+    }
+
+    val mapProperties = remember { MapProperties(latLngBoundsForCameraTarget = heraklionBounds) }
+
     val apiKey = context.getString(R.string.google_maps_key)
     val isKeyMissing = apiKey.isBlank() || apiKey == "YOUR_API_KEY"
 
@@ -106,8 +121,8 @@ fun AnnounceTransportScreen(navController: NavController) {
                 VehicleType.SMALLBUS -> 1.1
                 else -> 1.0
             }
-            durationMinutes = (result.first * factor).toInt()
-            routePoints = result.second
+            durationMinutes = (result.durationMinutes * factor).toInt()
+            routePoints = result.points
         }
     }
 
@@ -139,6 +154,7 @@ fun AnnounceTransportScreen(navController: NavController) {
             GoogleMap(
                 modifier = Modifier.weight(1f),
                 cameraPositionState = cameraPositionState,
+                properties = mapProperties,
                 onMapClick = { latLng ->
                     when (mapSelectionMode) {
                         MapSelectionMode.FROM -> {
@@ -187,6 +203,8 @@ fun AnnounceTransportScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(8.dp))
             Button(onClick = {
                 coroutineScope.launch {
+                    Log.d(TAG, "Fetching directions from $startLatLng to $endLatLng")
+                    Toast.makeText(context, "Αναζήτηση διαδρομής...", Toast.LENGTH_SHORT).show()
                     if (!isKeyMissing && startLatLng != null && endLatLng != null) {
                         val type = selectedVehicleType ?: VehicleType.CAR
                         val result = MapsUtils.fetchDurationAndPath(startLatLng!!, endLatLng!!, apiKey, type)
@@ -197,10 +215,19 @@ fun AnnounceTransportScreen(navController: NavController) {
                             VehicleType.SMALLBUS -> 1.1
                             else -> 1.0
                         }
-                        durationMinutes = (result.first * factor).toInt()
-                        routePoints = result.second
+                        durationMinutes = (result.durationMinutes * factor).toInt()
+                        routePoints = result.points
+                        if (routePoints.isNotEmpty()) {
+                            Log.d(TAG, "Route received with ${routePoints.size} points, duration $durationMinutes")
+                            Toast.makeText(context, "Διαδρομή βρέθηκε", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Log.w(TAG, "Route not found: ${result.errorMessage}")
+                            val msg = result.errorMessage ?: "Δεν βρέθηκε διαδρομή"
+                            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                        }
                     }
                     showRoute = true
+                    Log.d(TAG, "Displaying route on map")
                 }
             }) {
                 Text(stringResource(R.string.directions))
