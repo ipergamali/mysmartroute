@@ -1,16 +1,12 @@
 plugins {
     id("kotlin-kapt")
     id("com.android.application")
-    id("com.google.gms.google-services")
     id("org.jetbrains.kotlin.android")
+    id("com.google.gms.google-services")
 }
-
-
 
 android {
     namespace = "com.ioannapergamali.mysmartroute"
-    // Χρησιμοποιούμε την πιο πρόσφατη σταθερή έκδοση του Android SDK
-    // Το core-ktx 1.16 απαιτεί compileSdk >= 35
     compileSdk = 35
 
     defaultConfig {
@@ -19,21 +15,22 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        // Χρησιμοποιούμε μόνο τους πόρους της Αγγλικής γλώσσας για να
-        // αποφύγουμε προβλήματα με εσφαλμένες μεταφράσεις τρίτων βιβλιοθηκών
         //resourceConfigurations.add("en")
     }
-    // ✅ Νέο API για επιλογή locale
+
     androidResources {
         localeFilters.add("en")
     }
+
     buildFeatures {
         compose = true
     }
 
     composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.14"
+    }
+
     kotlinOptions {
         jvmTarget = "11"
     }
@@ -50,11 +47,9 @@ dependencies {
     implementation("androidx.compose.material3:material3:1.2.1")
     implementation("androidx.compose.ui:ui:1.6.4")
     implementation("androidx.compose.ui:ui-text:1.6.4")
-
     implementation("androidx.compose.ui:ui-tooling-preview:1.6.4")
     implementation("androidx.compose.runtime:runtime-livedata:1.6.4")
     implementation("androidx.navigation:navigation-compose:2.7.1")
-    // Provides additional Material icons such as `Logout`
     implementation("androidx.compose.material:material-icons-extended:1.6.4")
 
     // Firebase
@@ -78,4 +73,5 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 }
-apply(plugin = "com.google.gms.google-services")}
+
+apply(plugin = "com.google.gms.google-services")
