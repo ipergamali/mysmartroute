@@ -115,7 +115,7 @@ fun AnnounceTransportScreen(navController: NavController) {
             if (NetworkUtils.isInternetAvailable(context)) {
                 showRoute = false
                 val type = selectedVehicleType ?: VehicleType.CAR
-                val result = MapsUtils.fetchDurationAndPath(startLatLng!!, endLatLng!!, apiKey, type)
+                val (duration, points) = MapsUtils.fetchDurationAndPath(startLatLng!!, endLatLng!!, apiKey, type)
                 val factor = when (selectedVehicleType) {
                     VehicleType.BICYCLE -> 1.5
                     VehicleType.MOTORBIKE -> 0.8
@@ -123,8 +123,8 @@ fun AnnounceTransportScreen(navController: NavController) {
                     VehicleType.SMALLBUS -> 1.1
                     else -> 1.0
                 }
-                durationMinutes = (result.first * factor).toInt()
-                routePoints = result.second
+                durationMinutes = (duration * factor).toInt()
+                routePoints = points
             } else {
                 Toast.makeText(context, context.getString(R.string.no_internet), Toast.LENGTH_SHORT).show()
             }
@@ -213,7 +213,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                     if (!isKeyMissing && startLatLng != null && endLatLng != null) {
                         if (NetworkUtils.isInternetAvailable(context)) {
                             val type = selectedVehicleType ?: VehicleType.CAR
-                            val result = MapsUtils.fetchDurationAndPath(startLatLng!!, endLatLng!!, apiKey, type)
+                            val (duration, points) = MapsUtils.fetchDurationAndPath(startLatLng!!, endLatLng!!, apiKey, type)
                             val factor = when (selectedVehicleType) {
                                 VehicleType.BICYCLE -> 1.5
                                 VehicleType.MOTORBIKE -> 0.8
@@ -221,8 +221,8 @@ fun AnnounceTransportScreen(navController: NavController) {
                                 VehicleType.SMALLBUS -> 1.1
                                 else -> 1.0
                             }
-                            durationMinutes = (result.first * factor).toInt()
-                            routePoints = result.second
+                            durationMinutes = (duration * factor).toInt()
+                            routePoints = points
                             if (routePoints.isNotEmpty()) {
                                 Log.d(TAG, "Route received with ${routePoints.size} points, duration $durationMinutes")
                                 Toast.makeText(context, "Διαδρομή βρέθηκε", Toast.LENGTH_SHORT).show()
