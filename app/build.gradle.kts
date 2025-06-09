@@ -11,12 +11,12 @@ android {
     namespace = "com.ioannapergamali.mysmartroute"
     // Χρησιμοποιούμε την πιο πρόσφατη σταθερή έκδοση του Android SDK
     // Το core-ktx 1.16 απαιτεί compileSdk >= 35
-    compileSdk = 35
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.ioannapergamali.mysmartroute"
         minSdk = 33
-        targetSdk = 35
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
