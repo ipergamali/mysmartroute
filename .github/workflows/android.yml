@@ -25,7 +25,7 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v2
         with:
-          api-level: 33
+          api-level: 36
           ndk: false
 
       # 4) Τρέξε το Gradle build + tests
