@@ -11,6 +11,13 @@ import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 object MapsUtils {
     private val client = OkHttpClient()
 
+    /** Result from a Directions API request */
+    data class DirectionsData(
+        val duration: Int,
+        val points: List<LatLng>,
+        val status: String
+    )
+
     private fun decodePolyline(encoded: String): List<LatLng> {
         val poly = mutableListOf<LatLng>()
         var index = 0
@@ -73,16 +80,20 @@ object MapsUtils {
         return durationSec / 60
     }
 
-    private fun parseDurationAndPolyline(json: String): Pair<Int, List<LatLng>> {
+    private fun parseDirections(json: String): DirectionsData {
         val jsonObj = JSONObject(json)
+        val status = jsonObj.optString("status")
+        if (status != "OK") return DirectionsData(0, emptyList(), status)
         val routes = jsonObj.getJSONArray("routes")
-        if (routes.length() == 0) return 0 to emptyList()
+        if (routes.length() == 0) return DirectionsData(0, emptyList(), status)
         val route = routes.getJSONObject(0)
         val legs = route.getJSONArray("legs")
-        if (legs.length() == 0) return 0 to emptyList()
-        val durationSec = legs.getJSONObject(0).getJSONObject("duration").getInt("value")
+        if (legs.length() == 0) return DirectionsData(0, emptyList(), status)
+        val durationSec = legs.getJSONObject(0)
+            .getJSONObject("duration")
+            .getInt("value")
         val encoded = route.getJSONObject("overview_polyline").getString("points")
-        return durationSec / 60 to decodePolyline(encoded)
+        return DirectionsData(durationSec / 60, decodePolyline(encoded), status)
     }
 
     suspend fun fetchDuration(
@@ -104,12 +115,12 @@ object MapsUtils {
         destination: LatLng,
         apiKey: String,
         vehicleType: VehicleType
-    ): Pair<Int, List<LatLng>> = withContext(Dispatchers.IO) {
+    ): DirectionsData = withContext(Dispatchers.IO) {
         val request = Request.Builder().url(buildDirectionsUrl(origin, destination, apiKey, vehicleType)).build()
         client.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) return@withContext (0 to emptyList())
-            val body = response.body?.string() ?: return@withContext (0 to emptyList())
-            return@withContext parseDurationAndPolyline(body)
+            val body = response.body?.string() ?: return@withContext DirectionsData(0, emptyList(), "NO_RESPONSE")
+            if (!response.isSuccessful) return@withContext DirectionsData(0, emptyList(), "HTTP_${'$'}{response.code}")
+            return@withContext parseDirections(body)
         }
     }
 }

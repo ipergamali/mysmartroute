@@ -119,7 +119,7 @@ fun AnnounceTransportScreen(navController: NavController) {
             if (NetworkUtils.isInternetAvailable(context)) {
                 showRoute = false
                 val type = selectedVehicleType ?: VehicleType.CAR
-                val (duration, points) = MapsUtils.fetchDurationAndPath(startLatLng!!, endLatLng!!, apiKey, type)
+                val result = MapsUtils.fetchDurationAndPath(startLatLng!!, endLatLng!!, apiKey, type)
                 val factor = when (selectedVehicleType) {
                     VehicleType.BICYCLE -> 1.5
                     VehicleType.MOTORBIKE -> 0.8
@@ -127,8 +127,11 @@ fun AnnounceTransportScreen(navController: NavController) {
                     VehicleType.SMALLBUS -> 1.1
                     else -> 1.0
                 }
-                durationMinutes = (duration * factor).toInt()
-                routePoints = points
+                durationMinutes = (result.duration * factor).toInt()
+                routePoints = result.points
+                if (result.status == "NOT_FOUND" || result.status == "INVALID_REQUEST") {
+                    Toast.makeText(context, context.getString(R.string.invalid_coordinates), Toast.LENGTH_SHORT).show()
+                }
             } else {
                 Toast.makeText(context, context.getString(R.string.no_internet), Toast.LENGTH_SHORT).show()
             }
@@ -222,7 +225,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                     ) {
                         if (NetworkUtils.isInternetAvailable(context)) {
                             val type = selectedVehicleType ?: VehicleType.CAR
-                            val (duration, points) = MapsUtils.fetchDurationAndPath(startLatLng!!, endLatLng!!, apiKey, type)
+                            val result = MapsUtils.fetchDurationAndPath(startLatLng!!, endLatLng!!, apiKey, type)
                             val factor = when (selectedVehicleType) {
                                 VehicleType.BICYCLE -> 1.5
                                 VehicleType.MOTORBIKE -> 0.8
@@ -230,14 +233,21 @@ fun AnnounceTransportScreen(navController: NavController) {
                                 VehicleType.SMALLBUS -> 1.1
                                 else -> 1.0
                             }
-                            durationMinutes = (duration * factor).toInt()
-                            routePoints = points
-                            if (routePoints.isNotEmpty()) {
-                                Log.d(TAG, "Route received with ${routePoints.size} points, duration $durationMinutes")
-                                Toast.makeText(context, "Διαδρομή βρέθηκε", Toast.LENGTH_SHORT).show()
-                            } else {
-                                Log.w(TAG, "Route not found or API error")
-                                Toast.makeText(context, "Δεν βρέθηκε διαδρομή", Toast.LENGTH_SHORT).show()
+                            durationMinutes = (result.duration * factor).toInt()
+                            routePoints = result.points
+                            when {
+                                result.status == "OK" && routePoints.isNotEmpty() -> {
+                                    Log.d(TAG, "Route received with ${routePoints.size} points, duration $durationMinutes")
+                                    Toast.makeText(context, "Διαδρομή βρέθηκε", Toast.LENGTH_SHORT).show()
+                                }
+                                result.status == "NOT_FOUND" || result.status == "INVALID_REQUEST" -> {
+                                    Log.w(TAG, "Invalid coordinates provided")
+                                    Toast.makeText(context, context.getString(R.string.invalid_coordinates), Toast.LENGTH_SHORT).show()
+                                }
+                                else -> {
+                                    Log.w(TAG, "Route not found or API error: ${result.status}")
+                                    Toast.makeText(context, "Δεν βρέθηκε διαδρομή", Toast.LENGTH_SHORT).show()
+                                }
                             }
                         } else {
                             Toast.makeText(context, context.getString(R.string.no_internet), Toast.LENGTH_SHORT).show()
@@ -265,13 +275,15 @@ fun AnnounceTransportScreen(navController: NavController) {
                         IconButton(onClick = {
                             coroutineScope.launch {
                                 val addr = withContext(Dispatchers.IO) {
-                                    Geocoder(context).getFromLocationName(fromQuery, 1)?.firstOrNull()
+                                    try { Geocoder(context).getFromLocationName(fromQuery, 1)?.firstOrNull() } catch (e: Exception) { null }
                                 }
-                                addr?.let {
-                                    startLatLng = LatLng(it.latitude, it.longitude)
+                                if (addr != null) {
+                                    startLatLng = LatLng(addr.latitude, addr.longitude)
                                     showRoute = false
-                                    fromQuery = it.getAddressLine(0) ?: fromQuery
+                                    fromQuery = addr.getAddressLine(0) ?: fromQuery
                                     cameraPositionState.position = CameraPosition.fromLatLngZoom(startLatLng!!, 10f)
+                                } else {
+                                    Toast.makeText(context, context.getString(R.string.invalid_coordinates), Toast.LENGTH_SHORT).show()
                                 }
                             }
                         }) {
@@ -313,13 +325,15 @@ fun AnnounceTransportScreen(navController: NavController) {
                         IconButton(onClick = {
                             coroutineScope.launch {
                                 val addr = withContext(Dispatchers.IO) {
-                                    Geocoder(context).getFromLocationName(toQuery, 1)?.firstOrNull()
+                                    try { Geocoder(context).getFromLocationName(toQuery, 1)?.firstOrNull() } catch (e: Exception) { null }
                                 }
-                                addr?.let {
-                                    endLatLng = LatLng(it.latitude, it.longitude)
+                                if (addr != null) {
+                                    endLatLng = LatLng(addr.latitude, addr.longitude)
                                     showRoute = false
-                                    toQuery = it.getAddressLine(0) ?: toQuery
+                                    toQuery = addr.getAddressLine(0) ?: toQuery
                                     cameraPositionState.position = CameraPosition.fromLatLngZoom(endLatLng!!, 10f)
+                                } else {
+                                    Toast.makeText(context, context.getString(R.string.invalid_coordinates), Toast.LENGTH_SHORT).show()
                                 }
                             }
                         }) {
