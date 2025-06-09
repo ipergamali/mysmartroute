@@ -23,8 +23,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Place
-import android.content.Intent
-import android.net.Uri
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
@@ -63,6 +61,7 @@ fun AnnounceTransportScreen(navController: NavController) {
 
     var mapSelectionMode by remember { mutableStateOf<MapSelectionMode?>(null) }
     var routePoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
+    var showRoute by remember { mutableStateOf(false) }
 
     var fromQuery by remember { mutableStateOf("") }
     var fromExpanded by remember { mutableStateOf(false) }
@@ -93,6 +92,7 @@ fun AnnounceTransportScreen(navController: NavController) {
 
     LaunchedEffect(startLatLng, endLatLng, selectedVehicleType) {
         if (!isKeyMissing && startLatLng != null && endLatLng != null) {
+            showRoute = false
             val type = selectedVehicleType ?: VehicleType.CAR
             val result = MapsUtils.fetchDurationAndPath(startLatLng!!, endLatLng!!, apiKey, type)
             val factor = when (selectedVehicleType) {
@@ -167,7 +167,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                 endLatLng?.let {
                     Marker(state = rememberMarkerState(position = it), title = "To")
                 }
-                if (routePoints.isNotEmpty()) {
+                if (showRoute && routePoints.isNotEmpty()) {
                     Polyline(points = routePoints)
                 }
             }
@@ -180,9 +180,7 @@ fun AnnounceTransportScreen(navController: NavController) {
         if (startLatLng != null && endLatLng != null) {
             Spacer(modifier = Modifier.height(8.dp))
             Button(onClick = {
-                val start = "${startLatLng!!.latitude},${startLatLng!!.longitude}"
-                val end = "${endLatLng!!.latitude},${endLatLng!!.longitude}"
-                navController.navigate("directionsMap/$start/$end")
+                showRoute = true
             }) {
                 Text(stringResource(R.string.directions))
             }
