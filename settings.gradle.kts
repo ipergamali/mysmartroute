@@ -22,7 +22,5 @@ dependencyResolutionManagement {
     }
 }
 
-
 rootProject.name = "mysmartroute"
 include(":app")
- 

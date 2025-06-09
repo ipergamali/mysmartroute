@@ -3,6 +3,6 @@
     <string name="google_maps_key">AIzaSyAjrLzdIcwjsQideLOI_Ly3oThdYVNr-5U</string>
     <!-- Displayed when no Google Maps API key is provided -->
     <!-- Avoid HTML character references that can trigger resource compilation issues -->
-    <string name="map_api_key_missing">Google Maps API key is missing. Please set 'google_maps_key' in res/values/strings.xml</string>
+    <string name="map_api_key_missing">Google Maps API key is missing. Please set \'google_maps_key' in res/values/strings.xml</string>
     <string name="open_in_maps">Άνοιγμα στο Google Maps</string>
 </resources>
