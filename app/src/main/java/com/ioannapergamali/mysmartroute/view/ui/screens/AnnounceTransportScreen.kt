@@ -42,6 +42,7 @@ import com.ioannapergamali.mysmartroute.model.classes.routes.Route
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
+import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.TransportAnnouncementViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleViewModel
@@ -111,18 +112,22 @@ fun AnnounceTransportScreen(navController: NavController) {
 
     LaunchedEffect(startLatLng, endLatLng, selectedVehicleType) {
         if (!isKeyMissing && startLatLng != null && endLatLng != null) {
-            showRoute = false
-            val type = selectedVehicleType ?: VehicleType.CAR
-            val result = MapsUtils.fetchDurationAndPath(startLatLng!!, endLatLng!!, apiKey, type)
-            val factor = when (selectedVehicleType) {
-                VehicleType.BICYCLE -> 1.5
-                VehicleType.MOTORBIKE -> 0.8
-                VehicleType.BIGBUS -> 1.2
-                VehicleType.SMALLBUS -> 1.1
-                else -> 1.0
+            if (NetworkUtils.isInternetAvailable(context)) {
+                showRoute = false
+                val type = selectedVehicleType ?: VehicleType.CAR
+                val result = MapsUtils.fetchDurationAndPath(startLatLng!!, endLatLng!!, apiKey, type)
+                val factor = when (selectedVehicleType) {
+                    VehicleType.BICYCLE -> 1.5
+                    VehicleType.MOTORBIKE -> 0.8
+                    VehicleType.BIGBUS -> 1.2
+                    VehicleType.SMALLBUS -> 1.1
+                    else -> 1.0
+                }
+                durationMinutes = (result.first * factor).toInt()
+                routePoints = result.second
+            } else {
+                Toast.makeText(context, context.getString(R.string.no_internet), Toast.LENGTH_SHORT).show()
             }
-            durationMinutes = (result.first * factor).toInt()
-            routePoints = result.second
         }
     }
 
@@ -206,23 +211,27 @@ fun AnnounceTransportScreen(navController: NavController) {
                     Log.d(TAG, "Fetching directions from $startLatLng to $endLatLng")
                     Toast.makeText(context, "Αναζήτηση διαδρομής...", Toast.LENGTH_SHORT).show()
                     if (!isKeyMissing && startLatLng != null && endLatLng != null) {
-                        val type = selectedVehicleType ?: VehicleType.CAR
-                        val result = MapsUtils.fetchDurationAndPath(startLatLng!!, endLatLng!!, apiKey, type)
-                        val factor = when (selectedVehicleType) {
-                            VehicleType.BICYCLE -> 1.5
-                            VehicleType.MOTORBIKE -> 0.8
-                            VehicleType.BIGBUS -> 1.2
-                            VehicleType.SMALLBUS -> 1.1
-                            else -> 1.0
-                        }
-                        durationMinutes = (result.first * factor).toInt()
-                        routePoints = result.second
-                        if (routePoints.isNotEmpty()) {
-                            Log.d(TAG, "Route received with ${routePoints.size} points, duration $durationMinutes")
-                            Toast.makeText(context, "Διαδρομή βρέθηκε", Toast.LENGTH_SHORT).show()
+                        if (NetworkUtils.isInternetAvailable(context)) {
+                            val type = selectedVehicleType ?: VehicleType.CAR
+                            val result = MapsUtils.fetchDurationAndPath(startLatLng!!, endLatLng!!, apiKey, type)
+                            val factor = when (selectedVehicleType) {
+                                VehicleType.BICYCLE -> 1.5
+                                VehicleType.MOTORBIKE -> 0.8
+                                VehicleType.BIGBUS -> 1.2
+                                VehicleType.SMALLBUS -> 1.1
+                                else -> 1.0
+                            }
+                            durationMinutes = (result.first * factor).toInt()
+                            routePoints = result.second
+                            if (routePoints.isNotEmpty()) {
+                                Log.d(TAG, "Route received with ${routePoints.size} points, duration $durationMinutes")
+                                Toast.makeText(context, "Διαδρομή βρέθηκε", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Log.w(TAG, "Route not found or API error")
+                                Toast.makeText(context, "Δεν βρέθηκε διαδρομή", Toast.LENGTH_SHORT).show()
+                            }
                         } else {
-                            Log.w(TAG, "Route not found or API error")
-                            Toast.makeText(context, "Δεν βρέθηκε διαδρομή", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, context.getString(R.string.no_internet), Toast.LENGTH_SHORT).show()
                         }
                     }
                     showRoute = true
