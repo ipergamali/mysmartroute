@@ -30,6 +30,8 @@ import com.google.maps.android.compose.rememberMarkerState
 import com.google.maps.android.compose.Polyline
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.model.LatLngBounds
 import android.location.Address
 import android.location.Geocoder
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -88,23 +90,6 @@ fun AnnounceTransportScreen(navController: NavController) {
 
     LaunchedEffect(Unit) {
         vehicleViewModel.loadRegisteredVehicles(context)
-    }
-
-    LaunchedEffect(startLatLng, endLatLng, selectedVehicleType) {
-        if (!isKeyMissing && startLatLng != null && endLatLng != null) {
-            showRoute = false
-            val type = selectedVehicleType ?: VehicleType.CAR
-            val result = MapsUtils.fetchDurationAndPath(startLatLng!!, endLatLng!!, apiKey, type)
-            val factor = when (selectedVehicleType) {
-                VehicleType.BICYCLE -> 1.5
-                VehicleType.MOTORBIKE -> 0.8
-                VehicleType.BIGBUS -> 1.2
-                VehicleType.SMALLBUS -> 1.1
-                else -> 1.0
-            }
-            durationMinutes = (result.first * factor).toInt()
-            routePoints = result.second
-        }
     }
 
     LaunchedEffect(fromQuery) {
@@ -351,6 +336,15 @@ fun AnnounceTransportScreen(navController: NavController) {
         if (state is TransportAnnouncementViewModel.AnnouncementState.Error) {
             Spacer(modifier = Modifier.height(8.dp))
             Text(text = (state as TransportAnnouncementViewModel.AnnouncementState.Error).message)
+        }
+    }
+
+    LaunchedEffect(showRoute, routePoints) {
+        if (showRoute && routePoints.isNotEmpty()) {
+            val builder = LatLngBounds.Builder()
+            routePoints.forEach { builder.include(it) }
+            val bounds = builder.build()
+            cameraPositionState.animate(CameraUpdateFactory.newLatLngBounds(bounds, 100))
         }
     }
 
