@@ -55,6 +55,8 @@ object MapsUtils {
     private fun vehicleToMode(vehicleType: VehicleType): String = when (vehicleType) {
         VehicleType.BICYCLE -> "bicycling"
         VehicleType.BIGBUS, VehicleType.SMALLBUS -> "transit"
+        VehicleType.MOTORBIKE -> "two_wheeler"
+        VehicleType.WALKING -> "walking"
         else -> "driving"
     }
 
