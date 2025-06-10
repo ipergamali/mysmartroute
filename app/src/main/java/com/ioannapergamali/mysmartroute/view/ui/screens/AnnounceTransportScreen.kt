@@ -120,7 +120,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                 showRoute = false
                 val type = selectedVehicleType ?: VehicleType.CAR
                 val result = MapsUtils.fetchDurationAndPath(startLatLng!!, endLatLng!!, apiKey, type)
-                Log.d(TAG, "Directions API status: ${'$'}{result.status}")
+                Log.d(TAG, "Directions API status: ${result.status}")
                 val factor = when (selectedVehicleType) {
                     VehicleType.BICYCLE -> 1.5
                     VehicleType.MOTORBIKE -> 0.8
@@ -227,7 +227,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                         if (NetworkUtils.isInternetAvailable(context)) {
                             val type = selectedVehicleType ?: VehicleType.CAR
                             val result = MapsUtils.fetchDurationAndPath(startLatLng!!, endLatLng!!, apiKey, type)
-                            Log.d(TAG, "Directions API status: ${'$'}{result.status}")
+                            Log.d(TAG, "Directions API status: ${result.status}")
                             val factor = when (selectedVehicleType) {
                                 VehicleType.BICYCLE -> 1.5
                                 VehicleType.MOTORBIKE -> 0.8
