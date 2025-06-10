@@ -47,6 +47,7 @@ import com.ioannapergamali.mysmartroute.utils.CoordinateUtils
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.TransportAnnouncementViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -60,6 +61,7 @@ private const val TAG = "AnnounceTransport"
 fun AnnounceTransportScreen(navController: NavController) {
     val viewModel: TransportAnnouncementViewModel = viewModel()
     val vehicleViewModel: VehicleViewModel = viewModel()
+    val poiViewModel: PoIViewModel = viewModel()
     val state by viewModel.state.collectAsState()
     val vehicles by vehicleViewModel.vehicles.collectAsState()
 
@@ -109,6 +111,7 @@ fun AnnounceTransportScreen(navController: NavController) {
 
     LaunchedEffect(Unit) {
         vehicleViewModel.loadRegisteredVehicles(context)
+        poiViewModel.loadPois(context)
     }
 
     LaunchedEffect(startLatLng, endLatLng, selectedVehicleType) {
@@ -180,6 +183,14 @@ fun AnnounceTransportScreen(navController: NavController) {
                                     Geocoder(context).getFromLocation(latLng.latitude, latLng.longitude, 1)?.firstOrNull()
                                 }
                                 fromQuery = addr?.getAddressLine(0) ?: "${latLng.latitude},${latLng.longitude}"
+                                poiViewModel.addPoi(
+                                    context,
+                                    fromQuery,
+                                    fromQuery,
+                                    "HISTORICAL",
+                                    latLng.latitude,
+                                    latLng.longitude
+                                )
                             }
                             mapSelectionMode = null
                         }
@@ -191,6 +202,14 @@ fun AnnounceTransportScreen(navController: NavController) {
                                     Geocoder(context).getFromLocation(latLng.latitude, latLng.longitude, 1)?.firstOrNull()
                                 }
                                 toQuery = addr?.getAddressLine(0) ?: "${latLng.latitude},${latLng.longitude}"
+                                poiViewModel.addPoi(
+                                    context,
+                                    toQuery,
+                                    toQuery,
+                                    "HISTORICAL",
+                                    latLng.latitude,
+                                    latLng.longitude
+                                )
                             }
                             mapSelectionMode = null
                         }
@@ -306,6 +325,14 @@ fun AnnounceTransportScreen(navController: NavController) {
                                     showRoute = false
                                     fromQuery = addr.getAddressLine(0) ?: fromQuery
                                     cameraPositionState.position = CameraPosition.fromLatLngZoom(startLatLng!!, 10f)
+                                    poiViewModel.addPoi(
+                                        context,
+                                        fromQuery,
+                                        fromQuery,
+                                        "HISTORICAL",
+                                        addr.latitude,
+                                        addr.longitude
+                                    )
                                 } else {
                                     Toast.makeText(context, context.getString(R.string.invalid_coordinates), Toast.LENGTH_SHORT).show()
                                 }
@@ -331,6 +358,14 @@ fun AnnounceTransportScreen(navController: NavController) {
                             showRoute = false
                             cameraPositionState.position = CameraPosition.fromLatLngZoom(startLatLng!!, 10f)
                             fromExpanded = false
+                            poiViewModel.addPoi(
+                                context,
+                                fromQuery,
+                                fromQuery,
+                                "HISTORICAL",
+                                address.latitude,
+                                address.longitude
+                            )
                         }
                     )
                 }
@@ -356,6 +391,14 @@ fun AnnounceTransportScreen(navController: NavController) {
                                     showRoute = false
                                     toQuery = addr.getAddressLine(0) ?: toQuery
                                     cameraPositionState.position = CameraPosition.fromLatLngZoom(endLatLng!!, 10f)
+                                    poiViewModel.addPoi(
+                                        context,
+                                        toQuery,
+                                        toQuery,
+                                        "HISTORICAL",
+                                        addr.latitude,
+                                        addr.longitude
+                                    )
                                 } else {
                                     Toast.makeText(context, context.getString(R.string.invalid_coordinates), Toast.LENGTH_SHORT).show()
                                 }
@@ -381,6 +424,14 @@ fun AnnounceTransportScreen(navController: NavController) {
                             showRoute = false
                             cameraPositionState.position = CameraPosition.fromLatLngZoom(endLatLng!!, 10f)
                             toExpanded = false
+                            poiViewModel.addPoi(
+                                context,
+                                toQuery,
+                                toQuery,
+                                "HISTORICAL",
+                                address.latitude,
+                                address.longitude
+                            )
                         }
                     )
                 }
