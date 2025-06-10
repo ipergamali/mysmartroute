@@ -53,7 +53,7 @@ fun MenuScreen(navController: NavController) {
             when (role) {
                 UserRole.PASSENGER -> PassengerMenu(viewModel, navController)
                 UserRole.DRIVER -> DriverMenu(navController)
-                UserRole.ADMIN -> AdminMenu()
+                UserRole.ADMIN -> AdminMenu(navController)
                 null -> {
                     CircularProgressIndicator()
                 }
@@ -114,7 +114,7 @@ private fun DriverMenu(navController: NavController) {
 }
 
 @Composable
-private fun AdminMenu() {
+private fun AdminMenu(navController: NavController) {
     val actions = listOf(
         "Initialize System",
         "Create User Account",
@@ -130,7 +130,12 @@ private fun AdminMenu() {
         "View Users",
         "Advance Date"
     )
-    MenuTable(actions)
+    MenuTable(actions) { index ->
+        when (index) {
+            10 -> navController.navigate("poiList")
+            else -> {}
+        }
+    }
 }
 
 @Composable

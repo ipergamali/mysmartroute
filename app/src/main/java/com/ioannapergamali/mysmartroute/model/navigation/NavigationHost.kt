@@ -12,6 +12,7 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.MenuScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.RegisterVehicleScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.AnnounceTransportScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.DirectionsMapScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.PoIListScreen
 
 
 
@@ -65,6 +66,10 @@ fun NavigationHost(navController : NavHostController) {
 
         composable("announceTransport") {
             AnnounceTransportScreen(navController = navController)
+        }
+
+        composable("poiList") {
+            PoIListScreen(navController = navController)
         }
 
         composable(
