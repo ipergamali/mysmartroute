@@ -18,4 +18,9 @@ class MainActivity : ComponentActivity()
                 NavigationHost(navController = navController)
         }
     }
+
+    override fun onBackPressed() {
+        finishAfterTransition()
+        super.onBackPressed()
+    }
 }
