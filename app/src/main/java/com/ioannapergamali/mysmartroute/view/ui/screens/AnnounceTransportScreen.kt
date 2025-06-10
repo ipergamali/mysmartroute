@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Add
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
@@ -85,6 +86,8 @@ fun AnnounceTransportScreen(navController: NavController) {
 
     var startLatLng by remember { mutableStateOf<LatLng?>(null) }
     var endLatLng by remember { mutableStateOf<LatLng?>(null) }
+    val fromMarkerState = rememberMarkerState()
+    val toMarkerState = rememberMarkerState()
     var costInput by remember { mutableStateOf("") }
     var durationMinutes by remember { mutableStateOf(0) }
     var dateInput by remember { mutableStateOf("") }
@@ -164,6 +167,13 @@ fun AnnounceTransportScreen(navController: NavController) {
         }
     }
 
+    LaunchedEffect(startLatLng) {
+        startLatLng?.let { fromMarkerState.position = it }
+    }
+    LaunchedEffect(endLatLng) {
+        endLatLng?.let { toMarkerState.position = it }
+    }
+
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         TopBar(title = "Announce Transport", navController = navController)
         Spacer(modifier = Modifier.height(16.dp))
@@ -183,14 +193,6 @@ fun AnnounceTransportScreen(navController: NavController) {
                                     Geocoder(context).getFromLocation(latLng.latitude, latLng.longitude, 1)?.firstOrNull()
                                 }
                                 fromQuery = addr?.getAddressLine(0) ?: "${latLng.latitude},${latLng.longitude}"
-                                poiViewModel.addPoi(
-                                    context,
-                                    fromQuery,
-                                    fromQuery,
-                                    "HISTORICAL",
-                                    latLng.latitude,
-                                    latLng.longitude
-                                )
                             }
                             mapSelectionMode = null
                         }
@@ -202,14 +204,6 @@ fun AnnounceTransportScreen(navController: NavController) {
                                     Geocoder(context).getFromLocation(latLng.latitude, latLng.longitude, 1)?.firstOrNull()
                                 }
                                 toQuery = addr?.getAddressLine(0) ?: "${latLng.latitude},${latLng.longitude}"
-                                poiViewModel.addPoi(
-                                    context,
-                                    toQuery,
-                                    toQuery,
-                                    "HISTORICAL",
-                                    latLng.latitude,
-                                    latLng.longitude
-                                )
                             }
                             mapSelectionMode = null
                         }
@@ -218,10 +212,10 @@ fun AnnounceTransportScreen(navController: NavController) {
                 }
             ) {
                 startLatLng?.let {
-                    Marker(state = rememberMarkerState(position = it), title = "From")
+                    Marker(state = fromMarkerState, title = "From")
                 }
                 endLatLng?.let {
-                    Marker(state = rememberMarkerState(position = it), title = "To")
+                    Marker(state = toMarkerState, title = "To")
                 }
                 if (showRoute && routePoints.isNotEmpty()) {
                     Polyline(points = routePoints)
@@ -325,14 +319,6 @@ fun AnnounceTransportScreen(navController: NavController) {
                                     showRoute = false
                                     fromQuery = addr.getAddressLine(0) ?: fromQuery
                                     cameraPositionState.position = CameraPosition.fromLatLngZoom(startLatLng!!, 10f)
-                                    poiViewModel.addPoi(
-                                        context,
-                                        fromQuery,
-                                        fromQuery,
-                                        "HISTORICAL",
-                                        addr.latitude,
-                                        addr.longitude
-                                    )
                                 } else {
                                     Toast.makeText(context, context.getString(R.string.invalid_coordinates), Toast.LENGTH_SHORT).show()
                                 }
@@ -342,6 +328,21 @@ fun AnnounceTransportScreen(navController: NavController) {
                         }
                         IconButton(onClick = { mapSelectionMode = MapSelectionMode.FROM }) {
                             Icon(Icons.Default.Place, contentDescription = "Pick From on Map")
+                        }
+                        IconButton(onClick = {
+                            startLatLng?.let {
+                                poiViewModel.addPoi(
+                                    context,
+                                    fromQuery,
+                                    fromQuery,
+                                    "HISTORICAL",
+                                    it.latitude,
+                                    it.longitude
+                                )
+                                Toast.makeText(context, "POI αποθηκεύτηκε", Toast.LENGTH_SHORT).show()
+                            }
+                        }) {
+                            Icon(Icons.Default.Add, contentDescription = "Save From POI")
                         }
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = fromExpanded)
                     }
@@ -358,14 +359,6 @@ fun AnnounceTransportScreen(navController: NavController) {
                             showRoute = false
                             cameraPositionState.position = CameraPosition.fromLatLngZoom(startLatLng!!, 10f)
                             fromExpanded = false
-                            poiViewModel.addPoi(
-                                context,
-                                fromQuery,
-                                fromQuery,
-                                "HISTORICAL",
-                                address.latitude,
-                                address.longitude
-                            )
                         }
                     )
                 }
@@ -391,14 +384,6 @@ fun AnnounceTransportScreen(navController: NavController) {
                                     showRoute = false
                                     toQuery = addr.getAddressLine(0) ?: toQuery
                                     cameraPositionState.position = CameraPosition.fromLatLngZoom(endLatLng!!, 10f)
-                                    poiViewModel.addPoi(
-                                        context,
-                                        toQuery,
-                                        toQuery,
-                                        "HISTORICAL",
-                                        addr.latitude,
-                                        addr.longitude
-                                    )
                                 } else {
                                     Toast.makeText(context, context.getString(R.string.invalid_coordinates), Toast.LENGTH_SHORT).show()
                                 }
@@ -408,6 +393,21 @@ fun AnnounceTransportScreen(navController: NavController) {
                         }
                         IconButton(onClick = { mapSelectionMode = MapSelectionMode.TO }) {
                             Icon(Icons.Default.Place, contentDescription = "Pick To on Map")
+                        }
+                        IconButton(onClick = {
+                            endLatLng?.let {
+                                poiViewModel.addPoi(
+                                    context,
+                                    toQuery,
+                                    toQuery,
+                                    "HISTORICAL",
+                                    it.latitude,
+                                    it.longitude
+                                )
+                                Toast.makeText(context, "POI αποθηκεύτηκε", Toast.LENGTH_SHORT).show()
+                            }
+                        }) {
+                            Icon(Icons.Default.Add, contentDescription = "Save To POI")
                         }
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = toExpanded)
                     }
@@ -424,14 +424,6 @@ fun AnnounceTransportScreen(navController: NavController) {
                             showRoute = false
                             cameraPositionState.position = CameraPosition.fromLatLngZoom(endLatLng!!, 10f)
                             toExpanded = false
-                            poiViewModel.addPoi(
-                                context,
-                                toQuery,
-                                toQuery,
-                                "HISTORICAL",
-                                address.latitude,
-                                address.longitude
-                            )
                         }
                     )
                 }
