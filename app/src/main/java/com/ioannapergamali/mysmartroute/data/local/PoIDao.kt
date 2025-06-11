@@ -15,4 +15,10 @@ interface PoIDao {
 
     @Query("SELECT * FROM pois")
     suspend fun getAll(): List<PoIEntity>
+
+    @Query("SELECT * FROM pois WHERE lat = :lat AND lng = :lng LIMIT 1")
+    suspend fun findByLocation(lat: Double, lng: Double): PoIEntity?
+
+    @Query("SELECT * FROM pois WHERE name = :name LIMIT 1")
+    suspend fun findByName(name: String): PoIEntity?
 }
