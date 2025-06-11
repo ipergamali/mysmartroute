@@ -12,8 +12,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
+import androidx.compose.foundation.border
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.material3.MaterialTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,6 +31,13 @@ fun TopBar(
     onLogout: () -> Unit = {}
 ) {
     TopAppBar(
+        modifier = Modifier.border(1.dp, MaterialTheme.colorScheme.primary),
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            navigationIconContentColor = MaterialTheme.colorScheme.primary,
+            actionIconContentColor = MaterialTheme.colorScheme.primary,
+            titleContentColor = MaterialTheme.colorScheme.primary
+        ),
         title = { Text(title) },
         navigationIcon = {
             Row {
@@ -34,7 +46,8 @@ fun TopBar(
                 }) {
                     Icon(
                         if (showMenu) Icons.Filled.Menu else Icons.AutoMirrored.Filled.List,
-                        contentDescription = if (showMenu) "menu" else "list"
+                        contentDescription = if (showMenu) "menu" else "list",
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 }
 
@@ -43,11 +56,11 @@ fun TopBar(
                         popUpTo("home") { inclusive = true }
                     }
                 }) {
-                    Icon(Icons.Filled.Home, contentDescription = "home")
+                    Icon(Icons.Filled.Home, contentDescription = "home", tint = MaterialTheme.colorScheme.primary)
                 }
 
                 IconButton(onClick = { navController.popBackStack() }) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "back")
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "back", tint = MaterialTheme.colorScheme.primary)
                 }
             }
         },
@@ -55,7 +68,7 @@ fun TopBar(
             
             if (showLogout) {
                 IconButton(onClick = onLogout) {
-                    Icon(Icons.Filled.Logout, contentDescription = "logout")
+                    Icon(Icons.Filled.Logout, contentDescription = "logout", tint = MaterialTheme.colorScheme.primary)
                 }
             }
         }

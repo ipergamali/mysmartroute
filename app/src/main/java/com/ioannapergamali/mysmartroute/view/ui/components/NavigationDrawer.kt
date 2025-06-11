@@ -6,6 +6,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
@@ -28,7 +29,7 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
                 navController.navigate("settings")
                 closeDrawer()
             },
-            icon = { Icon(Icons.Filled.Settings, contentDescription = null) }
+            icon = { Icon(Icons.Filled.Settings, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
         )
         NavigationDrawerItem(
             label = { Text("About") },
@@ -37,7 +38,7 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
                 navController.navigate("about")
                 closeDrawer()
             },
-            icon = { Icon(Icons.Filled.Info, contentDescription = null) }
+            icon = { Icon(Icons.Filled.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
         )
         NavigationDrawerItem(
             label = { Text("Support") },
@@ -46,7 +47,7 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
                 navController.navigate("support")
                 closeDrawer()
             },
-            icon = { Icon(Icons.Filled.Email, contentDescription = null) }
+            icon = { Icon(Icons.Filled.Email, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
         )
         val activity = (LocalContext.current as? Activity)
         NavigationDrawerItem(
@@ -55,7 +56,7 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
             onClick = {
                 activity?.finishAffinity()
             },
-            icon = { Icon(Icons.Filled.ExitToApp, contentDescription = null) }
+            icon = { Icon(Icons.Filled.ExitToApp, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
         )
     }
 }
