@@ -94,6 +94,7 @@ fun AnnounceTransportScreen(navController: NavController) {
     var showRoute by remember { mutableStateOf(false) }
 
     var fromQuery by remember { mutableStateOf("") }
+    var selectedFromDescription by remember { mutableStateOf<String?>(null) }
     var fromExpanded by remember { mutableStateOf(false) }
     var fromSuggestions by remember { mutableStateOf<List<Address>>(emptyList()) }
     val fromPoiSuggestions = remember(fromQuery, pois) {
@@ -101,6 +102,7 @@ fun AnnounceTransportScreen(navController: NavController) {
     }
 
     var toQuery by remember { mutableStateOf("") }
+    var selectedToDescription by remember { mutableStateOf<String?>(null) }
     var toExpanded by remember { mutableStateOf(false) }
     var toSuggestions by remember { mutableStateOf<List<Address>>(emptyList()) }
     val toPoiSuggestions = remember(toQuery, pois) {
@@ -215,6 +217,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                             showRoute = false
                             coroutineScope.launch {
                                 fromQuery = reverseGeocode(context, latLng) ?: "${latLng.latitude},${latLng.longitude}"
+                                selectedFromDescription = fromQuery
                             }
                             mapSelectionMode = null
                         }
@@ -223,6 +226,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                             showRoute = false
                             coroutineScope.launch {
                                 toQuery = reverseGeocode(context, latLng) ?: "${latLng.latitude},${latLng.longitude}"
+                                selectedToDescription = toQuery
                             }
                             mapSelectionMode = null
                         }
@@ -324,7 +328,15 @@ fun AnnounceTransportScreen(navController: NavController) {
         ExposedDropdownMenuBox(expanded = fromExpanded, onExpandedChange = { fromExpanded = !fromExpanded }) {
             TextField(
                 value = fromQuery,
-                onValueChange = { fromQuery = it; fromExpanded = true },
+                onValueChange = {
+                    fromQuery = it
+                    fromExpanded = true
+                    if (selectedFromDescription != null && fromQuery != selectedFromDescription) {
+                        startLatLng = null
+                        selectedFromDescription = null
+                        showRoute = false
+                    }
+                },
                 label = { Text("From") },
                 trailingIcon = {
                     Row {
@@ -335,6 +347,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                                     startLatLng = result.first
                                     showRoute = false
                                     fromQuery = result.second
+                                    selectedFromDescription = fromQuery
                                     cameraPositionState.position = CameraPosition.fromLatLngZoom(startLatLng!!, 10f)
                                 } else {
                                     Toast.makeText(context, context.getString(R.string.invalid_coordinates), Toast.LENGTH_SHORT).show()
@@ -372,6 +385,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                         onClick = {
                             fromQuery = address.getAddressLine(0) ?: ""
                             startLatLng = LatLng(address.latitude, address.longitude)
+                            selectedFromDescription = fromQuery
                             showRoute = false
                             cameraPositionState.position = CameraPosition.fromLatLngZoom(startLatLng!!, 10f)
                             fromExpanded = false
@@ -384,6 +398,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                         onClick = {
                             fromQuery = poi.name
                             startLatLng = LatLng(poi.lat, poi.lng)
+                            selectedFromDescription = fromQuery
                             showRoute = false
                             cameraPositionState.position = CameraPosition.fromLatLngZoom(startLatLng!!, 10f)
                             fromExpanded = false
@@ -398,7 +413,15 @@ fun AnnounceTransportScreen(navController: NavController) {
         ExposedDropdownMenuBox(expanded = toExpanded, onExpandedChange = { toExpanded = !toExpanded }) {
             TextField(
                 value = toQuery,
-                onValueChange = { toQuery = it; toExpanded = true },
+                onValueChange = {
+                    toQuery = it
+                    toExpanded = true
+                    if (selectedToDescription != null && toQuery != selectedToDescription) {
+                        endLatLng = null
+                        selectedToDescription = null
+                        showRoute = false
+                    }
+                },
                 label = { Text("To") },
                 trailingIcon = {
                     Row {
@@ -409,6 +432,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                                     endLatLng = result.first
                                     showRoute = false
                                     toQuery = result.second
+                                    selectedToDescription = toQuery
                                     cameraPositionState.position = CameraPosition.fromLatLngZoom(endLatLng!!, 10f)
                                 } else {
                                     Toast.makeText(context, context.getString(R.string.invalid_coordinates), Toast.LENGTH_SHORT).show()
@@ -446,6 +470,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                         onClick = {
                             toQuery = address.getAddressLine(0) ?: ""
                             endLatLng = LatLng(address.latitude, address.longitude)
+                            selectedToDescription = toQuery
                             showRoute = false
                             cameraPositionState.position = CameraPosition.fromLatLngZoom(endLatLng!!, 10f)
                             toExpanded = false
@@ -458,6 +483,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                         onClick = {
                             toQuery = poi.name
                             endLatLng = LatLng(poi.lat, poi.lng)
+                            selectedToDescription = toQuery
                             showRoute = false
                             cameraPositionState.position = CameraPosition.fromLatLngZoom(endLatLng!!, 10f)
                             toExpanded = false
@@ -505,13 +531,17 @@ fun AnnounceTransportScreen(navController: NavController) {
         TextField(value = dateInput, onValueChange = { dateInput = it }, label = { Text("Date") })
         Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = {
-            val cost = costInput.toDoubleOrNull() ?: 0.0
-            val date = dateInput.toIntOrNull() ?: 0
-            val start = startLatLng?.let { "${it.latitude},${it.longitude}" } ?: ""
-            val end = endLatLng?.let { "${it.latitude},${it.longitude}" } ?: ""
-            val route = Route(start, end, cost)
-            val type = selectedVehicleType ?: VehicleType.CAR
-            viewModel.announce(route, type, date, cost, durationMinutes)
+            if (fromQuery.isBlank() || startLatLng == null || toQuery.isBlank() || endLatLng == null) {
+                Toast.makeText(context, context.getString(R.string.invalid_coordinates), Toast.LENGTH_SHORT).show()
+            } else {
+                val cost = costInput.toDoubleOrNull() ?: 0.0
+                val date = dateInput.toIntOrNull() ?: 0
+                val start = "${startLatLng!!.latitude},${startLatLng!!.longitude}"
+                val end = "${endLatLng!!.latitude},${endLatLng!!.longitude}"
+                val route = Route(start, end, cost)
+                val type = selectedVehicleType ?: VehicleType.CAR
+                viewModel.announce(route, type, date, cost, durationMinutes)
+            }
         }) {
             Text("Announce")
         }
