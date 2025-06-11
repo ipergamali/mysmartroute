@@ -16,20 +16,41 @@ enum class AppTheme(val label: String, val seed: Color) {
     Purple("Purple", Color(0xFF8E24AA)),
     Coffee("Coffee", Color(0xFF795548)),
     Cyan("Cyan", Color(0xFF00838F)),
-    Teal("Teal", Color(0xFF00796B));
+    Teal("Teal", Color(0xFF00796B)),
+    Indigo("Indigo", Color(0xFF3F51B5)),
+    LightBlue("Light Blue", Color(0xFF03A9F4)),
+    DeepPurple("Deep Purple", Color(0xFF673AB7)),
+    BlueGrey("Blue Grey", Color(0xFF607D8B)),
+    Lime("Lime", Color(0xFFCDDC39)),
+    Amber("Amber", Color(0xFFFFC107)),
+    DeepOrange("Deep Orange", Color(0xFFFF5722)),
+    Gray("Gray", Color(0xFF9E9E9E));
+
+    private fun isColorDark(color: Color): Boolean {
+        val darkness = 1 - (0.299 * color.red + 0.587 * color.green + 0.114 * color.blue)
+        return darkness >= 0.5
+    }
+
+    private fun onColor(seed: Color): Color = if (isColorDark(seed)) Color.White else Color.Black
 
     val lightColors: ColorScheme
         get() = lightColorScheme(
             primary = seed,
             secondary = seed,
-            tertiary = seed
+            tertiary = seed,
+            onPrimary = onColor(seed),
+            onSecondary = onColor(seed),
+            onTertiary = onColor(seed)
         )
 
     val darkColors: ColorScheme
         get() = darkColorScheme(
             primary = seed,
             secondary = seed,
-            tertiary = seed
+            tertiary = seed,
+            onPrimary = onColor(seed),
+            onSecondary = onColor(seed),
+            onTertiary = onColor(seed)
         )
 }
 
