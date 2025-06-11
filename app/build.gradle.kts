@@ -63,6 +63,9 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.7.1")
     implementation("androidx.compose.material:material-icons-extended:1.6.4")
 
+    // DataStore για αποθήκευση ρυθμίσεων
+    implementation("androidx.datastore:datastore-preferences:1.1.7")
+
     // Firebase
     implementation("com.google.firebase:firebase-auth-ktx:22.3.1")
     implementation("com.google.firebase:firebase-firestore-ktx:24.11.1")

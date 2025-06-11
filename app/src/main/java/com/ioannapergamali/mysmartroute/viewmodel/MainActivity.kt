@@ -3,10 +3,17 @@ package com.ioannapergamali.mysmartroute.viewmodel
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.material3.isSystemInDarkTheme
 import androidx.navigation.compose.rememberNavController
 import com.ioannapergamali.mysmartroute.model.navigation.NavigationHost
+import com.ioannapergamali.mysmartroute.view.ui.MysmartrouteTheme
+import com.ioannapergamali.mysmartroute.view.ui.AppTheme
 import com.ioannapergamali.mysmartroute.view.ui.components.DrawerWrapper
 import com.ioannapergamali.mysmartroute.utils.MiuiUtils
+import com.ioannapergamali.mysmartroute.utils.ThemePreferenceManager
 
 
 
@@ -18,9 +25,13 @@ class MainActivity : ComponentActivity()
         // Προαιρετικός έλεγχος ύπαρξης του MIUI Service Delivery provider
         MiuiUtils.callServiceDelivery(this, "ping")
         setContent {
-            val navController = rememberNavController()
-            DrawerWrapper(navController = navController) { openDrawer ->
-                NavigationHost(navController = navController, openDrawer = openDrawer)
+            val context = LocalContext.current
+            val theme by ThemePreferenceManager.themeFlow(context).collectAsState(initial = AppTheme.Ocean)
+            MysmartrouteTheme(theme = theme, darkTheme = isSystemInDarkTheme()) {
+                val navController = rememberNavController()
+                DrawerWrapper(navController = navController) { openDrawer ->
+                    NavigationHost(navController = navController, openDrawer = openDrawer)
+                }
             }
         }
     }
