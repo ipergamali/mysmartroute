@@ -17,11 +17,17 @@ import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 fun DirectionsMapScreen(
     navController: NavController,
     start: String,
-    end: String
+    end: String,
+    openDrawer: () -> Unit
 ) {
     Scaffold(
         topBar = {
-            TopBar(title = "Directions", navController = navController)
+            TopBar(
+                title = "Directions",
+                navController = navController,
+                showMenu = true,
+                onMenuClick = openDrawer
+            )
         }
     ) { paddingValues ->
         AndroidView(

@@ -77,7 +77,7 @@ private suspend fun geocode(context: Context, query: String): Pair<LatLng, Strin
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AnnounceTransportScreen(navController: NavController) {
+fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit) {
     val viewModel: TransportAnnouncementViewModel = viewModel()
     val vehicleViewModel: VehicleViewModel = viewModel()
     val poiViewModel: PoIViewModel = viewModel()
@@ -178,7 +178,12 @@ fun AnnounceTransportScreen(navController: NavController) {
     }
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        TopBar(title = "Announce Transport", navController = navController)
+        TopBar(
+            title = "Announce Transport",
+            navController = navController,
+            showMenu = true,
+            onMenuClick = openDrawer
+        )
         Spacer(modifier = Modifier.height(16.dp))
 
         if (!isKeyMissing) {

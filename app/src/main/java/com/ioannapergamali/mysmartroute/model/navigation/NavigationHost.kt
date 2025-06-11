@@ -13,11 +13,14 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.RegisterVehicleScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.AnnounceTransportScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.DirectionsMapScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.PoIListScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.SettingsScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.AboutScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.SupportScreen
 
 
 
 @Composable
-fun NavigationHost(navController : NavHostController) {
+fun NavigationHost(navController : NavHostController, openDrawer: () -> Unit) {
 
     NavHost(navController = navController , startDestination = "home") {
 
@@ -29,7 +32,8 @@ fun NavigationHost(navController : NavHostController) {
                 },
                 onNavigateToLogin = {
                     navController.navigate("login")
-                }
+                },
+                openDrawer = openDrawer
             )
         }
 
@@ -40,7 +44,8 @@ fun NavigationHost(navController : NavHostController) {
                     navController.navigate("menu") {
                         popUpTo("login") { inclusive = true }
                     }
-                }
+                },
+                openDrawer = openDrawer
             )
         }
 
@@ -53,23 +58,24 @@ fun NavigationHost(navController : NavHostController) {
                     navController.navigate("menu") {
                         popUpTo("signup") { inclusive = true }
                     }
-                }
+                },
+                openDrawer = openDrawer
             )
         }
         composable("menu") {
-            MenuScreen(navController = navController)
+            MenuScreen(navController = navController, openDrawer = openDrawer)
         }
 
         composable("registerVehicle") {
-            RegisterVehicleScreen(navController = navController)
+            RegisterVehicleScreen(navController = navController, openDrawer = openDrawer)
         }
 
         composable("announceTransport") {
-            AnnounceTransportScreen(navController = navController)
+            AnnounceTransportScreen(navController = navController, openDrawer = openDrawer)
         }
 
         composable("poiList") {
-            PoIListScreen(navController = navController)
+            PoIListScreen(navController = navController, openDrawer = openDrawer)
         }
 
         composable(
@@ -81,7 +87,19 @@ fun NavigationHost(navController : NavHostController) {
         ) { backStackEntry ->
             val start = backStackEntry.arguments?.getString("start") ?: ""
             val end = backStackEntry.arguments?.getString("end") ?: ""
-            DirectionsMapScreen(navController = navController, start = start, end = end)
+            DirectionsMapScreen(navController = navController, start = start, end = end, openDrawer = openDrawer)
+        }
+
+        composable("settings") {
+            SettingsScreen(navController = navController, openDrawer = openDrawer)
+        }
+
+        composable("about") {
+            AboutScreen(navController = navController, openDrawer = openDrawer)
+        }
+
+        composable("support") {
+            SupportScreen(navController = navController, openDrawer = openDrawer)
         }
 
 

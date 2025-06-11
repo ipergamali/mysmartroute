@@ -17,7 +17,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.VehicleViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegisterVehicleScreen(navController: NavController) {
+fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
     val viewModel: VehicleViewModel = viewModel()
     val state by viewModel.registerState.collectAsState()
     val context = LocalContext.current
@@ -29,7 +29,12 @@ fun RegisterVehicleScreen(navController: NavController) {
 
     Scaffold(
         topBar = {
-            TopBar(title = "Register Vehicle", navController = navController)
+            TopBar(
+                title = "Register Vehicle",
+                navController = navController,
+                showMenu = true,
+                onMenuClick = openDrawer
+            )
         }
     ) { paddingValues ->
         Column(

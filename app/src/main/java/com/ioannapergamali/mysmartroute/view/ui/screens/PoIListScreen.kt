@@ -20,14 +20,14 @@ import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PoIListScreen(navController: NavController) {
+fun PoIListScreen(navController: NavController, openDrawer: () -> Unit) {
     val viewModel: PoIViewModel = viewModel()
     val pois by viewModel.pois.collectAsState()
     val context = LocalContext.current
 
     LaunchedEffect(Unit) { viewModel.loadPois(context) }
 
-    Scaffold(topBar = { TopBar(title = "PoIs", navController = navController) }) { padding ->
+    Scaffold(topBar = { TopBar(title = "PoIs", navController = navController, showMenu = true, onMenuClick = openDrawer) }) { padding ->
         Column(Modifier.fillMaxSize()) {
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 items(pois) { poi ->

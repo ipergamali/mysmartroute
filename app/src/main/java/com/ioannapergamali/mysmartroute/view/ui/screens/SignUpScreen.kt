@@ -23,7 +23,8 @@ import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 fun SignUpScreen(
     navController: NavController,
     onSignUpSuccess: () -> Unit,
-    onSignUpFailure: (String) -> Unit = {}
+    onSignUpFailure: (String) -> Unit = {},
+    openDrawer: () -> Unit
 ) {
     val viewModel: AuthenticationViewModel = viewModel()
     val uiState by viewModel.signUpState.collectAsState()
@@ -47,7 +48,9 @@ fun SignUpScreen(
         topBar = {
             TopBar(
                 title = "Sign Up",
-                navController = navController
+                navController = navController,
+                showMenu = true,
+                onMenuClick = openDrawer
             )
         }
     ) { paddingValues ->
