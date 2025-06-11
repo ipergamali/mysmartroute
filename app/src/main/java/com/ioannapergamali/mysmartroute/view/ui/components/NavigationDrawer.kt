@@ -4,8 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material3.*
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
@@ -13,6 +12,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.compose.ui.platform.LocalContext
+import android.app.Activity
 import kotlinx.coroutines.launch
 
 @Composable
@@ -20,26 +21,6 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
     ModalDrawerSheet {
         Text("Menu", modifier = Modifier.padding(16.dp))
         Divider()
-        NavigationDrawerItem(
-            label = { Text("Home") },
-            selected = false,
-            onClick = {
-                navController.navigate("home") {
-                    popUpTo("home") { inclusive = true }
-                }
-                closeDrawer()
-            },
-            icon = { Icon(Icons.Filled.Home, contentDescription = null) }
-        )
-        NavigationDrawerItem(
-            label = { Text("Back") },
-            selected = false,
-            onClick = {
-                navController.popBackStack()
-                closeDrawer()
-            },
-            icon = { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null) }
-        )
         NavigationDrawerItem(
             label = { Text("Settings") },
             selected = false,
@@ -66,6 +47,15 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
                 closeDrawer()
             },
             icon = { Icon(Icons.Filled.Email, contentDescription = null) }
+        )
+        val activity = (LocalContext.current as? Activity)
+        NavigationDrawerItem(
+            label = { Text("Exit") },
+            selected = false,
+            onClick = {
+                activity?.finishAffinity()
+            },
+            icon = { Icon(Icons.Filled.ExitToApp, contentDescription = null) }
         )
     }
 }
