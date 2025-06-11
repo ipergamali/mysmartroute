@@ -347,7 +347,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                 }
                             }
                         }) {
-                            Icon(Icons.Default.Check, contentDescription = "Set From")
+                            Icon(Icons.Default.Check, contentDescription = "Set From", tint = MaterialTheme.colorScheme.primary)
                         }
                         IconButton(onClick = {
                             startLatLng = null
@@ -357,7 +357,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                             showRoute = false
                             mapSelectionMode = MapSelectionMode.FROM
                         }) {
-                            Icon(Icons.Default.Place, contentDescription = "Pick From on Map")
+                            Icon(Icons.Default.Place, contentDescription = "Pick From on Map", tint = MaterialTheme.colorScheme.primary)
                         }
                         IconButton(onClick = {
                             lastAddFrom = true
@@ -382,7 +382,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                 }
                             }
                         }) {
-                            Icon(Icons.Default.Add, contentDescription = "Save From POI")
+                            Icon(Icons.Default.Add, contentDescription = "Save From POI", tint = MaterialTheme.colorScheme.primary)
                         }
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = fromExpanded)
                     }
@@ -464,7 +464,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                 }
                             }
                         }) {
-                            Icon(Icons.Default.Check, contentDescription = "Set To")
+                            Icon(Icons.Default.Check, contentDescription = "Set To", tint = MaterialTheme.colorScheme.primary)
                         }
                         IconButton(onClick = {
                             endLatLng = null
@@ -474,7 +474,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                             showRoute = false
                             mapSelectionMode = MapSelectionMode.TO
                         }) {
-                            Icon(Icons.Default.Place, contentDescription = "Pick To on Map")
+                            Icon(Icons.Default.Place, contentDescription = "Pick To on Map", tint = MaterialTheme.colorScheme.primary)
                         }
                         IconButton(onClick = {
                             lastAddFrom = false
@@ -499,7 +499,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                 }
                             }
                         }) {
-                            Icon(Icons.Default.Add, contentDescription = "Save To POI")
+                            Icon(Icons.Default.Add, contentDescription = "Save To POI", tint = MaterialTheme.colorScheme.primary)
                         }
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = toExpanded)
                     }
