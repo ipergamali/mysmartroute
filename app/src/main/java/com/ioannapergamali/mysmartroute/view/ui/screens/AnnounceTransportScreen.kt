@@ -224,6 +224,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                                 fromQuery = reverseGeocode(context, latLng) ?: "${latLng.latitude},${latLng.longitude}"
                                 selectedFromDescription = fromQuery
                             }
+                            fromError = false
                             mapSelectionMode = null
                         }
                         MapSelectionMode.TO -> {
@@ -233,6 +234,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                                 toQuery = reverseGeocode(context, latLng) ?: "${latLng.latitude},${latLng.longitude}"
                                 selectedToDescription = toQuery
                             }
+                            toError = false
                             mapSelectionMode = null
                         }
                         null -> {}
