@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.navigation.compose.rememberNavController
 import com.ioannapergamali.mysmartroute.model.navigation.NavigationHost
+import com.ioannapergamali.mysmartroute.view.ui.components.DrawerWrapper
 import com.ioannapergamali.mysmartroute.utils.MiuiUtils
 
 
@@ -17,8 +18,10 @@ class MainActivity : ComponentActivity()
         // Προαιρετικός έλεγχος ύπαρξης του MIUI Service Delivery provider
         MiuiUtils.callServiceDelivery(this, "ping")
         setContent {
-                val navController = rememberNavController()
-                NavigationHost(navController = navController)
+            val navController = rememberNavController()
+            DrawerWrapper(navController = navController) { openDrawer ->
+                NavigationHost(navController = navController, openDrawer = openDrawer)
+            }
         }
     }
 

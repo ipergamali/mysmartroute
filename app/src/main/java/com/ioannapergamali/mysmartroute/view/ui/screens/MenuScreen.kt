@@ -18,7 +18,7 @@ import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 
 @Composable
-fun MenuScreen(navController: NavController) {
+fun MenuScreen(navController: NavController, openDrawer: () -> Unit) {
     val viewModel: AuthenticationViewModel = viewModel()
     val role by viewModel.currentUserRole.collectAsState()
 
@@ -33,7 +33,9 @@ fun MenuScreen(navController: NavController) {
             TopBar(
                 title = "Menu",
                 navController = navController,
+                showMenu = true,
                 showLogout = true,
+                onMenuClick = openDrawer,
                 onLogout = {
                     viewModel.signOut()
                     Toast.makeText(context, "Logged out", Toast.LENGTH_SHORT).show()

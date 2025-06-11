@@ -2,6 +2,7 @@ package com.ioannapergamali.mysmartroute.view.ui.components
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -16,16 +17,20 @@ import androidx.navigation.NavController
 fun TopBar(
     title: String,
     navController: NavController,
+    showMenu: Boolean = false,
     showLogout: Boolean = false,
+    onMenuClick: () -> Unit = {},
     onLogout: () -> Unit = {}
 ) {
     TopAppBar(
         title = { Text(title) },
         navigationIcon = {
-            IconButton(onClick = { navController.popBackStack() }) {
+            IconButton(onClick = {
+                if (showMenu) onMenuClick() else navController.popBackStack()
+            }) {
                 Icon(
-                    Icons.AutoMirrored.Filled.List,
-                    contentDescription = "list"
+                    if (showMenu) Icons.Filled.Menu else Icons.AutoMirrored.Filled.List,
+                    contentDescription = if (showMenu) "menu" else "list"
                 )
             }
         },

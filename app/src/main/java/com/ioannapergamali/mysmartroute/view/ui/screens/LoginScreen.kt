@@ -18,7 +18,8 @@ import androidx.compose.ui.platform.LocalContext
 fun LoginScreen(
     navController: NavController,
     onLoginSuccess: () -> Unit,
-    onLoginFailure: (String) -> Unit = {}
+    onLoginFailure: (String) -> Unit = {},
+    openDrawer: () -> Unit
 ) {
     val viewModel: AuthenticationViewModel = viewModel()
     val uiState by viewModel.loginState.collectAsState()
@@ -31,7 +32,9 @@ fun LoginScreen(
         topBar = {
             TopBar(
                 title = "Login",
-                navController = navController
+                navController = navController,
+                showMenu = true,
+                onMenuClick = openDrawer
             )
         }
     ) { paddingValues ->

@@ -20,13 +20,16 @@ import com.ioannapergamali.mysmartroute.view.ui.animation.rememberSlideFadeInAni
 fun HomeScreen(
     navController: NavController,
     onNavigateToSignUp: () -> Unit,
-    onNavigateToLogin: () -> Unit
+    onNavigateToLogin: () -> Unit,
+    openDrawer: () -> Unit
 ) {
     Scaffold(
         topBar = {
             TopBar(
                 title = "Home",
-                navController = navController
+                navController = navController,
+                showMenu = true,
+                onMenuClick = openDrawer
             )
         }
     ) { paddingValues ->
