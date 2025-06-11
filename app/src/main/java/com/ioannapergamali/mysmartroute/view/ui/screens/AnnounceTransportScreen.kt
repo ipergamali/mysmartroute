@@ -168,6 +168,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                 }
                 durationMinutes = (result.duration * factor).toInt()
                 routePoints = result.points
+                showRoute = result.status == "OK" && routePoints.isNotEmpty()
                 if (result.status == "NOT_FOUND" || result.status == "INVALID_REQUEST") {
                     Toast.makeText(context, context.getString(R.string.invalid_coordinates), Toast.LENGTH_SHORT).show()
                 }
