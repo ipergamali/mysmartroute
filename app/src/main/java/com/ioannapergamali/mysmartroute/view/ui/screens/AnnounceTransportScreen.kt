@@ -27,6 +27,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Warning
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
@@ -118,6 +119,10 @@ fun AnnounceTransportScreen(navController: NavController) {
     var costInput by remember { mutableStateOf("") }
     var durationMinutes by remember { mutableStateOf(0) }
     var dateInput by remember { mutableStateOf("") }
+
+    var fromError by remember { mutableStateOf(false) }
+    var toError by remember { mutableStateOf(false) }
+    var lastAddFrom by remember { mutableStateOf<Boolean?>(null) }
 
     // Αρχικοποίηση του χάρτη στο Ηράκλειο με ζουμ όπως στο ζητούμενο URL
     val cameraPositionState = rememberCameraPositionState {
@@ -331,6 +336,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                 onValueChange = {
                     fromQuery = it
                     fromExpanded = true
+                    fromError = false
                     if (selectedFromDescription != null && fromQuery != selectedFromDescription) {
                         startLatLng = null
                         selectedFromDescription = null
@@ -338,8 +344,16 @@ fun AnnounceTransportScreen(navController: NavController) {
                     }
                 },
                 label = { Text("From") },
+                isError = fromError,
                 trailingIcon = {
                     Row {
+                        if (fromError) {
+                            Icon(
+                                Icons.Default.Warning,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        }
                         IconButton(onClick = {
                             coroutineScope.launch {
                                 val result = geocode(context, fromQuery)
@@ -360,15 +374,26 @@ fun AnnounceTransportScreen(navController: NavController) {
                             Icon(Icons.Default.Place, contentDescription = "Pick From on Map")
                         }
                         IconButton(onClick = {
-                            startLatLng?.let {
-                                poiViewModel.addPoi(
-                                    context,
-                                    fromQuery,
-                                    fromQuery,
-                                    "HISTORICAL",
-                                    it.latitude,
-                                    it.longitude
-                                )
+                            lastAddFrom = true
+                            when {
+                                startLatLng == null -> {
+                                    Toast.makeText(context, "Επιλέξτε σημείο στον χάρτη", Toast.LENGTH_SHORT).show()
+                                    fromError = true
+                                }
+                                fromQuery.isBlank() -> {
+                                    Toast.makeText(context, "Η περιγραφή είναι κενή", Toast.LENGTH_SHORT).show()
+                                    fromError = true
+                                }
+                                else -> {
+                                    poiViewModel.addPoi(
+                                        context,
+                                        fromQuery,
+                                        fromQuery,
+                                        "HISTORICAL",
+                                        startLatLng!!.latitude,
+                                        startLatLng!!.longitude
+                                    )
+                                }
                             }
                         }) {
                             Icon(Icons.Default.Add, contentDescription = "Save From POI")
@@ -387,6 +412,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                             startLatLng = LatLng(address.latitude, address.longitude)
                             selectedFromDescription = fromQuery
                             showRoute = false
+                            fromError = false
                             cameraPositionState.position = CameraPosition.fromLatLngZoom(startLatLng!!, 10f)
                             fromExpanded = false
                         }
@@ -400,6 +426,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                             startLatLng = LatLng(poi.lat, poi.lng)
                             selectedFromDescription = fromQuery
                             showRoute = false
+                            fromError = false
                             cameraPositionState.position = CameraPosition.fromLatLngZoom(startLatLng!!, 10f)
                             fromExpanded = false
                         }
@@ -416,6 +443,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                 onValueChange = {
                     toQuery = it
                     toExpanded = true
+                    toError = false
                     if (selectedToDescription != null && toQuery != selectedToDescription) {
                         endLatLng = null
                         selectedToDescription = null
@@ -423,8 +451,16 @@ fun AnnounceTransportScreen(navController: NavController) {
                     }
                 },
                 label = { Text("To") },
+                isError = toError,
                 trailingIcon = {
                     Row {
+                        if (toError) {
+                            Icon(
+                                Icons.Default.Warning,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        }
                         IconButton(onClick = {
                             coroutineScope.launch {
                                 val result = geocode(context, toQuery)
@@ -445,15 +481,26 @@ fun AnnounceTransportScreen(navController: NavController) {
                             Icon(Icons.Default.Place, contentDescription = "Pick To on Map")
                         }
                         IconButton(onClick = {
-                            endLatLng?.let {
-                                poiViewModel.addPoi(
-                                    context,
-                                    toQuery,
-                                    toQuery,
-                                    "HISTORICAL",
-                                    it.latitude,
-                                    it.longitude
-                                )
+                            lastAddFrom = false
+                            when {
+                                endLatLng == null -> {
+                                    Toast.makeText(context, "Επιλέξτε σημείο στον χάρτη", Toast.LENGTH_SHORT).show()
+                                    toError = true
+                                }
+                                toQuery.isBlank() -> {
+                                    Toast.makeText(context, "Η περιγραφή είναι κενή", Toast.LENGTH_SHORT).show()
+                                    toError = true
+                                }
+                                else -> {
+                                    poiViewModel.addPoi(
+                                        context,
+                                        toQuery,
+                                        toQuery,
+                                        "HISTORICAL",
+                                        endLatLng!!.latitude,
+                                        endLatLng!!.longitude
+                                    )
+                                }
                             }
                         }) {
                             Icon(Icons.Default.Add, contentDescription = "Save To POI")
@@ -472,6 +519,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                             endLatLng = LatLng(address.latitude, address.longitude)
                             selectedToDescription = toQuery
                             showRoute = false
+                            toError = false
                             cameraPositionState.position = CameraPosition.fromLatLngZoom(endLatLng!!, 10f)
                             toExpanded = false
                         }
@@ -485,6 +533,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                             endLatLng = LatLng(poi.lat, poi.lng)
                             selectedToDescription = toQuery
                             showRoute = false
+                            toError = false
                             cameraPositionState.position = CameraPosition.fromLatLngZoom(endLatLng!!, 10f)
                             toExpanded = false
                         }
@@ -562,10 +611,17 @@ fun AnnounceTransportScreen(navController: NavController) {
         when (poiAddState) {
             PoIViewModel.AddPoiState.Success -> {
                 Toast.makeText(context, "POI αποθηκεύτηκε", Toast.LENGTH_SHORT).show()
+                fromError = false
+                toError = false
                 poiViewModel.resetAddState()
             }
             PoIViewModel.AddPoiState.Exists -> {
                 Toast.makeText(context, "Το POI είναι ήδη καταχωρημένο", Toast.LENGTH_SHORT).show()
+                if (lastAddFrom == true) {
+                    fromError = true
+                } else if (lastAddFrom == false) {
+                    toError = true
+                }
                 poiViewModel.resetAddState()
             }
             else -> {}
