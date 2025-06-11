@@ -56,7 +56,7 @@ enum class AppTheme(val label: String, val seed: Color, val fontFamily: FontFami
         )
 
     val typography: Typography
-        get() = Typography(defaultFontFamily = fontFamily)
+        get() = Typography()
 }
 
 @Composable
