@@ -6,7 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.material3.isSystemInDarkTheme
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.navigation.compose.rememberNavController
 import com.ioannapergamali.mysmartroute.model.navigation.NavigationHost
 import com.ioannapergamali.mysmartroute.view.ui.MysmartrouteTheme
