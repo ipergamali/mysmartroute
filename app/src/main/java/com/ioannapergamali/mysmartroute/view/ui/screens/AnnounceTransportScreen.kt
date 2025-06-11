@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import android.util.Log
 import android.widget.Toast
+import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -56,6 +57,22 @@ import kotlinx.coroutines.withContext
 private enum class MapSelectionMode { FROM, TO }
 
 private const val TAG = "AnnounceTransport"
+
+private suspend fun reverseGeocode(context: Context, latLng: LatLng): String? =
+    withContext(Dispatchers.IO) {
+        try {
+            Geocoder(context).getFromLocation(latLng.latitude, latLng.longitude, 1)
+                ?.firstOrNull()
+                ?.getAddressLine(0)
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+private suspend fun geocode(context: Context, query: String): Pair<LatLng, String>? =
+    withContext(Dispatchers.IO) {
+        try { Geocoder(context).getFromLocationName(query, 1)?.firstOrNull() } catch (e: Exception) { null }
+    }?.let { Pair(LatLng(it.latitude, it.longitude), it.getAddressLine(0) ?: query) }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -197,10 +214,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                             startLatLng = latLng
                             showRoute = false
                             coroutineScope.launch {
-                                val addr = withContext(Dispatchers.IO) {
-                                    Geocoder(context).getFromLocation(latLng.latitude, latLng.longitude, 1)?.firstOrNull()
-                                }
-                                fromQuery = addr?.getAddressLine(0) ?: "${latLng.latitude},${latLng.longitude}"
+                                fromQuery = reverseGeocode(context, latLng) ?: "${latLng.latitude},${latLng.longitude}"
                             }
                             mapSelectionMode = null
                         }
@@ -208,10 +222,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                             endLatLng = latLng
                             showRoute = false
                             coroutineScope.launch {
-                                val addr = withContext(Dispatchers.IO) {
-                                    Geocoder(context).getFromLocation(latLng.latitude, latLng.longitude, 1)?.firstOrNull()
-                                }
-                                toQuery = addr?.getAddressLine(0) ?: "${latLng.latitude},${latLng.longitude}"
+                                toQuery = reverseGeocode(context, latLng) ?: "${latLng.latitude},${latLng.longitude}"
                             }
                             mapSelectionMode = null
                         }
@@ -319,13 +330,11 @@ fun AnnounceTransportScreen(navController: NavController) {
                     Row {
                         IconButton(onClick = {
                             coroutineScope.launch {
-                                val addr = withContext(Dispatchers.IO) {
-                                    try { Geocoder(context).getFromLocationName(fromQuery, 1)?.firstOrNull() } catch (e: Exception) { null }
-                                }
-                                if (addr != null) {
-                                    startLatLng = LatLng(addr.latitude, addr.longitude)
+                                val result = geocode(context, fromQuery)
+                                if (result != null) {
+                                    startLatLng = result.first
                                     showRoute = false
-                                    fromQuery = addr.getAddressLine(0) ?: fromQuery
+                                    fromQuery = result.second
                                     cameraPositionState.position = CameraPosition.fromLatLngZoom(startLatLng!!, 10f)
                                 } else {
                                     Toast.makeText(context, context.getString(R.string.invalid_coordinates), Toast.LENGTH_SHORT).show()
@@ -395,13 +404,11 @@ fun AnnounceTransportScreen(navController: NavController) {
                     Row {
                         IconButton(onClick = {
                             coroutineScope.launch {
-                                val addr = withContext(Dispatchers.IO) {
-                                    try { Geocoder(context).getFromLocationName(toQuery, 1)?.firstOrNull() } catch (e: Exception) { null }
-                                }
-                                if (addr != null) {
-                                    endLatLng = LatLng(addr.latitude, addr.longitude)
+                                val result = geocode(context, toQuery)
+                                if (result != null) {
+                                    endLatLng = result.first
                                     showRoute = false
-                                    toQuery = addr.getAddressLine(0) ?: toQuery
+                                    toQuery = result.second
                                     cameraPositionState.position = CameraPosition.fromLatLngZoom(endLatLng!!, 10f)
                                 } else {
                                     Toast.makeText(context, context.getString(R.string.invalid_coordinates), Toast.LENGTH_SHORT).show()
