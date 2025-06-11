@@ -6,7 +6,6 @@ import androidx.activity.compose.setContent
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.navigation.compose.rememberNavController
 import com.ioannapergamali.mysmartroute.model.navigation.NavigationHost
 import com.ioannapergamali.mysmartroute.view.ui.MysmartrouteTheme
@@ -27,7 +26,8 @@ class MainActivity : ComponentActivity()
         setContent {
             val context = LocalContext.current
             val theme by ThemePreferenceManager.themeFlow(context).collectAsState(initial = AppTheme.Ocean)
-            MysmartrouteTheme(theme = theme, darkTheme = isSystemInDarkTheme()) {
+            val dark by ThemePreferenceManager.darkThemeFlow(context).collectAsState(initial = false)
+            MysmartrouteTheme(theme = theme, darkTheme = dark) {
                 val navController = rememberNavController()
                 DrawerWrapper(navController = navController) { openDrawer ->
                     NavigationHost(navController = navController, openDrawer = openDrawer)
