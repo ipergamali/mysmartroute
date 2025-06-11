@@ -11,13 +11,14 @@ import com.ioannapergamali.mysmartroute.data.local.VehicleEntity
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 
 @Database(
-    entities = [UserEntity::class, VehicleEntity::class, PoIEntity::class],
-    version = 3
+    entities = [UserEntity::class, VehicleEntity::class, PoIEntity::class, SettingsEntity::class],
+    version = 4
 )
 abstract class MySmartRouteDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun vehicleDao(): VehicleDao
     abstract fun poIDao(): PoIDao
+    abstract fun settingsDao(): SettingsDao
 
     companion object {
         @Volatile
@@ -39,13 +40,26 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `settings` (" +
+                        "`userId` TEXT NOT NULL, " +
+                        "`theme` TEXT NOT NULL, " +
+                        "`darkTheme` INTEGER NOT NULL, " +
+                        "PRIMARY KEY(`userId`)" +
+                        ")"
+                )
+            }
+        }
+
         fun getInstance(context: Context): MySmartRouteDatabase {
             return INSTANCE ?: synchronized(this) {
                 INSTANCE ?: Room.databaseBuilder(
                     context.applicationContext,
                     MySmartRouteDatabase::class.java,
                     "mysmartroute.db"
-                ).addMigrations(MIGRATION_2_3)
+                ).addMigrations(MIGRATION_2_3, MIGRATION_3_4)
                     .build().also { INSTANCE = it }
             }
         }

@@ -16,6 +16,7 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.PoIListScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.SettingsScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.AboutScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.SupportScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.ThemePickerScreen
 
 
 
@@ -92,6 +93,10 @@ fun NavigationHost(navController : NavHostController, openDrawer: () -> Unit) {
 
         composable("settings") {
             SettingsScreen(navController = navController, openDrawer = openDrawer)
+        }
+
+        composable("themePicker") {
+            ThemePickerScreen(navController = navController)
         }
 
         composable("about") {
