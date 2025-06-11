@@ -37,9 +37,12 @@ class PoIViewModel : ViewModel() {
 
     fun addPoi(context: Context, name: String, description: String, type: String, lat: Double, lng: Double) {
         viewModelScope.launch {
+            val dao = MySmartRouteDatabase.getInstance(context).poIDao()
+            val exists = dao.findByLocation(lat, lng) != null || dao.findByName(name) != null
+            if (exists) return@launch
+
             val id = UUID.randomUUID().toString()
             val poi = PoIEntity(id, name, description, type, lat, lng)
-            val dao = MySmartRouteDatabase.getInstance(context).poIDao()
             dao.insert(poi)
             val data = hashMapOf(
                 "id" to id,

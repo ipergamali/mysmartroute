@@ -65,6 +65,7 @@ fun AnnounceTransportScreen(navController: NavController) {
     val poiViewModel: PoIViewModel = viewModel()
     val state by viewModel.state.collectAsState()
     val vehicles by vehicleViewModel.vehicles.collectAsState()
+    val pois by poiViewModel.pois.collectAsState()
 
     val context = LocalContext.current
 
@@ -77,10 +78,16 @@ fun AnnounceTransportScreen(navController: NavController) {
     var fromQuery by remember { mutableStateOf("") }
     var fromExpanded by remember { mutableStateOf(false) }
     var fromSuggestions by remember { mutableStateOf<List<Address>>(emptyList()) }
+    val fromPoiSuggestions = remember(fromQuery, pois) {
+        pois.filter { it.name.contains(fromQuery, ignoreCase = true) }
+    }
 
     var toQuery by remember { mutableStateOf("") }
     var toExpanded by remember { mutableStateOf(false) }
     var toSuggestions by remember { mutableStateOf<List<Address>>(emptyList()) }
+    val toPoiSuggestions = remember(toQuery, pois) {
+        pois.filter { it.name.contains(toQuery, ignoreCase = true) }
+    }
 
     var selectedVehicleType by remember { mutableStateOf<VehicleType?>(null) }
 
@@ -362,6 +369,18 @@ fun AnnounceTransportScreen(navController: NavController) {
                         }
                     )
                 }
+                fromPoiSuggestions.forEach { poi ->
+                    DropdownMenuItem(
+                        text = { Text(poi.name) },
+                        onClick = {
+                            fromQuery = poi.name
+                            startLatLng = LatLng(poi.lat, poi.lng)
+                            showRoute = false
+                            cameraPositionState.position = CameraPosition.fromLatLngZoom(startLatLng!!, 10f)
+                            fromExpanded = false
+                        }
+                    )
+                }
             }
         }
 
@@ -421,6 +440,18 @@ fun AnnounceTransportScreen(navController: NavController) {
                         onClick = {
                             toQuery = address.getAddressLine(0) ?: ""
                             endLatLng = LatLng(address.latitude, address.longitude)
+                            showRoute = false
+                            cameraPositionState.position = CameraPosition.fromLatLngZoom(endLatLng!!, 10f)
+                            toExpanded = false
+                        }
+                    )
+                }
+                toPoiSuggestions.forEach { poi ->
+                    DropdownMenuItem(
+                        text = { Text(poi.name) },
+                        onClick = {
+                            toQuery = poi.name
+                            endLatLng = LatLng(poi.lat, poi.lng)
                             showRoute = false
                             cameraPositionState.position = CameraPosition.fromLatLngZoom(endLatLng!!, 10f)
                             toExpanded = false
