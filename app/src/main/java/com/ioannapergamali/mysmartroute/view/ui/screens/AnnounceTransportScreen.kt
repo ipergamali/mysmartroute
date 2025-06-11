@@ -66,6 +66,7 @@ fun AnnounceTransportScreen(navController: NavController) {
     val state by viewModel.state.collectAsState()
     val vehicles by vehicleViewModel.vehicles.collectAsState()
     val pois by poiViewModel.pois.collectAsState()
+    val poiAddState by poiViewModel.addState.collectAsState()
 
     val context = LocalContext.current
 
@@ -346,7 +347,6 @@ fun AnnounceTransportScreen(navController: NavController) {
                                     it.latitude,
                                     it.longitude
                                 )
-                                Toast.makeText(context, "POI αποθηκεύτηκε", Toast.LENGTH_SHORT).show()
                             }
                         }) {
                             Icon(Icons.Default.Add, contentDescription = "Save From POI")
@@ -423,7 +423,6 @@ fun AnnounceTransportScreen(navController: NavController) {
                                     it.latitude,
                                     it.longitude
                                 )
-                                Toast.makeText(context, "POI αποθηκεύτηκε", Toast.LENGTH_SHORT).show()
                             }
                         }) {
                             Icon(Icons.Default.Add, contentDescription = "Save To POI")
@@ -519,6 +518,20 @@ fun AnnounceTransportScreen(navController: NavController) {
     LaunchedEffect(state) {
         if (state is TransportAnnouncementViewModel.AnnouncementState.Success) {
             navController.popBackStack()
+        }
+    }
+
+    LaunchedEffect(poiAddState) {
+        when (poiAddState) {
+            PoIViewModel.AddPoiState.Success -> {
+                Toast.makeText(context, "POI αποθηκεύτηκε", Toast.LENGTH_SHORT).show()
+                poiViewModel.resetAddState()
+            }
+            PoIViewModel.AddPoiState.Exists -> {
+                Toast.makeText(context, "Το POI είναι ήδη καταχωρημένο", Toast.LENGTH_SHORT).show()
+                poiViewModel.resetAddState()
+            }
+            else -> {}
         }
     }
 }

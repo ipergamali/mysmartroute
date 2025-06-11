@@ -20,6 +20,9 @@ class PoIViewModel : ViewModel() {
     private val _pois = MutableStateFlow<List<PoIEntity>>(emptyList())
     val pois: StateFlow<List<PoIEntity>> = _pois
 
+    private val _addState = MutableStateFlow<AddPoiState>(AddPoiState.Idle)
+    val addState: StateFlow<AddPoiState> = _addState
+
     fun loadPois(context: Context) {
         viewModelScope.launch {
             val dao = MySmartRouteDatabase.getInstance(context).poIDao()
@@ -35,11 +38,21 @@ class PoIViewModel : ViewModel() {
         }
     }
 
-    fun addPoi(context: Context, name: String, description: String, type: String, lat: Double, lng: Double) {
+    fun addPoi(
+        context: Context,
+        name: String,
+        description: String,
+        type: String,
+        lat: Double,
+        lng: Double
+    ) {
         viewModelScope.launch {
             val dao = MySmartRouteDatabase.getInstance(context).poIDao()
             val exists = dao.findByLocation(lat, lng) != null || dao.findByName(name) != null
-            if (exists) return@launch
+            if (exists) {
+                _addState.value = AddPoiState.Exists
+                return@launch
+            }
 
             val id = UUID.randomUUID().toString()
             val poi = PoIEntity(id, name, description, type, lat, lng)
@@ -53,6 +66,18 @@ class PoIViewModel : ViewModel() {
                 "lng" to lng
             )
             db.collection("pois").document(id).set(data)
+            _addState.value = AddPoiState.Success
         }
+    }
+
+    sealed class AddPoiState {
+        object Idle : AddPoiState()
+        object Success : AddPoiState()
+        object Exists : AddPoiState()
+        data class Error(val message: String) : AddPoiState()
+    }
+
+    fun resetAddState() {
+        _addState.value = AddPoiState.Idle
     }
 }
