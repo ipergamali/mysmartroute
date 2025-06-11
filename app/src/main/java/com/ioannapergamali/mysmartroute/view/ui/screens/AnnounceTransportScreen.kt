@@ -149,36 +149,6 @@ fun AnnounceTransportScreen(navController: NavController) {
         poiViewModel.loadPois(context)
     }
 
-    LaunchedEffect(startLatLng, endLatLng, selectedVehicleType) {
-        if (!isKeyMissing &&
-            CoordinateUtils.isValid(startLatLng) &&
-            CoordinateUtils.isValid(endLatLng)
-        ) {
-            if (NetworkUtils.isInternetAvailable(context)) {
-                showRoute = false
-                val type = selectedVehicleType ?: VehicleType.CAR
-                val result = MapsUtils.fetchDurationAndPath(startLatLng!!, endLatLng!!, apiKey, type)
-                Log.d(TAG, "Directions API status: ${result.status}")
-                val factor = when (selectedVehicleType) {
-                    VehicleType.BICYCLE -> 1.5
-                    VehicleType.MOTORBIKE -> 0.8
-                    VehicleType.BIGBUS -> 1.2
-                    VehicleType.SMALLBUS -> 1.1
-                    else -> 1.0
-                }
-                durationMinutes = (result.duration * factor).toInt()
-                routePoints = result.points
-                showRoute = result.status == "OK" && routePoints.isNotEmpty()
-                if (result.status == "NOT_FOUND" || result.status == "INVALID_REQUEST") {
-                    Toast.makeText(context, context.getString(R.string.invalid_coordinates), Toast.LENGTH_SHORT).show()
-                }
-            } else {
-                Toast.makeText(context, context.getString(R.string.no_internet), Toast.LENGTH_SHORT).show()
-            }
-        } else if (startLatLng != null || endLatLng != null) {
-            Toast.makeText(context, context.getString(R.string.invalid_coordinates), Toast.LENGTH_SHORT).show()
-        }
-    }
 
     LaunchedEffect(fromQuery) {
         if (fromQuery.length > 3) {
@@ -363,6 +333,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                                 if (result != null) {
                                     startLatLng = result.first
                                     showRoute = false
+                                    routePoints = emptyList()
                                     fromQuery = result.second
                                     selectedFromDescription = fromQuery
                                     cameraPositionState.position = CameraPosition.fromLatLngZoom(startLatLng!!, 10f)
@@ -373,7 +344,14 @@ fun AnnounceTransportScreen(navController: NavController) {
                         }) {
                             Icon(Icons.Default.Check, contentDescription = "Set From")
                         }
-                        IconButton(onClick = { mapSelectionMode = MapSelectionMode.FROM }) {
+                        IconButton(onClick = {
+                            startLatLng = null
+                            fromQuery = ""
+                            selectedFromDescription = null
+                            routePoints = emptyList()
+                            showRoute = false
+                            mapSelectionMode = MapSelectionMode.FROM
+                        }) {
                             Icon(Icons.Default.Place, contentDescription = "Pick From on Map")
                         }
                         IconButton(onClick = {
@@ -415,6 +393,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                             startLatLng = LatLng(address.latitude, address.longitude)
                             selectedFromDescription = fromQuery
                             showRoute = false
+                            routePoints = emptyList()
                             fromError = false
                             cameraPositionState.position = CameraPosition.fromLatLngZoom(startLatLng!!, 10f)
                             fromExpanded = false
@@ -429,6 +408,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                             startLatLng = LatLng(poi.lat, poi.lng)
                             selectedFromDescription = fromQuery
                             showRoute = false
+                            routePoints = emptyList()
                             fromError = false
                             cameraPositionState.position = CameraPosition.fromLatLngZoom(startLatLng!!, 10f)
                             fromExpanded = false
@@ -470,6 +450,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                                 if (result != null) {
                                     endLatLng = result.first
                                     showRoute = false
+                                    routePoints = emptyList()
                                     toQuery = result.second
                                     selectedToDescription = toQuery
                                     cameraPositionState.position = CameraPosition.fromLatLngZoom(endLatLng!!, 10f)
@@ -480,7 +461,14 @@ fun AnnounceTransportScreen(navController: NavController) {
                         }) {
                             Icon(Icons.Default.Check, contentDescription = "Set To")
                         }
-                        IconButton(onClick = { mapSelectionMode = MapSelectionMode.TO }) {
+                        IconButton(onClick = {
+                            endLatLng = null
+                            toQuery = ""
+                            selectedToDescription = null
+                            routePoints = emptyList()
+                            showRoute = false
+                            mapSelectionMode = MapSelectionMode.TO
+                        }) {
                             Icon(Icons.Default.Place, contentDescription = "Pick To on Map")
                         }
                         IconButton(onClick = {
@@ -522,6 +510,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                             endLatLng = LatLng(address.latitude, address.longitude)
                             selectedToDescription = toQuery
                             showRoute = false
+                            routePoints = emptyList()
                             toError = false
                             cameraPositionState.position = CameraPosition.fromLatLngZoom(endLatLng!!, 10f)
                             toExpanded = false
@@ -536,6 +525,7 @@ fun AnnounceTransportScreen(navController: NavController) {
                             endLatLng = LatLng(poi.lat, poi.lng)
                             selectedToDescription = toQuery
                             showRoute = false
+                            routePoints = emptyList()
                             toError = false
                             cameraPositionState.position = CameraPosition.fromLatLngZoom(endLatLng!!, 10f)
                             toExpanded = false
