@@ -19,41 +19,61 @@ class SettingsViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
+    private suspend fun updateSettings(
+        context: Context,
+        transform: (SettingsEntity) -> SettingsEntity
+    ) {
+        val userId = auth.currentUser?.uid ?: return
+        val dao = MySmartRouteDatabase.getInstance(context).settingsDao()
+        val current = dao.getSettings(userId) ?: SettingsEntity(
+            userId = userId,
+            theme = AppTheme.Ocean.name,
+            darkTheme = false,
+            font = AppFont.SansSerif.name,
+            soundEnabled = true,
+            soundVolume = 1f
+        )
+        val updated = transform(current)
+        dao.insert(updated)
+
+        if (NetworkUtils.isInternetAvailable(context)) {
+            val data = mapOf(
+                "theme" to updated.theme,
+                "darkTheme" to updated.darkTheme,
+                "font" to updated.font,
+                "soundEnabled" to updated.soundEnabled,
+                "soundVolume" to updated.soundVolume
+            )
+            db.collection("user_settings").document(userId).set(data)
+        }
+    }
+
     fun applyTheme(context: Context, theme: AppTheme, dark: Boolean) {
         viewModelScope.launch {
             ThemePreferenceManager.setTheme(context, theme)
             ThemePreferenceManager.setDarkTheme(context, dark)
-
-            val userId = auth.currentUser?.uid ?: return@launch
-            val dao = MySmartRouteDatabase.getInstance(context).settingsDao()
-            val entity = SettingsEntity(userId, theme.name, dark)
-            dao.insert(entity)
-
-            if (NetworkUtils.isInternetAvailable(context)) {
-                val data = mapOf(
-                    "theme" to theme.name,
-                    "darkTheme" to dark
-                )
-                db.collection("user_settings").document(userId).set(data)
-            }
+            updateSettings(context) { it.copy(theme = theme.name, darkTheme = dark) }
         }
     }
 
     fun applyFont(context: Context, font: AppFont) {
         viewModelScope.launch {
             FontPreferenceManager.setFont(context, font)
+            updateSettings(context) { it.copy(font = font.name) }
         }
     }
 
     fun applySoundEnabled(context: Context, enabled: Boolean) {
         viewModelScope.launch {
             SoundPreferenceManager.setSoundEnabled(context, enabled)
+            updateSettings(context) { it.copy(soundEnabled = enabled) }
         }
     }
 
     fun applySoundVolume(context: Context, volume: Float) {
         viewModelScope.launch {
             SoundPreferenceManager.setSoundVolume(context, volume)
+            updateSettings(context) { it.copy(soundVolume = volume) }
         }
     }
 }
