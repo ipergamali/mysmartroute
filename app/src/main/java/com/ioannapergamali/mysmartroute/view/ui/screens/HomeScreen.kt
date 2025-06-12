@@ -15,6 +15,9 @@ import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.view.ui.animation.rememberBreathingAnimation
 import com.ioannapergamali.mysmartroute.view.ui.animation.rememberSlideFadeInAnimation
+import com.ioannapergamali.mysmartroute.utils.SoundPreferenceManager
+import androidx.compose.ui.platform.LocalContext
+import android.media.MediaPlayer
 
 @Composable
 fun HomeScreen(
@@ -41,6 +44,30 @@ fun HomeScreen(
 
         val (logoScale, logoAlpha) = rememberBreathingAnimation()
         val (textOffset, textAlpha) = rememberSlideFadeInAnimation()
+
+        val context = LocalContext.current
+        val soundEnabled by SoundPreferenceManager.soundEnabledFlow(context).collectAsState(initial = true)
+
+        val mediaPlayer = remember {
+            MediaPlayer().apply {
+                val fd = context.assets.openFd("soundtrack.mp3")
+                setDataSource(fd.fileDescriptor, fd.startOffset, fd.length)
+                prepare()
+                isLooping = true
+            }
+        }
+
+        LaunchedEffect(soundEnabled) {
+            if (soundEnabled) {
+                if (!mediaPlayer.isPlaying) mediaPlayer.start()
+            } else {
+                if (mediaPlayer.isPlaying) mediaPlayer.pause()
+            }
+        }
+
+        DisposableEffect(Unit) {
+            onDispose { mediaPlayer.release() }
+        }
 
         Column(
             modifier = contentModifier,

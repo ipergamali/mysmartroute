@@ -12,6 +12,7 @@ import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import com.ioannapergamali.mysmartroute.utils.ThemePreferenceManager
 import com.ioannapergamali.mysmartroute.utils.FontPreferenceManager
 import com.ioannapergamali.mysmartroute.view.ui.AppFont
+import com.ioannapergamali.mysmartroute.utils.SoundPreferenceManager
 import kotlinx.coroutines.launch
 
 class SettingsViewModel : ViewModel() {
@@ -41,6 +42,12 @@ class SettingsViewModel : ViewModel() {
     fun applyFont(context: Context, font: AppFont) {
         viewModelScope.launch {
             FontPreferenceManager.setFont(context, font)
+        }
+    }
+
+    fun applySoundEnabled(context: Context, enabled: Boolean) {
+        viewModelScope.launch {
+            SoundPreferenceManager.setSoundEnabled(context, enabled)
         }
     }
 }
