@@ -177,9 +177,10 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_3_4,
                     MIGRATION_4_5,
                     MIGRATION_5_6,
-                    MIGRATION_6_7,
-                    MIGRATION_7_8
+                    MIGRATION_6_7
                 )
+                    .fallbackToDestructiveMigrationFrom(7)
+                    .fallbackToDestructiveMigration()
                     .build().also { INSTANCE = it }
             }
         }
