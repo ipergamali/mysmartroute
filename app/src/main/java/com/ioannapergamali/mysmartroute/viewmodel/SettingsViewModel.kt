@@ -2,6 +2,7 @@ package com.ioannapergamali.mysmartroute.viewmodel
 
 import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
@@ -17,6 +18,8 @@ import com.ioannapergamali.mysmartroute.view.ui.AppFont
 import com.ioannapergamali.mysmartroute.utils.SoundPreferenceManager
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Dispatchers
 
 class SettingsViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
@@ -26,7 +29,14 @@ class SettingsViewModel : ViewModel() {
         context: Context,
         transform: (SettingsEntity) -> SettingsEntity
     ) {
-        val userId = auth.currentUser?.uid ?: return
+        val userId = auth.currentUser?.uid
+        if (userId == null) {
+            Log.w("SettingsViewModel", "Δεν βρέθηκε συνδεδεμένος χρήστης")
+            withContext(Dispatchers.Main) {
+                Toast.makeText(context, "Δεν βρέθηκε χρήστης", Toast.LENGTH_SHORT).show()
+            }
+            return
+        }
         val dao = MySmartRouteDatabase.getInstance(context).settingsDao()
         val current = dao.getSettings(userId) ?: SettingsEntity(
             userId = userId,
@@ -39,8 +49,15 @@ class SettingsViewModel : ViewModel() {
         val updated = transform(current)
         try {
             dao.insert(updated)
+            Log.d("SettingsViewModel", "Τοπική αποθήκευση επιτυχής: $updated")
+            withContext(Dispatchers.Main) {
+                Toast.makeText(context, "Αποθηκεύτηκε τοπικά", Toast.LENGTH_SHORT).show()
+            }
         } catch (e: Exception) {
             Log.e("SettingsViewModel", "Αποτυχία τοπικής αποθήκευσης", e)
+            withContext(Dispatchers.Main) {
+                Toast.makeText(context, "Σφάλμα τοπικής αποθήκευσης", Toast.LENGTH_SHORT).show()
+            }
             return
         }
 
@@ -50,8 +67,20 @@ class SettingsViewModel : ViewModel() {
                     .document(userId)
                     .set(updated)
                     .await()
+                Log.d("SettingsViewModel", "Αποθήκευση στο Firestore επιτυχής")
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, "Αποθηκεύτηκε στο cloud", Toast.LENGTH_SHORT).show()
+                }
             } catch (e: Exception) {
                 Log.e("SettingsViewModel", "Αποτυχία αποθήκευσης στο Firestore", e)
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, "Σφάλμα cloud αποθήκευσης", Toast.LENGTH_SHORT).show()
+                }
+            }
+        } else {
+            Log.d("SettingsViewModel", "Δεν υπάρχει σύνδεση, παράλειψη cloud")
+            withContext(Dispatchers.Main) {
+                Toast.makeText(context, "Αποθήκευση μόνο τοπικά", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -118,6 +147,7 @@ class SettingsViewModel : ViewModel() {
 
     fun saveCurrentSettings(context: Context) {
         viewModelScope.launch {
+            Log.d("SettingsViewModel", "Εκκίνηση αποθήκευσης ρυθμίσεων")
             val theme = ThemePreferenceManager.themeFlow(context).first()
             val dark = ThemePreferenceManager.darkThemeFlow(context).first()
             val font = FontPreferenceManager.fontFlow(context).first()
@@ -137,6 +167,7 @@ class SettingsViewModel : ViewModel() {
 
     fun resetSettings(context: Context) {
         viewModelScope.launch {
+            Log.d("SettingsViewModel", "Επαναφορά ρυθμίσεων στα προεπιλεγμένα")
             updateSettings(context) {
                 it.copy(
                     theme = AppTheme.Ocean.name,
