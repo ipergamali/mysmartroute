@@ -60,11 +60,16 @@ enum class AppTheme(val label: String, val seed: Color, val fontFamily: FontFami
 }
 
 @Composable
-fun MysmartrouteTheme(theme: AppTheme, darkTheme: Boolean, content: @Composable () -> Unit) {
+fun MysmartrouteTheme(
+    theme: AppTheme,
+    darkTheme: Boolean,
+    font: FontFamily,
+    content: @Composable () -> Unit
+) {
     val colorScheme = if (darkTheme) theme.darkColors else theme.lightColors
     androidx.compose.material3.MaterialTheme(
         colorScheme = colorScheme,
-        typography = theme.typography,
+        typography = Typography(defaultFontFamily = font),
         content = content
     )
 }

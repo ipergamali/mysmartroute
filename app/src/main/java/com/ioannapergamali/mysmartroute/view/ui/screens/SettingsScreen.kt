@@ -28,6 +28,9 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
             Button(onClick = { navController.navigate("themePicker") }) {
                 Text("Επιλογή θέματος")
             }
+            Button(onClick = { navController.navigate("fontPicker") }, modifier = Modifier.padding(top = 8.dp)) {
+                Text("Επιλογή γραμματοσειράς")
+            }
         }
     }
 }

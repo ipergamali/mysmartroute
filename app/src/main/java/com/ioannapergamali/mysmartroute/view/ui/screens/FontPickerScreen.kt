@@ -7,10 +7,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.ExposedDropdownMenu
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.MaterialTheme
 import com.ioannapergamali.mysmartroute.view.ui.MysmartrouteTheme
@@ -26,8 +26,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.ioannapergamali.mysmartroute.view.ui.AppTheme
 import com.ioannapergamali.mysmartroute.view.ui.AppFont
+import com.ioannapergamali.mysmartroute.view.ui.AppTheme
 import com.ioannapergamali.mysmartroute.viewmodel.SettingsViewModel
 import com.ioannapergamali.mysmartroute.utils.ThemePreferenceManager
 import com.ioannapergamali.mysmartroute.utils.FontPreferenceManager
@@ -35,7 +35,7 @@ import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ThemePickerScreen(navController: NavController) {
+fun FontPickerScreen(navController: NavController) {
     val context = LocalContext.current
     val viewModel: SettingsViewModel = viewModel()
     val currentTheme by ThemePreferenceManager.themeFlow(context).collectAsState(initial = AppTheme.Ocean)
@@ -43,16 +43,14 @@ fun ThemePickerScreen(navController: NavController) {
     val currentFont by FontPreferenceManager.fontFlow(context).collectAsState(initial = AppFont.SansSerif)
 
     var expanded by remember { mutableStateOf(false) }
-    var selectedTheme by remember { mutableStateOf(currentTheme) }
-    var dark by remember { mutableStateOf(currentDark) }
+    var selectedFont by remember { mutableStateOf(currentFont) }
 
-    LaunchedEffect(currentTheme) { selectedTheme = currentTheme }
-    LaunchedEffect(currentDark) { dark = currentDark }
+    LaunchedEffect(currentFont) { selectedFont = currentFont }
 
-    MysmartrouteTheme(theme = selectedTheme, darkTheme = dark, font = currentFont.fontFamily) {
+    MysmartrouteTheme(theme = currentTheme, darkTheme = currentDark, font = selectedFont.fontFamily) {
         Scaffold(
             topBar = {
-                TopBar(title = "Themes", navController = navController)
+                TopBar(title = "Fonts", navController = navController)
             },
             containerColor = MaterialTheme.colorScheme.background
         ) { padding ->
@@ -62,33 +60,29 @@ fun ThemePickerScreen(navController: NavController) {
                     .padding(padding)
                     .padding(16.dp)
             ) {
-                Text("Themes")
+                Text("Γραμματοσειρές")
                 ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
                     TextField(
                         readOnly = true,
-                        value = selectedTheme.label,
+                        value = selectedFont.label,
                         onValueChange = {},
-                        label = { Text("Theme") },
+                        label = { Text("Fonts") },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                         modifier = Modifier.menuAnchor()
                     )
                     ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                        AppTheme.values().forEach { theme ->
-                            DropdownMenuItem(text = { Text(theme.label) }, onClick = {
-                                selectedTheme = theme
+                        AppFont.values().forEach { font ->
+                            DropdownMenuItem(text = { Text(font.label) }, onClick = {
+                                selectedFont = font
                                 expanded = false
                             })
                         }
                     }
                 }
-                Text("Dark Theme")
-                Switch(checked = dark, onCheckedChange = {
-                    dark = it
-                })
 
                 Button(
                     onClick = {
-                        viewModel.applyTheme(context, selectedTheme, dark)
+                        viewModel.applyFont(context, selectedFont)
                         navController.popBackStack()
                     },
                     modifier = Modifier.padding(top = 16.dp)
