@@ -2,7 +2,6 @@ package com.ioannapergamali.mysmartroute.viewmodel
 
 import android.content.Context
 import android.util.Log
-import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
@@ -12,8 +11,6 @@ import com.ioannapergamali.mysmartroute.data.local.SettingsEntity
 import com.ioannapergamali.mysmartroute.view.ui.AppTheme
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import kotlinx.coroutines.tasks.await
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import com.ioannapergamali.mysmartroute.utils.ThemePreferenceManager
 import com.ioannapergamali.mysmartroute.utils.FontPreferenceManager
 import com.ioannapergamali.mysmartroute.view.ui.AppFont
@@ -41,40 +38,19 @@ class SettingsViewModel : ViewModel() {
         val updated = transform(current)
         try {
             dao.insert(updated)
-            withContext(Dispatchers.Main) {
-                Toast.makeText(context, "Οι ρυθμίσεις αποθηκεύτηκαν", Toast.LENGTH_SHORT).show()
-            }
         } catch (e: Exception) {
-            Log.e("SettingsViewModel", "Local save error", e)
-            withContext(Dispatchers.Main) {
-                Toast.makeText(context, "Σφάλμα αποθήκευσης", Toast.LENGTH_SHORT).show()
-            }
+            Log.e("SettingsViewModel", "Αποτυχία τοπικής αποθήκευσης", e)
             return
         }
 
         if (NetworkUtils.isInternetAvailable(context)) {
-            val data = mapOf(
-                "theme" to updated.theme,
-                "darkTheme" to updated.darkTheme,
-                "font" to updated.font,
-                "soundEnabled" to updated.soundEnabled,
-                "soundVolume" to updated.soundVolume
-            )
             try {
                 db.collection("user_settings")
                     .document(userId)
-                    .set(data)
+                    .set(updated)
                     .await()
             } catch (e: Exception) {
-                Log.e("SettingsViewModel", "Cloud sync error", e)
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(context, "Αποτυχία αποθήκευσης στο cloud", Toast.LENGTH_SHORT).show()
-                }
-                // ignore to keep local changes even if cloud sync fails
-            }
-        } else {
-            withContext(Dispatchers.Main) {
-                Toast.makeText(context, "Εκτός σύνδεσης - τοπική αποθήκευση", Toast.LENGTH_SHORT).show()
+                Log.e("SettingsViewModel", "Αποτυχία αποθήκευσης στο Firestore", e)
             }
         }
     }
