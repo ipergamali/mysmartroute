@@ -1,10 +1,8 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -30,7 +28,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import android.widget.Toast
 import androidx.navigation.NavController
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.VolumeOff
@@ -68,7 +65,6 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
     val soundState = remember { mutableStateOf(soundEnabled) }
     val volumeState = remember { mutableFloatStateOf(currentVolume) }
 
-    val saveChecked = remember { mutableStateOf(false) }
 
     LaunchedEffect(currentTheme) { selectedTheme.value = currentTheme }
     LaunchedEffect(currentDark) { dark.value = currentDark }
@@ -160,26 +156,13 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
                 )
             }
 
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 16.dp)) {
-                Checkbox(
-                    checked = saveChecked.value,
-                    onCheckedChange = { saveChecked.value = it }
-                )
-                Text("Οριστική αποθήκευση επιλογών", modifier = Modifier.padding(start = 8.dp))
-            }
-
             Button(
                 onClick = {
                     viewModel.applyTheme(context, selectedTheme.value, dark.value)
                     viewModel.applyFont(context, selectedFont.value)
                     viewModel.applySoundEnabled(context, soundState.value)
                     viewModel.applySoundVolume(context, volumeState.floatValue)
-
-                    if (saveChecked.value) {
-                        viewModel.saveCurrentSettings(context)
-                    } else {
-                        Toast.makeText(context, "Επιλέξτε το κουτάκι πριν πατήσετε Apply", Toast.LENGTH_SHORT).show()
-                    }
+                    viewModel.saveCurrentSettings(context)
                 },
                 modifier = Modifier.padding(top = 8.dp)
             ) {
