@@ -1,6 +1,7 @@
 package com.ioannapergamali.mysmartroute.utils
 
 import android.content.Context
+import android.content.res.Configuration
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
@@ -15,6 +16,11 @@ object ThemePreferenceManager {
     private val THEME_KEY = intPreferencesKey("theme")
     private val DARK_MODE_KEY = booleanPreferencesKey("dark_mode")
 
+    private fun Context.isSystemDarkTheme(): Boolean {
+        val mode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+        return mode == Configuration.UI_MODE_NIGHT_YES
+    }
+
     fun themeFlow(context: Context): Flow<AppTheme> =
         context.dataStore.data.map { prefs ->
             val index = prefs[THEME_KEY] ?: 0
@@ -23,7 +29,7 @@ object ThemePreferenceManager {
 
     fun darkThemeFlow(context: Context): Flow<Boolean> =
         context.dataStore.data.map { prefs ->
-            prefs[DARK_MODE_KEY] ?: false
+            prefs[DARK_MODE_KEY] ?: context.isSystemDarkTheme()
         }
 
     suspend fun setTheme(context: Context, theme: AppTheme) {
