@@ -54,22 +54,22 @@ fun LocalDatabaseScreen(navController: NavController, openDrawer: () -> Unit) {
             ) {
                 item { Text("Users", style = MaterialTheme.typography.titleMedium) }
                 items(data!!.users) { user ->
-                    Text("${'$'}{user.id} - ${'$'}{user.username}")
+                    Text("${user.id} - ${user.username}")
                 }
                 item { Spacer(modifier = Modifier.padding(8.dp)) }
                 item { Text("Vehicles", style = MaterialTheme.typography.titleMedium) }
                 items(data!!.vehicles) { vehicle ->
-                    Text("${'$'}{vehicle.id} - ${'$'}{vehicle.description}")
+                    Text("${vehicle.id} - ${vehicle.description}")
                 }
                 item { Spacer(modifier = Modifier.padding(8.dp)) }
                 item { Text("PoIs", style = MaterialTheme.typography.titleMedium) }
                 items(data!!.pois) { poi ->
-                    Text("${'$'}{poi.id} - ${'$'}{poi.name}")
+                    Text("${poi.id} - ${poi.name}")
                 }
                 item { Spacer(modifier = Modifier.padding(8.dp)) }
                 item { Text("Settings", style = MaterialTheme.typography.titleMedium) }
                 items(data!!.settings) { setting ->
-                    Text("${'$'}{setting.userId} - ${'$'}{setting.theme}")
+                    Text("${setting.userId} - ${setting.theme}")
                 }
             }
         }
