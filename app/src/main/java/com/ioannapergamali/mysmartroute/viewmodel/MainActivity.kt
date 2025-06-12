@@ -28,6 +28,9 @@ class MainActivity : ComponentActivity()
         super.onCreate(savedInstanceState)
         // Προαιρετικός έλεγχος ύπαρξης του MIUI Service Delivery provider
         MiuiUtils.callServiceDelivery(this, "ping")
+        // Initialize the soundtrack before setting the Compose content so that
+        // playback can start immediately when the UI is composed.
+        SoundManager.initialize(applicationContext)
         setContent {
             val context = LocalContext.current
             val theme by ThemePreferenceManager.themeFlow(context).collectAsState(initial = AppTheme.Ocean)
@@ -36,7 +39,6 @@ class MainActivity : ComponentActivity()
             val soundEnabled by SoundPreferenceManager.soundEnabledFlow(context).collectAsState(initial = true)
             val soundVolume by SoundPreferenceManager.soundVolumeFlow(context).collectAsState(initial = 1f)
 
-            LaunchedEffect(Unit) { SoundManager.initialize(context.applicationContext) }
             LaunchedEffect(soundEnabled, soundVolume) {
                 SoundManager.setVolume(soundVolume)
                 if (soundEnabled) {
