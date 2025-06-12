@@ -53,23 +53,39 @@ fun LocalDatabaseScreen(navController: NavController, openDrawer: () -> Unit) {
                     .padding(16.dp)
             ) {
                 item { Text("Users", style = MaterialTheme.typography.titleMedium) }
-                items(data!!.users) { user ->
-                    Text("${user.id} - ${user.username}")
+                if (data!!.users.isEmpty()) {
+                    item { Text("Ο πίνακας είναι άδειος") }
+                } else {
+                    items(data!!.users) { user ->
+                        Text("${user.id} - ${user.username}")
+                    }
                 }
                 item { Spacer(modifier = Modifier.padding(8.dp)) }
                 item { Text("Vehicles", style = MaterialTheme.typography.titleMedium) }
-                items(data!!.vehicles) { vehicle ->
-                    Text("${vehicle.id} - ${vehicle.description}")
+                if (data!!.vehicles.isEmpty()) {
+                    item { Text("Ο πίνακας είναι άδειος") }
+                } else {
+                    items(data!!.vehicles) { vehicle ->
+                        Text("${vehicle.id} - ${vehicle.description}")
+                    }
                 }
                 item { Spacer(modifier = Modifier.padding(8.dp)) }
                 item { Text("PoIs", style = MaterialTheme.typography.titleMedium) }
-                items(data!!.pois) { poi ->
-                    Text("${poi.id} - ${poi.name}")
+                if (data!!.pois.isEmpty()) {
+                    item { Text("Ο πίνακας είναι άδειος") }
+                } else {
+                    items(data!!.pois) { poi ->
+                        Text("${poi.id} - ${poi.name}")
+                    }
                 }
                 item { Spacer(modifier = Modifier.padding(8.dp)) }
                 item { Text("Settings", style = MaterialTheme.typography.titleMedium) }
-                items(data!!.settings) { setting ->
-                    Text("${setting.userId} - ${setting.theme}")
+                if (data!!.settings.isEmpty()) {
+                    item { Text("Ο πίνακας είναι άδειος") }
+                } else {
+                    items(data!!.settings) { setting ->
+                        Text("${setting.userId} - ${setting.theme}")
+                    }
                 }
             }
         }
