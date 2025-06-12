@@ -19,6 +19,9 @@ import androidx.compose.foundation.border
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.statusBarsPadding
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,14 +33,16 @@ fun TopBar(
     onMenuClick: () -> Unit = {},
     onLogout: () -> Unit = {}
 ) {
-    TopAppBar(
-        modifier = Modifier.border(1.dp, MaterialTheme.colorScheme.primary),
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-            navigationIconContentColor = MaterialTheme.colorScheme.primary,
-            actionIconContentColor = MaterialTheme.colorScheme.primary,
-            titleContentColor = MaterialTheme.colorScheme.primary
-        ),
+    Box(modifier = Modifier.statusBarsPadding()) {
+        TopAppBar(
+            modifier = Modifier.border(1.dp, MaterialTheme.colorScheme.primary),
+            windowInsets = androidx.compose.foundation.layout.WindowInsets(0),
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                navigationIconContentColor = MaterialTheme.colorScheme.primary,
+                actionIconContentColor = MaterialTheme.colorScheme.primary,
+                titleContentColor = MaterialTheme.colorScheme.primary
+            ),
         title = { Text(title) },
         navigationIcon = {
             Row {
@@ -72,5 +77,6 @@ fun TopBar(
                 }
             }
         }
-    )
+        )
+    }
 }
