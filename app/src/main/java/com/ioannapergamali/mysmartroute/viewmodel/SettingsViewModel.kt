@@ -16,6 +16,7 @@ import com.ioannapergamali.mysmartroute.utils.FontPreferenceManager
 import com.ioannapergamali.mysmartroute.view.ui.AppFont
 import com.ioannapergamali.mysmartroute.utils.SoundPreferenceManager
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
 
 class SettingsViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
@@ -59,28 +60,24 @@ class SettingsViewModel : ViewModel() {
         viewModelScope.launch {
             ThemePreferenceManager.setTheme(context, theme)
             ThemePreferenceManager.setDarkTheme(context, dark)
-            updateSettings(context) { it.copy(theme = theme.name, darkTheme = dark) }
         }
     }
 
     fun applyFont(context: Context, font: AppFont) {
         viewModelScope.launch {
             FontPreferenceManager.setFont(context, font)
-            updateSettings(context) { it.copy(font = font.name) }
         }
     }
 
     fun applySoundEnabled(context: Context, enabled: Boolean) {
         viewModelScope.launch {
             SoundPreferenceManager.setSoundEnabled(context, enabled)
-            updateSettings(context) { it.copy(soundEnabled = enabled) }
         }
     }
 
     fun applySoundVolume(context: Context, volume: Float) {
         viewModelScope.launch {
             SoundPreferenceManager.setSoundVolume(context, volume)
-            updateSettings(context) { it.copy(soundVolume = volume) }
         }
     }
 
@@ -116,6 +113,39 @@ class SettingsViewModel : ViewModel() {
             FontPreferenceManager.setFont(context, AppFont.valueOf(settings.font))
             SoundPreferenceManager.setSoundEnabled(context, settings.soundEnabled)
             SoundPreferenceManager.setSoundVolume(context, settings.soundVolume)
+        }
+    }
+
+    fun saveCurrentSettings(context: Context) {
+        viewModelScope.launch {
+            val theme = ThemePreferenceManager.themeFlow(context).first()
+            val dark = ThemePreferenceManager.darkThemeFlow(context).first()
+            val font = FontPreferenceManager.fontFlow(context).first()
+            val soundEnabled = SoundPreferenceManager.getSoundEnabled(context)
+            val soundVolume = SoundPreferenceManager.getSoundVolume(context)
+            updateSettings(context) {
+                it.copy(
+                    theme = theme.name,
+                    darkTheme = dark,
+                    font = font.name,
+                    soundEnabled = soundEnabled,
+                    soundVolume = soundVolume
+                )
+            }
+        }
+    }
+
+    fun resetSettings(context: Context) {
+        viewModelScope.launch {
+            updateSettings(context) {
+                it.copy(
+                    theme = AppTheme.Ocean.name,
+                    darkTheme = false,
+                    font = AppFont.SansSerif.name,
+                    soundEnabled = true,
+                    soundVolume = 1f
+                )
+            }
         }
     }
 }
