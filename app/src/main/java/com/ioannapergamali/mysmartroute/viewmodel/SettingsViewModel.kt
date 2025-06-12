@@ -88,6 +88,32 @@ class SettingsViewModel : ViewModel() {
         }
     }
 
+    fun applyAllSettings(
+        context: Context,
+        theme: AppTheme,
+        dark: Boolean,
+        font: AppFont,
+        soundEnabled: Boolean,
+        soundVolume: Float
+    ) {
+        viewModelScope.launch {
+            ThemePreferenceManager.setTheme(context, theme)
+            ThemePreferenceManager.setDarkTheme(context, dark)
+            FontPreferenceManager.setFont(context, font)
+            SoundPreferenceManager.setSoundEnabled(context, soundEnabled)
+            SoundPreferenceManager.setSoundVolume(context, soundVolume)
+            updateSettings(context) {
+                it.copy(
+                    theme = theme.name,
+                    darkTheme = dark,
+                    font = font.name,
+                    soundEnabled = soundEnabled,
+                    soundVolume = soundVolume
+                )
+            }
+        }
+    }
+
     fun applyTheme(context: Context, theme: AppTheme, dark: Boolean) {
         viewModelScope.launch {
             ThemePreferenceManager.setTheme(context, theme)
