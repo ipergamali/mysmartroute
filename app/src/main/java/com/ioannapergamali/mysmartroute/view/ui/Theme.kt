@@ -83,6 +83,7 @@ private fun typographyWithFont(font: FontFamily): Typography {
     )
 }
 
+@Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun MysmartrouteTheme(
     theme: AppTheme,
