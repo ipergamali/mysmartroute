@@ -15,15 +15,17 @@ import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.view.ui.animation.rememberBreathingAnimation
 import com.ioannapergamali.mysmartroute.view.ui.animation.rememberSlideFadeInAnimation
-import com.ioannapergamali.mysmartroute.utils.SoundPreferenceManager
 import androidx.compose.ui.platform.LocalContext
-import android.media.MediaPlayer
+import android.widget.Toast
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 
 @Composable
 fun HomeScreen(
     navController: NavController,
     onNavigateToSignUp: () -> Unit,
-    onNavigateToLogin: () -> Unit,
     openDrawer: () -> Unit
 ) {
     Scaffold(
@@ -32,26 +34,27 @@ fun HomeScreen(
                 title = "Home",
                 navController = navController,
                 showMenu = true,
+                showBack = false,
                 onMenuClick = openDrawer
             )
         }
     ) { paddingValues ->
 
-        val contentModifier = Modifier
-            .fillMaxSize()
-            .padding(paddingValues)
-            .padding(16.dp)
-
         val (logoScale, logoAlpha) = rememberBreathingAnimation()
         val (textOffset, textAlpha) = rememberSlideFadeInAnimation()
 
+        val viewModel: AuthenticationViewModel = viewModel()
+        val uiState by viewModel.loginState.collectAsState()
         val context = LocalContext.current
+        var email by remember { mutableStateOf("") }
+        var password by remember { mutableStateOf("") }
 
-        Column(
-            modifier = contentModifier,
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+        ScreenContainer(modifier = Modifier.padding(paddingValues)) {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Top,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
             Text(
                 text = "Welcome",
                 style = MaterialTheme.typography.headlineLarge,
@@ -78,7 +81,34 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Button(onClick = { onNavigateToLogin() }) {
+            TextField(
+                value = email,
+                onValueChange = { email = it },
+                label = { Text("Email") },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(Modifier.height(8.dp))
+
+            TextField(
+                value = password,
+                onValueChange = { password = it },
+                label = { Text("Password") },
+                visualTransformation = PasswordVisualTransformation(),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            if (uiState is AuthenticationViewModel.LoginState.Error) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = (uiState as AuthenticationViewModel.LoginState.Error).message,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            Button(onClick = { viewModel.login(email, password) }) {
                 Text("Login")
             }
 
@@ -92,6 +122,22 @@ fun HomeScreen(
                     modifier = Modifier.clickable { onNavigateToSignUp() }
                 )
             }
+        }
+    }
+
+    LaunchedEffect(uiState) {
+        when (uiState) {
+            is AuthenticationViewModel.LoginState.Success -> {
+                Toast.makeText(context, "Login successful", Toast.LENGTH_SHORT).show()
+                navController.navigate("menu") {
+                    popUpTo("home") { inclusive = true }
+                }
+            }
+            is AuthenticationViewModel.LoginState.Error -> {
+                val message = (uiState as AuthenticationViewModel.LoginState.Error).message
+                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            }
+            else -> {}
         }
     }
 }

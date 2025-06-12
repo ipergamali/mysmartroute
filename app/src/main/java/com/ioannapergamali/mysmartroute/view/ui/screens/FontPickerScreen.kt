@@ -1,7 +1,5 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -32,6 +30,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.SettingsViewModel
 import com.ioannapergamali.mysmartroute.utils.ThemePreferenceManager
 import com.ioannapergamali.mysmartroute.utils.FontPreferenceManager
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
+import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,12 +53,7 @@ fun FontPickerScreen(navController: NavController) {
             },
             containerColor = MaterialTheme.colorScheme.background
         ) { padding ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .padding(16.dp)
-            ) {
+            ScreenContainer(modifier = Modifier.padding(padding)) {
                 Text("Γραμματοσειρές")
                 ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
                     TextField(

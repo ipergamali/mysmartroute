@@ -1,8 +1,6 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -10,6 +8,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
+import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.collectAsState
@@ -58,12 +57,7 @@ fun SoundPickerScreen(navController: NavController) {
             topBar = { TopBar(title = "Sound", navController = navController) },
             containerColor = MaterialTheme.colorScheme.background
         ) { padding ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .padding(16.dp)
-            ) {
+            ScreenContainer(modifier = Modifier.padding(padding)) {
                 Text("Ένταση")
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     IconButton(onClick = {

@@ -1,7 +1,5 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import android.widget.Toast
 import androidx.compose.material3.Button
@@ -17,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
+import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.viewmodel.DatabaseViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.SyncState
 
@@ -36,12 +35,7 @@ fun DatabaseMenuScreen(navController: NavController, openDrawer: () -> Unit) {
             )
         }
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp)
-        ) {
+        ScreenContainer(modifier = Modifier.padding(padding)) {
             Button(onClick = { navController.navigate("localDb") }) {
                 Text("Local DB")
             }
