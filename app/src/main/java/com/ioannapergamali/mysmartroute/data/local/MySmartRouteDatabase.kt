@@ -119,7 +119,6 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                         `streetName` TEXT NOT NULL,
                         `streetNum` INTEGER NOT NULL,
                         `postalCode` INTEGER NOT NULL,
-                        FOREIGN KEY(`id`) REFERENCES `authentication`(`uid`) ON DELETE CASCADE,
                         PRIMARY KEY(`id`)
                     )
                     """
