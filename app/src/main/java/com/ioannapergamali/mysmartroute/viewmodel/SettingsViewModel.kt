@@ -9,6 +9,7 @@ import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.SettingsEntity
 import com.ioannapergamali.mysmartroute.view.ui.AppTheme
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
+import kotlinx.coroutines.tasks.await
 import com.ioannapergamali.mysmartroute.utils.ThemePreferenceManager
 import com.ioannapergamali.mysmartroute.utils.FontPreferenceManager
 import com.ioannapergamali.mysmartroute.view.ui.AppFont
@@ -74,6 +75,41 @@ class SettingsViewModel : ViewModel() {
         viewModelScope.launch {
             SoundPreferenceManager.setSoundVolume(context, volume)
             updateSettings(context) { it.copy(soundVolume = volume) }
+        }
+    }
+
+    fun syncSettings(context: Context) {
+        viewModelScope.launch {
+            val userId = auth.currentUser?.uid ?: return@launch
+            val dao = MySmartRouteDatabase.getInstance(context).settingsDao()
+
+            val local = dao.getSettings(userId)
+            val remote = if (NetworkUtils.isInternetAvailable(context)) {
+                try {
+                    val doc = db.collection("user_settings").document(userId).get().await()
+                    if (doc.exists()) {
+                        SettingsEntity(
+                            userId = userId,
+                            theme = doc.getString("theme") ?: AppTheme.Ocean.name,
+                            darkTheme = doc.getBoolean("darkTheme") ?: false,
+                            font = doc.getString("font") ?: AppFont.SansSerif.name,
+                            soundEnabled = doc.getBoolean("soundEnabled") ?: true,
+                            soundVolume = (doc.getDouble("soundVolume") ?: 1.0).toFloat()
+                        )
+                    } else null
+                } catch (_: Exception) {
+                    null
+                }
+            } else null
+
+            val settings = remote ?: local ?: return@launch
+
+            dao.insert(settings)
+            ThemePreferenceManager.setTheme(context, AppTheme.valueOf(settings.theme))
+            ThemePreferenceManager.setDarkTheme(context, settings.darkTheme)
+            FontPreferenceManager.setFont(context, AppFont.valueOf(settings.font))
+            SoundPreferenceManager.setSoundEnabled(context, settings.soundEnabled)
+            SoundPreferenceManager.setSoundVolume(context, settings.soundVolume)
         }
     }
 }

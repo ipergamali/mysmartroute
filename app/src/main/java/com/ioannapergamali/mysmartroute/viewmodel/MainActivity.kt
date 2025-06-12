@@ -3,6 +3,7 @@ package com.ioannapergamali.mysmartroute.viewmodel
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
@@ -19,17 +20,20 @@ import com.ioannapergamali.mysmartroute.utils.MiuiUtils
 import com.ioannapergamali.mysmartroute.utils.ThemePreferenceManager
 import com.ioannapergamali.mysmartroute.utils.SoundPreferenceManager
 import com.ioannapergamali.mysmartroute.utils.SoundManager
+import com.ioannapergamali.mysmartroute.viewmodel.SettingsViewModel
 import kotlinx.coroutines.launch
 
 
 
-class MainActivity : ComponentActivity()
-{
+class MainActivity : ComponentActivity() {
+    private val settingsViewModel: SettingsViewModel by viewModels()
     override fun onCreate(savedInstanceState : Bundle?)
     {
         super.onCreate(savedInstanceState)
         // Προαιρετικός έλεγχος ύπαρξης του MIUI Service Delivery provider
         MiuiUtils.callServiceDelivery(this, "ping")
+        // Συγχρονισμός ρυθμίσεων από τη βάση
+        settingsViewModel.syncSettings(this)
         // Initialize the soundtrack and start playback based on saved preferences.
         SoundManager.initialize(applicationContext)
         lifecycleScope.launch {
