@@ -1,13 +1,14 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableFloatStateOf
@@ -20,6 +21,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.VolumeOff
+import androidx.compose.material.icons.filled.VolumeUp
+import androidx.compose.ui.Alignment
 import com.ioannapergamali.mysmartroute.utils.SoundPreferenceManager
 import com.ioannapergamali.mysmartroute.utils.ThemePreferenceManager
 import com.ioannapergamali.mysmartroute.utils.FontPreferenceManager
@@ -29,6 +34,7 @@ import com.ioannapergamali.mysmartroute.view.ui.AppFont
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.SettingsViewModel
 import androidx.compose.material3.Slider
+import com.ioannapergamali.mysmartroute.utils.SoundManager
 
 @Composable
 fun SoundPickerScreen(navController: NavController) {
@@ -58,28 +64,30 @@ fun SoundPickerScreen(navController: NavController) {
                     .padding(padding)
                     .padding(16.dp)
             ) {
-                Text("Ήχος")
-                Switch(
-                    checked = soundState.value,
-                    onCheckedChange = { soundState.value = it }
-                )
+                Text("Ένταση")
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = {
+                        val newState = !soundState.value
+                        soundState.value = newState
+                        viewModel.applySoundEnabled(context, newState)
+                        if (newState) SoundManager.play() else SoundManager.pause()
+                    }) {
+                        Icon(
+                            imageVector = if (soundState.value) Icons.Filled.VolumeUp else Icons.Filled.VolumeOff,
+                            contentDescription = if (soundState.value) "Ήχος" else "Σίγαση"
+                        )
+                    }
 
-                Text("Ένταση", modifier = Modifier.padding(top = 16.dp))
-                Slider(
-                    value = volumeState.floatValue,
-                    onValueChange = { volumeState.floatValue = it },
-                    valueRange = 0f..1f
-                )
-
-                Button(
-                    onClick = {
-                        viewModel.applySoundEnabled(context, soundState.value)
-                        viewModel.applySoundVolume(context, volumeState.floatValue)
-                        navController.popBackStack()
-                    },
-                    modifier = Modifier.padding(top = 16.dp)
-                ) {
-                    Text("Apply")
+                    Slider(
+                        value = volumeState.floatValue,
+                        onValueChange = {
+                            volumeState.floatValue = it
+                            SoundManager.setVolume(it)
+                            viewModel.applySoundVolume(context, it)
+                        },
+                        valueRange = 0f..1f,
+                        modifier = Modifier.weight(1f)
+                    )
                 }
             }
         }
