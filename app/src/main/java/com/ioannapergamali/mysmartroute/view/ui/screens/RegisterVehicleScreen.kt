@@ -52,7 +52,7 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                     modifier = Modifier.menuAnchor().fillMaxWidth()
                 )
-                ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                     VehicleType.values().forEach { option ->
                         DropdownMenuItem(
                             text = { Text(option.name) },
