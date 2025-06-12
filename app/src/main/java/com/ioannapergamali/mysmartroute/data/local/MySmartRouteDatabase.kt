@@ -12,7 +12,7 @@ import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 
 @Database(
     entities = [UserEntity::class, VehicleEntity::class, PoIEntity::class, SettingsEntity::class],
-    version = 8
+    version = 9
 )
 abstract class MySmartRouteDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
