@@ -62,82 +62,148 @@ fun SignUpScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(scrollState),
-            
+
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-            TextField(value = name, onValueChange = { name = it }, label = { Text("Name") }, modifier = Modifier.fillMaxWidth())
-            Spacer(Modifier.height(8.dp))
-            TextField(value = surname, onValueChange = { surname = it }, label = { Text("Surname") }, modifier = Modifier.fillMaxWidth())
-            Spacer(Modifier.height(8.dp))
-            TextField(value = username, onValueChange = { username = it }, label = { Text("Username") }, modifier = Modifier.fillMaxWidth())
-            Spacer(Modifier.height(8.dp))
-            TextField(value = email, onValueChange = { email = it }, label = { Text("Email") }, modifier = Modifier.fillMaxWidth())
-            Spacer(Modifier.height(8.dp))
-            TextField(value = phoneNum, onValueChange = { phoneNum = it }, label = { Text("Phone Number") }, modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone))
-            Spacer(Modifier.height(8.dp))
-            TextField(value = password, onValueChange = { password = it }, label = { Text("Password") }, modifier = Modifier.fillMaxWidth(), visualTransformation = PasswordVisualTransformation())
+                TextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Name") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(Modifier.height(8.dp))
+                TextField(
+                    value = surname,
+                    onValueChange = { surname = it },
+                    label = { Text("Surname") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(Modifier.height(8.dp))
+                TextField(
+                    value = username,
+                    onValueChange = { username = it },
+                    label = { Text("Username") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(Modifier.height(8.dp))
+                TextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text("Email") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(Modifier.height(8.dp))
+                TextField(
+                    value = phoneNum,
+                    onValueChange = { phoneNum = it },
+                    label = { Text("Phone Number") },
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
+                )
+                Spacer(Modifier.height(8.dp))
+                TextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = { Text("Password") },
+                    modifier = Modifier.fillMaxWidth(),
+                    visualTransformation = PasswordVisualTransformation()
+                )
 
-            Spacer(Modifier.height(16.dp))
-            Text("Address", style = MaterialTheme.typography.titleMedium)
-            TextField(value = city, onValueChange = { city = it }, label = { Text("City") }, modifier = Modifier.fillMaxWidth())
-            Spacer(Modifier.height(8.dp))
-            TextField(value = streetName, onValueChange = { streetName = it }, label = { Text("Street Name") }, modifier = Modifier.fillMaxWidth())
-            Spacer(Modifier.height(8.dp))
-            TextField(value = streetNumInput, onValueChange = { streetNumInput = it }, label = { Text("Street Number") }, modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
-            Spacer(Modifier.height(8.dp))
-            TextField(value = postalCodeInput, onValueChange = { postalCodeInput = it }, label = { Text("Postal Code") }, modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+                Spacer(Modifier.height(16.dp))
+                Text("Address", style = MaterialTheme.typography.titleMedium)
+                TextField(
+                    value = city,
+                    onValueChange = { city = it },
+                    label = { Text("City") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(Modifier.height(8.dp))
+                TextField(
+                    value = streetName,
+                    onValueChange = { streetName = it },
+                    label = { Text("Street Name") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(Modifier.height(8.dp))
+                TextField(
+                    value = streetNumInput,
+                    onValueChange = { streetNumInput = it },
+                    label = { Text("Street Number") },
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                )
+                Spacer(Modifier.height(8.dp))
+                TextField(
+                    value = postalCodeInput,
+                    onValueChange = { postalCodeInput = it },
+                    label = { Text("Postal Code") },
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                )
 
-            Spacer(Modifier.height(16.dp))
-            Text("Select Role", style = MaterialTheme.typography.titleMedium)
-            Row {
-                RadioButton(selected = selectedRole == UserRole.DRIVER, onClick = { selectedRole = UserRole.DRIVER })
-                Text("Driver", modifier = Modifier.padding(end = 16.dp))
-                RadioButton(selected = selectedRole == UserRole.PASSENGER, onClick = { selectedRole = UserRole.PASSENGER })
-                Text("Passenger")
-            }
-
-            if (uiState is AuthenticationViewModel.SignUpState.Error) {
-                val message = (uiState as AuthenticationViewModel.SignUpState.Error).message
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(text = message, color = MaterialTheme.colorScheme.error)
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = {
-                val streetNum = streetNumInput.toIntOrNull()
-                val postalCode = postalCodeInput.toIntOrNull()
-
-                if (streetNum != null && postalCode != null) {
-                    viewModel.signUp(
-                        context,
-                        name, surname, username, email, phoneNum, password,
-                        com.ioannapergamali.mysmartroute.model.classes.users.UserAddress(city, streetName, streetNum, postalCode),
-                        selectedRole
-                    )
+                Spacer(Modifier.height(16.dp))
+                Text("Select Role", style = MaterialTheme.typography.titleMedium)
+                Row {
+                    RadioButton(
+                        selected = selectedRole == UserRole.DRIVER,
+                        onClick = { selectedRole = UserRole.DRIVER })
+                    Text("Driver", modifier = Modifier.padding(end = 16.dp))
+                    RadioButton(
+                        selected = selectedRole == UserRole.PASSENGER,
+                        onClick = { selectedRole = UserRole.PASSENGER })
+                    Text("Passenger")
                 }
-            }) {
-                Text("Sign Up")
+
+                if (uiState is AuthenticationViewModel.SignUpState.Error) {
+                    val message = (uiState as AuthenticationViewModel.SignUpState.Error).message
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(text = message, color = MaterialTheme.colorScheme.error)
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(onClick = {
+                    val streetNum = streetNumInput.toIntOrNull()
+                    val postalCode = postalCodeInput.toIntOrNull()
+
+                    if (streetNum != null && postalCode != null) {
+                        viewModel.signUp(
+                            context,
+                            name, surname, username, email, phoneNum, password,
+                            com.ioannapergamali.mysmartroute.model.classes.users.UserAddress(
+                                city,
+                                streetName,
+                                streetNum,
+                                postalCode
+                            ),
+                            selectedRole
+                        )
+                    }
+                }) {
+                    Text("Sign Up")
+                }
             }
         }
-    }
 
-    LaunchedEffect(uiState) {
-        when (uiState) {
-            is AuthenticationViewModel.SignUpState.Success -> {
-                Toast.makeText(
-                    context,
-                    "User created and stored successfully",
-                    Toast.LENGTH_SHORT
-                ).show()
-                onSignUpSuccess()
+        LaunchedEffect(uiState) {
+            when (uiState) {
+                is AuthenticationViewModel.SignUpState.Success -> {
+                    Toast.makeText(
+                        context,
+                        "User created and stored successfully",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    onSignUpSuccess()
+                }
+
+                is AuthenticationViewModel.SignUpState.Error -> {
+                    val message = (uiState as AuthenticationViewModel.SignUpState.Error).message
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                    onSignUpFailure(message)
+                }
+
+                else -> {}
             }
-            is AuthenticationViewModel.SignUpState.Error -> {
-                val message = (uiState as AuthenticationViewModel.SignUpState.Error).message
-                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                onSignUpFailure(message)
-            }
-            else -> {}
         }
     }
 }
