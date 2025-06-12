@@ -60,6 +60,44 @@ enum class AppTheme(val label: String, val seed: Color, val fontFamily: FontFami
 }
 
 @Composable
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+private fun typographyWithFont(font: FontFamily): Typography {
+    val base = Typography()
+    return base.copy(
+        displayLarge = base.displayLarge.copy(fontFamily = font),
+        displayMedium = base.displayMedium.copy(fontFamily = font),
+        displaySmall = base.displaySmall.copy(fontFamily = font),
+        headlineLarge = base.headlineLarge.copy(fontFamily = font),
+        headlineMedium = base.headlineMedium.copy(fontFamily = font),
+        headlineSmall = base.headlineSmall.copy(fontFamily = font),
+        titleLarge = base.titleLarge.copy(fontFamily = font),
+        titleMedium = base.titleMedium.copy(fontFamily = font),
+        titleSmall = base.titleSmall.copy(fontFamily = font),
+        bodyLarge = base.bodyLarge.copy(fontFamily = font),
+        bodyMedium = base.bodyMedium.copy(fontFamily = font),
+        bodySmall = base.bodySmall.copy(fontFamily = font),
+        labelLarge = base.labelLarge.copy(fontFamily = font),
+        labelMedium = base.labelMedium.copy(fontFamily = font),
+        labelSmall = base.labelSmall.copy(fontFamily = font),
+        displayLargeEmphasized = base.displayLargeEmphasized.copy(fontFamily = font),
+        displayMediumEmphasized = base.displayMediumEmphasized.copy(fontFamily = font),
+        displaySmallEmphasized = base.displaySmallEmphasized.copy(fontFamily = font),
+        headlineLargeEmphasized = base.headlineLargeEmphasized.copy(fontFamily = font),
+        headlineMediumEmphasized = base.headlineMediumEmphasized.copy(fontFamily = font),
+        headlineSmallEmphasized = base.headlineSmallEmphasized.copy(fontFamily = font),
+        titleLargeEmphasized = base.titleLargeEmphasized.copy(fontFamily = font),
+        titleMediumEmphasized = base.titleMediumEmphasized.copy(fontFamily = font),
+        titleSmallEmphasized = base.titleSmallEmphasized.copy(fontFamily = font),
+        bodyLargeEmphasized = base.bodyLargeEmphasized.copy(fontFamily = font),
+        bodyMediumEmphasized = base.bodyMediumEmphasized.copy(fontFamily = font),
+        bodySmallEmphasized = base.bodySmallEmphasized.copy(fontFamily = font),
+        labelLargeEmphasized = base.labelLargeEmphasized.copy(fontFamily = font),
+        labelMediumEmphasized = base.labelMediumEmphasized.copy(fontFamily = font),
+        labelSmallEmphasized = base.labelSmallEmphasized.copy(fontFamily = font),
+    )
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 fun MysmartrouteTheme(
     theme: AppTheme,
     darkTheme: Boolean,
@@ -69,7 +107,7 @@ fun MysmartrouteTheme(
     val colorScheme = if (darkTheme) theme.darkColors else theme.lightColors
     androidx.compose.material3.MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography(defaultFontFamily = font),
+        typography = typographyWithFont(font),
         content = content
     )
 }
