@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
+import androidx.lifecycle.lifecycleScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.rememberNavController
 import com.ioannapergamali.mysmartroute.model.navigation.NavigationHost
@@ -18,6 +19,7 @@ import com.ioannapergamali.mysmartroute.utils.MiuiUtils
 import com.ioannapergamali.mysmartroute.utils.ThemePreferenceManager
 import com.ioannapergamali.mysmartroute.utils.SoundPreferenceManager
 import com.ioannapergamali.mysmartroute.utils.SoundManager
+import kotlinx.coroutines.launch
 
 
 
@@ -28,9 +30,14 @@ class MainActivity : ComponentActivity()
         super.onCreate(savedInstanceState)
         // Προαιρετικός έλεγχος ύπαρξης του MIUI Service Delivery provider
         MiuiUtils.callServiceDelivery(this, "ping")
-        // Initialize the soundtrack before setting the Compose content so that
-        // playback can start immediately when the UI is composed.
+        // Initialize the soundtrack and start playback based on saved preferences.
         SoundManager.initialize(applicationContext)
+        lifecycleScope.launch {
+            val enabled = SoundPreferenceManager.getSoundEnabled(applicationContext)
+            val volume = SoundPreferenceManager.getSoundVolume(applicationContext)
+            SoundManager.setVolume(volume)
+            if (enabled) SoundManager.play()
+        }
         setContent {
             val context = LocalContext.current
             val theme by ThemePreferenceManager.themeFlow(context).collectAsState(initial = AppTheme.Ocean)
