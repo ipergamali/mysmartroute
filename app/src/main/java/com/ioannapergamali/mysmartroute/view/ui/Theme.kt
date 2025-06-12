@@ -80,21 +80,6 @@ private fun typographyWithFont(font: FontFamily): Typography {
         labelLarge = base.labelLarge.copy(fontFamily = font),
         labelMedium = base.labelMedium.copy(fontFamily = font),
         labelSmall = base.labelSmall.copy(fontFamily = font),
-        displayLargeEmphasized = base.displayLargeEmphasized.copy(fontFamily = font),
-        displayMediumEmphasized = base.displayMediumEmphasized.copy(fontFamily = font),
-        displaySmallEmphasized = base.displaySmallEmphasized.copy(fontFamily = font),
-        headlineLargeEmphasized = base.headlineLargeEmphasized.copy(fontFamily = font),
-        headlineMediumEmphasized = base.headlineMediumEmphasized.copy(fontFamily = font),
-        headlineSmallEmphasized = base.headlineSmallEmphasized.copy(fontFamily = font),
-        titleLargeEmphasized = base.titleLargeEmphasized.copy(fontFamily = font),
-        titleMediumEmphasized = base.titleMediumEmphasized.copy(fontFamily = font),
-        titleSmallEmphasized = base.titleSmallEmphasized.copy(fontFamily = font),
-        bodyLargeEmphasized = base.bodyLargeEmphasized.copy(fontFamily = font),
-        bodyMediumEmphasized = base.bodyMediumEmphasized.copy(fontFamily = font),
-        bodySmallEmphasized = base.bodySmallEmphasized.copy(fontFamily = font),
-        labelLargeEmphasized = base.labelLargeEmphasized.copy(fontFamily = font),
-        labelMediumEmphasized = base.labelMediumEmphasized.copy(fontFamily = font),
-        labelSmallEmphasized = base.labelSmallEmphasized.copy(fontFamily = font),
     )
 }
 
