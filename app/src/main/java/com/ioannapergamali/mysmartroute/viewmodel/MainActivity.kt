@@ -11,6 +11,8 @@ import com.ioannapergamali.mysmartroute.model.navigation.NavigationHost
 import com.ioannapergamali.mysmartroute.view.ui.MysmartrouteTheme
 import com.ioannapergamali.mysmartroute.view.ui.AppTheme
 import com.ioannapergamali.mysmartroute.view.ui.components.DrawerWrapper
+import com.ioannapergamali.mysmartroute.view.ui.AppFont
+import com.ioannapergamali.mysmartroute.utils.FontPreferenceManager
 import com.ioannapergamali.mysmartroute.utils.MiuiUtils
 import com.ioannapergamali.mysmartroute.utils.ThemePreferenceManager
 
@@ -27,7 +29,8 @@ class MainActivity : ComponentActivity()
             val context = LocalContext.current
             val theme by ThemePreferenceManager.themeFlow(context).collectAsState(initial = AppTheme.Ocean)
             val dark by ThemePreferenceManager.darkThemeFlow(context).collectAsState(initial = false)
-            MysmartrouteTheme(theme = theme, darkTheme = dark) {
+            val font by FontPreferenceManager.fontFlow(context).collectAsState(initial = AppFont.SansSerif)
+            MysmartrouteTheme(theme = theme, darkTheme = dark, font = font.fontFamily) {
                 val navController = rememberNavController()
                 DrawerWrapper(navController = navController) { openDrawer ->
                     NavigationHost(navController = navController, openDrawer = openDrawer)

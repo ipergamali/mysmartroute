@@ -10,6 +10,8 @@ import com.ioannapergamali.mysmartroute.data.local.SettingsEntity
 import com.ioannapergamali.mysmartroute.view.ui.AppTheme
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import com.ioannapergamali.mysmartroute.utils.ThemePreferenceManager
+import com.ioannapergamali.mysmartroute.utils.FontPreferenceManager
+import com.ioannapergamali.mysmartroute.view.ui.AppFont
 import kotlinx.coroutines.launch
 
 class SettingsViewModel : ViewModel() {
@@ -33,6 +35,12 @@ class SettingsViewModel : ViewModel() {
                 )
                 db.collection("user_settings").document(userId).set(data)
             }
+        }
+    }
+
+    fun applyFont(context: Context, font: AppFont) {
+        viewModelScope.launch {
+            FontPreferenceManager.setFont(context, font)
         }
     }
 }
