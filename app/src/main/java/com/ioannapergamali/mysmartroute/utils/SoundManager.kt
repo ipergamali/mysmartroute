@@ -4,7 +4,7 @@ import android.content.Context
 import android.media.AudioAttributes
 import android.media.AudioManager
 import android.media.MediaPlayer
-import com.ioannapergamali.mysmartroute.R
+import android.content.res.AssetFileDescriptor
 
 object SoundManager {
     private var mediaPlayer: MediaPlayer? = null
@@ -20,9 +20,12 @@ object SoundManager {
             .setUsage(AudioAttributes.USAGE_MEDIA)
             .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
             .build()
-        mediaPlayer = MediaPlayer.create(appContext, R.raw.soundtrack).apply {
+        val afd: AssetFileDescriptor = appContext.assets.openFd("soundtrack.mp3")
+        mediaPlayer = MediaPlayer().apply {
             setAudioAttributes(attrs)
+            setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
             isLooping = true
+            prepare()
         }
 
         initialized = true
