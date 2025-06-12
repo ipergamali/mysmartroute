@@ -45,7 +45,14 @@ class SettingsViewModel : ViewModel() {
                 "soundEnabled" to updated.soundEnabled,
                 "soundVolume" to updated.soundVolume
             )
-            db.collection("user_settings").document(userId).set(data)
+            try {
+                db.collection("user_settings")
+                    .document(userId)
+                    .set(data)
+                    .await()
+            } catch (_: Exception) {
+                // ignore to keep local changes even if cloud sync fails
+            }
         }
     }
 
