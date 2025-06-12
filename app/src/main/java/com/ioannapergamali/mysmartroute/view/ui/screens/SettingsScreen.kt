@@ -2,7 +2,6 @@ package com.ioannapergamali.mysmartroute.view.ui.screens
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
@@ -43,6 +42,7 @@ import com.ioannapergamali.mysmartroute.utils.FontPreferenceManager
 import com.ioannapergamali.mysmartroute.view.ui.AppFont
 import com.ioannapergamali.mysmartroute.view.ui.AppTheme
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
+import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.viewmodel.SettingsViewModel
 
 @Composable
@@ -85,7 +85,7 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
             )
         }
     ) { padding ->
-        Column(modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp)) {
+        ScreenContainer(modifier = Modifier.padding(padding)) {
             Text("Θέμα")
             Divider(modifier = Modifier.padding(vertical = 4.dp))
             ExposedDropdownMenuBox(expanded = expandedTheme.value, onExpandedChange = { expandedTheme.value = !expandedTheme.value }) {

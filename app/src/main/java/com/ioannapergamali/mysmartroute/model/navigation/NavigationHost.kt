@@ -7,7 +7,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.ioannapergamali.mysmartroute.view.ui.screens.HomeScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.SignUpScreen
-import com.ioannapergamali.mysmartroute.view.ui.screens.LoginScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.MenuScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.RegisterVehicleScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.AnnounceTransportScreen
@@ -35,21 +34,6 @@ fun NavigationHost(navController : NavHostController, openDrawer: () -> Unit) {
                 navController = navController ,
                 onNavigateToSignUp = {
                     navController.navigate("Signup")
-                },
-                onNavigateToLogin = {
-                    navController.navigate("login")
-                },
-                openDrawer = openDrawer
-            )
-        }
-
-        composable("login") {
-            LoginScreen(
-                navController = navController ,
-                onLoginSuccess = {
-                    navController.navigate("menu") {
-                        popUpTo("login") { inclusive = true }
-                    }
                 },
                 openDrawer = openDrawer
             )

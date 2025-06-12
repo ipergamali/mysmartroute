@@ -13,7 +13,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.navigation.NavController
 import androidx.compose.foundation.border
 import androidx.compose.ui.Modifier
@@ -21,6 +21,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.padding
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -30,9 +33,23 @@ fun TopBar(
     navController: NavController,
     showMenu: Boolean = false,
     showLogout: Boolean = false,
+    showBack: Boolean = true,
     onMenuClick: () -> Unit = {},
     onLogout: () -> Unit = {}
 ) {
+    val username = remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(Unit) {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+        if (uid != null) {
+            FirebaseFirestore.getInstance().collection("users")
+                .document(uid)
+                .get()
+                .addOnSuccessListener { doc ->
+                    username.value = doc.getString("username")
+                }
+        }
+    }
+
     Box(modifier = Modifier.statusBarsPadding()) {
         TopAppBar(
             modifier = Modifier.border(1.dp, MaterialTheme.colorScheme.primary),
@@ -64,16 +81,26 @@ fun TopBar(
                     Icon(Icons.Filled.Home, contentDescription = "home", tint = MaterialTheme.colorScheme.primary)
                 }
 
-                IconButton(onClick = { navController.popBackStack() }) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "back", tint = MaterialTheme.colorScheme.primary)
+                if (showBack) {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "back",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             }
         },
         actions = {
-            
+            username.value?.let { Text(it, modifier = Modifier.padding(end = 8.dp)) }
             if (showLogout) {
                 IconButton(onClick = onLogout) {
-                    Icon(Icons.Filled.Logout, contentDescription = "logout", tint = MaterialTheme.colorScheme.primary)
+                    Icon(
+                        Icons.Filled.Logout,
+                        contentDescription = "logout",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
                 }
             }
         }

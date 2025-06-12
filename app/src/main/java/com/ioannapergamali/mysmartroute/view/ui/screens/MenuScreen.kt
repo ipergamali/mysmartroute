@@ -16,6 +16,7 @@ import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
+import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 
 @Composable
 fun MenuScreen(navController: NavController, openDrawer: () -> Unit) {
@@ -46,12 +47,7 @@ fun MenuScreen(navController: NavController, openDrawer: () -> Unit) {
             )
         }
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp)
-        ) {
+        ScreenContainer(modifier = Modifier.padding(paddingValues)) {
             when (role) {
                 UserRole.PASSENGER -> PassengerMenu(viewModel, navController)
                 UserRole.DRIVER -> DriverMenu(navController)

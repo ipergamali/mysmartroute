@@ -1,8 +1,6 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -19,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
+import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.viewmodel.DatabaseViewModel
 
 @Composable
@@ -39,16 +38,12 @@ fun FirebaseDatabaseScreen(navController: NavController, openDrawer: () -> Unit)
         }
     ) { padding ->
         if (data == null) {
-            Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+            ScreenContainer(modifier = Modifier.padding(padding)) {
                 CircularProgressIndicator(modifier = Modifier.padding(16.dp))
             }
         } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .padding(16.dp)
-            ) {
+            ScreenContainer(modifier = Modifier.padding(padding)) {
+                LazyColumn(modifier = Modifier.fillMaxSize()) {
                 item { Text("Users", style = MaterialTheme.typography.titleMedium) }
                 items(data!!.users) { user ->
                     Text("${user.id} - ${user.username}")
@@ -70,6 +65,7 @@ fun FirebaseDatabaseScreen(navController: NavController, openDrawer: () -> Unit)
                 }
                 item { Spacer(modifier = Modifier.padding(8.dp)) }
                 item { Text("Authentication table δεν είναι διαθέσιμη από το client", color = MaterialTheme.colorScheme.error) }
+                }
             }
         }
     }

@@ -1,6 +1,5 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -16,6 +15,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
+import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -28,7 +28,7 @@ fun PoIListScreen(navController: NavController, openDrawer: () -> Unit) {
     LaunchedEffect(Unit) { viewModel.loadPois(context) }
 
     Scaffold(topBar = { TopBar(title = "PoIs", navController = navController, showMenu = true, onMenuClick = openDrawer) }) { padding ->
-        Column(Modifier.fillMaxSize()) {
+        ScreenContainer(modifier = Modifier.padding(padding)) {
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 items(pois) { poi ->
                     Text(text = "${'$'}{poi.name} (${poi.lat}, ${'$'}{poi.lng})")

@@ -7,7 +7,6 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Storage
 import com.google.firebase.auth.FirebaseAuth
-import android.widget.Toast
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.layout.padding
@@ -26,20 +25,18 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
         Text("Menu", modifier = Modifier.padding(16.dp))
         Divider()
         val context = LocalContext.current
-        NavigationDrawerItem(
-            label = { Text("Settings") },
-            selected = false,
-            onClick = {
-                val user = FirebaseAuth.getInstance().currentUser
-                if (user != null) {
+        val user = FirebaseAuth.getInstance().currentUser
+        if (user != null) {
+            NavigationDrawerItem(
+                label = { Text("Settings") },
+                selected = false,
+                onClick = {
                     navController.navigate("settings")
                     closeDrawer()
-                } else {
-                    Toast.makeText(context, "Πρώτα πρέπει να κάνετε login", Toast.LENGTH_SHORT).show()
-                }
-            },
-            icon = { Icon(Icons.Filled.Settings, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
-        )
+                },
+                icon = { Icon(Icons.Filled.Settings, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
+            )
+        }
         NavigationDrawerItem(
             label = { Text("About") },
             selected = false,
