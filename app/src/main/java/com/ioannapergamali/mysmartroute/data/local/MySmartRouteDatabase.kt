@@ -12,7 +12,7 @@ import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 
 @Database(
     entities = [UserEntity::class, VehicleEntity::class, PoIEntity::class, SettingsEntity::class],
-    version = 7
+    version = 8
 )
 abstract class MySmartRouteDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
@@ -141,13 +141,45 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("DROP TABLE IF EXISTS `users`")
+                database.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `users` (
+                        `id` TEXT NOT NULL,
+                        `name` TEXT NOT NULL,
+                        `surname` TEXT NOT NULL,
+                        `username` TEXT NOT NULL,
+                        `email` TEXT NOT NULL,
+                        `phoneNum` TEXT NOT NULL,
+                        `password` TEXT NOT NULL,
+                        `role` TEXT NOT NULL,
+                        `city` TEXT NOT NULL,
+                        `streetName` TEXT NOT NULL,
+                        `streetNum` INTEGER NOT NULL,
+                        `postalCode` INTEGER NOT NULL,
+                        PRIMARY KEY(`id`)
+                    )
+                    """
+                )
+            }
+        }
+
         fun getInstance(context: Context): MySmartRouteDatabase {
             return INSTANCE ?: synchronized(this) {
                 INSTANCE ?: Room.databaseBuilder(
                     context.applicationContext,
                     MySmartRouteDatabase::class.java,
                     "mysmartroute.db"
-                ).addMigrations(MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
+                ).addMigrations(
+                    MIGRATION_2_3,
+                    MIGRATION_3_4,
+                    MIGRATION_4_5,
+                    MIGRATION_5_6,
+                    MIGRATION_6_7,
+                    MIGRATION_7_8
+                )
                     .build().also { INSTANCE = it }
             }
         }
