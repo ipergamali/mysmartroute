@@ -36,7 +36,7 @@ class MainActivity : ComponentActivity()
             val soundEnabled by SoundPreferenceManager.soundEnabledFlow(context).collectAsState(initial = true)
             val soundVolume by SoundPreferenceManager.soundVolumeFlow(context).collectAsState(initial = 1f)
 
-            LaunchedEffect(Unit) { SoundManager.initialize(context) }
+            LaunchedEffect(Unit) { SoundManager.initialize(context.applicationContext) }
             LaunchedEffect(soundEnabled, soundVolume) {
                 SoundManager.setVolume(soundVolume)
                 if (soundEnabled) {
