@@ -19,6 +19,9 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.SupportScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.ThemePickerScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.FontPickerScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.SoundPickerScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.DatabaseMenuScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.LocalDatabaseScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.FirebaseDatabaseScreen
 
 
 
@@ -115,6 +118,18 @@ fun NavigationHost(navController : NavHostController, openDrawer: () -> Unit) {
 
         composable("support") {
             SupportScreen(navController = navController, openDrawer = openDrawer)
+        }
+
+        composable("databaseMenu") {
+            DatabaseMenuScreen(navController = navController, openDrawer = openDrawer)
+        }
+
+        composable("localDb") {
+            LocalDatabaseScreen(navController = navController, openDrawer = openDrawer)
+        }
+
+        composable("firebaseDb") {
+            FirebaseDatabaseScreen(navController = navController, openDrawer = openDrawer)
         }
 
 
