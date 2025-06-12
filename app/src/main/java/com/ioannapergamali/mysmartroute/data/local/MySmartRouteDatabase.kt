@@ -180,6 +180,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_6_7,
                     MIGRATION_7_8
                 )
+                    .fallbackToDestructiveMigration()
                     .build().also { INSTANCE = it }
             }
         }
