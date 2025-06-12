@@ -12,4 +12,7 @@ interface SettingsDao {
 
     @Query("SELECT * FROM settings WHERE userId = :userId LIMIT 1")
     suspend fun getSettings(userId: String): SettingsEntity?
+
+    @Query("SELECT * FROM settings")
+    suspend fun getAllSettings(): List<SettingsEntity>
 }

@@ -12,4 +12,7 @@ interface VehicleDao {
 
     @Query("SELECT * FROM vehicles WHERE userId = :userId")
     suspend fun getVehiclesForUser(userId: String): List<VehicleEntity>
+
+    @Query("SELECT * FROM vehicles")
+    suspend fun getAllVehicles(): List<VehicleEntity>
 }
