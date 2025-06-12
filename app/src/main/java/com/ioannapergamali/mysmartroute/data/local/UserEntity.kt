@@ -5,16 +5,16 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "users")
 data class UserEntity(
-    @PrimaryKey val id: String,
-    val name: String,
-    val surname: String,
-    val username: String,
-    val email: String,
-    val phoneNum: String,
-    val password: String,
-    val role: String,
-    val city: String,
-    val streetName: String,
-    val streetNum: Int,
-    val postalCode: Int
+    @PrimaryKey var id: String = "",
+    var name: String = "",
+    var surname: String = "",
+    var username: String = "",
+    var email: String = "",
+    var phoneNum: String = "",
+    var password: String = "",
+    var role: String = "",
+    var city: String = "",
+    var streetName: String = "",
+    var streetNum: Int = 0,
+    var postalCode: Int = 0
 )

@@ -5,10 +5,10 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "settings")
 data class SettingsEntity(
-    @PrimaryKey val userId: String,
-    val theme: String,
-    val darkTheme: Boolean,
-    val font: String,
-    val soundEnabled: Boolean,
-    val soundVolume: Float
+    @PrimaryKey var userId: String = "",
+    var theme: String = "",
+    var darkTheme: Boolean = false,
+    var font: String = "",
+    var soundEnabled: Boolean = false,
+    var soundVolume: Float = 0f
 )
