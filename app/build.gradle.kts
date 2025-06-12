@@ -38,6 +38,13 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
+    sourceSets {
+        getByName("main") {
+            assets {
+                srcDirs("src/main/assets")
+            }
+        }
+    }
 
 }
 
