@@ -1,6 +1,7 @@
 package com.ioannapergamali.mysmartroute.viewmodel
 
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -38,7 +39,18 @@ class SettingsViewModel : ViewModel() {
             soundVolume = 1f
         )
         val updated = transform(current)
-        dao.insert(updated)
+        try {
+            dao.insert(updated)
+            withContext(Dispatchers.Main) {
+                Toast.makeText(context, "Οι ρυθμίσεις αποθηκεύτηκαν", Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: Exception) {
+            Log.e("SettingsViewModel", "Local save error", e)
+            withContext(Dispatchers.Main) {
+                Toast.makeText(context, "Σφάλμα αποθήκευσης", Toast.LENGTH_SHORT).show()
+            }
+            return
+        }
 
         if (NetworkUtils.isInternetAvailable(context)) {
             val data = mapOf(
@@ -53,10 +65,8 @@ class SettingsViewModel : ViewModel() {
                     .document(userId)
                     .set(data)
                     .await()
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(context, "Οι ρυθμίσεις αποθηκεύτηκαν", Toast.LENGTH_SHORT).show()
-                }
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                Log.e("SettingsViewModel", "Cloud sync error", e)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(context, "Αποτυχία αποθήκευσης στο cloud", Toast.LENGTH_SHORT).show()
                 }
