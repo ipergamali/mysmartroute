@@ -132,6 +132,8 @@ fun HomeScreen(
                 navController.navigate("menu") {
                     popUpTo("home") { inclusive = true }
                 }
+                // Άνοιγμα του πλαϊνού μενού ώστε να εμφανιστεί η επιλογή "Settings"
+                openDrawer()
             }
             is AuthenticationViewModel.LoginState.Error -> {
                 val message = (uiState as AuthenticationViewModel.LoginState.Error).message
