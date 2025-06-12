@@ -389,7 +389,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 },
                 modifier = Modifier.menuAnchor().fillMaxWidth()
             )
-            ExposedDropdownMenu(expanded = fromExpanded, onDismissRequest = { fromExpanded = false }) {
+            DropdownMenu(expanded = fromExpanded, onDismissRequest = { fromExpanded = false }) {
                 fromSuggestions.forEach { address ->
                     DropdownMenuItem(
                         text = { Text(address.getAddressLine(0) ?: "") },
@@ -506,7 +506,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 },
                 modifier = Modifier.menuAnchor().fillMaxWidth()
             )
-            ExposedDropdownMenu(expanded = toExpanded, onDismissRequest = { toExpanded = false }) {
+            DropdownMenu(expanded = toExpanded, onDismissRequest = { toExpanded = false }) {
                 toSuggestions.forEach { address ->
                     DropdownMenuItem(
                         text = { Text(address.getAddressLine(0) ?: "") },
@@ -553,7 +553,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = vehicleMenuExpanded) },
                 modifier = Modifier.menuAnchor().fillMaxWidth()
             )
-            ExposedDropdownMenu(expanded = vehicleMenuExpanded, onDismissRequest = { vehicleMenuExpanded = false }) {
+            DropdownMenu(expanded = vehicleMenuExpanded, onDismissRequest = { vehicleMenuExpanded = false }) {
                 vehicles.forEach { entity ->
                     val type = try { VehicleType.valueOf(entity.type) } catch (e: Exception) { null }
                     type?.let {

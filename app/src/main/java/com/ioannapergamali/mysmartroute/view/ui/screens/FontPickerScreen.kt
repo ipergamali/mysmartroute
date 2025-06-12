@@ -7,9 +7,9 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.ExposedDropdownMenu
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.MaterialTheme
@@ -70,7 +70,7 @@ fun FontPickerScreen(navController: NavController) {
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                         modifier = Modifier.menuAnchor()
                     )
-                    ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                         AppFont.values().forEach { font ->
                             DropdownMenuItem(text = { Text(font.label) }, onClick = {
                                 selectedFont = font
