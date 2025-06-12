@@ -110,6 +110,39 @@ class SettingsViewModel : ViewModel() {
         }
     }
 
+    fun applyAndSaveSettings(
+        context: Context,
+        theme: AppTheme?,
+        dark: Boolean?,
+        font: AppFont?,
+        soundEnabled: Boolean?,
+        soundVolume: Float?
+    ) {
+        viewModelScope.launch {
+            val finalTheme = theme ?: ThemePreferenceManager.themeFlow(context).first()
+            val finalDark = dark ?: ThemePreferenceManager.darkThemeFlow(context).first()
+            val finalFont = font ?: FontPreferenceManager.fontFlow(context).first()
+            val finalSoundEnabled = soundEnabled ?: SoundPreferenceManager.getSoundEnabled(context)
+            val finalSoundVolume = soundVolume ?: SoundPreferenceManager.getSoundVolume(context)
+
+            ThemePreferenceManager.setTheme(context, finalTheme)
+            ThemePreferenceManager.setDarkTheme(context, finalDark)
+            FontPreferenceManager.setFont(context, finalFont)
+            SoundPreferenceManager.setSoundEnabled(context, finalSoundEnabled)
+            SoundPreferenceManager.setSoundVolume(context, finalSoundVolume)
+
+            updateSettings(context) {
+                it.copy(
+                    theme = finalTheme.name,
+                    darkTheme = finalDark,
+                    font = finalFont.name,
+                    soundEnabled = finalSoundEnabled,
+                    soundVolume = finalSoundVolume
+                )
+            }
+        }
+    }
+
     fun syncSettings(context: Context) {
         viewModelScope.launch {
             val userId = auth.currentUser?.uid ?: return@launch

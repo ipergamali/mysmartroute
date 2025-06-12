@@ -9,12 +9,21 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 
 import com.ioannapergamali.mysmartroute.data.local.VehicleEntity
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
+import com.ioannapergamali.mysmartroute.data.local.AuthenticationEntity
+import com.ioannapergamali.mysmartroute.data.local.UserEntity
+import com.ioannapergamali.mysmartroute.data.local.SettingsEntity
+import com.ioannapergamali.mysmartroute.data.local.AuthenticationDao
+import com.ioannapergamali.mysmartroute.data.local.UserDao
+import com.ioannapergamali.mysmartroute.data.local.VehicleDao
+import com.ioannapergamali.mysmartroute.data.local.PoIDao
+import com.ioannapergamali.mysmartroute.data.local.SettingsDao
 
 @Database(
-    entities = [UserEntity::class, VehicleEntity::class, PoIEntity::class, SettingsEntity::class],
-    version = 5
+    entities = [AuthenticationEntity::class, UserEntity::class, VehicleEntity::class, PoIEntity::class, SettingsEntity::class],
+    version = 6
 )
 abstract class MySmartRouteDatabase : RoomDatabase() {
+    abstract fun authenticationDao(): AuthenticationDao
     abstract fun userDao(): UserDao
     abstract fun vehicleDao(): VehicleDao
     abstract fun poIDao(): PoIDao
@@ -61,13 +70,27 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `authentication` (" +
+                        "`uid` TEXT NOT NULL, " +
+                        "`email` TEXT NOT NULL, " +
+                        "`password` TEXT NOT NULL, " +
+                        "PRIMARY KEY(`uid`)" +
+                        ")"
+                )
+                database.execSQL("ALTER TABLE `pois` ADD COLUMN `userId` TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
         fun getInstance(context: Context): MySmartRouteDatabase {
             return INSTANCE ?: synchronized(this) {
                 INSTANCE ?: Room.databaseBuilder(
                     context.applicationContext,
                     MySmartRouteDatabase::class.java,
                     "mysmartroute.db"
-                ).addMigrations(MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+                ).addMigrations(MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
                     .build().also { INSTANCE = it }
             }
         }

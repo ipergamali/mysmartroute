@@ -1,9 +1,18 @@
 package com.ioannapergamali.mysmartroute.data.local
 
 import androidx.room.Entity
+import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "vehicles")
+@Entity(
+    tableName = "vehicles",
+    foreignKeys = [ForeignKey(
+        entity = AuthenticationEntity::class,
+        parentColumns = ["uid"],
+        childColumns = ["userId"],
+        onDelete = ForeignKey.CASCADE
+    )]
+)
 data class VehicleEntity(
     @PrimaryKey var id: String = "",
     var description: String = "",

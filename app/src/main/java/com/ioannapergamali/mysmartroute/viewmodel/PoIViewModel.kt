@@ -3,6 +3,7 @@ package com.ioannapergamali.mysmartroute.viewmodel
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
@@ -16,6 +17,7 @@ import java.util.UUID
  */
 class PoIViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
+    private val auth = FirebaseAuth.getInstance()
 
     private val _pois = MutableStateFlow<List<PoIEntity>>(emptyList())
     val pois: StateFlow<List<PoIEntity>> = _pois
@@ -55,7 +57,8 @@ class PoIViewModel : ViewModel() {
             }
 
             val id = UUID.randomUUID().toString()
-            val poi = PoIEntity(id, name, description, type, lat, lng)
+            val uid = auth.currentUser?.uid ?: ""
+            val poi = PoIEntity(id, name, description, type, lat, lng, uid)
             dao.insert(poi)
             val data = hashMapOf(
                 "id" to id,
@@ -63,7 +66,8 @@ class PoIViewModel : ViewModel() {
                 "description" to description,
                 "type" to type,
                 "lat" to lat,
-                "lng" to lng
+                "lng" to lng,
+                "userId" to uid
             )
             db.collection("pois").document(id).set(data)
             _addState.value = AddPoiState.Success
