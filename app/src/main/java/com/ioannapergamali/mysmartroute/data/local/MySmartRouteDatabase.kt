@@ -12,7 +12,7 @@ import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 
 @Database(
     entities = [UserEntity::class, VehicleEntity::class, PoIEntity::class, SettingsEntity::class],
-    version = 8
+    version = 9
 )
 abstract class MySmartRouteDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
@@ -102,69 +102,6 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
-        private val MIGRATION_6_7 = object : Migration(6, 7) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL(
-                    """
-                    CREATE TABLE IF NOT EXISTS `users_new` (
-                        `id` TEXT NOT NULL,
-                        `name` TEXT NOT NULL,
-                        `surname` TEXT NOT NULL,
-                        `username` TEXT NOT NULL,
-                        `email` TEXT NOT NULL,
-                        `phoneNum` TEXT NOT NULL,
-                        `password` TEXT NOT NULL,
-                        `role` TEXT NOT NULL,
-                        `city` TEXT NOT NULL,
-                        `streetName` TEXT NOT NULL,
-                        `streetNum` INTEGER NOT NULL,
-                        `postalCode` INTEGER NOT NULL,
-                        PRIMARY KEY(`id`)
-                    )
-                    """
-                )
-                database.execSQL(
-                    """
-                    INSERT INTO `users_new` (
-                        id, name, surname, username, email,
-                        phoneNum, password, role, city, streetName,
-                        streetNum, postalCode
-                    ) SELECT
-                        id, name, surname, username, email,
-                        phoneNum, password, role, city, streetName,
-                        streetNum, postalCode
-                    FROM `users`
-                    """
-                )
-                database.execSQL("DROP TABLE `users`")
-                database.execSQL("ALTER TABLE `users_new` RENAME TO `users`")
-            }
-        }
-
-        private val MIGRATION_7_8 = object : Migration(7, 8) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("DROP TABLE IF EXISTS `users`")
-                database.execSQL(
-                    """
-                    CREATE TABLE IF NOT EXISTS `users` (
-                        `id` TEXT NOT NULL,
-                        `name` TEXT NOT NULL,
-                        `surname` TEXT NOT NULL,
-                        `username` TEXT NOT NULL,
-                        `email` TEXT NOT NULL,
-                        `phoneNum` TEXT NOT NULL,
-                        `password` TEXT NOT NULL,
-                        `role` TEXT NOT NULL,
-                        `city` TEXT NOT NULL,
-                        `streetName` TEXT NOT NULL,
-                        `streetNum` INTEGER NOT NULL,
-                        `postalCode` INTEGER NOT NULL,
-                        PRIMARY KEY(`id`)
-                    )
-                    """
-                )
-            }
-        }
 
         fun getInstance(context: Context): MySmartRouteDatabase {
             return INSTANCE ?: synchronized(this) {
@@ -176,9 +113,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_2_3,
                     MIGRATION_3_4,
                     MIGRATION_4_5,
-                    MIGRATION_5_6,
-                    MIGRATION_6_7,
-                    MIGRATION_7_8
+                    MIGRATION_5_6
                 )
                     .fallbackToDestructiveMigration()
                     .build().also { INSTANCE = it }
