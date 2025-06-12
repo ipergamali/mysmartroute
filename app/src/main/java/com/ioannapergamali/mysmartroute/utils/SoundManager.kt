@@ -2,17 +2,15 @@ package com.ioannapergamali.mysmartroute.utils
 
 import android.content.Context
 import android.media.MediaPlayer
+import com.ioannapergamali.mysmartroute.R
 
 object SoundManager {
     private var mediaPlayer: MediaPlayer? = null
 
     fun initialize(context: Context) {
         if (mediaPlayer == null) {
-            mediaPlayer = MediaPlayer().apply {
-                val fd = context.assets.openFd("soundtrack.mp3")
-                setDataSource(fd.fileDescriptor, fd.startOffset, fd.length)
+            mediaPlayer = MediaPlayer.create(context, R.raw.soundtrack).apply {
                 isLooping = true
-                prepare()
             }
         }
     }
