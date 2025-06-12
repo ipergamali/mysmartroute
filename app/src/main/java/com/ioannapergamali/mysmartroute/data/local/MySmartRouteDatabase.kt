@@ -12,7 +12,7 @@ import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 
 @Database(
     entities = [UserEntity::class, VehicleEntity::class, PoIEntity::class, SettingsEntity::class],
-    version = 5
+    version = 6
 )
 abstract class MySmartRouteDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
@@ -61,13 +61,54 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `vehicles_new` (" +
+                        "`id` TEXT NOT NULL, " +
+                        "`description` TEXT NOT NULL, " +
+                        "`userId` TEXT NOT NULL, " +
+                        "`type` TEXT NOT NULL, " +
+                        "`seat` INTEGER NOT NULL, " +
+                        "FOREIGN KEY(`userId`) REFERENCES `users`(`id`) ON DELETE CASCADE, " +
+                        "PRIMARY KEY(`id`)" +
+                    ")"
+                )
+                database.execSQL(
+                    "INSERT INTO `vehicles_new` (`id`, `description`, `userId`, `type`, `seat`) " +
+                        "SELECT `id`, `description`, `userId`, `type`, `seat` FROM `vehicles`"
+                )
+                database.execSQL("DROP TABLE `vehicles`")
+                database.execSQL("ALTER TABLE `vehicles_new` RENAME TO `vehicles`")
+
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `settings_new` (" +
+                        "`userId` TEXT NOT NULL, " +
+                        "`theme` TEXT NOT NULL, " +
+                        "`darkTheme` INTEGER NOT NULL, " +
+                        "`font` TEXT NOT NULL, " +
+                        "`soundEnabled` INTEGER NOT NULL, " +
+                        "`soundVolume` REAL NOT NULL, " +
+                        "FOREIGN KEY(`userId`) REFERENCES `users`(`id`) ON DELETE CASCADE, " +
+                        "PRIMARY KEY(`userId`)" +
+                    ")"
+                )
+                database.execSQL(
+                    "INSERT INTO `settings_new` (`userId`, `theme`, `darkTheme`, `font`, `soundEnabled`, `soundVolume`) " +
+                        "SELECT `userId`, `theme`, `darkTheme`, `font`, `soundEnabled`, `soundVolume` FROM `settings`"
+                )
+                database.execSQL("DROP TABLE `settings`")
+                database.execSQL("ALTER TABLE `settings_new` RENAME TO `settings`")
+            }
+        }
+
         fun getInstance(context: Context): MySmartRouteDatabase {
             return INSTANCE ?: synchronized(this) {
                 INSTANCE ?: Room.databaseBuilder(
                     context.applicationContext,
                     MySmartRouteDatabase::class.java,
                     "mysmartroute.db"
-                ).addMigrations(MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+                ).addMigrations(MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
                     .build().also { INSTANCE = it }
             }
         }

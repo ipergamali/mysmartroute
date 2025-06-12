@@ -160,11 +160,14 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
             Button(
                 onClick = {
                     Toast.makeText(context, "Εφαρμογή ρυθμίσεων...", Toast.LENGTH_SHORT).show()
-                    viewModel.applyTheme(context, selectedTheme.value, dark.value)
-                    viewModel.applyFont(context, selectedFont.value)
-                    viewModel.applySoundEnabled(context, soundState.value)
-                    viewModel.applySoundVolume(context, volumeState.floatValue)
-                    viewModel.saveCurrentSettings(context)
+                    viewModel.applyAllSettings(
+                        context,
+                        selectedTheme.value,
+                        dark.value,
+                        selectedFont.value,
+                        soundState.value,
+                        volumeState.floatValue
+                    )
                 },
                 modifier = Modifier.padding(top = 8.dp)
             ) {
