@@ -12,7 +12,7 @@ import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 
 @Database(
     entities = [UserEntity::class, VehicleEntity::class, PoIEntity::class, SettingsEntity::class],
-    version = 6
+    version = 7
 )
 abstract class MySmartRouteDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
@@ -102,13 +102,53 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `users_new` (
+                        `id` TEXT NOT NULL,
+                        `name` TEXT NOT NULL,
+                        `surname` TEXT NOT NULL,
+                        `username` TEXT NOT NULL,
+                        `email` TEXT NOT NULL,
+                        `phoneNum` TEXT NOT NULL,
+                        `password` TEXT NOT NULL,
+                        `role` TEXT NOT NULL,
+                        `city` TEXT NOT NULL,
+                        `streetName` TEXT NOT NULL,
+                        `streetNum` INTEGER NOT NULL,
+                        `postalCode` INTEGER NOT NULL,
+                        FOREIGN KEY(`id`) REFERENCES `authentication`(`uid`) ON DELETE CASCADE,
+                        PRIMARY KEY(`id`)
+                    )
+                    """
+                )
+                database.execSQL(
+                    """
+                    INSERT INTO `users_new` (
+                        id, name, surname, username, email,
+                        phoneNum, password, role, city, streetName,
+                        streetNum, postalCode
+                    ) SELECT
+                        id, name, surname, username, email,
+                        phoneNum, password, role, city, streetName,
+                        streetNum, postalCode
+                    FROM `users`
+                    """
+                )
+                database.execSQL("DROP TABLE `users`")
+                database.execSQL("ALTER TABLE `users_new` RENAME TO `users`")
+            }
+        }
+
         fun getInstance(context: Context): MySmartRouteDatabase {
             return INSTANCE ?: synchronized(this) {
                 INSTANCE ?: Room.databaseBuilder(
                     context.applicationContext,
                     MySmartRouteDatabase::class.java,
                     "mysmartroute.db"
-                ).addMigrations(MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+                ).addMigrations(MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
                     .build().also { INSTANCE = it }
             }
         }
