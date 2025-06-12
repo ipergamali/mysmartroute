@@ -5,9 +5,9 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "vehicles")
 data class VehicleEntity(
-    @PrimaryKey val id: String,
-    val description: String,
-    val userId: String,
-    val type: String,
-    val seat: Int
+    @PrimaryKey var id: String = "",
+    var description: String = "",
+    var userId: String = "",
+    var type: String = "",
+    var seat: Int = 0
 )
