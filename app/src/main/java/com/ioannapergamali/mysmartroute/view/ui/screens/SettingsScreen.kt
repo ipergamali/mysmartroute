@@ -31,6 +31,9 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
             Button(onClick = { navController.navigate("fontPicker") }, modifier = Modifier.padding(top = 8.dp)) {
                 Text("Επιλογή γραμματοσειράς")
             }
+            Button(onClick = { navController.navigate("soundPicker") }, modifier = Modifier.padding(top = 8.dp)) {
+                Text("Επιλογή ήχου")
+            }
         }
     }
 }

@@ -18,6 +18,7 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.AboutScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.SupportScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.ThemePickerScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.FontPickerScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.SoundPickerScreen
 
 
 
@@ -102,6 +103,10 @@ fun NavigationHost(navController : NavHostController, openDrawer: () -> Unit) {
 
         composable("fontPicker") {
             FontPickerScreen(navController = navController)
+        }
+
+        composable("soundPicker") {
+            SoundPickerScreen(navController = navController)
         }
 
         composable("about") {
