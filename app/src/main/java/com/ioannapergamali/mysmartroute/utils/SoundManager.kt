@@ -1,22 +1,47 @@
 package com.ioannapergamali.mysmartroute.utils
 
 import android.content.Context
+import android.media.AudioAttributes
+import android.media.AudioManager
 import android.media.MediaPlayer
 import com.ioannapergamali.mysmartroute.R
 
 object SoundManager {
     private var mediaPlayer: MediaPlayer? = null
+    private var audioManager: AudioManager? = null
+    private var initialized = false
 
     fun initialize(context: Context) {
-        if (mediaPlayer == null) {
-            mediaPlayer = MediaPlayer.create(context, R.raw.soundtrack).apply {
-                isLooping = true
-            }
+        if (initialized) return
+
+        val appContext = context.applicationContext
+        audioManager = appContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        val attrs = AudioAttributes.Builder()
+            .setUsage(AudioAttributes.USAGE_MEDIA)
+            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+            .build()
+        mediaPlayer = MediaPlayer.create(appContext, R.raw.soundtrack).apply {
+            setAudioAttributes(attrs)
+            isLooping = true
         }
+
+        initialized = true
     }
 
-    fun play() { mediaPlayer?.start() }
-    fun pause() { mediaPlayer?.pause() }
+    fun play() {
+        mediaPlayer?.let {
+            audioManager?.requestAudioFocus(
+                null,
+                AudioManager.STREAM_MUSIC,
+                AudioManager.AUDIOFOCUS_GAIN
+            )
+            it.start()
+        }
+    }
+    fun pause() {
+        mediaPlayer?.pause()
+        audioManager?.abandonAudioFocus(null)
+    }
 
     fun setVolume(volume: Float) {
         mediaPlayer?.setVolume(volume, volume)
@@ -28,5 +53,6 @@ object SoundManager {
     fun release() {
         mediaPlayer?.release()
         mediaPlayer = null
+        initialized = false
     }
 }
