@@ -3,6 +3,7 @@ package com.ioannapergamali.mysmartroute.view.ui
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
@@ -60,7 +61,7 @@ enum class AppTheme(val label: String, val seed: Color, val fontFamily: FontFami
 }
 
 @Composable
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 private fun typographyWithFont(font: FontFamily): Typography {
     val base = Typography()
     return base.copy(
@@ -97,7 +98,7 @@ private fun typographyWithFont(font: FontFamily): Typography {
     )
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 fun MysmartrouteTheme(
     theme: AppTheme,
     darkTheme: Boolean,
