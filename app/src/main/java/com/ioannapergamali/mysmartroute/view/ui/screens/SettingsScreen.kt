@@ -75,17 +75,22 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
     LaunchedEffect(soundEnabled) { soundState.value = soundEnabled }
     LaunchedEffect(currentVolume) { volumeState.floatValue = currentVolume }
 
-    Scaffold(
-        topBar = {
-            TopBar(
-                title = "Settings",
-                navController = navController,
-                showMenu = true,
-                onMenuClick = openDrawer
-            )
-        }
-    ) { padding ->
-        ScreenContainer(modifier = Modifier.padding(padding)) {
+    MysmartrouteTheme(
+        theme = selectedTheme.value,
+        darkTheme = dark.value,
+        font = selectedFont.value.fontFamily
+    ) {
+        Scaffold(
+            topBar = {
+                TopBar(
+                    title = "Settings",
+                    navController = navController,
+                    showMenu = true,
+                    onMenuClick = openDrawer
+                )
+            }
+        ) { padding ->
+            ScreenContainer(modifier = Modifier.padding(padding)) {
             Text("Θέμα")
             Divider(modifier = Modifier.padding(vertical = 4.dp))
             ExposedDropdownMenuBox(expanded = expandedTheme.value, onExpandedChange = { expandedTheme.value = !expandedTheme.value }) {
@@ -181,4 +186,5 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
             }
         }
     }
+}
 }
