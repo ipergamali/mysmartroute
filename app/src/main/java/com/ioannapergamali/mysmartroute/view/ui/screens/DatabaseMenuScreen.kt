@@ -18,6 +18,7 @@ import androidx.navigation.NavController
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.DatabaseViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.SyncState
 
 @Composable
 fun DatabaseMenuScreen(navController: NavController, openDrawer: () -> Unit) {
@@ -55,10 +56,10 @@ fun DatabaseMenuScreen(navController: NavController, openDrawer: () -> Unit) {
 
     LaunchedEffect(syncState) {
         when (syncState) {
-            is DatabaseViewModel.SyncState.Success -> Toast.makeText(context, "Sync completed", Toast.LENGTH_SHORT).show()
-            is DatabaseViewModel.SyncState.Error -> Toast.makeText(
+            is SyncState.Success -> Toast.makeText(context, "Sync completed", Toast.LENGTH_SHORT).show()
+            is SyncState.Error -> Toast.makeText(
                 context,
-                (syncState as DatabaseViewModel.SyncState.Error).message,
+                (syncState as SyncState.Error).message,
                 Toast.LENGTH_SHORT
             ).show()
             else -> {}
