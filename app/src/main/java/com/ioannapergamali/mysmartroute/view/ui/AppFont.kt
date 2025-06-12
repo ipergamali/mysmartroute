@@ -10,11 +10,23 @@ enum class AppFont(val label: String, val fontFamily: FontFamily) {
     Serif("Serif", FontFamily.Serif),
     Monospace("Monospace", FontFamily.Monospace),
     Cursive("Cursive", FontFamily.Cursive),
-    OpenSans(
-        "Open Sans",
+    Ainsley(
+        "Ainsley",
         FontFamily(
-            Font(R.font.opensans_regular, FontWeight.Normal),
-            Font(R.font.opensans_bold, FontWeight.Bold)
+            Font(R.font.ainsley, FontWeight.Normal),
+            Font(R.font.ainsley_bold, FontWeight.Bold)
         )
+    ),
+    ChocolatineDuDimanche(
+        "Chocolatine du Dimanche",
+        FontFamily(Font(R.font.chocolatine_du_dimanche, FontWeight.Normal))
+    ),
+    GreekElegantLDR(
+        "Greek Elegant LDR",
+        FontFamily(Font(R.font.greek_elegant_ldr, FontWeight.Normal))
+    ),
+    PersonaAura(
+        "Persona Aura",
+        FontFamily(Font(R.font.persona_aura, FontWeight.Normal))
     )
 }
