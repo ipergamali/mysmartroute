@@ -50,4 +50,10 @@ class SettingsViewModel : ViewModel() {
             SoundPreferenceManager.setSoundEnabled(context, enabled)
         }
     }
+
+    fun applySoundVolume(context: Context, volume: Float) {
+        viewModelScope.launch {
+            SoundPreferenceManager.setSoundVolume(context, volume)
+        }
+    }
 }

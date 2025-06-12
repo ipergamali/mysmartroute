@@ -46,28 +46,6 @@ fun HomeScreen(
         val (textOffset, textAlpha) = rememberSlideFadeInAnimation()
 
         val context = LocalContext.current
-        val soundEnabled by SoundPreferenceManager.soundEnabledFlow(context).collectAsState(initial = true)
-
-        val mediaPlayer = remember {
-            MediaPlayer().apply {
-                val fd = context.assets.openFd("soundtrack.mp3")
-                setDataSource(fd.fileDescriptor, fd.startOffset, fd.length)
-                prepare()
-                isLooping = true
-            }
-        }
-
-        LaunchedEffect(soundEnabled) {
-            if (soundEnabled) {
-                if (!mediaPlayer.isPlaying) mediaPlayer.start()
-            } else {
-                if (mediaPlayer.isPlaying) mediaPlayer.pause()
-            }
-        }
-
-        DisposableEffect(Unit) {
-            onDispose { mediaPlayer.release() }
-        }
 
         Column(
             modifier = contentModifier,

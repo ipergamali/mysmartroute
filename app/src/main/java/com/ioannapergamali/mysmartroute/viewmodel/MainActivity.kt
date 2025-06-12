@@ -15,6 +15,8 @@ import com.ioannapergamali.mysmartroute.view.ui.AppFont
 import com.ioannapergamali.mysmartroute.utils.FontPreferenceManager
 import com.ioannapergamali.mysmartroute.utils.MiuiUtils
 import com.ioannapergamali.mysmartroute.utils.ThemePreferenceManager
+import com.ioannapergamali.mysmartroute.utils.SoundPreferenceManager
+import com.ioannapergamali.mysmartroute.utils.SoundManager
 
 
 
@@ -30,6 +32,19 @@ class MainActivity : ComponentActivity()
             val theme by ThemePreferenceManager.themeFlow(context).collectAsState(initial = AppTheme.Ocean)
             val dark by ThemePreferenceManager.darkThemeFlow(context).collectAsState(initial = false)
             val font by FontPreferenceManager.fontFlow(context).collectAsState(initial = AppFont.SansSerif)
+            val soundEnabled by SoundPreferenceManager.soundEnabledFlow(context).collectAsState(initial = true)
+            val soundVolume by SoundPreferenceManager.soundVolumeFlow(context).collectAsState(initial = 1f)
+
+            LaunchedEffect(Unit) { SoundManager.initialize(context) }
+            LaunchedEffect(soundEnabled, soundVolume) {
+                SoundManager.setVolume(soundVolume)
+                if (soundEnabled) {
+                    if (!SoundManager.isPlaying) SoundManager.play()
+                } else {
+                    if (SoundManager.isPlaying) SoundManager.pause()
+                }
+            }
+
             MysmartrouteTheme(theme = theme, darkTheme = dark, font = font.fontFamily) {
                 val navController = rememberNavController()
                 DrawerWrapper(navController = navController) { openDrawer ->
@@ -42,5 +57,10 @@ class MainActivity : ComponentActivity()
     override fun onBackPressed() {
         finishAfterTransition()
         super.onBackPressed()
+    }
+
+    override fun onDestroy() {
+        SoundManager.release()
+        super.onDestroy()
     }
 }
