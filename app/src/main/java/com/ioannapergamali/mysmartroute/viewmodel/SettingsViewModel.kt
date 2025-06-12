@@ -47,6 +47,9 @@ class SettingsViewModel : ViewModel() {
             soundVolume = 1f
         )
         val updated = transform(current)
+        withContext(Dispatchers.Main) {
+            Toast.makeText(context, "Γίνονται έλεγχοι αποθήκευσης", Toast.LENGTH_SHORT).show()
+        }
         try {
             dao.insert(updated)
             Log.d("SettingsViewModel", "Τοπική αποθήκευση επιτυχής: $updated")
@@ -56,7 +59,7 @@ class SettingsViewModel : ViewModel() {
         } catch (e: Exception) {
             Log.e("SettingsViewModel", "Αποτυχία τοπικής αποθήκευσης", e)
             withContext(Dispatchers.Main) {
-                Toast.makeText(context, "Σφάλμα τοπικής αποθήκευσης", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Σφάλμα τοπικής αποθήκευσης: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
             }
             return
         }
@@ -74,7 +77,7 @@ class SettingsViewModel : ViewModel() {
             } catch (e: Exception) {
                 Log.e("SettingsViewModel", "Αποτυχία αποθήκευσης στο Firestore", e)
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(context, "Σφάλμα cloud αποθήκευσης", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Σφάλμα cloud αποθήκευσης: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
                 }
             }
         } else {
@@ -181,6 +184,9 @@ class SettingsViewModel : ViewModel() {
     fun saveCurrentSettings(context: Context) {
         viewModelScope.launch {
             Log.d("SettingsViewModel", "Εκκίνηση αποθήκευσης ρυθμίσεων")
+            withContext(Dispatchers.Main) {
+                Toast.makeText(context, "Αποθήκευση ρυθμίσεων...", Toast.LENGTH_SHORT).show()
+            }
             val theme = ThemePreferenceManager.themeFlow(context).first()
             val dark = ThemePreferenceManager.darkThemeFlow(context).first()
             val font = FontPreferenceManager.fontFlow(context).first()
