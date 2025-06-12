@@ -57,21 +57,21 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
     val soundEnabled by SoundPreferenceManager.soundEnabledFlow(context).collectAsState(initial = true)
     val currentVolume by SoundPreferenceManager.soundVolumeFlow(context).collectAsState(initial = 1f)
 
-    var expandedTheme by remember { mutableStateOf(false) }
-    var selectedTheme by remember { mutableStateOf(currentTheme) }
-    var dark by remember { mutableStateOf(currentDark) }
+    val expandedTheme = remember { mutableStateOf(false) }
+    val selectedTheme = remember { mutableStateOf(currentTheme) }
+    val dark = remember { mutableStateOf(currentDark) }
 
-    var expandedFont by remember { mutableStateOf(false) }
-    var selectedFont by remember { mutableStateOf(currentFont) }
+    val expandedFont = remember { mutableStateOf(false) }
+    val selectedFont = remember { mutableStateOf(currentFont) }
 
     val soundState = remember { mutableStateOf(soundEnabled) }
     val volumeState = remember { mutableFloatStateOf(currentVolume) }
 
     val saveChecked = remember { mutableStateOf(false) }
 
-    LaunchedEffect(currentTheme) { selectedTheme = currentTheme }
-    LaunchedEffect(currentDark) { dark = currentDark }
-    LaunchedEffect(currentFont) { selectedFont = currentFont }
+    LaunchedEffect(currentTheme) { selectedTheme.value = currentTheme }
+    LaunchedEffect(currentDark) { dark.value = currentDark }
+    LaunchedEffect(currentFont) { selectedFont.value = currentFont }
     LaunchedEffect(soundEnabled) { soundState.value = soundEnabled }
     LaunchedEffect(currentVolume) { volumeState.floatValue = currentVolume }
 
@@ -88,43 +88,43 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
         Column(modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp)) {
             Text("Θέμα")
             Divider(modifier = Modifier.padding(vertical = 4.dp))
-            ExposedDropdownMenuBox(expanded = expandedTheme, onExpandedChange = { expandedTheme = !expandedTheme }) {
+            ExposedDropdownMenuBox(expanded = expandedTheme.value, onExpandedChange = { expandedTheme.value = !expandedTheme.value }) {
                 TextField(
                     readOnly = true,
-                    value = selectedTheme.label,
+                    value = selectedTheme.value.label,
                     onValueChange = {},
                     label = { Text("Theme") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedTheme) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedTheme.value) },
                     modifier = Modifier.menuAnchor()
                 )
-                DropdownMenu(expanded = expandedTheme, onDismissRequest = { expandedTheme = false }) {
+                DropdownMenu(expanded = expandedTheme.value, onDismissRequest = { expandedTheme.value = false }) {
                     AppTheme.values().forEach { theme ->
                         DropdownMenuItem(text = { Text(theme.label) }, onClick = {
-                            selectedTheme = theme
-                            expandedTheme = false
+                            selectedTheme.value = theme
+                            expandedTheme.value = false
                         })
                     }
                 }
             }
             Text("Dark Theme")
-            Switch(checked = dark, onCheckedChange = { dark = it })
+            Switch(checked = dark.value, onCheckedChange = { dark.value = it })
 
             Text("Γραμματοσειρά", modifier = Modifier.padding(top = 16.dp))
             Divider(modifier = Modifier.padding(vertical = 4.dp))
-            ExposedDropdownMenuBox(expanded = expandedFont, onExpandedChange = { expandedFont = !expandedFont }) {
+            ExposedDropdownMenuBox(expanded = expandedFont.value, onExpandedChange = { expandedFont.value = !expandedFont.value }) {
                 TextField(
                     readOnly = true,
-                    value = selectedFont.label,
+                    value = selectedFont.value.label,
                     onValueChange = {},
                     label = { Text("Fonts") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedFont) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedFont.value) },
                     modifier = Modifier.menuAnchor()
                 )
-                DropdownMenu(expanded = expandedFont, onDismissRequest = { expandedFont = false }) {
+                DropdownMenu(expanded = expandedFont.value, onDismissRequest = { expandedFont.value = false }) {
                     AppFont.values().forEach { font ->
                         DropdownMenuItem(text = { Text(font.label) }, onClick = {
-                            selectedFont = font
-                            expandedFont = false
+                            selectedFont.value = font
+                            expandedFont.value = false
                         })
                     }
                 }
@@ -164,8 +164,8 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
 
             Button(
                 onClick = {
-                    viewModel.applyTheme(context, selectedTheme, dark)
-                    viewModel.applyFont(context, selectedFont)
+                    viewModel.applyTheme(context, selectedTheme.value, dark.value)
+                    viewModel.applyFont(context, selectedFont.value)
                     viewModel.applySoundEnabled(context, soundState.value)
                     viewModel.applySoundVolume(context, volumeState.floatValue)
 
