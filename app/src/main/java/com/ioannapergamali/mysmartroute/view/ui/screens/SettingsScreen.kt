@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import android.widget.Toast
 import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.SettingsViewModel
@@ -50,16 +51,22 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 16.dp)) {
                 Checkbox(
                     checked = saveChecked.value,
-                    onCheckedChange = {
-                        saveChecked.value = it
-                        if (it) {
-                            viewModel.saveCurrentSettings(context)
-                        } else {
-                            viewModel.resetSettings(context)
-                        }
-                    }
+                    onCheckedChange = { saveChecked.value = it }
                 )
                 Text("Οριστική αποθήκευση επιλογών", modifier = Modifier.padding(start = 8.dp))
+            }
+
+            Button(
+                onClick = {
+                    if (saveChecked.value) {
+                        viewModel.saveCurrentSettings(context)
+                    } else {
+                        Toast.makeText(context, "Επιλέξτε το κουτάκι πριν πατήσετε Apply", Toast.LENGTH_SHORT).show()
+                    }
+                },
+                modifier = Modifier.padding(top = 8.dp)
+            ) {
+                Text("Apply")
             }
         }
     }
