@@ -9,6 +9,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.SettingsEntity
+import com.ioannapergamali.mysmartroute.data.local.UserEntity
 import com.ioannapergamali.mysmartroute.view.ui.AppTheme
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import kotlinx.coroutines.tasks.await
@@ -37,7 +38,15 @@ class SettingsViewModel : ViewModel() {
             }
             return
         }
-        val dao = MySmartRouteDatabase.getInstance(context).settingsDao()
+        val dbLocal = MySmartRouteDatabase.getInstance(context)
+
+        // Βεβαιωνόμαστε ότι υπάρχει εγγραφή χρήστη πριν την αποθήκευση ρυθμίσεων
+        val userDao = dbLocal.userDao()
+        if (userDao.getUser(userId) == null) {
+            userDao.insert(UserEntity(id = userId))
+        }
+
+        val dao = dbLocal.settingsDao()
         val current = dao.getSettings(userId) ?: SettingsEntity(
             userId = userId,
             theme = AppTheme.Ocean.name,
