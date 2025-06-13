@@ -10,6 +10,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.dimensionResource
+import com.ioannapergamali.mysmartroute.view.ui.util.rememberWindowInfo
+import com.ioannapergamali.mysmartroute.view.ui.util.WindowOrientation
+import androidx.compose.ui.unit.Dp
 import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.R
@@ -40,6 +44,8 @@ fun HomeScreen(
         }
     ) { paddingValues ->
 
+        val windowInfo = rememberWindowInfo()
+
         val (logoScale, logoAlpha) = rememberBreathingAnimation()
         val (textOffset, textAlpha) = rememberSlideFadeInAnimation()
 
@@ -50,77 +56,51 @@ fun HomeScreen(
         var password by remember { mutableStateOf("") }
 
         ScreenContainer(modifier = Modifier.padding(paddingValues)) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.Top,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-            Text(
-                text = "Welcome",
-                style = MaterialTheme.typography.headlineLarge,
-                modifier = Modifier
-                    .offset(y = textOffset)
-                    .graphicsLayer {
-                        this.alpha = textAlpha
-                    }
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Image(
-                painter = painterResource(id = R.drawable.logo),
-                contentDescription = "Animated Logo",
-                modifier = Modifier
-                    .size(180.dp)
-                    .graphicsLayer {
-                        scaleX = logoScale
-                        scaleY = logoScale
-                        this.alpha = logoAlpha
-                    }
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            TextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Email") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(Modifier.height(8.dp))
-
-            TextField(
-                value = password,
-                onValueChange = { password = it },
-                label = { Text("Password") },
-                visualTransformation = PasswordVisualTransformation(),
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            if (uiState is AuthenticationViewModel.LoginState.Error) {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = (uiState as AuthenticationViewModel.LoginState.Error).message,
-                    color = MaterialTheme.colorScheme.error
-                )
-            }
-
-            Spacer(Modifier.height(16.dp))
-
-            Button(onClick = { viewModel.login(email, password) }) {
-                Text("Login")
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row {
-                Text("If you don't have account ")
-                Text(
-                    text = "Sign Up",
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.clickable { onNavigateToSignUp() }
-                )
+            val isLarge = windowInfo.width > 600.dp && windowInfo.orientation == WindowOrientation.Landscape
+            val containerModifier = if (isLarge) Modifier.fillMaxWidth() else Modifier.fillMaxSize()
+            val arrangement = if (isLarge) Arrangement.Center else Arrangement.Top
+            val alignment = if (isLarge) Alignment.CenterVertically else Alignment.CenterHorizontally
+            if (isLarge) {
+                Row(
+                    modifier = containerModifier,
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    HomeContent(
+                        logoScale = logoScale,
+                        logoAlpha = logoAlpha,
+                        textOffset = textOffset,
+                        textAlpha = textAlpha,
+                        email = email,
+                        onEmailChange = { email = it },
+                        password = password,
+                        onPasswordChange = { password = it },
+                        uiState = uiState,
+                        onLogin = { viewModel.login(email, password) },
+                        onNavigateToSignUp = onNavigateToSignUp,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            } else {
+                Column(
+                    modifier = containerModifier,
+                    verticalArrangement = arrangement,
+                    horizontalAlignment = alignment
+                ) {
+                    HomeContent(
+                        logoScale = logoScale,
+                        logoAlpha = logoAlpha,
+                        textOffset = textOffset,
+                        textAlpha = textAlpha,
+                        email = email,
+                        onEmailChange = { email = it },
+                        password = password,
+                        onPasswordChange = { password = it },
+                        uiState = uiState,
+                        onLogin = { viewModel.login(email, password) },
+                        onNavigateToSignUp = onNavigateToSignUp
+                    )
+                }
             }
         }
     }
@@ -140,6 +120,93 @@ fun HomeScreen(
                 Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
             }
             else -> {}
+        }
+    }
+}
+
+@Composable
+private fun HomeContent(
+    logoScale: Float,
+    logoAlpha: Float,
+    textOffset: Dp,
+    textAlpha: Float,
+    email: String,
+    onEmailChange: (String) -> Unit,
+    password: String,
+    onPasswordChange: (String) -> Unit,
+    uiState: AuthenticationViewModel.LoginState,
+    onLogin: () -> Unit,
+    onNavigateToSignUp: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "Welcome",
+            style = MaterialTheme.typography.headlineLarge,
+            modifier = Modifier
+                .offset(y = textOffset)
+                .graphicsLayer { this.alpha = textAlpha }
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Image(
+            painter = painterResource(id = R.drawable.logo),
+            contentDescription = "Animated Logo",
+            modifier = Modifier
+                .size(dimensionResource(id = R.dimen.logo_size))
+                .graphicsLayer {
+                    scaleX = logoScale
+                    scaleY = logoScale
+                    this.alpha = logoAlpha
+                }
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        TextField(
+            value = email,
+            onValueChange = onEmailChange,
+            label = { Text("Email") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(Modifier.height(8.dp))
+
+        TextField(
+            value = password,
+            onValueChange = onPasswordChange,
+            label = { Text("Password") },
+            visualTransformation = PasswordVisualTransformation(),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        if (uiState is AuthenticationViewModel.LoginState.Error) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = uiState.message,
+                color = MaterialTheme.colorScheme.error
+            )
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        Button(onClick = onLogin) {
+            Text("Login")
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row {
+            Text("If you don't have account ")
+            Text(
+                text = "Sign Up",
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.clickable { onNavigateToSignUp() }
+            )
         }
     }
 }
