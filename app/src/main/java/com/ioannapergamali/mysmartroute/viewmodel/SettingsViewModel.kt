@@ -10,6 +10,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.SettingsEntity
 import com.ioannapergamali.mysmartroute.data.local.UserEntity
+import com.ioannapergamali.mysmartroute.data.local.insertSettingsSafely
 import com.ioannapergamali.mysmartroute.view.ui.AppTheme
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import kotlinx.coroutines.tasks.await
@@ -40,12 +41,7 @@ class SettingsViewModel : ViewModel() {
         }
         val dbLocal = MySmartRouteDatabase.getInstance(context)
 
-        // Βεβαιωνόμαστε ότι υπάρχει εγγραφή χρήστη πριν την αποθήκευση ρυθμίσεων
         val userDao = dbLocal.userDao()
-        if (userDao.getUser(userId) == null) {
-            userDao.insert(UserEntity(id = userId))
-        }
-
         val dao = dbLocal.settingsDao()
         val current = dao.getSettings(userId) ?: SettingsEntity(
             userId = userId,
@@ -60,7 +56,7 @@ class SettingsViewModel : ViewModel() {
             Toast.makeText(context, "Γίνονται έλεγχοι αποθήκευσης", Toast.LENGTH_SHORT).show()
         }
         try {
-            dao.insert(updated)
+            insertSettingsSafely(dao, userDao, updated)
             Log.d("SettingsViewModel", "Τοπική αποθήκευση επιτυχής: $updated")
             withContext(Dispatchers.Main) {
                 Toast.makeText(context, "Αποθηκεύτηκε τοπικά", Toast.LENGTH_SHORT).show()
@@ -179,7 +175,7 @@ class SettingsViewModel : ViewModel() {
 
             val settings = remote ?: local ?: return@launch
 
-            dao.insert(settings)
+            insertSettingsSafely(dao, userDao, settings)
             ThemePreferenceManager.setTheme(context, AppTheme.valueOf(settings.theme))
             ThemePreferenceManager.setDarkTheme(context, settings.darkTheme)
             FontPreferenceManager.setFont(context, AppFont.valueOf(settings.font))
