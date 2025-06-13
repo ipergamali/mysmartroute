@@ -151,7 +151,12 @@ class SettingsViewModel : ViewModel() {
     fun syncSettings(context: Context) {
         viewModelScope.launch {
             val userId = auth.currentUser?.uid ?: return@launch
-            val dao = MySmartRouteDatabase.getInstance(context).settingsDao()
+            val dbLocal = MySmartRouteDatabase.getInstance(context)
+            val userDao = dbLocal.userDao()
+            if (userDao.getUser(userId) == null) {
+                userDao.insert(UserEntity(id = userId))
+            }
+            val dao = dbLocal.settingsDao()
 
             val local = dao.getSettings(userId)
             val remote = if (NetworkUtils.isInternetAvailable(context)) {
