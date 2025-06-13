@@ -5,6 +5,7 @@ import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -94,6 +95,15 @@ fun TopBar(
         },
         actions = {
             username.value?.let { Text(it, modifier = Modifier.padding(end = 8.dp)) }
+            if (FirebaseAuth.getInstance().currentUser != null) {
+                IconButton(onClick = { navController.navigate("settings") }) {
+                    Icon(
+                        Icons.Filled.Settings,
+                        contentDescription = "settings",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
             if (showLogout) {
                 IconButton(onClick = onLogout) {
                     Icon(
