@@ -33,9 +33,10 @@ class SettingsViewModel : ViewModel() {
     ) {
         val userId = auth.currentUser?.uid
         if (userId == null) {
-            Log.w("SettingsViewModel", "Δεν βρέθηκε συνδεδεμένος χρήστης")
+            val message = "Δεν βρέθηκε χρήστης"
+            Log.w("SettingsViewModel", message)
             withContext(Dispatchers.Main) {
-                Toast.makeText(context, "Δεν βρέθηκε χρήστης", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
             }
             return
         }
@@ -52,19 +53,24 @@ class SettingsViewModel : ViewModel() {
             soundVolume = 1f
         )
         val updated = transform(current)
+        val checkingMessage = "Γίνονται έλεγχοι αποθήκευσης"
+        Log.d("SettingsViewModel", checkingMessage)
         withContext(Dispatchers.Main) {
-            Toast.makeText(context, "Γίνονται έλεγχοι αποθήκευσης", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, checkingMessage, Toast.LENGTH_SHORT).show()
         }
         try {
             insertSettingsSafely(dao, userDao, updated)
             Log.d("SettingsViewModel", "Τοπική αποθήκευση επιτυχής: $updated")
+            val localSuccess = "Αποθηκεύτηκε τοπικά"
+            Log.d("SettingsViewModel", localSuccess)
             withContext(Dispatchers.Main) {
-                Toast.makeText(context, "Αποθηκεύτηκε τοπικά", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, localSuccess, Toast.LENGTH_SHORT).show()
             }
         } catch (e: Exception) {
-            Log.e("SettingsViewModel", "Αποτυχία τοπικής αποθήκευσης", e)
+            val errorMessage = "Σφάλμα τοπικής αποθήκευσης: ${e.localizedMessage}"
+            Log.e("SettingsViewModel", errorMessage, e)
             withContext(Dispatchers.Main) {
-                Toast.makeText(context, "Σφάλμα τοπικής αποθήκευσης: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
             }
             return
         }
@@ -76,19 +82,24 @@ class SettingsViewModel : ViewModel() {
                     .set(updated)
                     .await()
                 Log.d("SettingsViewModel", "Αποθήκευση στο Firestore επιτυχής")
+                val cloudSuccess = "Αποθηκεύτηκε στο cloud"
+                Log.d("SettingsViewModel", cloudSuccess)
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(context, "Αποθηκεύτηκε στο cloud", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, cloudSuccess, Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                Log.e("SettingsViewModel", "Αποτυχία αποθήκευσης στο Firestore", e)
+                val cloudError = "Σφάλμα cloud αποθήκευσης: ${e.localizedMessage}"
+                Log.e("SettingsViewModel", cloudError, e)
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(context, "Σφάλμα cloud αποθήκευσης: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, cloudError, Toast.LENGTH_LONG).show()
                 }
             }
         } else {
+            val noInternet = "Αποθήκευση μόνο τοπικά"
             Log.d("SettingsViewModel", "Δεν υπάρχει σύνδεση, παράλειψη cloud")
+            Log.d("SettingsViewModel", noInternet)
             withContext(Dispatchers.Main) {
-                Toast.makeText(context, "Αποθήκευση μόνο τοπικά", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, noInternet, Toast.LENGTH_SHORT).show()
             }
         }
     }

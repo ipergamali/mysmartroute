@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import android.widget.Toast
+import android.util.Log
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -159,7 +160,9 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
 
             Button(
                 onClick = {
-                    Toast.makeText(context, "Εφαρμογή ρυθμίσεων...", Toast.LENGTH_SHORT).show()
+                    val applyMessage = "Εφαρμογή ρυθμίσεων..."
+                    Log.d("SettingsScreen", applyMessage)
+                    Toast.makeText(context, applyMessage, Toast.LENGTH_SHORT).show()
                     viewModel.applyAllSettings(
                         context,
                         selectedTheme.value,
