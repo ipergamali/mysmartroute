@@ -7,6 +7,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.data.local.SettingsEntity
+import com.ioannapergamali.mysmartroute.data.local.insertSettingsSafely
 import com.ioannapergamali.mysmartroute.data.local.UserEntity
 import com.ioannapergamali.mysmartroute.data.local.VehicleEntity
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
@@ -83,7 +84,7 @@ class DatabaseViewModel : ViewModel() {
                     users.forEach { db.userDao().insert(it) }
                     vehicles.forEach { db.vehicleDao().insert(it) }
                     pois.forEach { db.poIDao().insert(it) }
-                    settings.forEach { db.settingsDao().insert(it) }
+                    settings.forEach { insertSettingsSafely(db.settingsDao(), db.userDao(), it) }
                     prefs.edit().putLong("last_sync", remoteTs).apply()
                 } else {
                     val users = db.userDao().getAllUsers()
