@@ -5,6 +5,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.layout.ContentScale
 
 @Composable
 fun LogoImage(
@@ -15,6 +16,7 @@ fun LogoImage(
     Image(
         painter = painterResource(id = resId),
         contentDescription = contentDescription,
-        modifier = modifier
+        modifier = modifier,
+        contentScale = ContentScale.Fit
     )
 }
