@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.utils.authRef
+import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.VehicleEntity
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
@@ -46,16 +47,10 @@ class VehicleViewModel : ViewModel() {
             }
 
             val vehicleId = UUID.randomUUID().toString()
-            val vehicleData = hashMapOf(
-                "id" to vehicleId,
-                "description" to description,
-                "userId" to db.authRef(userId),
-                "type" to type.name,
-                "seat" to seat
-            )
+            val entity = VehicleEntity(vehicleId, description, userId, type.name, seat)
+            val vehicleData = entity.toFirestoreMap(db)
 
             val dao = MySmartRouteDatabase.getInstance(context).vehicleDao()
-            val entity = VehicleEntity(vehicleId, description, userId, type.name, seat)
 
             if (NetworkUtils.isInternetAvailable(context)) {
                 db.collection("vehicles")
