@@ -1,6 +1,5 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.clickable
 import androidx.compose.material3.*
@@ -8,7 +7,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.dimensionResource
 import com.ioannapergamali.mysmartroute.view.ui.util.rememberWindowInfo
@@ -16,6 +14,7 @@ import com.ioannapergamali.mysmartroute.view.ui.util.WindowOrientation
 import androidx.compose.ui.unit.Dp
 import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
+import com.ioannapergamali.mysmartroute.view.ui.components.LogoImage
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.view.ui.animation.rememberBreathingAnimation
 import com.ioannapergamali.mysmartroute.view.ui.animation.rememberSlideFadeInAnimation
@@ -153,8 +152,8 @@ private fun HomeContent(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        Image(
-            painter = painterResource(id = R.drawable.logo),
+        LogoImage(
+            resId = R.drawable.logo,
             contentDescription = "Animated Logo",
             modifier = Modifier
                 .size(dimensionResource(id = R.dimen.logo_size))
