@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.view.ui.components.LogoImage
+import com.ioannapergamali.mysmartroute.view.ui.components.LogoAssets
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.view.ui.animation.rememberBreathingAnimation
 import com.ioannapergamali.mysmartroute.view.ui.animation.rememberSlideFadeInAnimation
@@ -153,15 +154,13 @@ private fun HomeContent(
         Spacer(modifier = Modifier.height(12.dp))
 
         LogoImage(
-            resId = R.drawable.logo,
+            base64Data = LogoAssets.LOGO_BASE64,
             contentDescription = "Animated Logo",
-            modifier = Modifier
-                .size(dimensionResource(id = R.dimen.logo_size))
-                .graphicsLayer {
-                    scaleX = logoScale
-                    scaleY = logoScale
-                    this.alpha = logoAlpha
-                }
+            modifier = Modifier.graphicsLayer {
+                scaleX = logoScale
+                scaleY = logoScale
+                this.alpha = logoAlpha
+            }
         )
 
         Spacer(modifier = Modifier.height(16.dp))
