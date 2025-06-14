@@ -7,6 +7,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.ioannapergamali.mysmartroute.utils.authRef
+import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.SettingsEntity
 import com.ioannapergamali.mysmartroute.data.local.UserEntity
@@ -77,9 +79,10 @@ class SettingsViewModel : ViewModel() {
 
         if (NetworkUtils.isInternetAvailable(context)) {
             try {
+                val data = updated.toFirestoreMap(db)
                 db.collection("user_settings")
                     .document(userId)
-                    .set(updated)
+                    .set(data)
                     .await()
                 Log.d("SettingsViewModel", "Αποθήκευση στο Firestore επιτυχής")
                 val cloudSuccess = "Αποθηκεύτηκε στο cloud"
@@ -170,8 +173,9 @@ class SettingsViewModel : ViewModel() {
                 try {
                     val doc = db.collection("user_settings").document(userId).get().await()
                     if (doc.exists()) {
+                        val refId = doc.getDocumentReference("userId")?.id ?: userId
                         SettingsEntity(
-                            userId = userId,
+                            userId = refId,
                             theme = doc.getString("theme") ?: AppTheme.Ocean.name,
                             darkTheme = doc.getBoolean("darkTheme") ?: false,
                             font = doc.getString("font") ?: AppFont.SansSerif.name,

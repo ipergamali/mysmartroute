@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.ioannapergamali.mysmartroute.utils.authRef
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.UserEntity
 import com.ioannapergamali.mysmartroute.data.local.AuthenticationEntity
@@ -86,7 +87,7 @@ class AuthenticationViewModel : ViewModel() {
                     .addOnSuccessListener { result ->
                         val uid = result.user?.uid ?: userIdLocal
                         val userData = hashMapOf(
-                            "id" to uid,
+                            "id" to db.authRef(uid),
                             "name" to name,
                             "surname" to surname,
                             "username" to username,
