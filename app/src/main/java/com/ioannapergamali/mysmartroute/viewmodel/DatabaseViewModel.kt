@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FirebaseFirestore
+import com.ioannapergamali.mysmartroute.utils.authRef
+import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.data.local.SettingsEntity
@@ -43,13 +45,48 @@ class DatabaseViewModel : ViewModel() {
     fun loadFirebaseData() {
         viewModelScope.launch {
             val users = firestore.collection("users").get().await()
-                .documents.mapNotNull { it.toObject(UserEntity::class.java) }
+                .documents.mapNotNull { doc ->
+                    val ref = doc.getDocumentReference("id") ?: return@mapNotNull null
+                    UserEntity(
+                        id = ref.id,
+                        name = doc.getString("name") ?: "",
+                        surname = doc.getString("surname") ?: "",
+                        username = doc.getString("username") ?: "",
+                        email = doc.getString("email") ?: "",
+                        phoneNum = doc.getString("phoneNum") ?: "",
+                        password = doc.getString("password") ?: "",
+                        role = doc.getString("role") ?: "",
+                        city = doc.getString("city") ?: "",
+                        streetName = doc.getString("streetName") ?: "",
+                        streetNum = (doc.getLong("streetNum") ?: 0L).toInt(),
+                        postalCode = (doc.getLong("postalCode") ?: 0L).toInt()
+                    )
+                }
             val vehicles = firestore.collection("vehicles").get().await()
-                .documents.mapNotNull { it.toObject(VehicleEntity::class.java) }
+                .documents.mapNotNull { doc ->
+                    val userRef = doc.getDocumentReference("userId") ?: return@mapNotNull null
+                    VehicleEntity(
+                        id = doc.getString("id") ?: "",
+                        description = doc.getString("description") ?: "",
+                        userId = userRef.id,
+                        type = doc.getString("type") ?: "",
+                        seat = (doc.getLong("seat") ?: 0L).toInt()
+                    )
+                }
             val pois = firestore.collection("pois").get().await()
                 .documents.mapNotNull { it.toObject(PoIEntity::class.java) }
             val settings = firestore.collection("user_settings").get().await()
-                .documents.mapNotNull { it.toObject(SettingsEntity::class.java) }
+                .documents.mapNotNull { doc ->
+                    val userRef = doc.getDocumentReference("userId") ?: return@mapNotNull null
+                    SettingsEntity(
+                        userId = userRef.id,
+                        theme = doc.getString("theme") ?: "",
+                        darkTheme = doc.getBoolean("darkTheme") ?: false,
+                        font = doc.getString("font") ?: "",
+                        soundEnabled = doc.getBoolean("soundEnabled") ?: false,
+                        soundVolume = (doc.getDouble("soundVolume") ?: 0.0).toFloat()
+                    )
+                }
             _firebaseData.value = DatabaseData(users, vehicles, pois, settings)
         }
     }
@@ -73,13 +110,48 @@ class DatabaseViewModel : ViewModel() {
             try {
                 if (remoteTs > localTs) {
                     val users = firestore.collection("users").get().await()
-                        .documents.mapNotNull { it.toObject(UserEntity::class.java) }
+                        .documents.mapNotNull { doc ->
+                            val ref = doc.getDocumentReference("id") ?: return@mapNotNull null
+                            UserEntity(
+                                id = ref.id,
+                                name = doc.getString("name") ?: "",
+                                surname = doc.getString("surname") ?: "",
+                                username = doc.getString("username") ?: "",
+                                email = doc.getString("email") ?: "",
+                                phoneNum = doc.getString("phoneNum") ?: "",
+                                password = doc.getString("password") ?: "",
+                                role = doc.getString("role") ?: "",
+                                city = doc.getString("city") ?: "",
+                                streetName = doc.getString("streetName") ?: "",
+                                streetNum = (doc.getLong("streetNum") ?: 0L).toInt(),
+                                postalCode = (doc.getLong("postalCode") ?: 0L).toInt()
+                            )
+                        }
                     val vehicles = firestore.collection("vehicles").get().await()
-                        .documents.mapNotNull { it.toObject(VehicleEntity::class.java) }
+                        .documents.mapNotNull { doc ->
+                            val userRef = doc.getDocumentReference("userId") ?: return@mapNotNull null
+                            VehicleEntity(
+                                id = doc.getString("id") ?: "",
+                                description = doc.getString("description") ?: "",
+                                userId = userRef.id,
+                                type = doc.getString("type") ?: "",
+                                seat = (doc.getLong("seat") ?: 0L).toInt()
+                            )
+                        }
                     val pois = firestore.collection("pois").get().await()
                         .documents.mapNotNull { it.toObject(PoIEntity::class.java) }
                     val settings = firestore.collection("user_settings").get().await()
-                        .documents.mapNotNull { it.toObject(SettingsEntity::class.java) }
+                        .documents.mapNotNull { doc ->
+                            val userRef = doc.getDocumentReference("userId") ?: return@mapNotNull null
+                            SettingsEntity(
+                                userId = userRef.id,
+                                theme = doc.getString("theme") ?: "",
+                                darkTheme = doc.getBoolean("darkTheme") ?: false,
+                                font = doc.getString("font") ?: "",
+                                soundEnabled = doc.getBoolean("soundEnabled") ?: false,
+                                soundVolume = (doc.getDouble("soundVolume") ?: 0.0).toFloat()
+                            )
+                        }
 
                     users.forEach { db.userDao().insert(it) }
                     vehicles.forEach { db.vehicleDao().insert(it) }
@@ -92,10 +164,22 @@ class DatabaseViewModel : ViewModel() {
                     val pois = db.poIDao().getAll()
                     val settings = db.settingsDao().getAllSettings()
 
-                    users.forEach { firestore.collection("users").document(it.id).set(it).await() }
-                    vehicles.forEach { firestore.collection("vehicles").document(it.id).set(it).await() }
+                    users.forEach {
+                        firestore.collection("users")
+                            .document(it.id)
+                            .set(it.toFirestoreMap(firestore)).await()
+                    }
+                    vehicles.forEach {
+                        firestore.collection("vehicles")
+                            .document(it.id)
+                            .set(it.toFirestoreMap(firestore)).await()
+                    }
                     pois.forEach { firestore.collection("pois").document(it.id).set(it).await() }
-                    settings.forEach { firestore.collection("user_settings").document(it.userId).set(it).await() }
+                    settings.forEach {
+                        firestore.collection("user_settings")
+                            .document(it.userId)
+                            .set(it.toFirestoreMap(firestore)).await()
+                    }
 
                     val newTs = System.currentTimeMillis()
                     firestore.collection("metadata").document("sync").set(mapOf("last_sync" to newTs)).await()
