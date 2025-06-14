@@ -86,22 +86,7 @@ class AuthenticationViewModel : ViewModel() {
                 auth.createUserWithEmailAndPassword(email, password)
                     .addOnSuccessListener { result ->
                         val uid = result.user?.uid ?: userIdLocal
-                        val userData = hashMapOf(
-                            "id" to db.authRef(uid),
-                            "name" to name,
-                            "surname" to surname,
-                            "username" to username,
-                            "email" to email,
-                            "phoneNum" to phoneNum,
-                            "password" to password,
-                            "role" to role.name,
-                            "address" to mapOf(
-                                "city" to address.city,
-                                "streetName" to address.streetName,
-                                "streetNum" to address.streetNum,
-                                "postalCode" to address.postalCode
-                            )
-                        )
+                        val userData = userEntity.copy(id = uid).toFirestoreMap(db)
 
                         db.collection("users")
                             .document(uid)
