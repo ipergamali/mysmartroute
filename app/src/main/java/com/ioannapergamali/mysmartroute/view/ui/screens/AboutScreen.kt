@@ -14,6 +14,7 @@ import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.view.ui.components.LogoImage
+import com.ioannapergamali.mysmartroute.view.ui.components.LogoAssets
 
 @Composable
 fun AboutScreen(navController: NavController, openDrawer: () -> Unit) {
@@ -33,9 +34,8 @@ fun AboutScreen(navController: NavController, openDrawer: () -> Unit) {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 LogoImage(
-                    resId = R.drawable.company,
-                    contentDescription = "Company logo",
-                    modifier = Modifier.size(160.dp)
+                    base64Data = LogoAssets.COMPANY_BASE64,
+                    contentDescription = "Company logo"
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
