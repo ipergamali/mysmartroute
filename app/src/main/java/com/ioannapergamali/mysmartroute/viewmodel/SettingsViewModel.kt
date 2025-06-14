@@ -59,7 +59,7 @@ class SettingsViewModel : ViewModel() {
             Toast.makeText(context, checkingMessage, Toast.LENGTH_SHORT).show()
         }
         try {
-            insertSettingsSafely(dao, userDao, updated)
+            insertSettingsSafely(dao, dbLocal.authenticationDao(), userDao, updated)
             Log.d("SettingsViewModel", "Τοπική αποθήκευση επιτυχής: $updated")
             val localSuccess = "Αποθηκεύτηκε τοπικά"
             Log.d("SettingsViewModel", localSuccess)
@@ -186,7 +186,7 @@ class SettingsViewModel : ViewModel() {
 
             val settings = remote ?: local ?: return@launch
 
-            insertSettingsSafely(dao, userDao, settings)
+            insertSettingsSafely(dao, dbLocal.authenticationDao(), userDao, settings)
             ThemePreferenceManager.setTheme(context, AppTheme.valueOf(settings.theme))
             ThemePreferenceManager.setDarkTheme(context, settings.darkTheme)
             FontPreferenceManager.setFont(context, AppFont.valueOf(settings.font))

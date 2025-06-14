@@ -8,7 +8,7 @@ import androidx.room.PrimaryKey
 @Entity(
     tableName = "vehicles",
     foreignKeys = [ForeignKey(
-        entity = UserEntity::class,
+        entity = AuthenticationEntity::class,
         parentColumns = ["id"],
         childColumns = ["userId"],
         onDelete = ForeignKey.CASCADE

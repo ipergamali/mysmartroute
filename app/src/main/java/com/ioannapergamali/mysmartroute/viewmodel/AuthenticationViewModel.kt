@@ -7,6 +7,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.UserEntity
+import com.ioannapergamali.mysmartroute.data.local.AuthenticationEntity
 import com.ioannapergamali.mysmartroute.model.classes.users.Admin
 import com.ioannapergamali.mysmartroute.model.classes.users.Driver
 import com.ioannapergamali.mysmartroute.model.classes.users.Passenger
@@ -70,7 +71,9 @@ class AuthenticationViewModel : ViewModel() {
                 address.streetNum,
                 address.postalCode
             )
-            val dao = MySmartRouteDatabase.getInstance(context).userDao()
+            val dbLocal = MySmartRouteDatabase.getInstance(context)
+            val userDao = dbLocal.userDao()
+            val authDao = dbLocal.authenticationDao()
 
             val user = when (role) {
                 UserRole.DRIVER -> Driver(userIdLocal, name, email, surname, address, phoneNum, username, password)
@@ -104,7 +107,10 @@ class AuthenticationViewModel : ViewModel() {
                             .set(userData)
                             .addOnSuccessListener {
                                 result.user?.sendEmailVerification()
-                                viewModelScope.launch { dao.insert(userEntity.copy(id = uid)) }
+                                viewModelScope.launch {
+                                    authDao.insert(AuthenticationEntity(id = uid))
+                                    userDao.insert(userEntity.copy(id = uid))
+                                }
                                 _signUpState.value = SignUpState.Success
                                 loadCurrentUserRole()
                             }
@@ -116,7 +122,8 @@ class AuthenticationViewModel : ViewModel() {
                         _signUpState.value = SignUpState.Error(e.localizedMessage ?: "Sign-up failed")
                     }
             } else {
-                dao.insert(userEntity)
+                authDao.insert(AuthenticationEntity(id = userIdLocal))
+                userDao.insert(userEntity)
                 _signUpState.value = SignUpState.Success
             }
         }

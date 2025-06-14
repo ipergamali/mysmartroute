@@ -9,16 +9,18 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 
 import com.ioannapergamali.mysmartroute.data.local.VehicleEntity
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
+import com.ioannapergamali.mysmartroute.data.local.AuthenticationEntity
 
 @Database(
-    entities = [UserEntity::class, VehicleEntity::class, PoIEntity::class, SettingsEntity::class],
-    version = 9
+    entities = [AuthenticationEntity::class, UserEntity::class, VehicleEntity::class, PoIEntity::class, SettingsEntity::class],
+    version = 10
 )
 abstract class MySmartRouteDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun vehicleDao(): VehicleDao
     abstract fun poIDao(): PoIDao
     abstract fun settingsDao(): SettingsDao
+    abstract fun authenticationDao(): AuthenticationDao
 
     companion object {
         @Volatile
@@ -102,6 +104,17 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_9_10 = object : Migration(9, 10) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `authentication` (" +
+                        "`id` TEXT NOT NULL, " +
+                        "PRIMARY KEY(`id`)" +
+                    ")"
+                )
+            }
+        }
+
 
         fun getInstance(context: Context): MySmartRouteDatabase {
             return INSTANCE ?: synchronized(this) {
@@ -113,7 +126,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_2_3,
                     MIGRATION_3_4,
                     MIGRATION_4_5,
-                    MIGRATION_5_6
+                    MIGRATION_5_6,
+                    MIGRATION_9_10
                 )
                     .fallbackToDestructiveMigration()
                     .build().also { INSTANCE = it }
