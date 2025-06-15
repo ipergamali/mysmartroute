@@ -46,23 +46,7 @@ class DatabaseViewModel : ViewModel() {
     fun loadFirebaseData() {
         viewModelScope.launch {
             val users = firestore.collection("users").get().await()
-                .documents.mapNotNull { doc ->
-                    val ref = doc.getDocumentReference("id") ?: return@mapNotNull null
-                    UserEntity(
-                        id = ref.id,
-                        name = doc.getString("name") ?: "",
-                        surname = doc.getString("surname") ?: "",
-                        username = doc.getString("username") ?: "",
-                        email = doc.getString("email") ?: "",
-                        phoneNum = doc.getString("phoneNum") ?: "",
-                        password = doc.getString("password") ?: "",
-                        role = doc.getString("role") ?: "",
-                        city = doc.getString("city") ?: "",
-                        streetName = doc.getString("streetName") ?: "",
-                        streetNum = (doc.getLong("streetNum") ?: 0L).toInt(),
-                        postalCode = (doc.getLong("postalCode") ?: 0L).toInt()
-                    )
-                }
+                .documents.mapNotNull { it.toUserEntity() }
             val vehicles = firestore.collection("vehicles").get().await()
                 .documents.mapNotNull { doc ->
                     val userRef = doc.getDocumentReference("userId") ?: return@mapNotNull null
@@ -111,23 +95,7 @@ class DatabaseViewModel : ViewModel() {
             try {
                 if (remoteTs > localTs) {
                     val users = firestore.collection("users").get().await()
-                        .documents.mapNotNull { doc ->
-                            val ref = doc.getDocumentReference("id") ?: return@mapNotNull null
-                            UserEntity(
-                                id = ref.id,
-                                name = doc.getString("name") ?: "",
-                                surname = doc.getString("surname") ?: "",
-                                username = doc.getString("username") ?: "",
-                                email = doc.getString("email") ?: "",
-                                phoneNum = doc.getString("phoneNum") ?: "",
-                                password = doc.getString("password") ?: "",
-                                role = doc.getString("role") ?: "",
-                                city = doc.getString("city") ?: "",
-                                streetName = doc.getString("streetName") ?: "",
-                                streetNum = (doc.getLong("streetNum") ?: 0L).toInt(),
-                                postalCode = (doc.getLong("postalCode") ?: 0L).toInt()
-                            )
-                        }
+                        .documents.mapNotNull { it.toUserEntity() }
                     val vehicles = firestore.collection("vehicles").get().await()
                         .documents.mapNotNull { doc ->
                             val userRef = doc.getDocumentReference("userId") ?: return@mapNotNull null
