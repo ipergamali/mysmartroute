@@ -1,5 +1,5 @@
 package com.ioannapergamali.mysmartroute.utils
-
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.SettingsEntity
@@ -52,3 +52,22 @@ fun SettingsEntity.toFirestoreMap(db: FirebaseFirestore): Map<String, Any> = map
 fun AuthenticationEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     "id" to id
 )
+
+/** Μετατροπή εγγράφου Firestore σε [UserEntity] διαβάζοντας το id ως DocumentReference. */
+fun com.google.firebase.firestore.DocumentSnapshot.toUserEntity(): UserEntity? {
+    val ref = getDocumentReference("id") ?: return null
+    return UserEntity(
+        id = ref.id,
+        name = getString("name") ?: "",
+        surname = getString("surname") ?: "",
+        username = getString("username") ?: "",
+        email = getString("email") ?: "",
+        phoneNum = getString("phoneNum") ?: "",
+        password = getString("password") ?: "",
+        role = getString("role") ?: "",
+        city = getString("city") ?: "",
+        streetName = getString("streetName") ?: "",
+        streetNum = (getLong("streetNum") ?: 0L).toInt(),
+        postalCode = (getLong("postalCode") ?: 0L).toInt()
+    )
+}
