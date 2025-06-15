@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.utils.authRef
+import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.UserEntity
 import com.ioannapergamali.mysmartroute.data.local.AuthenticationEntity
@@ -87,6 +88,11 @@ class AuthenticationViewModel : ViewModel() {
                     .addOnSuccessListener { result ->
                         val uid = result.user?.uid ?: userIdLocal
                         val userData = userEntity.copy(id = uid).toFirestoreMap(db)
+                        val authData = AuthenticationEntity(id = uid).toFirestoreMap()
+
+                        db.collection("authentication")
+                            .document(uid)
+                            .set(authData)
 
                         db.collection("users")
                             .document(uid)

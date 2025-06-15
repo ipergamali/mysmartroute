@@ -12,4 +12,7 @@ interface AuthenticationDao {
 
     @Query("SELECT * FROM authentication WHERE id = :id")
     suspend fun getAuth(id: String): AuthenticationEntity?
+
+    @Query("SELECT * FROM authentication")
+    suspend fun getAllAuths(): List<AuthenticationEntity>
 }

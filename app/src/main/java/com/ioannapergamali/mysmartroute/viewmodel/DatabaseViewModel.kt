@@ -10,6 +10,7 @@ import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.data.local.SettingsEntity
 import com.ioannapergamali.mysmartroute.data.local.insertSettingsSafely
+import com.ioannapergamali.mysmartroute.data.local.AuthenticationEntity
 import com.ioannapergamali.mysmartroute.data.local.UserEntity
 import com.ioannapergamali.mysmartroute.data.local.VehicleEntity
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
@@ -152,17 +153,21 @@ class DatabaseViewModel : ViewModel() {
                                 soundVolume = (doc.getDouble("soundVolume") ?: 0.0).toFloat()
                             )
                         }
+                    val auths = firestore.collection("authentication").get().await()
+                        .documents.mapNotNull { it.toObject(AuthenticationEntity::class.java) }
 
                     users.forEach { db.userDao().insert(it) }
                     vehicles.forEach { db.vehicleDao().insert(it) }
                     pois.forEach { db.poIDao().insert(it) }
                     settings.forEach { insertSettingsSafely(db.settingsDao(), db.authenticationDao(), db.userDao(), it) }
+                    auths.forEach { db.authenticationDao().insert(it) }
                     prefs.edit().putLong("last_sync", remoteTs).apply()
                 } else {
                     val users = db.userDao().getAllUsers()
                     val vehicles = db.vehicleDao().getAllVehicles()
                     val pois = db.poIDao().getAll()
                     val settings = db.settingsDao().getAllSettings()
+                    val auths = db.authenticationDao().getAllAuths()
 
                     users.forEach {
                         firestore.collection("users")
@@ -179,6 +184,11 @@ class DatabaseViewModel : ViewModel() {
                         firestore.collection("user_settings")
                             .document(it.userId)
                             .set(it.toFirestoreMap(firestore)).await()
+                    }
+                    auths.forEach {
+                        firestore.collection("authentication")
+                            .document(it.id)
+                            .set(it.toFirestoreMap()).await()
                     }
 
                     val newTs = System.currentTimeMillis()
