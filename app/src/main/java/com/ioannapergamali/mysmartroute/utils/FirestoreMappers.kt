@@ -3,6 +3,7 @@ package com.ioannapergamali.mysmartroute.utils
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.SettingsEntity
+import com.ioannapergamali.mysmartroute.data.local.AuthenticationEntity
 import com.ioannapergamali.mysmartroute.data.local.UserEntity
 import com.ioannapergamali.mysmartroute.data.local.VehicleEntity
 
@@ -45,4 +46,9 @@ fun SettingsEntity.toFirestoreMap(db: FirebaseFirestore): Map<String, Any> = map
     "font" to font,
     "soundEnabled" to soundEnabled,
     "soundVolume" to soundVolume
+)
+
+/** Μετατροπή [AuthenticationEntity] σε απλό Map. */
+fun AuthenticationEntity.toFirestoreMap(): Map<String, Any> = mapOf(
+    "id" to id
 )
