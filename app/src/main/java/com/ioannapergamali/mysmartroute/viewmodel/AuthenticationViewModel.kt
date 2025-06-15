@@ -5,8 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.ioannapergamali.mysmartroute.utils.authRef
-import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.UserEntity
 import com.ioannapergamali.mysmartroute.data.local.AuthenticationEntity
@@ -87,12 +85,26 @@ class AuthenticationViewModel : ViewModel() {
                 auth.createUserWithEmailAndPassword(email, password)
                     .addOnSuccessListener { result ->
                         val uid = result.user?.uid ?: userIdLocal
-                        val userData = userEntity.copy(id = uid).toFirestoreMap(db)
-                        val authData = AuthenticationEntity(id = uid).toFirestoreMap()
+
+                        val authRef = db.collection("authentication").document(uid)
+                        val userData = mapOf(
+                            "id" to authRef,
+                            "name" to name,
+                            "surname" to surname,
+                            "username" to username,
+                            "email" to email,
+                            "phoneNum" to phoneNum,
+                            "password" to password,
+                            "role" to role.name,
+                            "city" to address.city,
+                            "streetName" to address.streetName,
+                            "streetNum" to address.streetNum,
+                            "postalCode" to address.postalCode
+                        )
 
                         db.collection("authentication")
                             .document(uid)
-                            .set(authData)
+                            .set(mapOf("id" to uid))
 
                         db.collection("users")
                             .document(uid)
