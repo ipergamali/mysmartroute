@@ -190,8 +190,13 @@ fun SignUpScreen(
                 is AuthenticationViewModel.SignUpState.Success -> {
                     Toast.makeText(
                         context,
-                        "User created and stored successfully",
+                        "Η εγγραφή ολοκληρώθηκε με επιτυχία",
                         Toast.LENGTH_SHORT
+                    ).show()
+                    Toast.makeText(
+                        context,
+                        "Παρακαλώ ενεργοποιήστε τον λογαριασμό σας μέσω e-mail",
+                        Toast.LENGTH_LONG
                     ).show()
                     onSignUpSuccess()
                 }

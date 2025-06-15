@@ -45,7 +45,7 @@ fun NavigationHost(navController : NavHostController, openDrawer: () -> Unit) {
             SignUpScreen(
                 navController = navController ,
                 onSignUpSuccess = {
-                    navController.navigate("menu") {
+                    navController.navigate("home") {
                         popUpTo("signup") { inclusive = true }
                     }
                 },
