@@ -14,14 +14,14 @@ import kotlin.math.sqrt
  * σε διαφορετικές φυσικές διαστάσεις οθονών.
  *
  * @param referenceDiagonalInches Το μέγεθος οθόνης (σε ίντσες) στο οποίο
- * προορίζεται να είναι [sizeAtReferenceDp]. Προεπιλογή 7 ίντσες.
- * @param sizeAtReferenceDp Το μέγεθος του λογότυπου σε dp όταν η διαγώνιος
- * είναι [referenceDiagonalInches]. Προεπιλογή 40 dp.
+ * προορίζεται να είναι [sizeAtReferencePx]. Προεπιλογή 7 ίντσες.
+ * @param sizeAtReferencePx Το μέγεθος του λογότυπου σε pixel όταν η διαγώνιος
+ * είναι [referenceDiagonalInches]. Προεπιλογή 40 px.
  */
 @Composable
 fun rememberAdaptiveLogoSize(
     referenceDiagonalInches: Float = 7f,
-    sizeAtReferenceDp: Float = 40f
+    sizeAtReferencePx: Float = 40f
 ): Dp {
     val context = LocalContext.current
     val configuration = LocalConfiguration.current
@@ -31,18 +31,20 @@ fun rememberAdaptiveLogoSize(
         val widthPx = metrics.widthPixels.toFloat()
         val heightPx = metrics.heightPixels.toFloat()
         val diagonalPx = sqrt(widthPx.pow(2) + heightPx.pow(2))
+        val density = metrics.density
         val diagonalInches = diagonalPx / metrics.densityDpi.toFloat()
+        val baseDp = sizeAtReferencePx / density
         val targetDp = when {
-            diagonalInches in 7f..9f -> sizeAtReferenceDp
-            diagonalInches < 7f -> sizeAtReferenceDp * (diagonalInches / 7f)
-            else -> sizeAtReferenceDp * (diagonalInches / 9f)
+            diagonalInches in 7f..9f -> baseDp
+            diagonalInches < 7f -> baseDp * (diagonalInches / 7f)
+            else -> baseDp * (diagonalInches / 9f)
         }
         targetDp.dp
     }
 }
 
 /**
- * Απλούστερη παραλλαγή που επιστρέφει 40 dp για οθόνες 7-9 ιντσών
+ * Απλούστερη παραλλαγή που επιστρέφει μέγεθος 40px για οθόνες 7-9 ιντσών
  * και προσαρμόζει γραμμικά για μικρότερες ή μεγαλύτερες συσκευές.
  */
 @Composable
@@ -55,12 +57,14 @@ fun rememberLogoSize(): Dp {
         val widthPx = metrics.widthPixels.toFloat()
         val heightPx = metrics.heightPixels.toFloat()
         val diagonalPx = sqrt(widthPx.pow(2) + heightPx.pow(2))
+        val density = metrics.density
         val diagonalInches = diagonalPx / metrics.densityDpi.toFloat()
+        val baseDp = 40f / density
 
         val targetDp = when {
-            diagonalInches in 7f..9f -> 40f
-            diagonalInches < 7f -> 40f * (diagonalInches / 7f)
-            else -> 40f * (diagonalInches / 9f)
+            diagonalInches in 7f..9f -> baseDp
+            diagonalInches < 7f -> baseDp * (diagonalInches / 7f)
+            else -> baseDp * (diagonalInches / 9f)
         }
 
         targetDp.dp
