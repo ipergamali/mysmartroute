@@ -38,6 +38,7 @@ fun AdminSignUpScreen(
     val context = LocalContext.current
     val activity = LocalContext.current as Activity
 
+
     var name by remember { mutableStateOf("") }
     var surname by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
@@ -49,6 +50,31 @@ fun AdminSignUpScreen(
     var streetName by remember { mutableStateOf("") }
     var streetNumInput by remember { mutableStateOf("") }
     var postalCodeInput by remember { mutableStateOf("") }
+
+    val launcher =
+        rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+            if (task.isSuccessful) {
+                val idToken = task.result.idToken
+                val streetNum = streetNumInput.toIntOrNull()
+                val postalCode = postalCodeInput.toIntOrNull()
+                if (idToken != null && streetNum != null && postalCode != null) {
+                    viewModel.signUpWithGoogle(
+                        activity,
+                        context,
+                        idToken,
+                        phoneNum,
+                        com.ioannapergamali.mysmartroute.model.classes.users.UserAddress(
+                            city,
+                            streetName,
+                            streetNum,
+                            postalCode
+                        ),
+                        UserRole.ADMIN
+                    )
+                }
+            }
+        }
 
     Scaffold(
         topBar = {
@@ -183,29 +209,6 @@ fun AdminSignUpScreen(
                         .build()
                     val client = GoogleSignIn.getClient(activity, gso)
                     val signInIntent = client.signInIntent
-                    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-                        if (task.isSuccessful) {
-                            val idToken = task.result.idToken
-                            val streetNum = streetNumInput.toIntOrNull()
-                            val postalCode = postalCodeInput.toIntOrNull()
-                            if (idToken != null && streetNum != null && postalCode != null) {
-                                viewModel.signUpWithGoogle(
-                                    activity,
-                                    context,
-                                    idToken,
-                                    phoneNum,
-                                    com.ioannapergamali.mysmartroute.model.classes.users.UserAddress(
-                                        city,
-                                        streetName,
-                                        streetNum,
-                                        postalCode
-                                    ),
-                                    UserRole.ADMIN
-                                )
-                            }
-                        }
-                    }
                     launcher.launch(signInIntent)
                 }) {
                     Text("Google Sign Up")
