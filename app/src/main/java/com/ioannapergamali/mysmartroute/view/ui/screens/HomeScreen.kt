@@ -198,6 +198,11 @@ private fun HomeContent(
 
     if (uiState is AuthenticationViewModel.LoginState.EmailNotVerified) {
         Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "Το email σας δεν έχει επιβεβαιωθεί. Ελέγξτε το inbox σας.",
+            color = MaterialTheme.colorScheme.error
+        )
+        Spacer(modifier = Modifier.height(8.dp))
         Button(onClick = onResendVerification) {
             Text("Αποστολή ξανά email επιβεβαίωσης")
         }
