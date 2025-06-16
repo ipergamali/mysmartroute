@@ -12,15 +12,33 @@
           "package_name": "com.ioannapergamali.mysmartroute"
         }
       },
-      "oauth_client": [],
-      "api_key": [
+      "oauth_client": [
         {
-          "current_key": "AIzaSyAjrLzdIcwjsQideLOI_Ly3oThdYVNr-5U"
+          "client_id": "3402954436-503fs7a3imjlgonp922hkchd11g3s6te.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ioannapergamali.mysmartroute",
+            "certificate_hash": "a03bc55d123456789abcdef0123456789abcdef0"
+          }
+        },
+        {
+          "client_id": "3402954436-jfsqbb93am2bhs2j9kqtpgfkfurldlne.apps.googleusercontent.com",
+          "client_type": 3
         }
       ],
-      "services": {
+      "api_key": [
+        {
+          "current_key": "AIzaSyCl4Z_N5WfH2ttsmj0oFFq9gkvX0BxfTDI"
+        }
+      ],
+      "services": {goo
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "3402954436-jfsqbb93am2bhs2j9kqtpgfkfurldlne.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
