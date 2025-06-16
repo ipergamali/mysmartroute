@@ -66,6 +66,7 @@ fun SignUpScreen(
                     context,
                     idToken,
                     phoneNum,
+                    surname,
                     com.ioannapergamali.mysmartroute.model.classes.users.UserAddress(
                         city,
                         streetName,

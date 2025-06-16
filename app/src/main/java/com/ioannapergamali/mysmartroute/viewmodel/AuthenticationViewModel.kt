@@ -145,6 +145,7 @@ class AuthenticationViewModel : ViewModel() {
         context: Context,
         idToken: String,
         phoneNum: String,
+        surname: String,
         address: UserAddress,
         role: UserRole
     ) {
