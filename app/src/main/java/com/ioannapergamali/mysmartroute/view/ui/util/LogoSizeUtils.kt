@@ -59,7 +59,7 @@ fun rememberLogoSize(): Dp {
         val diagonalPx = sqrt(widthPx.pow(2) + heightPx.pow(2))
         val density = metrics.density
         val diagonalInches = diagonalPx / metrics.densityDpi.toFloat()
-        val baseDp = 40f / density
+        val baseDp = 96f / density
 
         val targetDp = when {
             diagonalInches in 7f..9f -> baseDp
