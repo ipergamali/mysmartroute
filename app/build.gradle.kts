@@ -19,6 +19,8 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+        buildConfigField("String", "FIREBASE_AUTH_DOMAIN", "\"mysmartroute-26a64.firebaseapp.com\"")
+        buildConfigField("String", "DYNAMIC_LINK_DOMAIN", "\"mysmartroute.page.link\"")
     }
 
     androidResources {

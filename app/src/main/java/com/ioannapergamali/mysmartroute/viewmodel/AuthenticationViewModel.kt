@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.ktx.actionCodeSettings
+import com.ioannapergamali.mysmartroute.utils.AuthLinkUtils
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.UserEntity
@@ -111,15 +111,7 @@ class AuthenticationViewModel : ViewModel() {
                             .document(uid)
                             .set(userData)
                             .addOnSuccessListener {
-                                val actionSettings = actionCodeSettings {
-                                    url = "https://mysmartroute.page.link/verify"
-                                    handleCodeInApp = true
-                                    setAndroidPackageName(
-                                        "com.ioannapergamali.mysmartroute",
-                                        true,
-                                        null
-                                    )
-                                }
+                                val actionSettings = AuthLinkUtils.buildActionCodeSettings()
                                 result.user?.sendEmailVerification(actionSettings)
                                 viewModelScope.launch {
                                     authDao.insert(AuthenticationEntity(id = uid))
@@ -176,15 +168,7 @@ class AuthenticationViewModel : ViewModel() {
 
     fun resendVerificationEmail() {
         val user = auth.currentUser
-        val actionSettings = actionCodeSettings {
-            url = "https://mysmartroute.page.link/verify"
-            handleCodeInApp = true
-            setAndroidPackageName(
-                "com.ioannapergamali.mysmartroute",
-                true,
-                null
-            )
-        }
+        val actionSettings = AuthLinkUtils.buildActionCodeSettings()
         user?.sendEmailVerification(actionSettings)
             ?.addOnCompleteListener { task ->
                 if (task.isSuccessful) {
