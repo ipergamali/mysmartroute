@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import android.widget.Toast
+import android.util.Log
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
@@ -74,6 +75,13 @@ fun AdminSignUpScreen(
                         UserRole.ADMIN
                     )
                 }
+            } else {
+                Toast.makeText(
+                    context,
+                    task.exception?.localizedMessage ?: "Google sign-in failed",
+                    Toast.LENGTH_LONG
+                ).show()
+                Log.e("AdminSignUp", "Google sign-in failed", task.exception)
             }
         }
 
