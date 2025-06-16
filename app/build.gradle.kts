@@ -81,8 +81,9 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.1.7")
 
     // Firebase
-    implementation("com.google.firebase:firebase-auth-ktx:22.3.1")
-    implementation("com.google.firebase:firebase-firestore-ktx:24.11.1")
+    implementation(platform("com.google.firebase:firebase-bom:33.15.0"))
+    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-firestore-ktx")
 
     // Room
     implementation("androidx.room:room-runtime:2.6.1")
