@@ -44,7 +44,7 @@ fun rememberAdaptiveLogoSize(
 }
 
 /**
- * Απλούστερη παραλλαγή που επιστρέφει μέγεθος 40px για οθόνες 7-9 ιντσών
+ * Απλούστερη παραλλαγή που επιστρέφει μέγεθος 960px για οθόνες 7-9 ιντσών
  * και προσαρμόζει γραμμικά για μικρότερες ή μεγαλύτερες συσκευές.
  */
 @Composable
@@ -59,7 +59,8 @@ fun rememberLogoSize(): Dp {
         val diagonalPx = sqrt(widthPx.pow(2) + heightPx.pow(2))
         val density = metrics.density
         val diagonalInches = diagonalPx / metrics.densityDpi.toFloat()
-        val baseDp = 96f / density
+        // 10x αύξηση του βασικού μεγέθους (96 * 10 = 960px)
+        val baseDp = 960f / density
 
         val targetDp = when {
             diagonalInches in 7f..9f -> baseDp
