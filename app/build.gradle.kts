@@ -41,7 +41,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.14" // Matches Compose Compiler for Kotlin 1.9.x
+        kotlinCompilerExtensionVersion = "1.5.15"
     }
 
     compileOptions {
@@ -67,7 +67,7 @@ kotlin {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.24")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.1.21")
 
     // Android core
     implementation("androidx.core:core-ktx:1.12.0")
@@ -77,13 +77,16 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
 
     // Jetpack Compose
-    implementation("androidx.compose.material3:material3-android:1.3.2")
-    implementation("androidx.compose.ui:ui:1.6.4")
-    implementation("androidx.compose.ui:ui-text:1.6.4")
-    implementation("androidx.compose.ui:ui-tooling-preview:1.6.4")
-    implementation("androidx.compose.runtime:runtime-livedata:1.6.4")
+    implementation(platform("androidx.compose:compose-bom:2025.06.00"))
+    androidTestImplementation(platform("androidx.compose:compose-bom:2025.06.00"))
+
+    implementation("androidx.compose.material3:material3-android")
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.ui:ui-text")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.compose.runtime:runtime-livedata")
     implementation("androidx.navigation:navigation-compose:2.7.1")
-    implementation("androidx.compose.material:material-icons-extended:1.6.4")
+    implementation("androidx.compose.material:material-icons-extended")
 
     // DataStore για αποθήκευση ρυθμίσεων
     implementation("androidx.datastore:datastore-preferences:1.1.7")
