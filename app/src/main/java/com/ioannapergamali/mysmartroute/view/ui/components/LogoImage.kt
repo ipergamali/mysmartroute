@@ -10,22 +10,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.dimensionResource
+import com.ioannapergamali.mysmartroute.R
 
 @Composable
 fun LogoImage(
     base64Data: String,
     contentDescription: String?,
-    modifier: Modifier = Modifier,
-    baseSize: Dp = 40.dp,
-    referenceWidth: Dp = 600.dp
+    modifier: Modifier = Modifier
 ) {
-    val configuration = LocalConfiguration.current
-    val screenWidth = configuration.screenWidthDp.dp
-    val scale = screenWidth.value / referenceWidth.value
-    val targetSize = baseSize * scale
+    val targetSize = dimensionResource(id = R.dimen.logo_size)
 
     val painter = remember(base64Data) {
         val bytes = Base64.decode(base64Data, Base64.DEFAULT)
