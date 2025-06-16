@@ -103,23 +103,23 @@ fun HomeScreen(
                 }
             }
         }
-    }
 
-    LaunchedEffect(uiState) {
-        when (uiState) {
-            is AuthenticationViewModel.LoginState.Success -> {
-                Toast.makeText(context, "Login successful", Toast.LENGTH_SHORT).show()
-                navController.navigate("menu") {
-                    popUpTo("home") { inclusive = true }
+        LaunchedEffect(uiState) {
+            when (uiState) {
+                is AuthenticationViewModel.LoginState.Success -> {
+                    Toast.makeText(context, "Login successful", Toast.LENGTH_SHORT).show()
+                    navController.navigate("menu") {
+                        popUpTo("home") { inclusive = true }
+                    }
+                    // Άνοιγμα του πλαϊνού μενού ώστε να εμφανιστεί η επιλογή "Settings"
+                    openDrawer()
                 }
-                // Άνοιγμα του πλαϊνού μενού ώστε να εμφανιστεί η επιλογή "Settings"
-                openDrawer()
+                is AuthenticationViewModel.LoginState.Error -> {
+                    val message = (uiState as AuthenticationViewModel.LoginState.Error).message
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                }
+                else -> {}
             }
-            is AuthenticationViewModel.LoginState.Error -> {
-                val message = (uiState as AuthenticationViewModel.LoginState.Error).message
-                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-            }
-            else -> {}
         }
     }
 }
