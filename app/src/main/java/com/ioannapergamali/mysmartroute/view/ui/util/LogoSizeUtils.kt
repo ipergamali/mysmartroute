@@ -33,7 +33,11 @@ fun rememberAdaptiveLogoSize(
         val heightPx = metrics.heightPixels.toFloat()
         val diagonalPx = sqrt(widthPx.pow(2) + heightPx.pow(2))
         val diagonalInches = diagonalPx / metrics.densityDpi.toFloat()
-        val targetPx = sizeAtReferencePx * (diagonalInches / referenceDiagonalInches)
+        val targetPx = when {
+            diagonalInches in 7f..9f -> sizeAtReferencePx
+            diagonalInches < 7f -> sizeAtReferencePx * (diagonalInches / 7f)
+            else -> sizeAtReferencePx * (diagonalInches / 9f)
+        }
         with(density) { targetPx.toDp() }
     }
 }
