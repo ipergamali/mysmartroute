@@ -21,6 +21,7 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.SoundPickerScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.DatabaseMenuScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.LocalDatabaseScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.FirebaseDatabaseScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.AdminSignUpScreen
 
 
 
@@ -114,6 +115,16 @@ fun NavigationHost(navController : NavHostController, openDrawer: () -> Unit) {
 
         composable("firebaseDb") {
             FirebaseDatabaseScreen(navController = navController, openDrawer = openDrawer)
+        }
+
+        composable("adminSignup") {
+            AdminSignUpScreen(
+                navController = navController,
+                onSignUpSuccess = {
+                    navController.popBackStack()
+                },
+                openDrawer = openDrawer
+            )
         }
 
 

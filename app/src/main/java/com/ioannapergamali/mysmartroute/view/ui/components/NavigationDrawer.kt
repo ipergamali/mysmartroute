@@ -6,6 +6,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Storage
+import androidx.compose.material.icons.filled.AdminPanelSettings
 import com.google.firebase.auth.FirebaseAuth
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme
@@ -63,6 +64,15 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
                 closeDrawer()
             },
             icon = { Icon(Icons.Filled.Storage, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
+        )
+        NavigationDrawerItem(
+            label = { Text("Admin Option") },
+            selected = false,
+            onClick = {
+                navController.navigate("adminSignup")
+                closeDrawer()
+            },
+            icon = { Icon(Icons.Filled.AdminPanelSettings, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
         )
         val activity = (LocalContext.current as? Activity)
         NavigationDrawerItem(
