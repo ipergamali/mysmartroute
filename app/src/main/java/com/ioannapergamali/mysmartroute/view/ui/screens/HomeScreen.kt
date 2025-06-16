@@ -78,7 +78,6 @@ fun HomeScreen(
                         uiState = uiState,
                         onLogin = { viewModel.login(email, password) },
                         onNavigateToSignUp = onNavigateToSignUp,
-                        onResendVerification = { viewModel.resendVerificationEmail() },
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -99,8 +98,7 @@ fun HomeScreen(
                         onPasswordChange = { password = it },
                         uiState = uiState,
                         onLogin = { viewModel.login(email, password) },
-                        onNavigateToSignUp = onNavigateToSignUp,
-                        onResendVerification = { viewModel.resendVerificationEmail() }
+                        onNavigateToSignUp = onNavigateToSignUp
                     )
                 }
             }
@@ -120,8 +118,8 @@ fun HomeScreen(
                     val message = (uiState as AuthenticationViewModel.LoginState.Error).message
                     Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                 }
-                is AuthenticationViewModel.LoginState.EmailVerificationSent -> {
-                    Toast.makeText(context, "Το email επιβεβαίωσης στάλθηκε", Toast.LENGTH_SHORT).show()
+                is AuthenticationViewModel.LoginState.SmsVerificationSent -> {
+                    Toast.makeText(context, "Το SMS επιβεβαίωσης στάλθηκε", Toast.LENGTH_SHORT).show()
                 }
                 else -> {}
             }
@@ -142,7 +140,6 @@ private fun HomeContent(
     uiState: AuthenticationViewModel.LoginState,
     onLogin: () -> Unit,
     onNavigateToSignUp: () -> Unit,
-    onResendVerification: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -196,17 +193,7 @@ private fun HomeContent(
         )
     }
 
-    if (uiState is AuthenticationViewModel.LoginState.EmailNotVerified) {
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "Το email σας δεν έχει επιβεβαιωθεί. Ελέγξτε το inbox σας.",
-            color = MaterialTheme.colorScheme.error
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Button(onClick = onResendVerification) {
-            Text("Αποστολή ξανά email επιβεβαίωσης")
-        }
-    }
+
 
         Spacer(Modifier.height(16.dp))
 
