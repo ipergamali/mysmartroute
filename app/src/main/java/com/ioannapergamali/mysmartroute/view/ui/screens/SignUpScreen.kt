@@ -20,6 +20,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import android.widget.Toast
+import android.util.Log
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
@@ -76,6 +77,13 @@ fun SignUpScreen(
                     selectedRole
                 )
             }
+        } else {
+            Toast.makeText(
+                context,
+                task.exception?.localizedMessage ?: "Google sign-in failed",
+                Toast.LENGTH_LONG
+            ).show()
+            Log.e("SignUp", "Google sign-in failed", task.exception)
         }
     }
 
