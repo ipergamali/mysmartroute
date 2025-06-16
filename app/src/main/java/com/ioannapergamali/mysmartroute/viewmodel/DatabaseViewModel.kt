@@ -4,14 +4,12 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FirebaseFirestore
-import com.ioannapergamali.mysmartroute.utils.authRef
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.utils.toUserEntity
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.data.local.SettingsEntity
 import com.ioannapergamali.mysmartroute.data.local.insertSettingsSafely
-import com.ioannapergamali.mysmartroute.data.local.AuthenticationEntity
 import com.ioannapergamali.mysmartroute.data.local.UserEntity
 import com.ioannapergamali.mysmartroute.data.local.VehicleEntity
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
@@ -50,11 +48,11 @@ class DatabaseViewModel : ViewModel() {
                 .documents.mapNotNull { it.toUserEntity() }
             val vehicles = firestore.collection("vehicles").get().await()
                 .documents.mapNotNull { doc ->
-                    val userRef = doc.getDocumentReference("userId") ?: return@mapNotNull null
+                    val userId = doc.getString("userId") ?: return@mapNotNull null
                     VehicleEntity(
                         id = doc.getString("id") ?: "",
                         description = doc.getString("description") ?: "",
-                        userId = userRef.id,
+                        userId = userId,
                         type = doc.getString("type") ?: "",
                         seat = (doc.getLong("seat") ?: 0L).toInt()
                     )
@@ -63,9 +61,9 @@ class DatabaseViewModel : ViewModel() {
                 .documents.mapNotNull { it.toObject(PoIEntity::class.java) }
             val settings = firestore.collection("user_settings").get().await()
                 .documents.mapNotNull { doc ->
-                    val userRef = doc.getDocumentReference("userId") ?: return@mapNotNull null
+                    val userId = doc.getString("userId") ?: return@mapNotNull null
                     SettingsEntity(
-                        userId = userRef.id,
+                        userId = userId,
                         theme = doc.getString("theme") ?: "",
                         darkTheme = doc.getBoolean("darkTheme") ?: false,
                         font = doc.getString("font") ?: "",
@@ -122,41 +120,31 @@ class DatabaseViewModel : ViewModel() {
                                 soundVolume = (doc.getDouble("soundVolume") ?: 0.0).toFloat()
                             )
                         }
-                    val auths = firestore.collection("Authedication").get().await()
-                        .documents.mapNotNull { it.toObject(AuthenticationEntity::class.java) }
-
                     users.forEach { db.userDao().insert(it) }
                     vehicles.forEach { db.vehicleDao().insert(it) }
                     pois.forEach { db.poIDao().insert(it) }
-                    settings.forEach { insertSettingsSafely(db.settingsDao(), db.authenticationDao(), db.userDao(), it) }
-                    auths.forEach { db.authenticationDao().insert(it) }
+                    settings.forEach { insertSettingsSafely(db.settingsDao(), db.userDao(), it) }
                     prefs.edit().putLong("last_sync", remoteTs).apply()
                 } else {
                     val users = db.userDao().getAllUsers()
                     val vehicles = db.vehicleDao().getAllVehicles()
                     val pois = db.poIDao().getAll()
                     val settings = db.settingsDao().getAllSettings()
-                    val auths = db.authenticationDao().getAllAuths()
 
                     users.forEach {
                         firestore.collection("users")
                             .document(it.id)
-                            .set(it.toFirestoreMap(firestore)).await()
+                            .set(it.toFirestoreMap()).await()
                     }
                     vehicles.forEach {
                         firestore.collection("vehicles")
                             .document(it.id)
-                            .set(it.toFirestoreMap(firestore)).await()
+                            .set(it.toFirestoreMap()).await()
                     }
                     pois.forEach { firestore.collection("pois").document(it.id).set(it).await() }
                     settings.forEach {
                         firestore.collection("user_settings")
                             .document(it.userId)
-                            .set(it.toFirestoreMap(firestore)).await()
-                    }
-                    auths.forEach {
-                        firestore.collection("Authedication")
-                            .document(it.id)
                             .set(it.toFirestoreMap()).await()
                     }
 

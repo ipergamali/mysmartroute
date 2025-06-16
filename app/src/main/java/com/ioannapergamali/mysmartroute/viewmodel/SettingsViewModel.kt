@@ -7,7 +7,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.ioannapergamali.mysmartroute.utils.authRef
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.SettingsEntity
@@ -61,7 +60,7 @@ class SettingsViewModel : ViewModel() {
             Toast.makeText(context, checkingMessage, Toast.LENGTH_SHORT).show()
         }
         try {
-            insertSettingsSafely(dao, dbLocal.authenticationDao(), userDao, updated)
+            insertSettingsSafely(dao, userDao, updated)
             Log.d("SettingsViewModel", "Τοπική αποθήκευση επιτυχής: $updated")
             val localSuccess = "Αποθηκεύτηκε τοπικά"
             Log.d("SettingsViewModel", localSuccess)
@@ -79,7 +78,7 @@ class SettingsViewModel : ViewModel() {
 
         if (NetworkUtils.isInternetAvailable(context)) {
             try {
-                val data = updated.toFirestoreMap(db)
+                val data = updated.toFirestoreMap()
                 db.collection("user_settings")
                     .document(userId)
                     .set(data)
@@ -190,7 +189,7 @@ class SettingsViewModel : ViewModel() {
 
             val settings = remote ?: local ?: return@launch
 
-            insertSettingsSafely(dao, dbLocal.authenticationDao(), userDao, settings)
+            insertSettingsSafely(dao, userDao, settings)
             ThemePreferenceManager.setTheme(context, AppTheme.valueOf(settings.theme))
             ThemePreferenceManager.setDarkTheme(context, settings.darkTheme)
             FontPreferenceManager.setFont(context, AppFont.valueOf(settings.font))

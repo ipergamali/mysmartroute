@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.ioannapergamali.mysmartroute.utils.authRef
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.VehicleEntity
@@ -48,7 +47,7 @@ class VehicleViewModel : ViewModel() {
 
             val vehicleId = UUID.randomUUID().toString()
             val entity = VehicleEntity(vehicleId, description, userId, type.name, seat)
-            val vehicleData = entity.toFirestoreMap(db)
+            val vehicleData = entity.toFirestoreMap()
 
             val dao = MySmartRouteDatabase.getInstance(context).vehicleDao()
 
