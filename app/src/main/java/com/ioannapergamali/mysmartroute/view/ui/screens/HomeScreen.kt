@@ -154,7 +154,7 @@ private fun HomeContent(
         Spacer(modifier = Modifier.height(12.dp))
 
         LogoImage(
-            base64Data = LogoAssets.LOGO_BASE64,
+            drawableRes = LogoAssets.LOGO,
             contentDescription = "Animated Logo",
             modifier = Modifier.graphicsLayer {
                 scaleX = logoScale
