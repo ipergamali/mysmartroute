@@ -52,6 +52,32 @@ fun SignUpScreen(
 
     var selectedRole by remember { mutableStateOf(UserRole.PASSENGER) }
 
+    val launcher = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+        if (task.isSuccessful) {
+            val idToken = task.result.idToken
+            val streetNum = streetNumInput.toIntOrNull()
+            val postalCode = postalCodeInput.toIntOrNull()
+            if (idToken != null && streetNum != null && postalCode != null) {
+                viewModel.signUpWithGoogle(
+                    activity,
+                    context,
+                    idToken,
+                    phoneNum,
+                    com.ioannapergamali.mysmartroute.model.classes.users.UserAddress(
+                        city,
+                        streetName,
+                        streetNum,
+                        postalCode
+                    ),
+                    selectedRole
+                )
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
             TopBar(
@@ -199,29 +225,6 @@ fun SignUpScreen(
                         .build()
                     val client = GoogleSignIn.getClient(activity, gso)
                     val signInIntent = client.signInIntent
-                    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-                        if (task.isSuccessful) {
-                            val idToken = task.result.idToken
-                            val streetNum = streetNumInput.toIntOrNull()
-                            val postalCode = postalCodeInput.toIntOrNull()
-                            if (idToken != null && streetNum != null && postalCode != null) {
-                                viewModel.signUpWithGoogle(
-                                    activity,
-                                    context,
-                                    idToken,
-                                    phoneNum,
-                                    com.ioannapergamali.mysmartroute.model.classes.users.UserAddress(
-                                        city,
-                                        streetName,
-                                        streetNum,
-                                        postalCode
-                                    ),
-                                    selectedRole
-                                )
-                            }
-                        }
-                    }
                     launcher.launch(signInIntent)
                 }) {
                     Text("Google Sign Up")
