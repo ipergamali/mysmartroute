@@ -81,7 +81,8 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.1.7")
 
     // Firebase
-    implementation(platform("com.google.firebase:firebase-bom:33.15.0"))
+    // Χρήση παλαιότερου BOM ώστε να είναι συμβατό με Kotlin 1.9.x
+    implementation(platform("com.google.firebase:firebase-bom:33.8.0"))
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
 
