@@ -41,3 +41,30 @@ fun rememberAdaptiveLogoSize(
         with(density) { targetPx.toDp() }
     }
 }
+
+/**
+ * Απλούστερη παραλλαγή που επιστρέφει 40 px για οθόνες 7-9 ιντσών
+ * και προσαρμόζει γραμμικά για μικρότερες ή μεγαλύτερες συσκευές.
+ */
+@Composable
+fun rememberLogoSize(): Dp {
+    val context = LocalContext.current
+    val density = LocalDensity.current
+    val configuration = LocalConfiguration.current
+
+    return remember(configuration) {
+        val metrics = context.resources.displayMetrics
+        val widthPx = metrics.widthPixels.toFloat()
+        val heightPx = metrics.heightPixels.toFloat()
+        val diagonalPx = sqrt(widthPx.pow(2) + heightPx.pow(2))
+        val diagonalInches = diagonalPx / metrics.densityDpi.toFloat()
+
+        val targetPx = when {
+            diagonalInches in 7f..9f -> 40f
+            diagonalInches < 7f -> 40f * (diagonalInches / 7f)
+            else -> 40f * (diagonalInches / 9f)
+        }
+
+        with(density) { targetPx.toDp() }
+    }
+}
