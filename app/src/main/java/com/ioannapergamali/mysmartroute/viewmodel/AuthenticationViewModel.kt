@@ -3,12 +3,10 @@ package com.ioannapergamali.mysmartroute.viewmodel
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.auth.ActionCodeSettings
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.android.gms.tasks.Task
 import com.google.firebase.firestore.FirebaseFirestore
-import com.ioannapergamali.mysmartroute.BuildConfig
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.UserEntity
 import com.ioannapergamali.mysmartroute.model.classes.users.Admin
@@ -207,12 +205,6 @@ class AuthenticationViewModel : ViewModel() {
     }
 
     private fun FirebaseUser.sendVerificationEmail(): Task<Void> {
-        val actionCodeSettings = ActionCodeSettings.newBuilder()
-            .setUrl("https://${BuildConfig.FIREBASE_AUTH_DOMAIN}")
-            .setHandleCodeInApp(true)
-            .setAndroidPackageName(BuildConfig.APPLICATION_ID, true, null)
-            .setDynamicLinkDomain(BuildConfig.DYNAMIC_LINK_DOMAIN)
-            .build()
-        return sendEmailVerification(actionCodeSettings)
+        return sendEmailVerification()
     }
 }
