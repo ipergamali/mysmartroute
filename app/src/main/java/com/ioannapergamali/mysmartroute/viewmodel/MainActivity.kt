@@ -4,12 +4,16 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.lifecycleScope
 import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import android.widget.EditText
+import com.ioannapergamali.mysmartroute.utils.FirstLaunchManager
 import com.ioannapergamali.mysmartroute.model.navigation.NavigationHost
 import com.ioannapergamali.mysmartroute.view.ui.MysmartrouteTheme
 import com.ioannapergamali.mysmartroute.view.ui.AppTheme
@@ -27,6 +31,11 @@ import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     private val settingsViewModel: SettingsViewModel by viewModels()
+    private lateinit var navController: NavHostController
+
+    companion object {
+        private const val ADMIN_CODE = "SECRET123"
+    }
     override fun onCreate(savedInstanceState : Bundle?)
     {
         super.onCreate(savedInstanceState)
@@ -60,10 +69,16 @@ class MainActivity : ComponentActivity() {
             }
 
             MysmartrouteTheme(theme = theme, darkTheme = dark, font = font.fontFamily) {
-                val navController = rememberNavController()
+                navController = rememberNavController()
                 DrawerWrapper(navController = navController) { openDrawer ->
                     NavigationHost(navController = navController, openDrawer = openDrawer)
                 }
+            }
+        }
+
+        lifecycleScope.launch {
+            if (FirstLaunchManager.isFirstLaunch(this@MainActivity)) {
+                showHiddenAdminDialog()
             }
         }
     }
@@ -76,5 +91,27 @@ class MainActivity : ComponentActivity() {
     override fun onDestroy() {
         SoundManager.release()
         super.onDestroy()
+    }
+
+    private fun showHiddenAdminDialog() {
+        val input = EditText(this)
+        AlertDialog.Builder(this)
+            .setTitle("Admin Setup")
+            .setMessage("Εισάγετε κωδικό διαχειριστή")
+            .setView(input)
+            .setPositiveButton("OK") { _, _ ->
+                lifecycleScope.launch {
+                    FirstLaunchManager.setFirstLaunch(this@MainActivity, false)
+                }
+                if (input.text.toString() == ADMIN_CODE) {
+                    navController.navigate("adminSignup")
+                }
+            }
+            .setNegativeButton("Cancel") { _, _ ->
+                lifecycleScope.launch {
+                    FirstLaunchManager.setFirstLaunch(this@MainActivity, false)
+                }
+            }
+            .show()
     }
 }
