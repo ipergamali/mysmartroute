@@ -3,8 +3,11 @@ package com.ioannapergamali.mysmartroute.viewmodel
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.ActionCodeSettings
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
+import com.ioannapergamali.mysmartroute.BuildConfig
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.UserEntity
 import com.ioannapergamali.mysmartroute.model.classes.users.Admin
@@ -103,7 +106,7 @@ class AuthenticationViewModel : ViewModel() {
                             .document(uid)
                             .set(userData)
                             .addOnSuccessListener {
-                                result.user?.sendEmailVerification()
+                                result.user?.sendVerificationEmail()
                                 viewModelScope.launch {
                                     userDao.insert(userEntity.copy(id = uid))
                                 }
@@ -157,7 +160,7 @@ class AuthenticationViewModel : ViewModel() {
 
     fun resendVerificationEmail() {
         val user = auth.currentUser
-        user?.sendEmailVerification()
+        user?.sendVerificationEmail()
             ?.addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     _loginState.value = LoginState.EmailVerificationSent
@@ -200,5 +203,15 @@ class AuthenticationViewModel : ViewModel() {
     fun signOut() {
         auth.signOut()
         _currentUserRole.value = null
+    }
+
+    private fun FirebaseUser.sendVerificationEmail() {
+        val actionCodeSettings = ActionCodeSettings.newBuilder()
+            .setUrl("https://${BuildConfig.FIREBASE_AUTH_DOMAIN}")
+            .setHandleCodeInApp(true)
+            .setAndroidPackageName(BuildConfig.APPLICATION_ID, true, null)
+            .setDynamicLinkDomain(BuildConfig.DYNAMIC_LINK_DOMAIN)
+            .build()
+        sendEmailVerification(actionCodeSettings)
     }
 }
