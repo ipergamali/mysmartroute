@@ -58,8 +58,8 @@ fun HomeScreen(
         ScreenContainer(modifier = Modifier.padding(paddingValues)) {
             val isLarge = windowInfo.width > 600.dp && windowInfo.orientation == WindowOrientation.Landscape
             val containerModifier = if (isLarge) Modifier.fillMaxWidth() else Modifier.fillMaxSize()
-            val arrangement = if (isLarge) Arrangement.Center else Arrangement.Top
-            val alignment = if (isLarge) Alignment.CenterVertically else Alignment.CenterHorizontally
+            val arrangement: Arrangement.Vertical = if (isLarge) Arrangement.Center else Arrangement.Top
+            val alignment: Alignment.Horizontal = Alignment.CenterHorizontally
             if (isLarge) {
                 Row(
                     modifier = containerModifier,
