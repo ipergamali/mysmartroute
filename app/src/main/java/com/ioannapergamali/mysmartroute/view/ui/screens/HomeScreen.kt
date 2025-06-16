@@ -122,7 +122,6 @@ fun HomeScreen(
             else -> {}
         }
     }
-}
 
 @Composable
 private fun HomeContent(
