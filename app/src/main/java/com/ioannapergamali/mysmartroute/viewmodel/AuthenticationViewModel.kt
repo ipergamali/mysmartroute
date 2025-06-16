@@ -1,10 +1,15 @@
 package com.ioannapergamali.mysmartroute.viewmodel
 
+import android.app.Activity
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.FirebaseException
+import com.google.firebase.auth.PhoneAuthCredential
+import com.google.firebase.auth.PhoneAuthProvider
 import com.google.android.gms.tasks.Task
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
@@ -14,6 +19,7 @@ import com.ioannapergamali.mysmartroute.model.classes.users.Driver
 import com.ioannapergamali.mysmartroute.model.classes.users.Passenger
 import com.ioannapergamali.mysmartroute.model.classes.users.UserAddress
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
+import com.ioannapergamali.mysmartroute.utils.PhoneVerification
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -35,6 +41,7 @@ class AuthenticationViewModel : ViewModel() {
     val currentUserRole: StateFlow<UserRole?> = _currentUserRole
 
     fun signUp(
+        activity: Activity,
         context: Context,
         name: String,
         surname: String,
@@ -105,7 +112,14 @@ class AuthenticationViewModel : ViewModel() {
                             .document(uid)
                             .set(userData)
                             .addOnSuccessListener {
-                                result.user?.sendVerificationEmail()
+                                PhoneVerification.sendVerificationCode(
+                                    activity,
+                                    phoneNum,
+                                    object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+                                        override fun onVerificationCompleted(credential: PhoneAuthCredential) {}
+                                        override fun onVerificationFailed(e: FirebaseException) {}
+                                    }
+                                )
                                 viewModelScope.launch {
                                     userDao.insert(userEntity.copy(id = uid))
                                 }
@@ -126,6 +140,57 @@ class AuthenticationViewModel : ViewModel() {
         }
     }
 
+    fun signUpWithGoogle(
+        activity: Activity,
+        context: Context,
+        idToken: String,
+        phoneNum: String,
+        address: UserAddress,
+        role: UserRole
+    ) {
+        _signUpState.value = SignUpState.Loading
+        val credential = GoogleAuthProvider.getCredential(idToken, null)
+        auth.signInWithCredential(credential)
+            .addOnSuccessListener { result ->
+                val uid = result.user?.uid ?: UUID.randomUUID().toString()
+                val userData = mapOf(
+                    "id" to uid,
+                    "name" to (result.user?.displayName ?: ""),
+                    "surname" to surname,
+                    "username" to (result.user?.email ?: uid),
+                    "email" to (result.user?.email ?: ""),
+                    "phoneNum" to phoneNum,
+                    "role" to role.name,
+                    "city" to address.city,
+                    "streetName" to address.streetName,
+                    "streetNum" to address.streetNum,
+                    "postalCode" to address.postalCode
+                )
+
+                db.collection("users")
+                    .document(uid)
+                    .set(userData)
+                    .addOnSuccessListener {
+                        PhoneVerification.sendVerificationCode(
+                            activity,
+                            phoneNum,
+                            object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+                                override fun onVerificationCompleted(credential: PhoneAuthCredential) {}
+                                override fun onVerificationFailed(e: FirebaseException) {}
+                            }
+                        )
+                        _signUpState.value = SignUpState.Success
+                        loadCurrentUserRole()
+                    }
+                    .addOnFailureListener { e ->
+                        _signUpState.value = SignUpState.Error(e.localizedMessage ?: "Sign-up failed")
+                    }
+            }
+            .addOnFailureListener { e ->
+                _signUpState.value = SignUpState.Error(e.localizedMessage ?: "Sign-up failed")
+            }
+    }
+
     fun login(email: String, password: String) {
         viewModelScope.launch {
             _loginState.value = LoginState.Loading
@@ -136,20 +201,9 @@ class AuthenticationViewModel : ViewModel() {
             }
 
             auth.signInWithEmailAndPassword(email, password)
-                .addOnSuccessListener { result ->
-                    val user = result.user
-                    if (user != null) {
-                        user.reload().addOnSuccessListener {
-                            if (user.isEmailVerified) {
-                                _loginState.value = LoginState.Success
-                                loadCurrentUserRole()
-                            } else {
-                                _loginState.value = LoginState.EmailNotVerified
-                            }
-                        }
-                    } else {
-                        _loginState.value = LoginState.Error("Login failed")
-                    }
+                .addOnSuccessListener {
+                    _loginState.value = LoginState.Success
+                    loadCurrentUserRole()
                 }
                 .addOnFailureListener { e ->
                     _loginState.value = LoginState.Error(e.localizedMessage ?: "Login failed")
@@ -157,19 +211,16 @@ class AuthenticationViewModel : ViewModel() {
         }
     }
 
-    fun resendVerificationEmail() {
-        val user = auth.currentUser
-        user?.sendVerificationEmail()
-            ?.addOnCompleteListener { task: Task<Void> ->
-                if (task.isSuccessful) {
-                    _loginState.value = LoginState.EmailVerificationSent
-                } else {
-                    _loginState.value = LoginState.Error(
-                        task.exception?.localizedMessage ?: "Failed to send verification email"
-                    )
-                }
-                auth.signOut()
+    fun resendVerificationSms(activity: Activity, phoneNum: String) {
+        PhoneVerification.sendVerificationCode(
+            activity,
+            phoneNum,
+            object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+                override fun onVerificationCompleted(credential: PhoneAuthCredential) {}
+                override fun onVerificationFailed(e: FirebaseException) {}
             }
+        )
+        _loginState.value = LoginState.SmsVerificationSent
     }
 
     sealed class SignUpState {
@@ -184,8 +235,7 @@ class AuthenticationViewModel : ViewModel() {
         object Loading : LoginState()
         object Success : LoginState()
         data class Error(val message: String) : LoginState()
-        object EmailNotVerified : LoginState()
-        object EmailVerificationSent : LoginState()
+        object SmsVerificationSent : LoginState()
     }
 
     fun loadCurrentUserRole() {
@@ -202,9 +252,5 @@ class AuthenticationViewModel : ViewModel() {
     fun signOut() {
         auth.signOut()
         _currentUserRole.value = null
-    }
-
-    private fun FirebaseUser.sendVerificationEmail(): Task<Void> {
-        return sendEmailVerification()
     }
 }
