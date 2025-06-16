@@ -121,7 +121,7 @@ class DatabaseViewModel : ViewModel() {
                                 soundVolume = (doc.getDouble("soundVolume") ?: 0.0).toFloat()
                             )
                         }
-                    val auths = firestore.collection("authentication").get().await()
+                    val auths = firestore.collection("Authedication").get().await()
                         .documents.mapNotNull { it.toObject(AuthenticationEntity::class.java) }
 
                     users.forEach { db.userDao().insert(it) }
@@ -154,7 +154,7 @@ class DatabaseViewModel : ViewModel() {
                             .set(it.toFirestoreMap(firestore)).await()
                     }
                     auths.forEach {
-                        firestore.collection("authentication")
+                        firestore.collection("Authedication")
                             .document(it.id)
                             .set(it.toFirestoreMap()).await()
                     }
