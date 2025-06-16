@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
+import com.ioannapergamali.mysmartroute.BuildConfig
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -140,7 +141,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
 
     val mapProperties = remember { MapProperties(latLngBoundsForCameraTarget = heraklionBounds) }
 
-    val apiKey = context.getString(R.string.google_maps_key)
+    val apiKey = BuildConfig.MAPS_API_KEY
     val isKeyMissing = apiKey.isBlank() || apiKey == "YOUR_API_KEY"
 
     LaunchedEffect(Unit) {
