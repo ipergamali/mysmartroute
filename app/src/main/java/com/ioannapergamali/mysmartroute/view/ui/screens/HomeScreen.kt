@@ -78,6 +78,7 @@ fun HomeScreen(
                         uiState = uiState,
                         onLogin = { viewModel.login(email, password) },
                         onNavigateToSignUp = onNavigateToSignUp,
+                        onResendVerification = { viewModel.resendVerificationEmail() },
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -98,7 +99,8 @@ fun HomeScreen(
                         onPasswordChange = { password = it },
                         uiState = uiState,
                         onLogin = { viewModel.login(email, password) },
-                        onNavigateToSignUp = onNavigateToSignUp
+                        onNavigateToSignUp = onNavigateToSignUp,
+                        onResendVerification = { viewModel.resendVerificationEmail() }
                     )
                 }
             }
@@ -117,6 +119,9 @@ fun HomeScreen(
                 is AuthenticationViewModel.LoginState.Error -> {
                     val message = (uiState as AuthenticationViewModel.LoginState.Error).message
                     Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                }
+                is AuthenticationViewModel.LoginState.EmailVerificationSent -> {
+                    Toast.makeText(context, "Το email επιβεβαίωσης στάλθηκε", Toast.LENGTH_SHORT).show()
                 }
                 else -> {}
             }
@@ -137,6 +142,7 @@ private fun HomeContent(
     uiState: AuthenticationViewModel.LoginState,
     onLogin: () -> Unit,
     onNavigateToSignUp: () -> Unit,
+    onResendVerification: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -182,13 +188,20 @@ private fun HomeContent(
             modifier = Modifier.fillMaxWidth()
         )
 
-        if (uiState is AuthenticationViewModel.LoginState.Error) {
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = uiState.message,
-                color = MaterialTheme.colorScheme.error
-            )
+    if (uiState is AuthenticationViewModel.LoginState.Error) {
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = uiState.message,
+            color = MaterialTheme.colorScheme.error
+        )
+    }
+
+    if (uiState is AuthenticationViewModel.LoginState.EmailNotVerified) {
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(onClick = onResendVerification) {
+            Text("Αποστολή ξανά email επιβεβαίωσης")
         }
+    }
 
         Spacer(Modifier.height(16.dp))
 

@@ -151,7 +151,7 @@ class AuthenticationViewModel : ViewModel() {
                                 _loginState.value = LoginState.Success
                                 loadCurrentUserRole()
                             } else {
-                                _loginState.value = LoginState.Error("Email not verified")
+                                _loginState.value = LoginState.EmailNotVerified
                             }
                         }
                     } else {
@@ -162,6 +162,21 @@ class AuthenticationViewModel : ViewModel() {
                     _loginState.value = LoginState.Error(e.localizedMessage ?: "Login failed")
                 }
         }
+    }
+
+    fun resendVerificationEmail() {
+        val user = auth.currentUser
+        user?.sendEmailVerification()
+            ?.addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    _loginState.value = LoginState.EmailVerificationSent
+                } else {
+                    _loginState.value = LoginState.Error(
+                        task.exception?.localizedMessage ?: "Failed to send verification email"
+                    )
+                }
+                auth.signOut()
+            }
     }
 
     sealed class SignUpState {
@@ -176,6 +191,8 @@ class AuthenticationViewModel : ViewModel() {
         object Loading : LoginState()
         object Success : LoginState()
         data class Error(val message: String) : LoginState()
+        object EmailNotVerified : LoginState()
+        object EmailVerificationSent : LoginState()
     }
 
     fun loadCurrentUserRole() {
