@@ -10,8 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.dimensionResource
-import com.ioannapergamali.mysmartroute.R
+import com.ioannapergamali.mysmartroute.view.ui.util.rememberAdaptiveLogoSize
 
 @Composable
 fun LogoImage(
@@ -19,7 +18,7 @@ fun LogoImage(
     contentDescription: String?,
     modifier: Modifier = Modifier
 ) {
-    val targetSize = dimensionResource(id = R.dimen.logo_size)
+    val targetSize = rememberAdaptiveLogoSize()
 
     val painter = remember(base64Data) {
         val bytes = Base64.decode(base64Data, Base64.DEFAULT)
