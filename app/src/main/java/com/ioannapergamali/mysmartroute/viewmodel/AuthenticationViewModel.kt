@@ -205,13 +205,13 @@ class AuthenticationViewModel : ViewModel() {
         _currentUserRole.value = null
     }
 
-    private fun FirebaseUser.sendVerificationEmail() {
+    private fun FirebaseUser.sendVerificationEmail(): Task<Void> {
         val actionCodeSettings = ActionCodeSettings.newBuilder()
             .setUrl("https://${BuildConfig.FIREBASE_AUTH_DOMAIN}")
             .setHandleCodeInApp(true)
             .setAndroidPackageName(BuildConfig.APPLICATION_ID, true, null)
             .setDynamicLinkDomain(BuildConfig.DYNAMIC_LINK_DOMAIN)
             .build()
-        sendEmailVerification(actionCodeSettings)
+        return sendEmailVerification(actionCodeSettings)
     }
 }
