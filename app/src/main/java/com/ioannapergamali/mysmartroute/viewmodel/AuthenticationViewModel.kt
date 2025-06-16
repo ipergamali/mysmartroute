@@ -7,7 +7,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.UserEntity
-import com.ioannapergamali.mysmartroute.data.local.AuthenticationEntity
 import com.ioannapergamali.mysmartroute.model.classes.users.Admin
 import com.ioannapergamali.mysmartroute.model.classes.users.Driver
 import com.ioannapergamali.mysmartroute.model.classes.users.Passenger
@@ -73,7 +72,6 @@ class AuthenticationViewModel : ViewModel() {
             )
             val dbLocal = MySmartRouteDatabase.getInstance(context)
             val userDao = dbLocal.userDao()
-            val authDao = dbLocal.authenticationDao()
 
             val user = when (role) {
                 UserRole.DRIVER -> Driver(userIdLocal, name, email, surname, address, phoneNum, username, password)
@@ -86,9 +84,8 @@ class AuthenticationViewModel : ViewModel() {
                     .addOnSuccessListener { result ->
                         val uid = result.user?.uid ?: userIdLocal
 
-                        val authRef = db.collection("Authedication").document(uid)
                         val userData = mapOf(
-                            "id" to authRef,
+                            "id" to uid,
                             "name" to name,
                             "surname" to surname,
                             "username" to username,
@@ -102,17 +99,12 @@ class AuthenticationViewModel : ViewModel() {
                             "postalCode" to address.postalCode
                         )
 
-                        db.collection("Authedication")
-                            .document(uid)
-                            .set(mapOf("id" to uid))
-
                         db.collection("users")
                             .document(uid)
                             .set(userData)
                             .addOnSuccessListener {
                                 result.user?.sendEmailVerification()
                                 viewModelScope.launch {
-                                    authDao.insert(AuthenticationEntity(id = uid))
                                     userDao.insert(userEntity.copy(id = uid))
                                 }
                                 _signUpState.value = SignUpState.Success
@@ -126,7 +118,6 @@ class AuthenticationViewModel : ViewModel() {
                         _signUpState.value = SignUpState.Error(e.localizedMessage ?: "Sign-up failed")
                     }
             } else {
-                authDao.insert(AuthenticationEntity(id = userIdLocal))
                 userDao.insert(userEntity)
                 _signUpState.value = SignUpState.Success
             }
