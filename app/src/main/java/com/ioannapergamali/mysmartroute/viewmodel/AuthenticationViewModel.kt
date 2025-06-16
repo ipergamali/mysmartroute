@@ -145,11 +145,17 @@ class AuthenticationViewModel : ViewModel() {
             auth.signInWithEmailAndPassword(email, password)
                 .addOnSuccessListener { result ->
                     val user = result.user
-                    if (user != null && user.isEmailVerified) {
-                        _loginState.value = LoginState.Success
-                        loadCurrentUserRole()
+                    if (user != null) {
+                        user.reload().addOnSuccessListener {
+                            if (user.isEmailVerified) {
+                                _loginState.value = LoginState.Success
+                                loadCurrentUserRole()
+                            } else {
+                                _loginState.value = LoginState.Error("Email not verified")
+                            }
+                        }
                     } else {
-                        _loginState.value = LoginState.Error("Email not verified")
+                        _loginState.value = LoginState.Error("Login failed")
                     }
                 }
                 .addOnFailureListener { e ->
