@@ -34,7 +34,7 @@ fun AboutScreen(navController: NavController, openDrawer: () -> Unit) {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 LogoImage(
-                    base64Data = LogoAssets.COMPANY_BASE64,
+                    drawableRes = LogoAssets.COMPANY,
                     contentDescription = "Company logo"
                 )
 
