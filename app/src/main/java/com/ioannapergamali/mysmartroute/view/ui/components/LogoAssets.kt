@@ -5,8 +5,8 @@ import com.ioannapergamali.mysmartroute.R
 
 object LogoAssets {
     @DrawableRes
-    const val LOGO = R.drawable.logo
+    val LOGO: Int = R.drawable.logo
 
     @DrawableRes
-    const val COMPANY = R.drawable.company
+    val COMPANY: Int = R.drawable.company
 }
