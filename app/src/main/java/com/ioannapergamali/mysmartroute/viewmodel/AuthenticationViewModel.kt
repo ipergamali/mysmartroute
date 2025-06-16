@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.ActionCodeSettings
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.android.gms.tasks.Task
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.BuildConfig
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
@@ -161,7 +162,7 @@ class AuthenticationViewModel : ViewModel() {
     fun resendVerificationEmail() {
         val user = auth.currentUser
         user?.sendVerificationEmail()
-            ?.addOnCompleteListener { task ->
+            ?.addOnCompleteListener { task: Task<Void> ->
                 if (task.isSuccessful) {
                     _loginState.value = LoginState.EmailVerificationSent
                 } else {
