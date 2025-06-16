@@ -198,6 +198,7 @@ fun SignUpScreen(
                         "Παρακαλώ ενεργοποιήστε τον λογαριασμό σας μέσω e-mail",
                         Toast.LENGTH_LONG
                     ).show()
+                    viewModel.signOut()
                     onSignUpSuccess()
                 }
 
