@@ -86,7 +86,7 @@ class AuthenticationViewModel : ViewModel() {
                     .addOnSuccessListener { result ->
                         val uid = result.user?.uid ?: userIdLocal
 
-                        val authRef = db.collection("authentication").document(uid)
+                        val authRef = db.collection("Authedication").document(uid)
                         val userData = mapOf(
                             "id" to authRef,
                             "name" to name,
@@ -102,7 +102,7 @@ class AuthenticationViewModel : ViewModel() {
                             "postalCode" to address.postalCode
                         )
 
-                        db.collection("authentication")
+                        db.collection("Authedication")
                             .document(uid)
                             .set(mapOf("id" to uid))
 

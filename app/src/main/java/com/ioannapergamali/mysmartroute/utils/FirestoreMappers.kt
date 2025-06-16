@@ -11,7 +11,7 @@ import com.ioannapergamali.mysmartroute.data.local.VehicleEntity
 
 /** Επιστρέφει αναφορά εγγράφου του πίνακα authentication για το δοσμένο [id]. */
 fun FirebaseFirestore.authRef(id: String): DocumentReference =
-    collection("authentication").document(id)
+    collection("Authedication").document(id)
 
 /** Μετατροπή ενός [UserEntity] σε Map όπου το πεδίο id είναι DocumentReference. */
 fun UserEntity.toFirestoreMap(db: FirebaseFirestore): Map<String, Any> = mapOf(
