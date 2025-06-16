@@ -183,6 +183,27 @@ class AuthenticationViewModel : ViewModel() {
             }
     }
 
+    fun seedAdminAccount(context: Context, password: String) {
+        val defaultAdmin = UserAddress(
+            city = "Athens",
+            streetName = "Admin Street",
+            streetNum = 1,
+            postalCode = 11111
+        )
+
+        signUp(
+            context = context,
+            name = "Admin",
+            surname = "User",
+            username = "admin",
+            email = "admin@example.com",
+            phoneNum = "6911111111",
+            password = password,
+            address = defaultAdmin,
+            role = UserRole.ADMIN
+        )
+    }
+
     fun signOut() {
         auth.signOut()
         _currentUserRole.value = null

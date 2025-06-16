@@ -1,6 +1,8 @@
 package com.ioannapergamali.mysmartroute.viewmodel
 
 import android.os.Bundle
+import android.widget.EditText
+import androidx.appcompat.app.AlertDialog
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -20,13 +22,18 @@ import com.ioannapergamali.mysmartroute.utils.MiuiUtils
 import com.ioannapergamali.mysmartroute.utils.ThemePreferenceManager
 import com.ioannapergamali.mysmartroute.utils.SoundPreferenceManager
 import com.ioannapergamali.mysmartroute.utils.SoundManager
+import com.ioannapergamali.mysmartroute.utils.FirstLaunchManager
 import com.ioannapergamali.mysmartroute.viewmodel.SettingsViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 import kotlinx.coroutines.launch
 
 
 
 class MainActivity : ComponentActivity() {
     private val settingsViewModel: SettingsViewModel by viewModels()
+    private val authViewModel: AuthenticationViewModel by viewModels()
+
+    private val ADMIN_PASSWORD = "SECRET123" // Βάλτε εδώ τον μυστικό κωδικό
     override fun onCreate(savedInstanceState : Bundle?)
     {
         super.onCreate(savedInstanceState)
@@ -41,6 +48,10 @@ class MainActivity : ComponentActivity() {
             val volume = SoundPreferenceManager.getSoundVolume(applicationContext)
             SoundManager.setVolume(volume)
             if (enabled) SoundManager.play()
+            if (FirstLaunchManager.isFirstLaunch(this@MainActivity)) {
+                showAdminSetupDialog()
+                FirstLaunchManager.setFirstLaunch(this@MainActivity, false)
+            }
         }
         setContent {
             val context = LocalContext.current
@@ -76,5 +87,21 @@ class MainActivity : ComponentActivity() {
     override fun onDestroy() {
         SoundManager.release()
         super.onDestroy()
+    }
+
+    private fun showAdminSetupDialog() {
+        val input = EditText(this)
+        AlertDialog.Builder(this)
+            .setTitle("Admin Setup")
+            .setMessage("Εισάγετε κωδικό διαχειριστή")
+            .setView(input)
+            .setPositiveButton("OK") { _, _ ->
+                val text = input.text.toString()
+                if (text == ADMIN_PASSWORD) {
+                    authViewModel.seedAdminAccount(this, text)
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 }
