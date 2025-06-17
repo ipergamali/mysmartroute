@@ -7,38 +7,29 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:3402954436:android:941ab2db9872b00d033b91",
+        "mobilesdk_app_id": "1:3402954436:android:aa89d1979a2c5e39033b91",
         "android_client_info": {
           "package_name": "com.ioannapergamali.mysmartroute"
         }
       },
       "oauth_client": [
         {
-          "client_id": "3402954436-6u432m5qsaqu4c8n8a3jbldjhr7ek0j6.apps.googleusercontent.com",
+          "client_id": "3402954436-7nnfn2p12kpa0jf1944t9ij3j3qufu8h.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.ioannapergamali.mysmartroute",
             "certificate_hash": "dc112009915b40468492ff01b3f15a71c5b1a8bf"
           }
-        },
-        {
-          "client_id": "3402954436-jfsqbb93am2bhs2j9kqtpgfkfurldlne.apps.googleusercontent.com",
-          "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyAjrLzdIcwjsQideLOI_Ly3oThdYVNr-5U"
+          "current_key": "AIzaSyCl4Z_N5WfH2ttsmj0oFFq9gkvX0BxfTDI"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "3402954436-jfsqbb93am2bhs2j9kqtpgfkfurldlne.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
+          "other_platform_oauth_client": []
         }
       }
     }
