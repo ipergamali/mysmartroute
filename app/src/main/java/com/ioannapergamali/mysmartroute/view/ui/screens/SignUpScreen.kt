@@ -27,7 +27,8 @@ fun SignUpScreen(
     navController: NavController,
     onSignUpSuccess: () -> Unit,
     onSignUpFailure: (String) -> Unit = {},
-    openDrawer: () -> Unit
+    openDrawer: () -> Unit,
+    staticRole: UserRole? = null
 ) {
     val viewModel: AuthenticationViewModel = viewModel()
     val uiState by viewModel.signUpState.collectAsState()
@@ -46,7 +47,7 @@ fun SignUpScreen(
     var streetNumInput by remember { mutableStateOf("") }
     var postalCodeInput by remember { mutableStateOf("") }
 
-    var selectedRole by remember { mutableStateOf(UserRole.PASSENGER) }
+    var selectedRole by remember { mutableStateOf(staticRole ?: UserRole.PASSENGER) }
 
 
 
@@ -147,17 +148,19 @@ fun SignUpScreen(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                 )
 
-                Spacer(Modifier.height(16.dp))
-                Text("Select Role", style = MaterialTheme.typography.titleMedium)
-                Row {
-                    RadioButton(
-                        selected = selectedRole == UserRole.DRIVER,
-                        onClick = { selectedRole = UserRole.DRIVER })
-                    Text("Driver", modifier = Modifier.padding(end = 16.dp))
-                    RadioButton(
-                        selected = selectedRole == UserRole.PASSENGER,
-                        onClick = { selectedRole = UserRole.PASSENGER })
-                    Text("Passenger")
+                if (staticRole == null) {
+                    Spacer(Modifier.height(16.dp))
+                    Text("Select Role", style = MaterialTheme.typography.titleMedium)
+                    Row {
+                        RadioButton(
+                            selected = selectedRole == UserRole.DRIVER,
+                            onClick = { selectedRole = UserRole.DRIVER })
+                        Text("Driver", modifier = Modifier.padding(end = 16.dp))
+                        RadioButton(
+                            selected = selectedRole == UserRole.PASSENGER,
+                            onClick = { selectedRole = UserRole.PASSENGER })
+                        Text("Passenger")
+                    }
                 }
 
                 if (uiState is AuthenticationViewModel.SignUpState.Error) {
