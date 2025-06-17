@@ -144,6 +144,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     // Διαβάζουμε το API key από το BuildConfig και, αν είναι κενό, από τα resources
     val apiKey = BuildConfig.MAPS_API_KEY.ifBlank { stringResource(R.string.google_maps_key) }
     val isKeyMissing = apiKey.isBlank() || apiKey == "YOUR_API_KEY"
+    Log.d(TAG, "API key loaded? ${!isKeyMissing}")
 
     LaunchedEffect(Unit) {
         vehicleViewModel.loadRegisteredVehicles(context)
@@ -192,6 +193,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 modifier = Modifier.weight(1f),
                 cameraPositionState = cameraPositionState,
                 properties = mapProperties,
+                onMapLoaded = { Log.d(TAG, "Map loaded") },
                 onMapClick = { latLng ->
                     when (mapSelectionMode) {
                         MapSelectionMode.FROM -> {
