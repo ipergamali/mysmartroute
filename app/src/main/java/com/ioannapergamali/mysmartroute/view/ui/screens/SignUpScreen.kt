@@ -249,11 +249,6 @@ fun SignUpScreen(
                         "Η εγγραφή ολοκληρώθηκε με επιτυχία",
                         Toast.LENGTH_SHORT
                     ).show()
-                    Toast.makeText(
-                        context,
-                        "Θα λάβετε SMS για επιβεβαίωση της εγγραφής",
-                        Toast.LENGTH_LONG
-                    ).show()
                     viewModel.signOut()
                     onSignUpSuccess()
                 }

@@ -7,10 +7,6 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.FirebaseException
-import com.google.firebase.auth.PhoneAuthCredential
-import com.google.firebase.auth.PhoneAuthProvider
-import com.google.android.gms.tasks.Task
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.UserEntity
@@ -19,7 +15,6 @@ import com.ioannapergamali.mysmartroute.model.classes.users.Driver
 import com.ioannapergamali.mysmartroute.model.classes.users.Passenger
 import com.ioannapergamali.mysmartroute.model.classes.users.UserAddress
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
-import com.ioannapergamali.mysmartroute.utils.PhoneVerification
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -112,14 +107,6 @@ class AuthenticationViewModel : ViewModel() {
                             .document(uid)
                             .set(userData)
                             .addOnSuccessListener {
-                                PhoneVerification.sendVerificationCode(
-                                    activity,
-                                    phoneNum,
-                                    object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
-                                        override fun onVerificationCompleted(credential: PhoneAuthCredential) {}
-                                        override fun onVerificationFailed(e: FirebaseException) {}
-                                    }
-                                )
                                 viewModelScope.launch {
                                     userDao.insert(userEntity.copy(id = uid))
                                 }
@@ -172,14 +159,6 @@ class AuthenticationViewModel : ViewModel() {
                     .document(uid)
                     .set(userData)
                     .addOnSuccessListener {
-                        PhoneVerification.sendVerificationCode(
-                            activity,
-                            phoneNum,
-                            object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
-                                override fun onVerificationCompleted(credential: PhoneAuthCredential) {}
-                                override fun onVerificationFailed(e: FirebaseException) {}
-                            }
-                        )
                         _signUpState.value = SignUpState.Success
                         loadCurrentUserRole()
                     }
@@ -212,17 +191,6 @@ class AuthenticationViewModel : ViewModel() {
         }
     }
 
-    fun resendVerificationSms(activity: Activity, phoneNum: String) {
-        PhoneVerification.sendVerificationCode(
-            activity,
-            phoneNum,
-            object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
-                override fun onVerificationCompleted(credential: PhoneAuthCredential) {}
-                override fun onVerificationFailed(e: FirebaseException) {}
-            }
-        )
-        _loginState.value = LoginState.SmsVerificationSent
-    }
 
     sealed class SignUpState {
         object Idle : SignUpState()
@@ -236,7 +204,6 @@ class AuthenticationViewModel : ViewModel() {
         object Loading : LoginState()
         object Success : LoginState()
         data class Error(val message: String) : LoginState()
-        object SmsVerificationSent : LoginState()
     }
 
     fun loadCurrentUserRole() {

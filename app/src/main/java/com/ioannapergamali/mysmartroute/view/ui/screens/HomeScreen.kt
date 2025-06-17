@@ -118,9 +118,6 @@ fun HomeScreen(
                     val message = (uiState as AuthenticationViewModel.LoginState.Error).message
                     Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                 }
-                is AuthenticationViewModel.LoginState.SmsVerificationSent -> {
-                    Toast.makeText(context, "Το SMS επιβεβαίωσης στάλθηκε", Toast.LENGTH_SHORT).show()
-                }
                 else -> {}
             }
         }
