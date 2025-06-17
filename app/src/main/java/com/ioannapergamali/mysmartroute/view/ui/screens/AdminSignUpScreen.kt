@@ -185,7 +185,6 @@ fun AdminSignUpScreen(
                         "Η εγγραφή ολοκληρώθηκε με επιτυχία",
                         Toast.LENGTH_SHORT
                     ).show()
-                    viewModel.signOut()
                     onSignUpSuccess()
                 }
 

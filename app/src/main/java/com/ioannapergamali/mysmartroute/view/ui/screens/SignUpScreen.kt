@@ -200,7 +200,6 @@ fun SignUpScreen(
                         "Η εγγραφή ολοκληρώθηκε με επιτυχία",
                         Toast.LENGTH_SHORT
                     ).show()
-                    viewModel.signOut()
                     onSignUpSuccess()
                 }
 
