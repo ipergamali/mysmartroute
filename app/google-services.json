@@ -14,11 +14,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "3402954436-503fs7a3imjlgonp922hkchd11g3s6te.apps.googleusercontent.com",
+          "client_id": "3402954436-6u432m5qsaqu4c8n8a3jbldjhr7ek0j6.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.ioannapergamali.mysmartroute",
-            "certificate_hash": "a03bc55d123456789abcdef0123456789abcdef0"
+            "certificate_hash": "dc112009915b40468492ff01b3f15a71c5b1a8bf"
           }
         },
         {
@@ -28,7 +28,7 @@
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyCl4Z_N5WfH2ttsmj0oFFq9gkvX0BxfTDI"
+          "current_key": "AIzaSyAjrLzdIcwjsQideLOI_Ly3oThdYVNr-5U"
         }
       ],
       "services": {
