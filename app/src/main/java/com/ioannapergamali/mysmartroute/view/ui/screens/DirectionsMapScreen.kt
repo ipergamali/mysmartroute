@@ -2,6 +2,8 @@ package com.ioannapergamali.mysmartroute.view.ui.screens
 
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.border
@@ -38,7 +40,9 @@ fun DirectionsMapScreen(
                 WebView(context).apply {
                     webViewClient = WebViewClient()
                     settings.javaScriptEnabled = true
-                    loadUrl("https://www.google.com/maps/dir/$start/$end")
+                    val encodedStart = URLEncoder.encode(start, StandardCharsets.UTF_8.toString())
+                    val encodedEnd = URLEncoder.encode(end, StandardCharsets.UTF_8.toString())
+                    loadUrl("https://www.google.com/maps/dir/$encodedStart/$encodedEnd")
                 }
             },
             modifier = Modifier
