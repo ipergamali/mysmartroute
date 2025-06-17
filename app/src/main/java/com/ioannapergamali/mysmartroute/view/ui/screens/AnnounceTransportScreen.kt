@@ -141,7 +141,8 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
 
     val mapProperties = remember { MapProperties(latLngBoundsForCameraTarget = heraklionBounds) }
 
-    val apiKey = BuildConfig.MAPS_API_KEY
+    // Διαβάζουμε το API key από το BuildConfig και, αν είναι κενό, από τα resources
+    val apiKey = BuildConfig.MAPS_API_KEY.ifBlank { stringResource(R.string.google_maps_key) }
     val isKeyMissing = apiKey.isBlank() || apiKey == "YOUR_API_KEY"
 
     LaunchedEffect(Unit) {
