@@ -2,9 +2,9 @@
 
 plugins {
     id("com.android.application") version "8.9.3" apply false
-    // Compose compiler plugin is bundled with Kotlin 1.9.x so we don't need the
-    // separate Compose plugin. Use the Kotlin version from the version catalog
-    // to keep it aligned with the rest of the project.
+    // Το plugin Compose απαιτείται σε Kotlin 2.x για να ενεργοποιηθεί ο
+    // compiler του Jetpack Compose.
+    id("org.jetbrains.kotlin.plugin.compose") version "2.1.21" apply false
     kotlin("kapt") version "2.1.21" apply false
 
     id("org.jetbrains.kotlin.android") version "2.1.21" apply false
