@@ -1,8 +1,6 @@
 <resources>
     <string name="app_name">mysmartroute</string>
     <string name="google_maps_key">YOUR_API_KEY</string>
-    <!-- Ο κωδικός πελάτη για το Google Sign In -->
-    <string name="default_web_client_id" translatable="false">3402954436-jfsqbb93am2bhs2j9kqtpgfkfurldlne.apps.googleusercontent.com</string>
     <!-- Displayed when no Google Maps API key is provided -->
     <!-- Avoid HTML character references that can trigger resource compilation issues -->
     <string name="map_api_key_missing">
