@@ -10,17 +10,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import android.app.Activity
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.compose.rememberLauncherForActivityResult
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import android.widget.Toast
-import android.util.Log
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
@@ -52,38 +47,7 @@ fun AdminSignUpScreen(
     var streetNumInput by remember { mutableStateOf("") }
     var postalCodeInput by remember { mutableStateOf("") }
 
-    val launcher =
-        rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-            if (task.isSuccessful) {
-                val idToken = task.result.idToken
-                val streetNum = streetNumInput.toIntOrNull()
-                val postalCode = postalCodeInput.toIntOrNull()
-                if (idToken != null && streetNum != null && postalCode != null) {
-                    viewModel.signUpWithGoogle(
-                        activity,
-                        context,
-                        idToken,
-                        phoneNum,
-                        surname,
-                        com.ioannapergamali.mysmartroute.model.classes.users.UserAddress(
-                            city,
-                            streetName,
-                            streetNum,
-                            postalCode
-                        ),
-                        UserRole.ADMIN
-                    )
-                }
-            } else {
-                Toast.makeText(
-                    context,
-                    task.exception?.localizedMessage ?: "Google sign-in failed",
-                    Toast.LENGTH_LONG
-                ).show()
-                Log.e("AdminSignUp", "Google sign-in failed", task.exception)
-            }
-        }
+
 
     Scaffold(
         topBar = {
@@ -210,18 +174,6 @@ fun AdminSignUpScreen(
                     Text("Sign Up")
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(onClick = {
-                    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                        .requestIdToken(context.getString(com.ioannapergamali.mysmartroute.R.string.default_web_client_id))
-                        .requestEmail()
-                        .build()
-                    val client = GoogleSignIn.getClient(activity, gso)
-                    val signInIntent = client.signInIntent
-                    launcher.launch(signInIntent)
-                }) {
-                    Text("Google Sign Up")
-                }
             }
         }
 

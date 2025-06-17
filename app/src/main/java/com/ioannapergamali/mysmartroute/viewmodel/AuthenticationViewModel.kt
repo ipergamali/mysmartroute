@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.UserEntity
@@ -127,49 +126,6 @@ class AuthenticationViewModel : ViewModel() {
         }
     }
 
-    fun signUpWithGoogle(
-        activity: Activity,
-        context: Context,
-        idToken: String,
-        phoneNum: String,
-        surname: String,
-        address: UserAddress,
-        role: UserRole
-    ) {
-        _signUpState.value = SignUpState.Loading
-        val credential = GoogleAuthProvider.getCredential(idToken, null)
-        auth.signInWithCredential(credential)
-            .addOnSuccessListener { result ->
-                val uid = result.user?.uid ?: UUID.randomUUID().toString()
-                val userData = mapOf(
-                    "id" to uid,
-                    "name" to (result.user?.displayName ?: ""),
-                    "surname" to surname,
-                    "username" to (result.user?.email ?: uid),
-                    "email" to (result.user?.email ?: ""),
-                    "phoneNum" to phoneNum,
-                    "role" to role.name,
-                    "city" to address.city,
-                    "streetName" to address.streetName,
-                    "streetNum" to address.streetNum,
-                    "postalCode" to address.postalCode
-                )
-
-                db.collection("users")
-                    .document(uid)
-                    .set(userData)
-                    .addOnSuccessListener {
-                        _signUpState.value = SignUpState.Success
-                        loadCurrentUserRole()
-                    }
-                    .addOnFailureListener { e ->
-                        _signUpState.value = SignUpState.Error(e.localizedMessage ?: "Sign-up failed")
-                    }
-            }
-            .addOnFailureListener { e ->
-                _signUpState.value = SignUpState.Error(e.localizedMessage ?: "Sign-up failed")
-            }
-    }
 
     fun login(email: String, password: String) {
         viewModelScope.launch {

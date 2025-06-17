@@ -8,7 +8,6 @@ plugins {
 
 // Διαβάζουμε τα API keys από το local.properties
 val MAPS_API_KEY: String = project.findProperty("MAPS_API_KEY") as? String ?: ""
-val GOOGLE_CLIENT_ID: String = project.findProperty("GOOGLE_CLIENT_ID") as? String ?: ""
 
 android {
     namespace = "com.ioannapergamali.mysmartroute"
@@ -27,7 +26,6 @@ android {
         buildConfigField("String", "FIREBASE_AUTH_DOMAIN", "\"mysmartroute-26a64.firebaseapp.com\"")
         buildConfigField("String", "DYNAMIC_LINK_DOMAIN", "\"mysmartroute.page.link\"")
         buildConfigField("String", "MAPS_API_KEY", "\"$MAPS_API_KEY\"")
-        buildConfigField("String", "GOOGLE_CLIENT_ID", "\"$GOOGLE_CLIENT_ID\"")
 
         manifestPlaceholders["GOOGLE_MAPS_API_KEY"] = MAPS_API_KEY
     }
@@ -97,7 +95,6 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.15.0"))
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
-    implementation("com.google.android.gms:play-services-auth:21.3.0")
 
     // Room
     implementation("androidx.room:room-runtime:2.7.1")
