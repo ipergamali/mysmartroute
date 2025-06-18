@@ -14,3 +14,11 @@ MAPS_API_KEY=YOUR_API_KEY
 Αντικατέστησε το `YOUR_API_KEY` με το πραγματικό κλειδί από το Google Cloud Console.
 Επιπλέον, φρόντισε να έχεις ενεργοποιήσει το **Maps SDK for Android** στο Google Cloud
 και να μην περιορίζεται το κλειδί σε συγκεκριμένο package μέχρι να το προσθέσεις στο project.
+
+Μπορείς να επιβεβαιώσεις ότι το κλειδί φορτώθηκε σωστά προσθέτοντας στο κώδικα το παρακάτω απόσπασμα:
+
+```kotlin
+val apiKey = BuildConfig.MAPS_API_KEY
+Log.d("Maps", "API key loaded? ${apiKey.isNotEmpty()}")
+```
+Έτσι θα δεις ένα μήνυμα στο log που επιβεβαιώνει ότι η εφαρμογή διαβάζει το κλειδί. Αν το μήνυμα είναι `false`, τότε δεν έχει οριστεί η μεταβλητή `MAPS_API_KEY` στο `local.properties`.
