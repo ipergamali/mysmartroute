@@ -12,6 +12,6 @@ class MySmartRouteApplication : Application() {
         FirebaseApp.initializeApp(this)
         // Η υπηρεσία Firebase App Check απενεργοποιήθηκε προσωρινά
         val apiKey = BuildConfig.MAPS_API_KEY
-        Log.d("MySmartRoute", "API key loaded? ${apiKey.isNotEmpty()}")
+        Log.d("MySmartRoute", "Maps API key loaded: ${apiKey.isNotBlank()}")
     }
 }
