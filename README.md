@@ -21,4 +21,5 @@ MAPS_API_KEY=YOUR_API_KEY
 val apiKey = BuildConfig.MAPS_API_KEY
 Log.d("Maps", "API key loaded? ${apiKey.isNotEmpty()}")
 ```
-Έτσι θα δεις ένα μήνυμα στο log που επιβεβαιώνει ότι η εφαρμογή διαβάζει το κλειδί. Αν το μήνυμα είναι `false`, τότε δεν έχει οριστεί η μεταβλητή `MAPS_API_KEY` στο `local.properties`.
+
+Έτσι θα δεις ένα μήνυμα στο log που επιβεβαιώνει ότι η εφαρμογή διαβάζει το κλειδί.
