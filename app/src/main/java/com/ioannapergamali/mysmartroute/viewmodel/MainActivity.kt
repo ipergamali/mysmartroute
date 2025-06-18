@@ -1,6 +1,7 @@
 package com.ioannapergamali.mysmartroute.viewmodel
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -10,6 +11,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.lifecycleScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.rememberNavController
+import com.ioannapergamali.mysmartroute.BuildConfig
 import com.ioannapergamali.mysmartroute.model.navigation.NavigationHost
 import com.ioannapergamali.mysmartroute.view.ui.MysmartrouteTheme
 import com.ioannapergamali.mysmartroute.view.ui.AppTheme
@@ -34,6 +36,9 @@ class MainActivity : ComponentActivity() {
         MiuiUtils.callServiceDelivery(this, "ping")
         // Συγχρονισμός ρυθμίσεων από τη βάση
         settingsViewModel.syncSettings(this)
+        // Έλεγχος φόρτωσης του Maps API key
+        val apiKey = BuildConfig.MAPS_API_KEY
+        Log.d("Maps", "API key loaded? ${apiKey.isNotEmpty()}")
         // Initialize the soundtrack and start playback based on saved preferences.
         SoundManager.initialize(applicationContext)
         lifecycleScope.launch {
