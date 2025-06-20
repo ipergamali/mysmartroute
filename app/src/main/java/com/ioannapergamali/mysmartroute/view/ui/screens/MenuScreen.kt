@@ -86,13 +86,17 @@ private fun PassengerMenu(viewModel: AuthenticationViewModel, navController: Nav
                     popUpTo("menu") { inclusive = true }
                 }
             }
-            // TODO: handle other passenger actions
+            else -> {
+                Toast.makeText(context, "Η λειτουργία δεν είναι διαθέσιμη", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 }
 
 @Composable
 private fun DriverMenu(navController: NavController) {
+    val context = LocalContext.current
+
     val actions = listOf(
         "Register Vehicle",
         "Announce Availability for a specific Transport",
@@ -105,7 +109,11 @@ private fun DriverMenu(navController: NavController) {
         when (index) {
             0 -> navController.navigate("registerVehicle")
             1 -> navController.navigate("announceTransport")
-            // TODO: handle other driver actions
+            else -> Toast.makeText(
+                context,
+                "Η λειτουργία δεν είναι διαθέσιμη",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 }
