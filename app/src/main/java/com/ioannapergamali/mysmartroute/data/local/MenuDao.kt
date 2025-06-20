@@ -1,0 +1,15 @@
+package com.ioannapergamali.mysmartroute.data.local
+
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+
+@Dao
+interface MenuDao {
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(menu: MenuEntity)
+
+    @Query("SELECT * FROM menus WHERE roleId = :roleId")
+    suspend fun getMenusForRole(roleId: String): List<MenuEntity>
+}

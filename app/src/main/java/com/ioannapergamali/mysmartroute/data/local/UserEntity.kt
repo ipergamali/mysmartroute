@@ -13,6 +13,7 @@ data class UserEntity(
     var phoneNum: String = "",
     var password: String = "",
     var role: String = "",
+    var roleId: String = "",
     var city: String = "",
     var streetName: String = "",
     var streetNum: Int = 0,

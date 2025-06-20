@@ -9,6 +9,8 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.UserEntity
+import com.ioannapergamali.mysmartroute.data.local.RoleEntity
+import com.ioannapergamali.mysmartroute.data.local.MenuEntity
 import com.ioannapergamali.mysmartroute.model.classes.users.Admin
 import com.ioannapergamali.mysmartroute.model.classes.users.Driver
 import com.ioannapergamali.mysmartroute.model.classes.users.Passenger
@@ -68,6 +70,7 @@ class AuthenticationViewModel : ViewModel() {
                 phoneNum,
                 password,
                 role.name,
+                "",
                 address.city,
                 address.streetName,
                 address.streetNum,
@@ -86,9 +89,12 @@ class AuthenticationViewModel : ViewModel() {
                 auth.createUserWithEmailAndPassword(email, password)
                     .addOnSuccessListener { result ->
                         val uid = result.user?.uid ?: userIdLocal
+                        val authRef = db.collection("Authedication").document(uid)
+                        val roleId = UUID.randomUUID().toString()
+                        val roleRef = db.collection("roles").document(roleId)
 
                         val userData = mapOf(
-                            "id" to uid,
+                            "id" to authRef,
                             "name" to name,
                             "surname" to surname,
                             "username" to username,
@@ -96,31 +102,77 @@ class AuthenticationViewModel : ViewModel() {
                             "phoneNum" to phoneNum,
                             "password" to password,
                             "role" to role.name,
+                            "roleId" to roleRef,
                             "city" to address.city,
                             "streetName" to address.streetName,
                             "streetNum" to address.streetNum,
                             "postalCode" to address.postalCode
                         )
 
-                        db.collection("users")
-                            .document(uid)
-                            .set(userData)
-                            .addOnSuccessListener {
-                                viewModelScope.launch {
-                                    userDao.insert(userEntity.copy(id = uid))
+                        val roleData = mapOf(
+                            "id" to roleId,
+                            "userId" to authRef,
+                            "name" to role.name
+                        )
+
+                        val menuDefaults = when (role) {
+                            UserRole.ADMIN -> listOf("Users" to "adminUsers")
+                            UserRole.DRIVER -> listOf("Routes" to "driverRoutes")
+                            UserRole.PASSENGER -> listOf("Home" to "passengerHome")
+                        }
+
+                        val batch = db.batch()
+                        val userDoc = db.collection("users").document(uid)
+                        batch.set(userDoc, userData)
+                        batch.set(roleRef, roleData)
+
+                        menuDefaults.forEach { (title, route) ->
+                            val menuId = UUID.randomUUID().toString()
+                            val menuDoc = db.collection("menus").document(menuId)
+                            val menuData = mapOf(
+                                "id" to menuId,
+                                "roleId" to roleRef,
+                                "title" to title,
+                                "route" to route
+                            )
+                            batch.set(menuDoc, menuData)
+                        }
+
+                        batch.commit().addOnSuccessListener {
+                            viewModelScope.launch {
+                                val roleEntity = RoleEntity(roleId, uid, role.name)
+                                userDao.insert(userEntity.copy(id = uid, roleId = roleId))
+                                dbLocal.roleDao().insert(roleEntity)
+                                val menuDao = dbLocal.menuDao()
+                                menuDefaults.forEach { (title, route) ->
+                                    val menuId = UUID.randomUUID().toString()
+                                    menuDao.insert(MenuEntity(menuId, roleId, title, route))
                                 }
-                                _signUpState.value = SignUpState.Success
-                                loadCurrentUserRole()
                             }
-                            .addOnFailureListener { e ->
-                                _signUpState.value = SignUpState.Error(e.localizedMessage ?: "Sign-up failed")
-                            }
+                            _signUpState.value = SignUpState.Success
+                            loadCurrentUserRole()
+                        }.addOnFailureListener { e ->
+                            _signUpState.value = SignUpState.Error(e.localizedMessage ?: "Sign-up failed")
+                        }
                     }
                     .addOnFailureListener { e ->
                         _signUpState.value = SignUpState.Error(e.localizedMessage ?: "Sign-up failed")
                     }
             } else {
-                userDao.insert(userEntity)
+                val roleId = UUID.randomUUID().toString()
+                val roleEntity = RoleEntity(roleId, userIdLocal, role.name)
+                val menuDao = dbLocal.menuDao()
+                userDao.insert(userEntity.copy(roleId = roleId))
+                dbLocal.roleDao().insert(roleEntity)
+                val defaults = when (role) {
+                    UserRole.ADMIN -> listOf("Users" to "adminUsers")
+                    UserRole.DRIVER -> listOf("Routes" to "driverRoutes")
+                    UserRole.PASSENGER -> listOf("Home" to "passengerHome")
+                }
+                defaults.forEach { (title, route) ->
+                    val id = UUID.randomUUID().toString()
+                    menuDao.insert(MenuEntity(id, roleId, title, route))
+                }
                 _signUpState.value = SignUpState.Success
             }
         }

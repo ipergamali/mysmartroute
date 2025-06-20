@@ -11,14 +11,23 @@ import com.ioannapergamali.mysmartroute.data.local.VehicleEntity
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 
 @Database(
-    entities = [UserEntity::class, VehicleEntity::class, PoIEntity::class, SettingsEntity::class],
-    version = 11
+    entities = [
+        UserEntity::class,
+        VehicleEntity::class,
+        PoIEntity::class,
+        SettingsEntity::class,
+        RoleEntity::class,
+        MenuEntity::class
+    ],
+    version = 12
 )
 abstract class MySmartRouteDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun vehicleDao(): VehicleDao
     abstract fun poIDao(): PoIDao
     abstract fun settingsDao(): SettingsDao
+    abstract fun roleDao(): RoleDao
+    abstract fun menuDao(): MenuDao
 
     companion object {
         @Volatile
