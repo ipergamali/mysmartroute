@@ -65,6 +65,10 @@ fun NavigationHost(navController : NavHostController, openDrawer: () -> Unit) {
             AnnounceTransportScreen(navController = navController, openDrawer = openDrawer)
         }
 
+        composable("announceAvailability") {
+            AnnounceTransportScreen(navController = navController, openDrawer = openDrawer)
+        }
+
         composable("poiList") {
             PoIListScreen(navController = navController, openDrawer = openDrawer)
         }
