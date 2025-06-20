@@ -44,10 +44,10 @@ fun NavigationHost(navController : NavHostController, openDrawer: () -> Unit) {
 
         composable("Signup") {
             SignUpScreen(
-                navController = navController ,
+                navController = navController,
                 onSignUpSuccess = {
                     navController.navigate("home") {
-                        popUpTo("signup") { inclusive = true }
+                        popUpTo("Signup") { inclusive = true }
                     }
                 },
                 openDrawer = openDrawer
