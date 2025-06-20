@@ -29,7 +29,7 @@ fun PoIListScreen(navController: NavController, openDrawer: () -> Unit) {
     LaunchedEffect(Unit) { viewModel.loadPois(context) }
 
     Scaffold(topBar = { TopBar(title = "PoIs", navController = navController, showMenu = true, onMenuClick = openDrawer) }) { padding ->
-        ScreenContainer(modifier = Modifier.padding(padding)) {
+        ScreenContainer(modifier = Modifier.padding(padding), scrollable = false) {
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 items(pois) { poi ->
                     Text(text = "${'$'}{poi.name} (${poi.lat}, ${'$'}{poi.lng})")
