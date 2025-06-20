@@ -8,7 +8,9 @@ import com.ioannapergamali.mysmartroute.data.local.VehicleEntity
 /** Βοηθητικά extensions για μετατροπή οντοτήτων σε δομές κατάλληλες για το Firestore. */
 /** Μετατροπή ενός [UserEntity] σε Map. */
 fun UserEntity.toFirestoreMap(): Map<String, Any> = mapOf(
-    "id" to id,
+    "id" to FirebaseFirestore.getInstance()
+        .collection("Authedication")
+        .document(id),
     "name" to name,
     "surname" to surname,
     "username" to username,
@@ -16,6 +18,7 @@ fun UserEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     "phoneNum" to phoneNum,
     "password" to password,
     "role" to role,
+    "roleId" to roleId,
     "city" to city,
     "streetName" to streetName,
     "streetNum" to streetNum,
@@ -43,7 +46,7 @@ fun SettingsEntity.toFirestoreMap(): Map<String, Any> = mapOf(
 
 /** Μετατροπή εγγράφου Firestore σε [UserEntity]. */
 fun DocumentSnapshot.toUserEntity(): UserEntity? {
-    val id = getString("id") ?: return null
+    val id = getDocumentReference("id")?.id ?: getString("id") ?: return null
     return UserEntity(
         id = id,
         name = getString("name") ?: "",
@@ -53,6 +56,7 @@ fun DocumentSnapshot.toUserEntity(): UserEntity? {
         phoneNum = getString("phoneNum") ?: "",
         password = getString("password") ?: "",
         role = getString("role") ?: "",
+        roleId = getDocumentReference("roleId")?.id ?: getString("roleId") ?: "",
         city = getString("city") ?: "",
         streetName = getString("streetName") ?: "",
         streetNum = (getLong("streetNum") ?: 0L).toInt(),
