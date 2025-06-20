@@ -12,6 +12,10 @@ val MAPS_API_KEY: String =
         ?: System.getenv("MAPS_API_KEY")
         ?: ""
 
+if (MAPS_API_KEY.isBlank()) {
+    logger.warn("MAPS_API_KEY is missing. The Maps SDK may not work correctly.")
+}
+
 android {
     namespace = "com.ioannapergamali.mysmartroute"
     compileSdk = 35
