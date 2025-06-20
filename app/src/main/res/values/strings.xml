@@ -3,8 +3,10 @@
     <!-- Displayed when no Google Maps API key is provided -->
     <!-- Avoid HTML character references that can trigger resource compilation issues -->
     <string name="map_api_key_missing">
-    Google Maps API key is missing. Please set "MAPS_API_KEY" in local.properties
-</string>
+        Η εφαρμογή δεν βρήκε κλειδί Google Maps. Πρόσθεσέ το στο
+        <xliff:g id="file">local.properties</xliff:g>
+        της ρίζας του project
+    </string>
 
     <string name="open_in_maps">Άνοιγμα στο Google Maps</string>
     <string name="directions">Οδηγίες</string>
