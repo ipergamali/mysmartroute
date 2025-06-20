@@ -10,4 +10,5 @@
     <string name="check_coordinates">Έλεγχος συντεταγμένων</string>
     <string name="internet_available">Η σύνδεση στο διαδίκτυο είναι διαθέσιμη</string>
     <string name="check_internet">Έλεγχος σύνδεσης</string>
+    <string name="map_api_key_missing">Λείπει το κλειδί API των χαρτών</string>
 </resources>
