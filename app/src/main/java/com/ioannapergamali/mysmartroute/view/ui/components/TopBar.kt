@@ -39,7 +39,12 @@ fun TopBar(
     showLogout: Boolean = false,
     showBack: Boolean = true,
     onMenuClick: () -> Unit = {},
-    onLogout: () -> Unit = {}
+    onLogout: () -> Unit = {
+        FirebaseAuth.getInstance().signOut()
+        navController.navigate("home") {
+            popUpTo("home") { inclusive = true }
+        }
+    }
 ) {
     val username = remember { mutableStateOf<String?>(null) }
 
