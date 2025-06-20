@@ -179,6 +179,12 @@ fun SignUpScreen(
                             ),
                             selectedRole
                         )
+                    } else {
+                        Toast.makeText(
+                            context,
+                            "Συμπλήρωσε σωστά τον αριθμό οδού και τον ταχυδρομικό κώδικα",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }) {
                     Text("Sign Up")
