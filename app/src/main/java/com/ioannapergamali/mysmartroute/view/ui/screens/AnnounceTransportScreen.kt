@@ -233,7 +233,10 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
 
             // Removed external maps button; map is shown directly on screen
         } else {
-            Text(stringResource(R.string.map_api_key_missing))
+            Text(
+                stringResource(R.string.map_api_key_missing),
+                color = MaterialTheme.colorScheme.primary
+            )
         }
 
         if (startLatLng != null && endLatLng != null) {
