@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -7,8 +10,6 @@ plugins {
 }
 
 // Διαβάζουμε τα API keys από το local.properties ή από μεταβλητή περιβάλλοντος
-import java.util.Properties
-import java.io.FileInputStream
 
 val localProps = Properties()
 val localPropsFile = rootProject.file("local.properties")
