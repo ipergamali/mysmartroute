@@ -12,11 +12,11 @@ class MySmartRouteApplication : Application() {
         super.onCreate()
         FirebaseApp.initializeApp(this)
         // Η υπηρεσία Firebase App Check απενεργοποιήθηκε προσωρινά
-        val apiKey = BuildConfig.MAPS_API_KEY
-        Log.d("MySmartRoute Maps API key ", "Maps API key loaded: ${apiKey.isNotBlank()}")
-        if (apiKey.isBlank()) {
-            Log.w("MySmartRoute Maps API key " , "MAPS_API_KEY is blank. Ελέγξτε το local.properties")
-        }
+        //val apiKey = BuildConfig.MAPS_API_KEY
+//        Log.d("MySmartRoute Maps API key ", "Maps API key loaded: ${apiKey.isNotBlank()}")
+//        if (apiKey.isBlank()) {
+//            Log.w("MySmartRoute Maps API key " , "MAPS_API_KEY is blank. Ελέγξτε το local.properties")
+//        }
         ShortcutUtils.addMainShortcut(this)
     }
 }
