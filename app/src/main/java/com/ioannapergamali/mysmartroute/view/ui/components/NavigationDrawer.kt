@@ -5,6 +5,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.AdminPanelSettings
 import com.google.firebase.auth.FirebaseAuth
@@ -24,9 +25,14 @@ import kotlinx.coroutines.launch
 fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
     ModalDrawerSheet {
         Text("Menu", modifier = Modifier.padding(16.dp))
-        Divider()
         val context = LocalContext.current
         val user = FirebaseAuth.getInstance().currentUser
+
+        user?.email?.let { email ->
+            Text(email, modifier = Modifier.padding(start = 16.dp, bottom = 8.dp))
+            Divider()
+        } ?: Divider()
+
         if (user != null) {
             NavigationDrawerItem(
                 label = { Text("Settings") },
@@ -74,6 +80,20 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
             },
             icon = { Icon(Icons.Filled.AdminPanelSettings, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
         )
+        if (user != null) {
+            NavigationDrawerItem(
+                label = { Text("Logout") },
+                selected = false,
+                onClick = {
+                    FirebaseAuth.getInstance().signOut()
+                    navController.navigate("home") {
+                        popUpTo("home") { inclusive = true }
+                    }
+                    closeDrawer()
+                },
+                icon = { Icon(Icons.Filled.Logout, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
+            )
+        }
         val activity = (LocalContext.current as? Activity)
         NavigationDrawerItem(
             label = { Text("Exit") },
