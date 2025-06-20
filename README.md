@@ -14,6 +14,10 @@ MAPS_API_KEY=YOUR_API_KEY
 ```
 
 Αντικατέστησε το `YOUR_API_KEY` με το πραγματικό κλειδί από το Google Cloud Console.
+
+Το `app/build.gradle.kts` πλέον διαβάζει αυτόματα την τιμή από το `local.properties`,
+οπότε αρκεί να προσθέσεις τη γραμμή με το κλειδί και να κάνεις "Sync Project" ή
+"Rebuild" για να παραχθεί το `BuildConfig`.
 Επιπλέον, φρόντισε να έχεις ενεργοποιήσει το **Maps SDK for Android** στο Google Cloud
 και να μην περιορίζεται το κλειδί σε συγκεκριμένο package μέχρι να το προσθέσεις στο project.
 
