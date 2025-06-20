@@ -23,19 +23,6 @@ android {
         versionCode = 4
         versionName = "1.3"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        vectorDrawables {
-            useSupportLibrary = true
-        }
-        buildConfigField("String", "FIREBASE_AUTH_DOMAIN", "\"mysmartroute-26a64.firebaseapp.com\"")
-        buildConfigField("String", "DYNAMIC_LINK_DOMAIN", "\"mysmartroute.page.link\"")
-        buildConfigField("String", "MAPS_API_KEY", "\"$MAPS_API_KEY\"")
-
-        // περνάμε το API Key στο AndroidManifest μέσω placeholder
-        manifestPlaceholders["MAPS_API_KEY"] = MAPS_API_KEY
-    }
-
-    androidResources {
-        localeFilters.add("en")
     }
 
     buildFeatures {
