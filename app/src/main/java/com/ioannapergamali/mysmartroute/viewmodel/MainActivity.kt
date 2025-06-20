@@ -27,6 +27,7 @@ import com.ioannapergamali.mysmartroute.utils.ThemePreferenceManager
 import com.ioannapergamali.mysmartroute.utils.SoundPreferenceManager
 import com.ioannapergamali.mysmartroute.utils.SoundManager
 import com.ioannapergamali.mysmartroute.viewmodel.SettingsViewModel
+import com.ioannapergamali.mysmartroute.BuildConfig
 import kotlinx.coroutines.launch
 
 
@@ -52,7 +53,7 @@ class MainActivity : ComponentActivity() {
         // Συγχρονισμός ρυθμίσεων από τη βάση
         settingsViewModel.syncSettings(this)
         // Έλεγχος φόρτωσης του Maps API key
-        val apiKey = getString(R.string.google_maps_key)
+        val apiKey = BuildConfig.MAPS_API_KEY
         Log.d("Maps", "API key loaded? ${apiKey.isNotEmpty()}")
         // Initialize the soundtrack and start playback based on saved preferences.
         SoundManager.initialize(applicationContext)
