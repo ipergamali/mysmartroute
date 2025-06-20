@@ -48,7 +48,9 @@ class DatabaseViewModel : ViewModel() {
                 .documents.mapNotNull { it.toUserEntity() }
             val vehicles = firestore.collection("vehicles").get().await()
                 .documents.mapNotNull { doc ->
-                    val userId = doc.getString("userId") ?: return@mapNotNull null
+                    val userId = doc.getString("userId")
+                        ?: doc.getDocumentReference("userId")?.id
+                        ?: return@mapNotNull null
                     VehicleEntity(
                         id = doc.getString("id") ?: "",
                         description = doc.getString("description") ?: "",
@@ -61,7 +63,9 @@ class DatabaseViewModel : ViewModel() {
                 .documents.mapNotNull { it.toObject(PoIEntity::class.java) }
             val settings = firestore.collection("user_settings").get().await()
                 .documents.mapNotNull { doc ->
-                    val userId = doc.getString("userId") ?: return@mapNotNull null
+                    val userId = doc.getString("userId")
+                        ?: doc.getDocumentReference("userId")?.id
+                        ?: return@mapNotNull null
                     SettingsEntity(
                         userId = userId,
                         theme = doc.getString("theme") ?: "",
