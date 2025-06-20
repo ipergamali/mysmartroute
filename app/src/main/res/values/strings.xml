@@ -4,4 +4,14 @@
     <!-- Displayed when no Google Maps API key is provided -->
     <!-- Avoid HTML character references that can trigger resource compilation issues -->
     <string name="map_api_key_missing">Google Maps API key is missing. Please set "google_maps_key'" in res/values/strings.xml</string>
+
+    <!-- Additional strings used in AnnounceTransportScreen -->
+    <string name="invalid_coordinates">Μη έγκυρες συντεταγμένες</string>
+    <string name="no_internet">Δεν υπάρχει σύνδεση στο διαδίκτυο</string>
+    <string name="directions">Λήψη διαδρομής</string>
+    <string name="coordinates_valid">Οι συντεταγμένες είναι έγκυρες</string>
+    <string name="coordinates_missing">Λείπουν συντεταγμένες</string>
+    <string name="check_coordinates">Έλεγχος συντεταγμένων</string>
+    <string name="internet_available">Η σύνδεση στο διαδίκτυο είναι διαθέσιμη</string>
+    <string name="check_internet">Έλεγχος σύνδεσης</string>
 </resources>
