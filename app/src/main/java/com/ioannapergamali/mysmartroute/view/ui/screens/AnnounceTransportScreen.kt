@@ -139,11 +139,12 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         )
     }
 
-    val mapProperties = remember { MapProperties(latLngBoundsForCameraTarget = heraklionBounds) }
+    val apiKey = context.getString(R.string.google_maps_key)
+    val isKeyMissing = apiKey.isBlank() || apiKey == "YOUR_API_KEY"
 
     // Διαβάζουμε το API key μόνο από το BuildConfig
-    val apiKey = BuildConfig.MAPS_API_KEY
-    val isKeyMissing = apiKey.isBlank()
+//    val apiKey = BuildConfig.MAPS_API_KEY
+//    val isKeyMissing = apiKey.isBlank()
     Log.d(TAG, "API key loaded? ${!isKeyMissing}")
 
     LaunchedEffect(Unit) {
@@ -159,6 +160,9 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
             }
         } else {
             fromSuggestions = emptyList()
+    LaunchedEffect(startLatLng, endLatLng) {
+        if (!isKeyMissing && startLatLng != null && endLatLng != null) {
+            durationMinutes = MapsUtils.fetchDuration(startLatLng!!, endLatLng!!, apiKey)
         }
     }
 
