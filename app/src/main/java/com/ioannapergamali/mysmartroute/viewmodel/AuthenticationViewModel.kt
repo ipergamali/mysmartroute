@@ -119,43 +119,34 @@ class AuthenticationViewModel : ViewModel() {
                             "postalCode" to address.postalCode
                         )
 
-                        val menuDefaults = when (role) {
-                            UserRole.ADMIN -> listOf("Users" to listOf("Users" to "adminUsers"))
-                            UserRole.DRIVER -> listOf("Routes" to listOf("Routes" to "driverRoutes"))
-                            UserRole.PASSENGER -> listOf("Home" to listOf("Home" to "passengerHome"))
-                        }
-
                         val batch = db.batch()
                         val userDoc = db.collection("users").document(uid)
                         batch.set(userDoc, userData)
 
-                        menuDefaults.forEach { (menuTitle, options) ->
-                            val menuId = UUID.randomUUID().toString()
-                            val menuDoc = roleRef.collection("menus").document(menuId)
-                            batch.set(menuDoc, mapOf("id" to menuId, "title" to menuTitle))
-                            options.forEach { (optTitle, route) ->
-                                val optId = UUID.randomUUID().toString()
-                                val optDoc = menuDoc.collection("options").document(optId)
-                                batch.set(optDoc, mapOf("id" to optId, "title" to optTitle, "route" to route))
-                            }
-                        }
-
-                        batch.commit().addOnSuccessListener {
-                            viewModelScope.launch {
-                                userDao.insert(userEntity.copy(id = uid, roleId = roleId))
-                                val menuDao = dbLocal.menuDao()
-                                val optionDao = dbLocal.menuOptionDao()
-                                menuDefaults.forEach { (menuTitle, options) ->
+                        val roleMenusRef = roleRef.collection("menus")
+                        roleMenusRef.get().addOnSuccessListener { snapshot ->
+                            if (snapshot.isEmpty) {
+                                defaultMenus(role).forEach { (menuTitle, options) ->
                                     val menuId = UUID.randomUUID().toString()
-                                    menuDao.insert(MenuEntity(menuId, roleId, menuTitle))
+                                    val menuDoc = roleMenusRef.document(menuId)
+                                    batch.set(menuDoc, mapOf("id" to menuId, "title" to menuTitle))
                                     options.forEach { (optTitle, route) ->
                                         val optId = UUID.randomUUID().toString()
-                                        optionDao.insert(MenuOptionEntity(optId, menuId, optTitle, route))
+                                        batch.set(menuDoc.collection("options").document(optId),
+                                            mapOf("id" to optId, "title" to optTitle, "route" to route))
                                     }
                                 }
                             }
-                            _signUpState.value = SignUpState.Success
-                            loadCurrentUserRole()
+
+                            batch.commit().addOnSuccessListener {
+                                viewModelScope.launch {
+                                    userDao.insert(userEntity.copy(id = uid, roleId = roleId))
+                                }
+                                _signUpState.value = SignUpState.Success
+                                loadCurrentUserRole()
+                            }.addOnFailureListener { e ->
+                                _signUpState.value = SignUpState.Error(e.localizedMessage ?: "Sign-up failed")
+                            }
                         }.addOnFailureListener { e ->
                             _signUpState.value = SignUpState.Error(e.localizedMessage ?: "Sign-up failed")
                         }
@@ -165,22 +156,7 @@ class AuthenticationViewModel : ViewModel() {
                     }
             } else {
                 val roleId = roleIds[role] ?: "role_passenger"
-                val menuDao = dbLocal.menuDao()
-                val optionDao = dbLocal.menuOptionDao()
                 userDao.insert(userEntity.copy(roleId = roleId))
-                val defaults = when (role) {
-                    UserRole.ADMIN -> listOf("Users" to listOf("Users" to "adminUsers"))
-                    UserRole.DRIVER -> listOf("Routes" to listOf("Routes" to "driverRoutes"))
-                    UserRole.PASSENGER -> listOf("Home" to listOf("Home" to "passengerHome"))
-                }
-                defaults.forEach { (menuTitle, options) ->
-                    val id = UUID.randomUUID().toString()
-                    menuDao.insert(MenuEntity(id, roleId, menuTitle))
-                    options.forEach { (optTitle, route) ->
-                        val optId = UUID.randomUUID().toString()
-                        optionDao.insert(MenuOptionEntity(optId, id, optTitle, route))
-                    }
-                }
                 _signUpState.value = SignUpState.Success
             }
         }
@@ -276,5 +252,53 @@ class AuthenticationViewModel : ViewModel() {
     fun signOut() {
         auth.signOut()
         _currentUserRole.value = null
+    }
+
+    private fun defaultMenus(role: UserRole): List<Pair<String, List<Pair<String, String>>>> {
+        return when (role) {
+            UserRole.PASSENGER -> listOf(
+                "Passenger Menu" to listOf(
+                    "Sign out" to "signOut",
+                    "Manage Favorite Means of Transport" to "manageFavorites",
+                    "Mode Of Transportation For A Specific Route" to "routeMode",
+                    "Find a Vehicle for a specific Transport" to "findVehicle",
+                    "Find Way of Transport" to "findWay",
+                    "Book a Seat or Buy a Ticket" to "bookSeat",
+                    "View Interesting Routes" to "viewRoutes",
+                    "View Transports" to "viewTransports",
+                    "Print Booked Seat or Ticket" to "printTicket",
+                    "Cancel Booked Seat" to "cancelSeat",
+                    "View, Rank and Comment on Completed Transports" to "rankTransports",
+                    "Shut Down the System" to "shutdown"
+                )
+            )
+            UserRole.DRIVER -> listOf(
+                "Driver Menu" to listOf(
+                    "Register Vehicle" to "registerVehicle",
+                    "Announce Availability for a specific Transport" to "announceAvailability",
+                    "Find Passengers" to "findPassengers",
+                    "Print Passenger List" to "printList",
+                    "Print Passenger List for Scheduled Transports" to "printScheduled",
+                    "Print Passenger List for Completed Transports" to "printCompleted"
+                )
+            )
+            UserRole.ADMIN -> listOf(
+                "Admin Menu" to listOf(
+                    "Initialize System" to "initSystem",
+                    "Create User Account" to "createUser",
+                    "Promote or Demote User" to "editPrivileges",
+                    "Define Point of Interest" to "definePoi",
+                    "Define Duration of Travel by Foot" to "defineDuration",
+                    "View List of Unassigned Routes" to "viewUnassigned",
+                    "Review Point of Interest Names" to "reviewPoi",
+                    "Show 10 Best and Worst Drivers" to "rankDrivers",
+                    "View 10 Happiest/Least Happy Passengers" to "rankPassengers",
+                    "View Available Vehicles" to "viewVehicles",
+                    "View PoIs" to "viewPois",
+                    "View Users" to "viewUsers",
+                    "Advance Date" to "advanceDate"
+                )
+            )
+        }
     }
 }
