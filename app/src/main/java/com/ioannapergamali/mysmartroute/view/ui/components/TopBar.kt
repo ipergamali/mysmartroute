@@ -42,16 +42,24 @@ fun TopBar(
     onLogout: () -> Unit = {}
 ) {
     val username = remember { mutableStateOf<String?>(null) }
-    LaunchedEffect(Unit) {
-        val uid = FirebaseAuth.getInstance().currentUser?.uid
-        if (uid != null) {
-            FirebaseFirestore.getInstance().collection("users")
-                .document(uid)
-                .get()
-                .addOnSuccessListener { doc ->
-                    username.value = doc.getString("username")
-                }
+
+    DisposableEffect(Unit) {
+        val auth = FirebaseAuth.getInstance()
+        val listener = FirebaseAuth.AuthStateListener { firebaseAuth ->
+            val uid = firebaseAuth.currentUser?.uid
+            if (uid != null) {
+                FirebaseFirestore.getInstance().collection("users")
+                    .document(uid)
+                    .get()
+                    .addOnSuccessListener { doc ->
+                        username.value = doc.getString("username")
+                    }
+            } else {
+                username.value = null
+            }
         }
+        auth.addAuthStateListener(listener)
+        onDispose { auth.removeAuthStateListener(listener) }
     }
 
     var menuExpanded by remember { mutableStateOf(false) }
