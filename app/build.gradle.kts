@@ -7,8 +7,17 @@ plugins {
 }
 
 // Διαβάζουμε τα API keys από το local.properties ή από μεταβλητή περιβάλλοντος
+import java.util.Properties
+import java.io.FileInputStream
+
+val localProps = Properties()
+val localPropsFile = rootProject.file("local.properties")
+if (localPropsFile.exists()) {
+    localProps.load(FileInputStream(localPropsFile))
+}
+
 val MAPS_API_KEY: String =
-    (project.findProperty("MAPS_API_KEY") as? String)
+    (localProps.getProperty("MAPS_API_KEY"))
         ?: System.getenv("MAPS_API_KEY")
         ?: ""
 
