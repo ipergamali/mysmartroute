@@ -211,7 +211,9 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
 
         if (!isKeyMissing) {
             GoogleMap(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(300.dp),
                 cameraPositionState = cameraPositionState,
                 properties = mapProperties,
                 onMapLoaded = { Log.d(TAG, "Map loaded") },
