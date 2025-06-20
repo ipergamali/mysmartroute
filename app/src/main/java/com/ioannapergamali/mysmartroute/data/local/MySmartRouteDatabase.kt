@@ -21,7 +21,7 @@ import com.ioannapergamali.mysmartroute.data.local.MenuOptionEntity
         MenuEntity::class,
         MenuOptionEntity::class
     ],
-    version = 15
+    version = 16
 )
 abstract class MySmartRouteDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
@@ -172,6 +172,64 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_15_16 = object : Migration(15, 16) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                fun insertMenu(id: String, roleId: String, title: String) {
+                    database.execSQL(
+                        "INSERT OR IGNORE INTO `menus` (`id`, `roleId`, `title`) VALUES ('" +
+                            id + "', '" + roleId + "', '" + title + "')"
+                    )
+                }
+
+                fun insertOption(id: String, menuId: String, title: String, route: String) {
+                    database.execSQL(
+                        "INSERT OR IGNORE INTO `menu_options` (`id`, `menuId`, `title`, `route`) VALUES ('" +
+                            id + "', '" + menuId + "', '" + title + "', '" + route + "')"
+                    )
+                }
+
+                val passengerMenuId = "menu_passenger_main"
+                insertMenu(passengerMenuId, "role_passenger", "Passenger Menu")
+                insertOption("opt_passenger_0", passengerMenuId, "Sign out", "signOut")
+                insertOption("opt_passenger_1", passengerMenuId, "Manage Favorite Means of Transport", "manageFavorites")
+                insertOption("opt_passenger_2", passengerMenuId, "Mode Of Transportation For A Specific Route", "routeMode")
+                insertOption("opt_passenger_3", passengerMenuId, "Find a Vehicle for a specific Transport", "findVehicle")
+                insertOption("opt_passenger_4", passengerMenuId, "Find Way of Transport", "findWay")
+                insertOption("opt_passenger_5", passengerMenuId, "Book a Seat or Buy a Ticket", "bookSeat")
+                insertOption("opt_passenger_6", passengerMenuId, "View Interesting Routes", "viewRoutes")
+                insertOption("opt_passenger_7", passengerMenuId, "View Transports", "viewTransports")
+                insertOption("opt_passenger_8", passengerMenuId, "Print Booked Seat or Ticket", "printTicket")
+                insertOption("opt_passenger_9", passengerMenuId, "Cancel Booked Seat", "cancelSeat")
+                insertOption("opt_passenger_10", passengerMenuId, "View, Rank and Comment on Completed Transports", "rankTransports")
+                insertOption("opt_passenger_11", passengerMenuId, "Shut Down the System", "shutdown")
+
+                val driverMenuId = "menu_driver_main"
+                insertMenu(driverMenuId, "role_driver", "Driver Menu")
+                insertOption("opt_driver_1", driverMenuId, "Register Vehicle", "registerVehicle")
+                insertOption("opt_driver_2", driverMenuId, "Announce Availability for a specific Transport", "announceAvailability")
+                insertOption("opt_driver_3", driverMenuId, "Find Passengers", "findPassengers")
+                insertOption("opt_driver_4", driverMenuId, "Print Passenger List", "printList")
+                insertOption("opt_driver_5", driverMenuId, "Print Passenger List for Scheduled Transports", "printScheduled")
+                insertOption("opt_driver_6", driverMenuId, "Print Passenger List for Completed Transports", "printCompleted")
+
+                val adminMenuId = "menu_admin_main"
+                insertMenu(adminMenuId, "role_admin", "Admin Menu")
+                insertOption("opt_admin_1", adminMenuId, "Initialize System", "initSystem")
+                insertOption("opt_admin_2", adminMenuId, "Create User Account", "createUser")
+                insertOption("opt_admin_3", adminMenuId, "Promote or Demote User", "editPrivileges")
+                insertOption("opt_admin_4", adminMenuId, "Define Point of Interest", "definePoi")
+                insertOption("opt_admin_5", adminMenuId, "Define Duration of Travel by Foot", "defineDuration")
+                insertOption("opt_admin_6", adminMenuId, "View List of Unassigned Routes", "viewUnassigned")
+                insertOption("opt_admin_7", adminMenuId, "Review Point of Interest Names", "reviewPoi")
+                insertOption("opt_admin_8", adminMenuId, "Show 10 Best and Worst Drivers", "rankDrivers")
+                insertOption("opt_admin_9", adminMenuId, "View 10 Happiest/Least Happy Passengers", "rankPassengers")
+                insertOption("opt_admin_10", adminMenuId, "View Available Vehicles", "viewVehicles")
+                insertOption("opt_admin_11", adminMenuId, "View PoIs", "viewPois")
+                insertOption("opt_admin_12", adminMenuId, "View Users", "viewUsers")
+                insertOption("opt_admin_13", adminMenuId, "Advance Date", "advanceDate")
+            }
+        }
+
         fun getInstance(context: Context): MySmartRouteDatabase {
             return INSTANCE ?: synchronized(this) {
                 INSTANCE ?: Room.databaseBuilder(
@@ -185,7 +243,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_5_6,
                     MIGRATION_12_13,
                     MIGRATION_13_14,
-                    MIGRATION_14_15
+                    MIGRATION_14_15,
+                    MIGRATION_15_16
                 )
                     .fallbackToDestructiveMigration()
                     .build().also { INSTANCE = it }
