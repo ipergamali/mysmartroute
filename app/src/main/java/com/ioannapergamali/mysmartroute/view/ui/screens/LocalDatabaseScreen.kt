@@ -45,7 +45,7 @@ fun LocalDatabaseScreen(navController: NavController, openDrawer: () -> Unit) {
                 CircularProgressIndicator(modifier = Modifier.padding(16.dp))
             }
         } else {
-            ScreenContainer(modifier = Modifier.padding(padding)) {
+            ScreenContainer(modifier = Modifier.padding(padding), scrollable = false) {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
                 item { Text("Users", style = MaterialTheme.typography.titleMedium) }
                 if (data!!.users.isEmpty()) {

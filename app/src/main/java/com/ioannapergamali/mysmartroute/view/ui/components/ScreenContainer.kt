@@ -20,6 +20,7 @@ import com.ioannapergamali.mysmartroute.R
 @Composable
 fun ScreenContainer(
     modifier: Modifier = Modifier,
+    scrollable: Boolean = true,
     content: @Composable ColumnScope.() -> Unit
 ) {
     val scrollState = rememberScrollState()
@@ -27,7 +28,7 @@ fun ScreenContainer(
         SelectionContainer {
             Column(
                 modifier = modifier
-                    .verticalScroll(scrollState)
+                    .then(if (scrollable) Modifier.verticalScroll(scrollState) else Modifier)
                     .fillMaxSize()
                     .border(2.dp, MaterialTheme.colorScheme.primary)
                     .padding(dimensionResource(id = R.dimen.padding_screen)),
