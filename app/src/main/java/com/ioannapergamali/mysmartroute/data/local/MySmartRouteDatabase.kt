@@ -19,7 +19,7 @@ import com.ioannapergamali.mysmartroute.data.local.PoIEntity
         RoleEntity::class,
         MenuEntity::class
     ],
-    version = 12
+    version = 13
 )
 abstract class MySmartRouteDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
@@ -111,6 +111,19 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_12_13 = object : Migration(12, 13) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `roles` (" +
+                        "`id` TEXT NOT NULL, " +
+                        "`userId` TEXT NOT NULL, " +
+                        "`name` TEXT NOT NULL, " +
+                        "PRIMARY KEY(`id`)" +
+                    ")"
+                )
+            }
+        }
+
         fun getInstance(context: Context): MySmartRouteDatabase {
             return INSTANCE ?: synchronized(this) {
                 INSTANCE ?: Room.databaseBuilder(
@@ -121,7 +134,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_2_3,
                     MIGRATION_3_4,
                     MIGRATION_4_5,
-                    MIGRATION_5_6
+                    MIGRATION_5_6,
+                    MIGRATION_12_13
                 )
                     .fallbackToDestructiveMigration()
                     .build().also { INSTANCE = it }
