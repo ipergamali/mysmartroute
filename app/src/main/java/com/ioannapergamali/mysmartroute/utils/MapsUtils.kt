@@ -1,5 +1,7 @@
 package com.ioannapergamali.mysmartroute.utils
 
+import android.content.Context
+import android.content.pm.PackageManager
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -10,6 +12,16 @@ import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 
 object MapsUtils {
     private val client = OkHttpClient()
+
+    fun getApiKey(context: Context): String {
+        return try {
+            val info = context.packageManager
+                .getApplicationInfo(context.packageName, PackageManager.GET_META_DATA)
+            info.metaData?.getString("com.google.android.geo.API_KEY") ?: ""
+        } catch (e: Exception) {
+            ""
+        }
+    }
 
     /** Result from a Directions API request */
     data class DirectionsData(
