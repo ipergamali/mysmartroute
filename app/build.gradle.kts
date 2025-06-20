@@ -27,7 +27,8 @@ android {
         buildConfigField("String", "DYNAMIC_LINK_DOMAIN", "\"mysmartroute.page.link\"")
         buildConfigField("String", "MAPS_API_KEY", "\"$MAPS_API_KEY\"")
 
-        manifestPlaceholders["GOOGLE_MAPS_API_KEY"] = MAPS_API_KEY
+        // περνάμε το API Key στο AndroidManifest μέσω placeholder
+        manifestPlaceholders["MAPS_API_KEY"] = MAPS_API_KEY
     }
 
     androidResources {
