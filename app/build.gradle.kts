@@ -20,8 +20,10 @@ android {
         versionCode = 4
         versionName = "1.3"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
         vectorDrawables {
             useSupportLibrary = true
+
         }
         buildConfigField("String", "FIREBASE_AUTH_DOMAIN", "\"mysmartroute-26a64.firebaseapp.com\"")
         buildConfigField("String", "DYNAMIC_LINK_DOMAIN", "\"mysmartroute.page.link\"")
