@@ -28,7 +28,7 @@ MAPS_API_KEY=YOUR_API_KEY
 Μπορείς να επιβεβαιώσεις ότι το κλειδί φορτώθηκε σωστά προσθέτοντας στο κώδικα το παρακάτω απόσπασμα:
 
 ```kotlin
-val apiKey = BuildConfig.MAPS_API_KEY
+val apiKey = MapsUtils.getApiKey(context)
 Log.d("Maps", "API key loaded? ${apiKey.isNotEmpty()}")
 ```
 
