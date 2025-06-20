@@ -5,7 +5,6 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.UserEntity
@@ -20,6 +19,7 @@ import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import java.util.UUID
 
 class AuthenticationViewModel : ViewModel() {
@@ -35,6 +35,9 @@ class AuthenticationViewModel : ViewModel() {
 
     private val _currentUserRole = MutableStateFlow<UserRole?>(null)
     val currentUserRole: StateFlow<UserRole?> = _currentUserRole
+
+    private val _currentMenus = MutableStateFlow<List<MenuEntity>>(emptyList())
+    val currentMenus: StateFlow<List<MenuEntity>> = _currentMenus
 
     fun signUp(
         activity: Activity,
@@ -128,10 +131,9 @@ class AuthenticationViewModel : ViewModel() {
 
                         menuDefaults.forEach { (title, route) ->
                             val menuId = UUID.randomUUID().toString()
-                            val menuDoc = db.collection("menus").document(menuId)
+                            val menuDoc = roleRef.collection("menus").document(menuId)
                             val menuData = mapOf(
                                 "id" to menuId,
-                                "roleId" to roleRef,
                                 "title" to title,
                                 "route" to route
                             )
@@ -223,6 +225,41 @@ class AuthenticationViewModel : ViewModel() {
                 val roleName = document.getString("role")
                 _currentUserRole.value = roleName?.let { UserRole.valueOf(it) }
             }
+    }
+
+    fun loadCurrentUserMenus(context: Context) {
+        viewModelScope.launch {
+            val uid = auth.currentUser?.uid ?: return@launch
+            val dbLocal = MySmartRouteDatabase.getInstance(context)
+            val user = dbLocal.userDao().getUser(uid)
+            val roleId = user?.roleId.takeIf { !it.isNullOrEmpty() } ?: run {
+                val doc = db.collection("users").document(uid).get().await()
+                val ref = doc.getDocumentReference("roleId") ?: return@launch
+                ref.id
+            }
+
+            val menusLocal = dbLocal.menuDao().getMenusForRole(roleId)
+            if (menusLocal.isNotEmpty()) {
+                _currentMenus.value = menusLocal
+            } else {
+                val snapshot = db.collection("roles")
+                    .document(roleId)
+                    .collection("menus")
+                    .get()
+                    .await()
+                val menusRemote = snapshot.documents.map { doc ->
+                    MenuEntity(
+                        id = doc.getString("id") ?: doc.id,
+                        roleId = roleId,
+                        title = doc.getString("title") ?: "",
+                        route = doc.getString("route") ?: ""
+                    )
+                }
+                val menuDao = dbLocal.menuDao()
+                menusRemote.forEach { menuDao.insert(it) }
+                _currentMenus.value = menusRemote
+            }
+        }
     }
 
     fun signOut() {

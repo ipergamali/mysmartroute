@@ -14,20 +14,21 @@ import androidx.compose.ui.platform.LocalContext
 import android.widget.Toast
 import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
-import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
+import com.ioannapergamali.mysmartroute.data.local.MenuEntity
 
 @Composable
 fun MenuScreen(navController: NavController, openDrawer: () -> Unit) {
     val viewModel: AuthenticationViewModel = viewModel()
-    val role by viewModel.currentUserRole.collectAsState()
+    val menus by viewModel.currentMenus.collectAsState()
+
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         viewModel.loadCurrentUserRole()
+        viewModel.loadCurrentUserMenus(context)
     }
-
-    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -47,12 +48,12 @@ fun MenuScreen(navController: NavController, openDrawer: () -> Unit) {
         }
     ) { paddingValues ->
         ScreenContainer(modifier = Modifier.padding(paddingValues)) {
-            when (role) {
-                UserRole.PASSENGER -> PassengerMenu(viewModel, navController)
-                UserRole.DRIVER -> DriverMenu(navController)
-                UserRole.ADMIN -> AdminMenu(navController)
-                null -> {
-                    CircularProgressIndicator()
+            if (menus.isEmpty()) {
+                CircularProgressIndicator()
+            } else {
+                MenuEntityTable(menus) { route ->
+                    if (route.isNotEmpty()) navController.navigate(route)
+                    else Toast.makeText(context, "Η λειτουργία δεν είναι διαθέσιμη", Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -60,107 +61,19 @@ fun MenuScreen(navController: NavController, openDrawer: () -> Unit) {
 }
 
 @Composable
-private fun PassengerMenu(viewModel: AuthenticationViewModel, navController: NavController) {
-    val context = LocalContext.current
-
-    val actions = listOf(
-        "Sign out",
-        "Manage Favorite Means of Transport",
-        "Μode Of Transportation For A Specific Route",
-        "Find a Vehicle for a specific Transport",
-        "Find Way of Transport",
-        "Book a Seat or Buy a Ticket",
-        "View Interesting Routes",
-        "View Transports",
-        "Print Booked Seat or Ticket",
-        "Cancel Booked Seat",
-        "View, Rank and Comment on Completed Transports",
-        "Shut Down the System"
-    )
-    MenuTable(actions) { index ->
-        when (index) {
-            0 -> {
-                viewModel.signOut()
-                Toast.makeText(context, "Logged out", Toast.LENGTH_SHORT).show()
-                navController.navigate("home") {
-                    popUpTo("menu") { inclusive = true }
-                }
-            }
-            else -> {
-                Toast.makeText(context, "Η λειτουργία δεν είναι διαθέσιμη", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-}
-
-@Composable
-private fun DriverMenu(navController: NavController) {
-    val context = LocalContext.current
-
-    val actions = listOf(
-        "Register Vehicle",
-        "Announce Availability for a specific Transport",
-        "Find Passengers",
-        "Print Passenger List",
-        "Print Passenger List for Scheduled Transports",
-        "Print Passenger List for Completed Transports"
-    )
-    MenuTable(actions) { index ->
-        when (index) {
-            0 -> navController.navigate("registerVehicle")
-            1 -> navController.navigate("announceTransport")
-            else -> Toast.makeText(
-                context,
-                "Η λειτουργία δεν είναι διαθέσιμη",
-                Toast.LENGTH_SHORT
-            ).show()
-        }
-    }
-}
-
-@Composable
-private fun AdminMenu(navController: NavController) {
-    val actions = listOf(
-        "Initialize System",
-        "Create User Account",
-        "Promote or Demote User",
-        "Define Point of Interest",
-        "Define Duration of Travel by Foot",
-        "View List of Unassigned Routes",
-        "Review Point of Interest Names",
-        "Show 10 Best and Worst Drivers",
-        "View 10 Happiest/Least Happy Passengers",
-        "View Available Vehicles",
-        "View PoIs",
-        "View Users",
-        "Advance Date"
-    )
-    MenuTable(actions) { index ->
-        when (index) {
-            10 -> navController.navigate("poiList")
-            else -> {}
-        }
-    }
-}
-
-@Composable
-private fun MenuTable(actions: List<String>, onActionSelected: ((Int) -> Unit)? = null) {
+private fun MenuEntityTable(menus: List<MenuEntity>, onRouteSelected: (String) -> Unit) {
     Column(modifier = Modifier.fillMaxWidth()) {
-        actions.forEachIndexed { index, action ->
+        menus.forEachIndexed { index, menu ->
             Row(modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 4.dp)) {
                 Text(text = "${index + 1}.", modifier = Modifier.width(24.dp))
-                if (onActionSelected != null) {
-                    Text(
-                        text = action,
-                        modifier = Modifier
-                            .clickable { onActionSelected(index) }
-                            .weight(1f)
-                    )
-                } else {
-                    Text(text = action, modifier = Modifier.weight(1f))
-                }
+                Text(
+                    text = menu.title,
+                    modifier = Modifier
+                        .clickable { onRouteSelected(menu.route) }
+                        .weight(1f)
+                )
             }
         }
     }
