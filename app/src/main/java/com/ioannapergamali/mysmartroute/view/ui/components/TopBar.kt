@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -50,6 +52,8 @@ fun TopBar(
                 }
         }
     }
+
+    var menuExpanded by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.statusBarsPadding()) {
         TopAppBar(
@@ -94,7 +98,33 @@ fun TopBar(
             }
         },
         actions = {
-            username.value?.let { Text(it, modifier = Modifier.padding(end = 8.dp)) }
+            username.value?.let { name ->
+                Box {
+                    Text(
+                        name,
+                        modifier = Modifier
+                            .padding(end = 8.dp)
+                            .clickable { menuExpanded = true }
+                    )
+                    DropdownMenu(
+                        expanded = menuExpanded,
+                        onDismissRequest = { menuExpanded = false }
+                    ) {
+                        DropdownMenuItem(text = { Text("Προφίλ") }, onClick = {
+                            menuExpanded = false
+                            navController.navigate("profile")
+                        })
+                        DropdownMenuItem(text = { Text("Μενού χρήστη") }, onClick = {
+                            menuExpanded = false
+                            navController.navigate("menu")
+                        })
+                        DropdownMenuItem(text = { Text("Logout") }, onClick = {
+                            menuExpanded = false
+                            onLogout()
+                        })
+                    }
+                }
+            }
             if (FirebaseAuth.getInstance().currentUser != null) {
                 IconButton(onClick = { navController.navigate("settings") }) {
                     Icon(
@@ -103,8 +133,7 @@ fun TopBar(
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }
-            }
-            if (showLogout) {
+            } else if (showLogout) {
                 IconButton(onClick = onLogout) {
                     Icon(
                         Icons.Filled.Logout,

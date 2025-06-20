@@ -25,6 +25,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun HomeScreen(
@@ -78,6 +79,7 @@ fun HomeScreen(
                         uiState = uiState,
                         onLogin = { viewModel.login(email, password) },
                         onNavigateToSignUp = onNavigateToSignUp,
+                        onLogout = { viewModel.signOut() },
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -98,7 +100,8 @@ fun HomeScreen(
                         onPasswordChange = { password = it },
                         uiState = uiState,
                         onLogin = { viewModel.login(email, password) },
-                        onNavigateToSignUp = onNavigateToSignUp
+                        onNavigateToSignUp = onNavigateToSignUp,
+                        onLogout = { viewModel.signOut() }
                     )
                 }
             }
@@ -137,6 +140,7 @@ private fun HomeContent(
     uiState: AuthenticationViewModel.LoginState,
     onLogin: () -> Unit,
     onNavigateToSignUp: () -> Unit,
+    onLogout: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -165,48 +169,54 @@ private fun HomeContent(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        TextField(
-            value = email,
-            onValueChange = onEmailChange,
-            label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(Modifier.height(8.dp))
-
-        TextField(
-            value = password,
-            onValueChange = onPasswordChange,
-            label = { Text("Password") },
-            visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth()
-        )
-
-    if (uiState is AuthenticationViewModel.LoginState.Error) {
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = uiState.message,
-            color = MaterialTheme.colorScheme.error
-        )
-    }
-
-
-
-        Spacer(Modifier.height(16.dp))
-
-        Button(onClick = onLogin) {
-            Text("Login")
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Row {
-            Text("If you don't have account ")
-            Text(
-                text = "Sign Up",
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.clickable { onNavigateToSignUp() }
+        if (FirebaseAuth.getInstance().currentUser == null) {
+            TextField(
+                value = email,
+                onValueChange = onEmailChange,
+                label = { Text("Email") },
+                modifier = Modifier.fillMaxWidth()
             )
+
+            Spacer(Modifier.height(8.dp))
+
+            TextField(
+                value = password,
+                onValueChange = onPasswordChange,
+                label = { Text("Password") },
+                visualTransformation = PasswordVisualTransformation(),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            if (uiState is AuthenticationViewModel.LoginState.Error) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = uiState.message,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            Button(onClick = onLogin) {
+                Text("Login")
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row {
+                Text("If you don't have account ")
+                Text(
+                    text = "Sign Up",
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.clickable { onNavigateToSignUp() }
+                )
+            }
+        } else {
+            Spacer(Modifier.height(16.dp))
+
+            Button(onClick = onLogout) {
+                Text("Logout")
+            }
         }
     }
 }

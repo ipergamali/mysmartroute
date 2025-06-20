@@ -35,7 +35,6 @@ fun MenuScreen(navController: NavController, openDrawer: () -> Unit) {
                 title = "Menu",
                 navController = navController,
                 showMenu = true,
-                showLogout = true,
                 onMenuClick = openDrawer,
                 onLogout = {
                     viewModel.signOut()
