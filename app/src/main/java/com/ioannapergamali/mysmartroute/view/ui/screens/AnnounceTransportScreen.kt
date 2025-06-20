@@ -139,6 +139,11 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         )
     }
 
+    // Ιδιότητες χάρτη με περιορισμό στα όρια του Ηρακλείου
+    val mapProperties = remember {
+        MapProperties(latLngBoundsForCameraTarget = heraklionBounds)
+    }
+
     val apiKey = context.getString(R.string.google_maps_key)
     val isKeyMissing = apiKey.isBlank() || apiKey == "YOUR_API_KEY"
 
@@ -156,13 +161,25 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     LaunchedEffect(fromQuery) {
         if (fromQuery.length > 3) {
             fromSuggestions = withContext(Dispatchers.IO) {
-                try { Geocoder(context).getFromLocationName(fromQuery, 5) ?: emptyList() } catch (e: Exception) { emptyList() }
+                try {
+                    Geocoder(context).getFromLocationName(fromQuery, 5) ?: emptyList()
+                } catch (e: Exception) {
+                    emptyList()
+                }
             }
         } else {
             fromSuggestions = emptyList()
+        }
+    }
+
     LaunchedEffect(startLatLng, endLatLng) {
         if (!isKeyMissing && startLatLng != null && endLatLng != null) {
-            durationMinutes = MapsUtils.fetchDuration(startLatLng!!, endLatLng!!, apiKey)
+            durationMinutes = MapsUtils.fetchDuration(
+                startLatLng!!,
+                endLatLng!!,
+                apiKey,
+                selectedVehicleType ?: VehicleType.CAR
+            )
         }
     }
 
