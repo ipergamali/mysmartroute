@@ -23,3 +23,42 @@ Log.d("Maps", "API key loaded? ${apiKey.isNotEmpty()}")
 ```
 
 Έτσι θα δεις ένα μήνυμα στο log που επιβεβαιώνει ότι η εφαρμογή διαβάζει το κλειδί.
+
+Αν αντιμετωπίσεις το σφάλμα **"Unresolved reference: BuildConfig"**, έλεγξε τα παρακάτω:
+
+1. Σιγουρέψου ότι έχεις προσθέσει το import
+
+   ```kotlin
+   import com.ioannapergamali.mysmartroute.BuildConfig
+   ```
+
+   στην αρχή του αρχείου Kotlin όπου χρησιμοποιείς το `BuildConfig`.
+2. Επιβεβαίωσε ότι στο `app/build.gradle.kts` είναι ενεργοποιημένο το `buildConfig`
+   μέσω της επιλογής:
+
+   ```kotlin
+   buildFeatures {
+       buildConfig = true
+   }
+   ```
+
+3. Τέλος, κάνε "Sync Project with Gradle Files" ώστε να παραχθεί ξανά το αρχείο
+   `BuildConfig`. Μετά την επιτυχημένη συγχρονίση, το σφάλμα θα εξαφανιστεί.
+
+### Αν ο χάρτης δεν εμφανίζεται
+
+Αν παρά τις παραπάνω ενέργειες το log γράφει `Maps API key loaded: false` και
+βλέπεις στην οθόνη το μήνυμα «Google Maps API key is missing», δοκίμασε τα
+εξής:
+
+1. Βεβαιώσου ότι το `local.properties` βρίσκεται στον ίδιο φάκελο με τα
+   `settings.gradle.kts` και `gradlew`.
+2. Στο αρχείο να υπάρχει *μία* γραμμή της μορφής:
+
+   ```
+   MAPS_API_KEY=TO_DIKO_SOU_API_KEY
+   ```
+
+   χωρίς εισαγωγικά ή επιπλέον κενά.
+3. Εκτέλεσε «Clean Project» και στη συνέχεια «Rebuild Project» για να παραχθεί
+   ξανά το `BuildConfig` με το σωστό κλειδί.

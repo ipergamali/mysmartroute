@@ -13,5 +13,8 @@ class MySmartRouteApplication : Application() {
         // Η υπηρεσία Firebase App Check απενεργοποιήθηκε προσωρινά
         val apiKey = BuildConfig.MAPS_API_KEY
         Log.d("MySmartRoute", "Maps API key loaded: ${apiKey.isNotBlank()}")
+        if (apiKey.isBlank()) {
+            Log.w("MySmartRoute", "MAPS_API_KEY is blank. Ελέγξτε το local.properties")
+        }
     }
 }
