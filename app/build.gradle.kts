@@ -6,8 +6,11 @@ plugins {
     id("com.google.gms.google-services")
 }
 
-// Διαβάζουμε τα API keys από το local.properties
-val MAPS_API_KEY: String = project.findProperty("MAPS_API_KEY") as? String ?: ""
+// Διαβάζουμε τα API keys από το local.properties ή από μεταβλητή περιβάλλοντος
+val MAPS_API_KEY: String =
+    (project.findProperty("MAPS_API_KEY") as? String)
+        ?: System.getenv("MAPS_API_KEY")
+        ?: ""
 
 android {
     namespace = "com.ioannapergamali.mysmartroute"
