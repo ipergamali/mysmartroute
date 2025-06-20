@@ -23,6 +23,8 @@ android {
         versionCode = 5
         versionName = "1.4"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "MAPS_API_KEY", "\"$MAPS_API_KEY\"")
+        manifestPlaceholders["MAPS_API_KEY"] = MAPS_API_KEY
     }
 
     buildFeatures {
