@@ -8,8 +8,9 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.UserEntity
-import com.ioannapergamali.mysmartroute.data.local.RoleEntity
 import com.ioannapergamali.mysmartroute.data.local.MenuEntity
+import com.ioannapergamali.mysmartroute.data.local.MenuOptionEntity
+import com.ioannapergamali.mysmartroute.data.local.MenuWithOptions
 import com.ioannapergamali.mysmartroute.model.classes.users.Admin
 import com.ioannapergamali.mysmartroute.model.classes.users.Driver
 import com.ioannapergamali.mysmartroute.model.classes.users.Passenger
@@ -36,8 +37,14 @@ class AuthenticationViewModel : ViewModel() {
     private val _currentUserRole = MutableStateFlow<UserRole?>(null)
     val currentUserRole: StateFlow<UserRole?> = _currentUserRole
 
-    private val _currentMenus = MutableStateFlow<List<MenuEntity>>(emptyList())
-    val currentMenus: StateFlow<List<MenuEntity>> = _currentMenus
+    private val _currentMenus = MutableStateFlow<List<MenuWithOptions>>(emptyList())
+    val currentMenus: StateFlow<List<MenuWithOptions>> = _currentMenus
+
+    private val roleIds = mapOf(
+        UserRole.PASSENGER to "role_passenger",
+        UserRole.DRIVER to "role_driver",
+        UserRole.ADMIN to "role_admin"
+    )
 
     fun signUp(
         activity: Activity,
@@ -93,7 +100,7 @@ class AuthenticationViewModel : ViewModel() {
                     .addOnSuccessListener { result ->
                         val uid = result.user?.uid ?: userIdLocal
                         val authRef = db.collection("Authedication").document(uid)
-                        val roleId = UUID.randomUUID().toString()
+                        val roleId = roleIds[role] ?: "role_passenger"
                         val roleRef = db.collection("roles").document(roleId)
 
                         val userData = mapOf(
@@ -112,43 +119,39 @@ class AuthenticationViewModel : ViewModel() {
                             "postalCode" to address.postalCode
                         )
 
-                        val roleData = mapOf(
-                            "id" to roleId,
-                            "userId" to authRef,
-                            "name" to role.name
-                        )
-
                         val menuDefaults = when (role) {
-                            UserRole.ADMIN -> listOf("Users" to "adminUsers")
-                            UserRole.DRIVER -> listOf("Routes" to "driverRoutes")
-                            UserRole.PASSENGER -> listOf("Home" to "passengerHome")
+                            UserRole.ADMIN -> listOf("Users" to listOf("Users" to "adminUsers"))
+                            UserRole.DRIVER -> listOf("Routes" to listOf("Routes" to "driverRoutes"))
+                            UserRole.PASSENGER -> listOf("Home" to listOf("Home" to "passengerHome"))
                         }
 
                         val batch = db.batch()
                         val userDoc = db.collection("users").document(uid)
                         batch.set(userDoc, userData)
-                        batch.set(roleRef, roleData)
 
-                        menuDefaults.forEach { (title, route) ->
+                        menuDefaults.forEach { (menuTitle, options) ->
                             val menuId = UUID.randomUUID().toString()
                             val menuDoc = roleRef.collection("menus").document(menuId)
-                            val menuData = mapOf(
-                                "id" to menuId,
-                                "title" to title,
-                                "route" to route
-                            )
-                            batch.set(menuDoc, menuData)
+                            batch.set(menuDoc, mapOf("id" to menuId, "title" to menuTitle))
+                            options.forEach { (optTitle, route) ->
+                                val optId = UUID.randomUUID().toString()
+                                val optDoc = menuDoc.collection("options").document(optId)
+                                batch.set(optDoc, mapOf("id" to optId, "title" to optTitle, "route" to route))
+                            }
                         }
 
                         batch.commit().addOnSuccessListener {
                             viewModelScope.launch {
-                                val roleEntity = RoleEntity(roleId, uid, role.name)
                                 userDao.insert(userEntity.copy(id = uid, roleId = roleId))
-                                dbLocal.roleDao().insert(roleEntity)
                                 val menuDao = dbLocal.menuDao()
-                                menuDefaults.forEach { (title, route) ->
+                                val optionDao = dbLocal.menuOptionDao()
+                                menuDefaults.forEach { (menuTitle, options) ->
                                     val menuId = UUID.randomUUID().toString()
-                                    menuDao.insert(MenuEntity(menuId, roleId, title, route))
+                                    menuDao.insert(MenuEntity(menuId, roleId, menuTitle))
+                                    options.forEach { (optTitle, route) ->
+                                        val optId = UUID.randomUUID().toString()
+                                        optionDao.insert(MenuOptionEntity(optId, menuId, optTitle, route))
+                                    }
                                 }
                             }
                             _signUpState.value = SignUpState.Success
@@ -161,19 +164,22 @@ class AuthenticationViewModel : ViewModel() {
                         _signUpState.value = SignUpState.Error(e.localizedMessage ?: "Sign-up failed")
                     }
             } else {
-                val roleId = UUID.randomUUID().toString()
-                val roleEntity = RoleEntity(roleId, userIdLocal, role.name)
+                val roleId = roleIds[role] ?: "role_passenger"
                 val menuDao = dbLocal.menuDao()
+                val optionDao = dbLocal.menuOptionDao()
                 userDao.insert(userEntity.copy(roleId = roleId))
-                dbLocal.roleDao().insert(roleEntity)
                 val defaults = when (role) {
-                    UserRole.ADMIN -> listOf("Users" to "adminUsers")
-                    UserRole.DRIVER -> listOf("Routes" to "driverRoutes")
-                    UserRole.PASSENGER -> listOf("Home" to "passengerHome")
+                    UserRole.ADMIN -> listOf("Users" to listOf("Users" to "adminUsers"))
+                    UserRole.DRIVER -> listOf("Routes" to listOf("Routes" to "driverRoutes"))
+                    UserRole.PASSENGER -> listOf("Home" to listOf("Home" to "passengerHome"))
                 }
-                defaults.forEach { (title, route) ->
+                defaults.forEach { (menuTitle, options) ->
                     val id = UUID.randomUUID().toString()
-                    menuDao.insert(MenuEntity(id, roleId, title, route))
+                    menuDao.insert(MenuEntity(id, roleId, menuTitle))
+                    options.forEach { (optTitle, route) ->
+                        val optId = UUID.randomUUID().toString()
+                        optionDao.insert(MenuOptionEntity(optId, id, optTitle, route))
+                    }
                 }
                 _signUpState.value = SignUpState.Success
             }
@@ -242,21 +248,26 @@ class AuthenticationViewModel : ViewModel() {
             if (menusLocal.isNotEmpty()) {
                 _currentMenus.value = menusLocal
             } else {
-                val snapshot = db.collection("roles")
-                    .document(roleId)
-                    .collection("menus")
-                    .get()
-                    .await()
-                val menusRemote = snapshot.documents.map { doc ->
-                    MenuEntity(
-                        id = doc.getString("id") ?: doc.id,
-                        roleId = roleId,
-                        title = doc.getString("title") ?: "",
-                        route = doc.getString("route") ?: ""
-                    )
-                }
+                val roleRef = db.collection("roles").document(roleId)
+                val snapshot = roleRef.collection("menus").get().await()
                 val menuDao = dbLocal.menuDao()
-                menusRemote.forEach { menuDao.insert(it) }
+                val optionDao = dbLocal.menuOptionDao()
+                val menusRemote = snapshot.documents.map { doc ->
+                    val menuId = doc.getString("id") ?: doc.id
+                    val optionsSnap = roleRef.collection("menus").document(menuId)
+                        .collection("options").get().await()
+                    val options = optionsSnap.documents.map { optDoc ->
+                        MenuOptionEntity(
+                            id = optDoc.getString("id") ?: optDoc.id,
+                            menuId = menuId,
+                            title = optDoc.getString("title") ?: "",
+                            route = optDoc.getString("route") ?: ""
+                        )
+                    }
+                    menuDao.insert(MenuEntity(menuId, roleId, doc.getString("title") ?: ""))
+                    options.forEach { optionDao.insert(it) }
+                    MenuWithOptions(MenuEntity(menuId, roleId, doc.getString("title") ?: ""), options)
+                }
                 _currentMenus.value = menusRemote
             }
         }

@@ -12,6 +12,5 @@ import androidx.room.PrimaryKey
 data class MenuEntity(
     @PrimaryKey var id: String = "",
     var roleId: String = "",
-    var title: String = "",
-    var route: String = ""
+    var title: String = ""
 )

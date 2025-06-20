@@ -5,12 +5,8 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 
 /** Οντότητα ρόλου χρήστη. */
-@Entity(
-    tableName = "roles",
-    indices = [Index("userId")]
-)
+@Entity(tableName = "roles")
 data class RoleEntity(
     @PrimaryKey var id: String = "",
-    var userId: String = "",
     var name: String = ""
 )

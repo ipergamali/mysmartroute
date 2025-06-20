@@ -16,7 +16,7 @@ import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
-import com.ioannapergamali.mysmartroute.data.local.MenuEntity
+import com.ioannapergamali.mysmartroute.data.local.MenuWithOptions
 
 @Composable
 fun MenuScreen(navController: NavController, openDrawer: () -> Unit) {
@@ -61,19 +61,21 @@ fun MenuScreen(navController: NavController, openDrawer: () -> Unit) {
 }
 
 @Composable
-private fun MenuEntityTable(menus: List<MenuEntity>, onRouteSelected: (String) -> Unit) {
+private fun MenuEntityTable(menus: List<MenuWithOptions>, onRouteSelected: (String) -> Unit) {
     Column(modifier = Modifier.fillMaxWidth()) {
-        menus.forEachIndexed { index, menu ->
-            Row(modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 4.dp)) {
-                Text(text = "${index + 1}.", modifier = Modifier.width(24.dp))
-                Text(
-                    text = menu.title,
-                    modifier = Modifier
-                        .clickable { onRouteSelected(menu.route) }
-                        .weight(1f)
-                )
+        menus.forEachIndexed { index, menuWithOptions ->
+            Text(text = "${index + 1}. ${menuWithOptions.menu.title}", style = MaterialTheme.typography.titleMedium)
+            menuWithOptions.options.forEach { option ->
+                Row(modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 24.dp, top = 2.dp, bottom = 2.dp)) {
+                    Text(
+                        text = option.title,
+                        modifier = Modifier
+                            .clickable { onRouteSelected(option.route) }
+                            .weight(1f)
+                    )
+                }
             }
         }
     }

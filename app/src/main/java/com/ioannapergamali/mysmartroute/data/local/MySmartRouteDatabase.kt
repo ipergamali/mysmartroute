@@ -9,6 +9,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 
 import com.ioannapergamali.mysmartroute.data.local.VehicleEntity
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
+import com.ioannapergamali.mysmartroute.data.local.MenuOptionEntity
 
 @Database(
     entities = [
@@ -17,9 +18,10 @@ import com.ioannapergamali.mysmartroute.data.local.PoIEntity
         PoIEntity::class,
         SettingsEntity::class,
         RoleEntity::class,
-        MenuEntity::class
+        MenuEntity::class,
+        MenuOptionEntity::class
     ],
-    version = 14
+    version = 15
 )
 abstract class MySmartRouteDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
@@ -28,6 +30,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
     abstract fun settingsDao(): SettingsDao
     abstract fun roleDao(): RoleDao
     abstract fun menuDao(): MenuDao
+    abstract fun menuOptionDao(): MenuOptionDao
 
     companion object {
         @Volatile
@@ -116,11 +119,14 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                 database.execSQL(
                     "CREATE TABLE IF NOT EXISTS `roles` (" +
                         "`id` TEXT NOT NULL, " +
-                        "`userId` TEXT NOT NULL, " +
                         "`name` TEXT NOT NULL, " +
                         "PRIMARY KEY(`id`)" +
                     ")"
                 )
+                database.execSQL("INSERT INTO roles (id, name) VALUES " +
+                        "('role_passenger', 'PASSENGER')," +
+                        "('role_driver', 'DRIVER')," +
+                        "('role_admin', 'ADMIN')")
             }
         }
 
@@ -139,6 +145,33 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_14_15 = object : Migration(14, 15) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `menu_options` (" +
+                        "`id` TEXT NOT NULL, " +
+                        "`menuId` TEXT NOT NULL, " +
+                        "`title` TEXT NOT NULL, " +
+                        "`route` TEXT NOT NULL, " +
+                        "FOREIGN KEY(`menuId`) REFERENCES `menus`(`id`) ON DELETE CASCADE, " +
+                        "PRIMARY KEY(`id`)" +
+                    ")"
+                )
+                database.execSQL("CREATE TABLE IF NOT EXISTS `menus_new` (" +
+                        "`id` TEXT NOT NULL, " +
+                        "`roleId` TEXT NOT NULL, " +
+                        "`title` TEXT NOT NULL, " +
+                        "PRIMARY KEY(`id`)" +
+                        ")")
+                database.execSQL(
+                    "INSERT INTO `menus_new` (`id`, `roleId`, `title`) " +
+                        "SELECT `id`, `roleId`, `title` FROM `menus`"
+                )
+                database.execSQL("DROP TABLE `menus`")
+                database.execSQL("ALTER TABLE `menus_new` RENAME TO `menus`")
+            }
+        }
+
         fun getInstance(context: Context): MySmartRouteDatabase {
             return INSTANCE ?: synchronized(this) {
                 INSTANCE ?: Room.databaseBuilder(
@@ -151,7 +184,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_4_5,
                     MIGRATION_5_6,
                     MIGRATION_12_13,
-                    MIGRATION_13_14
+                    MIGRATION_13_14,
+                    MIGRATION_14_15
                 )
                     .fallbackToDestructiveMigration()
                     .build().also { INSTANCE = it }
