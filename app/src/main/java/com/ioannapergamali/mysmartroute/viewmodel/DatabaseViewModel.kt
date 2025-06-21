@@ -1,6 +1,7 @@
 package com.ioannapergamali.mysmartroute.viewmodel
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FirebaseFirestore
@@ -22,6 +23,10 @@ import kotlinx.coroutines.tasks.await
 class DatabaseViewModel : ViewModel() {
     private val firestore = FirebaseFirestore.getInstance()
 
+    companion object {
+        private const val TAG = "DatabaseViewModel"
+    }
+
     private val _localData = MutableStateFlow<DatabaseData?>(null)
     val localData: StateFlow<DatabaseData?> = _localData
 
@@ -33,6 +38,7 @@ class DatabaseViewModel : ViewModel() {
 
     fun loadLocalData(context: Context) {
         viewModelScope.launch {
+
             val db = MySmartRouteDatabase.getInstance(context)
             val users = db.userDao().getAllUsers()
             val vehicles = db.vehicleDao().getAllVehicles()
@@ -93,6 +99,8 @@ class DatabaseViewModel : ViewModel() {
                     .getLong("last_sync") ?: 0L
             } catch (_: Exception) { 0L }
 
+            Log.d(TAG, "Start sync: localTs=$localTs remoteTs=$remoteTs")
+
             val db = MySmartRouteDatabase.getInstance(context)
 
             try {
@@ -124,16 +132,27 @@ class DatabaseViewModel : ViewModel() {
                                 soundVolume = (doc.getDouble("soundVolume") ?: 0.0).toFloat()
                             )
                         }
+
+                    Log.d(
+                        TAG,
+                        "Remote data -> users:${'$'}{users.size} vehicles:${'$'}{vehicles.size} pois:${'$'}{pois.size} settings:${'$'}{settings.size}"
+                    )
                     users.forEach { db.userDao().insert(it) }
                     vehicles.forEach { db.vehicleDao().insert(it) }
                     pois.forEach { db.poIDao().insert(it) }
                     settings.forEach { insertSettingsSafely(db.settingsDao(), db.userDao(), it) }
+                    Log.d(TAG, "Inserted remote data to local DB")
                     prefs.edit().putLong("last_sync", remoteTs).apply()
                 } else {
                     val users = db.userDao().getAllUsers()
                     val vehicles = db.vehicleDao().getAllVehicles()
                     val pois = db.poIDao().getAll()
                     val settings = db.settingsDao().getAllSettings()
+
+                    Log.d(
+                        TAG,
+                        "Local data -> users:${'$'}{users.size} vehicles:${'$'}{vehicles.size} pois:${'$'}{pois.size} settings:${'$'}{settings.size}"
+                    )
 
                     users.forEach {
                         firestore.collection("users")
@@ -152,12 +171,15 @@ class DatabaseViewModel : ViewModel() {
                             .set(it.toFirestoreMap()).await()
                     }
 
+                    Log.d(TAG, "Uploaded local data to Firebase")
+
                     val newTs = System.currentTimeMillis()
                     firestore.collection("metadata").document("sync").set(mapOf("last_sync" to newTs)).await()
                     prefs.edit().putLong("last_sync", newTs).apply()
                 }
                 _syncState.value = SyncState.Success
             } catch (e: Exception) {
+                Log.e(TAG, "Sync error", e)
                 _syncState.value = SyncState.Error(e.localizedMessage ?: "Sync failed")
             }
         }
