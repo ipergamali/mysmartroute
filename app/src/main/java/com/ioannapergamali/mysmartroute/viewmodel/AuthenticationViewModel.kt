@@ -33,6 +33,14 @@ class AuthenticationViewModel : ViewModel() {
     // Χρήση του Gson για μετατροπή JSON σε αντικείμενα Kotlin
     private val gson = Gson()
 
+    /**
+     * Παράδειγμα μετατροπής JSON σε αντικείμενο [UserAddress].
+     */
+    private fun parseUserAddressJson(json: String): UserAddress {
+        val type = object : TypeToken<UserAddress>() {}.type
+        return gson.fromJson(json, type)
+    }
+
     private val _signUpState = MutableStateFlow<SignUpState>(SignUpState.Idle)
     val signUpState: StateFlow<SignUpState> = _signUpState
 
