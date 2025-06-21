@@ -73,3 +73,14 @@ Log.d("Maps", "API key loaded? ${apiKey.isNotEmpty()}")
    χωρίς εισαγωγικά ή επιπλέον κενά.
 3. Εκτέλεσε «Clean Project» και στη συνέχεια «Rebuild Project» για να παραχθεί
    ξανά το `BuildConfig` με το σωστό κλειδί.
+
+### Αν δεις "Unresolved reference" για το Gson
+
+Εάν η IDE εμφανίζει σφάλματα του τύπου *Unresolved reference: Gson* ή *TypeToken*, έλεγξε ότι στο αρχείο `app/build.gradle.kts` υπάρχει η γραμμή
+
+```kotlin
+implementation("com.google.code.gson:gson:2.13.1")
+```
+
+Μετά την προσθήκη ή επιβεβαίωση της παραπάνω εξάρτησης, κάνε "Sync Project with Gradle Files" ώστε να κατέβει το library και να λυθούν τα σφάλματα.
+
