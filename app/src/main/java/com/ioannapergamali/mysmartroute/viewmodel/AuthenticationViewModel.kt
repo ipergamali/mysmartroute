@@ -6,6 +6,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.UserEntity
 import com.ioannapergamali.mysmartroute.data.local.MenuEntity
@@ -17,6 +19,7 @@ import com.ioannapergamali.mysmartroute.model.classes.users.Passenger
 import com.ioannapergamali.mysmartroute.model.classes.users.UserAddress
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
+import com.ioannapergamali.mysmartroute.model.menus.MenuConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -126,7 +129,7 @@ class AuthenticationViewModel : ViewModel() {
                         val roleMenusRef = roleRef.collection("menus")
                         roleMenusRef.get().addOnSuccessListener { snapshot ->
                             if (snapshot.isEmpty) {
-                                defaultMenus(role).forEach { (menuTitle, options) ->
+                                defaultMenus(context, role).forEach { (menuTitle, options) ->
                                     val menuId = UUID.randomUUID().toString()
                                     val menuDoc = roleMenusRef.document(menuId)
                                     batch.set(menuDoc, mapOf("id" to menuId, "title" to menuTitle))
@@ -254,51 +257,17 @@ class AuthenticationViewModel : ViewModel() {
         _currentUserRole.value = null
     }
 
-    private fun defaultMenus(role: UserRole): List<Pair<String, List<Pair<String, String>>>> {
-        return when (role) {
-            UserRole.PASSENGER -> listOf(
-                "Passenger Menu" to listOf(
-                    "Sign out" to "signOut",
-                    "Manage Favorite Means of Transport" to "manageFavorites",
-                    "Mode Of Transportation For A Specific Route" to "routeMode",
-                    "Find a Vehicle for a specific Transport" to "findVehicle",
-                    "Find Way of Transport" to "findWay",
-                    "Book a Seat or Buy a Ticket" to "bookSeat",
-                    "View Interesting Routes" to "viewRoutes",
-                    "View Transports" to "viewTransports",
-                    "Print Booked Seat or Ticket" to "printTicket",
-                    "Cancel Booked Seat" to "cancelSeat",
-                    "View, Rank and Comment on Completed Transports" to "rankTransports",
-                    "Shut Down the System" to "shutdown"
-                )
-            )
-            UserRole.DRIVER -> listOf(
-                "Driver Menu" to listOf(
-                    "Register Vehicle" to "registerVehicle",
-                    "Announce Availability for a specific Transport" to "announceAvailability",
-                    "Find Passengers" to "findPassengers",
-                    "Print Passenger List" to "printList",
-                    "Print Passenger List for Scheduled Transports" to "printScheduled",
-                    "Print Passenger List for Completed Transports" to "printCompleted"
-                )
-            )
-            UserRole.ADMIN -> listOf(
-                "Admin Menu" to listOf(
-                    "Initialize System" to "initSystem",
-                    "Create User Account" to "createUser",
-                    "Promote or Demote User" to "editPrivileges",
-                    "Define Point of Interest" to "definePoi",
-                    "Define Duration of Travel by Foot" to "defineDuration",
-                    "View List of Unassigned Routes" to "viewUnassigned",
-                    "Review Point of Interest Names" to "reviewPoi",
-                    "Show 10 Best and Worst Drivers" to "rankDrivers",
-                    "View 10 Happiest/Least Happy Passengers" to "rankPassengers",
-                    "View Available Vehicles" to "viewVehicles",
-                    "View PoIs" to "viewPois",
-                    "View Users" to "viewUsers",
-                    "Advance Date" to "advanceDate"
-                )
-            )
+    private fun defaultMenus(context: Context, role: UserRole): List<Pair<String, List<Pair<String, String>>>> {
+        return try {
+            val json = context.assets.open("menus.json").bufferedReader().use { it.readText() }
+            val type = object : TypeToken<Map<String, List<MenuConfig>>>() {}.type
+            val map: Map<String, List<MenuConfig>> = Gson().fromJson(json, type)
+            val roleMenus = map[role.name].orEmpty()
+            roleMenus.map { menu ->
+                menu.title to menu.options.map { it.title to it.route }
+            }
+        } catch (e: Exception) {
+            emptyList()
         }
     }
 }
