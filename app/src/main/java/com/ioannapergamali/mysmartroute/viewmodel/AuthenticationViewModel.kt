@@ -30,6 +30,7 @@ class AuthenticationViewModel : ViewModel() {
 
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
+    // Χρήση του Gson για μετατροπή JSON σε αντικείμενα Kotlin
     private val gson = Gson()
 
     private val _signUpState = MutableStateFlow<SignUpState>(SignUpState.Idle)
@@ -262,6 +263,7 @@ class AuthenticationViewModel : ViewModel() {
         return try {
             val json = context.assets.open("menus.json").bufferedReader().use { it.readText() }
             val type = object : TypeToken<Map<String, List<MenuConfig>>>() {}.type
+            // Παράδειγμα χρήσης του Gson για ανάγνωση του menus.json
             val map: Map<String, List<MenuConfig>> = gson.fromJson(json, type)
             val roleMenus = map[role.name].orEmpty()
             roleMenus.map { menu ->

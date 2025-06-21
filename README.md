@@ -79,7 +79,20 @@ Log.d("Maps", "API key loaded? ${apiKey.isNotEmpty()}")
 Εάν η IDE εμφανίζει σφάλματα του τύπου *Unresolved reference: Gson* ή *TypeToken*, έλεγξε ότι στο αρχείο `app/build.gradle.kts` υπάρχει η γραμμή
 
 ```kotlin
-implementation("com.google.code.gson:gson:2.13.1")
+implementation("com.google.code.gson:gson:2.13.1") // τελευταία διαθέσιμη έκδοση
+```
+
+Στη συνέχεια, στις κλάσεις Kotlin πρόσθεσε τα κατάλληλα imports:
+
+```kotlin
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+
+private val gson = Gson()
+
+// Μετατροπή JSON σε αντικείμενο Kotlin
+val type = object : TypeToken<User>() {}.type
+val user: User = gson.fromJson(jsonString, type)
 ```
 
 Μετά την προσθήκη ή επιβεβαίωση της παραπάνω εξάρτησης, κάνε "Sync Project with Gradle Files" ώστε να κατέβει το library και να λυθούν τα σφάλματα.
