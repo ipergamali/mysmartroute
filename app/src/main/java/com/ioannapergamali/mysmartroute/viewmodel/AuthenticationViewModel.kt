@@ -30,6 +30,7 @@ class AuthenticationViewModel : ViewModel() {
 
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
+    private val gson = Gson()
 
     private val _signUpState = MutableStateFlow<SignUpState>(SignUpState.Idle)
     val signUpState: StateFlow<SignUpState> = _signUpState
@@ -261,7 +262,7 @@ class AuthenticationViewModel : ViewModel() {
         return try {
             val json = context.assets.open("menus.json").bufferedReader().use { it.readText() }
             val type = object : TypeToken<Map<String, List<MenuConfig>>>() {}.type
-            val map: Map<String, List<MenuConfig>> = Gson().fromJson(json, type)
+            val map: Map<String, List<MenuConfig>> = gson.fromJson(json, type)
             val roleMenus = map[role.name].orEmpty()
             roleMenus.map { menu ->
                 menu.title to menu.options.map { it.title to it.route }
