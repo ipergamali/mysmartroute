@@ -120,11 +120,13 @@ class DatabaseViewModel : ViewModel() {
                     Log.d(TAG, "Fetching vehicles from Firestore")
                     val vehicles = firestore.collection("vehicles").get().await()
                         .documents.mapNotNull { doc ->
-                            val userRef = doc.getDocumentReference("userId") ?: return@mapNotNull null
+                            val userId = doc.getString("userId")
+                                ?: doc.getDocumentReference("userId")?.id
+                                ?: return@mapNotNull null
                             VehicleEntity(
                                 id = doc.getString("id") ?: "",
                                 description = doc.getString("description") ?: "",
-                                userId = userRef.id,
+                                userId = userId,
                                 type = doc.getString("type") ?: "",
                                 seat = (doc.getLong("seat") ?: 0L).toInt()
                             )
@@ -136,9 +138,11 @@ class DatabaseViewModel : ViewModel() {
                     Log.d(TAG, "Fetching settings from Firestore")
                     val settings = firestore.collection("user_settings").get().await()
                         .documents.mapNotNull { doc ->
-                            val userRef = doc.getDocumentReference("userId") ?: return@mapNotNull null
+                            val userId = doc.getString("userId")
+                                ?: doc.getDocumentReference("userId")?.id
+                                ?: return@mapNotNull null
                             SettingsEntity(
-                                userId = userRef.id,
+                                userId = userId,
                                 theme = doc.getString("theme") ?: "",
                                 darkTheme = doc.getBoolean("darkTheme") ?: false,
                                 font = doc.getString("font") ?: "",
