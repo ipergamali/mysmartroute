@@ -248,8 +248,13 @@ class AuthenticationViewModel : ViewModel() {
                 val menusRemote = snapshot.documents.map { doc ->
                     val menuId = doc.getString("id") ?: doc.id
                     Log.d(TAG, "Fetching options for menu $menuId")
-                    val optionsSnap = roleRef.collection("menus").document(menuId).collection("options").get().await()
+                    val optionsSnap = roleRef.collection("menus")
+                        .document(menuId)
+                        .collection("options")
+                        .get()
+                        .await()
                     Log.d(TAG, "Fetched ${optionsSnap.documents.size} options for menu $menuId")
+                    val options = optionsSnap.documents.map { optDoc ->
                         MenuOptionEntity(
                             id = optDoc.getString("id") ?: optDoc.id,
                             menuId = menuId,
@@ -257,9 +262,16 @@ class AuthenticationViewModel : ViewModel() {
                             route = optDoc.getString("route") ?: ""
                         )
                     }
-                    insertMenuSafely(menuDao, dbLocal.roleDao(), MenuEntity(menuId, roleId, doc.getString("title") ?: ""))
+                    insertMenuSafely(
+                        menuDao,
+                        dbLocal.roleDao(),
+                        MenuEntity(menuId, roleId, doc.getString("title") ?: "")
+                    )
                     options.forEach { optionDao.insert(it) }
-                    MenuWithOptions(MenuEntity(menuId, roleId, doc.getString("title") ?: ""), options)
+                    MenuWithOptions(
+                        MenuEntity(menuId, roleId, doc.getString("title") ?: ""),
+                        options
+                    )
                 }
                 _currentMenus.value = menusRemote
             }
