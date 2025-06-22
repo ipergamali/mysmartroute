@@ -81,7 +81,8 @@ fun DocumentSnapshot.toUserEntity(): UserEntity? {
 
 fun RoleEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     "id" to id,
-    "name" to name
+    "name" to name,
+    "parentRoleId" to (parentRoleId ?: "")
 )
 
 fun MenuEntity.toFirestoreMap(): Map<String, Any> = mapOf(
