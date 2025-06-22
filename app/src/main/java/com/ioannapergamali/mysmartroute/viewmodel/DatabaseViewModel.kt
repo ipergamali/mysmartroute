@@ -55,6 +55,7 @@ class DatabaseViewModel : ViewModel() {
     fun loadLocalData(context: Context) {
         viewModelScope.launch {
             val db = MySmartRouteDatabase.getInstance(context)
+            Log.d(TAG, "Loading local data")
             kotlinx.coroutines.flow.combine(
                 db.userDao().getAllUsers(),
                 db.vehicleDao().getAllVehicles(),
@@ -73,6 +74,12 @@ class DatabaseViewModel : ViewModel() {
                 val options = values[6] as List<MenuOptionEntity>
                 DatabaseData(users, vehicles, pois, settings, roles, menus, options)
             }.collect { data ->
+                Log.d(
+                    TAG,
+                    "Local data -> users:${'$'}{data.users.size} vehicles:${'$'}{data.vehicles.size} " +
+                        "pois:${'$'}{data.pois.size} settings:${'$'}{data.settings.size} roles:${'$'}{data.roles.size} " +
+                        "menus:${'$'}{data.menus.size} options:${'$'}{data.menuOptions.size}"
+                )
                 _localData.value = data
             }
         }
@@ -80,8 +87,10 @@ class DatabaseViewModel : ViewModel() {
 
     fun loadFirebaseData() {
         viewModelScope.launch {
+            Log.d(TAG, "Loading Firebase data")
             val users = firestore.collection("users").get().await()
                 .documents.mapNotNull { it.toUserEntity() }
+            Log.d(TAG, "Fetched ${'$'}{users.size} users from Firebase")
             val vehicles = firestore.collection("vehicles").get().await()
                 .documents.mapNotNull { doc ->
                     val userId = when (val uid = doc.get("userId")) {
@@ -97,8 +106,10 @@ class DatabaseViewModel : ViewModel() {
                         seat = (doc.getLong("seat") ?: 0L).toInt()
                     )
                 }
+            Log.d(TAG, "Fetched ${'$'}{vehicles.size} vehicles from Firebase")
             val pois = firestore.collection("pois").get().await()
                 .documents.mapNotNull { it.toObject(PoIEntity::class.java) }
+            Log.d(TAG, "Fetched ${'$'}{pois.size} pois from Firebase")
             val settings = firestore.collection("user_settings").get().await()
                 .documents.mapNotNull { doc ->
                     val userId = when (val uid = doc.get("userId")) {
@@ -115,6 +126,7 @@ class DatabaseViewModel : ViewModel() {
                         soundVolume = (doc.getDouble("soundVolume") ?: 0.0).toFloat()
                     )
                 }
+            Log.d(TAG, "Fetched ${'$'}{settings.size} settings from Firebase")
 
             val rolesSnap = firestore.collection("roles").get().await()
             val roles = rolesSnap.documents.map { doc ->
@@ -123,6 +135,7 @@ class DatabaseViewModel : ViewModel() {
                     name = doc.getString("name") ?: ""
                 )
             }
+            Log.d(TAG, "Fetched ${roles.size} roles from Firebase")
             val menus = mutableListOf<MenuEntity>()
             val menuOptions = mutableListOf<MenuOptionEntity>()
             for (roleDoc in rolesSnap.documents) {
@@ -151,6 +164,7 @@ class DatabaseViewModel : ViewModel() {
                 }
             }
 
+            Log.d(TAG, "Firebase data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size}")
             _firebaseData.value = DatabaseData(users, vehicles, pois, settings, roles, menus, menuOptions)
         }
     }

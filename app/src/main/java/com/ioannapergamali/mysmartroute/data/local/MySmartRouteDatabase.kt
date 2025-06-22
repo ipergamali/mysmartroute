@@ -1,6 +1,7 @@
 package com.ioannapergamali.mysmartroute.data.local
 
 import android.content.Context
+import android.util.Log
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -35,6 +36,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
     companion object {
         @Volatile
         private var INSTANCE: MySmartRouteDatabase? = null
+
+        private const val TAG = "MySmartRouteDB"
 
         private val MIGRATION_2_3 = object : Migration(2, 3) {
             override fun migrate(database: SupportSQLiteDatabase) {
@@ -231,6 +234,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
         }
 
         private fun prepopulate(db: SupportSQLiteDatabase) {
+            Log.d(TAG, "Prepopulating database")
             db.execSQL(
                 "INSERT INTO roles (id, name) VALUES " +
                     "('role_passenger', 'PASSENGER')," +
@@ -291,6 +295,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             insertOption("opt_admin_11", adminMenuId, "View PoIs", "viewPois")
             insertOption("opt_admin_12", adminMenuId, "View Users", "viewUsers")
             insertOption("opt_admin_13", adminMenuId, "Advance Date", "advanceDate")
+
+            Log.d(TAG, "Prepopulate complete")
         }
 
         fun getInstance(context: Context): MySmartRouteDatabase {
