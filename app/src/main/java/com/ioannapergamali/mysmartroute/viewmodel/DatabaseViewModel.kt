@@ -87,17 +87,24 @@ class DatabaseViewModel : ViewModel() {
 
     fun syncDatabases(context: Context) {
         viewModelScope.launch {
+            Log.d(TAG, "Starting database synchronization")
             if (!NetworkUtils.isInternetAvailable(context)) {
+                Log.w(TAG, "No internet connection")
                 _syncState.value = SyncState.Error("No internet connection")
                 return@launch
             }
+            Log.d(TAG, "Internet connection available")
             _syncState.value = SyncState.Loading
             val prefs = context.getSharedPreferences("db_sync", Context.MODE_PRIVATE)
             val localTs = prefs.getLong("last_sync", 0L)
+            Log.d(TAG, "Local timestamp: $localTs")
             val remoteTs = try {
                 firestore.collection("metadata").document("sync").get().await()
-                    .getLong("last_sync") ?: 0L
-            } catch (_: Exception) { 0L }
+                    .getLong("last_sync")?.also { Log.d(TAG, "Remote timestamp: $it") } ?: 0L
+            } catch (e: Exception) {
+                Log.e(TAG, "Error fetching remote timestamp", e)
+                0L
+            }
 
             Log.d(TAG, "Start sync: localTs=$localTs remoteTs=$remoteTs")
 
@@ -105,8 +112,12 @@ class DatabaseViewModel : ViewModel() {
 
             try {
                 if (remoteTs > localTs) {
+                    Log.d(TAG, "Remote database is newer, downloading data")
+                    Log.d(TAG, "Fetching users from Firestore")
                     val users = firestore.collection("users").get().await()
                         .documents.mapNotNull { it.toUserEntity() }
+                    Log.d(TAG, "Fetched ${users.size} users")
+                    Log.d(TAG, "Fetching vehicles from Firestore")
                     val vehicles = firestore.collection("vehicles").get().await()
                         .documents.mapNotNull { doc ->
                             val userRef = doc.getDocumentReference("userId") ?: return@mapNotNull null
@@ -118,8 +129,11 @@ class DatabaseViewModel : ViewModel() {
                                 seat = (doc.getLong("seat") ?: 0L).toInt()
                             )
                         }
+                    Log.d(TAG, "Fetching PoIs from Firestore")
                     val pois = firestore.collection("pois").get().await()
                         .documents.mapNotNull { it.toObject(PoIEntity::class.java) }
+                    Log.d(TAG, "Fetched ${pois.size} pois")
+                    Log.d(TAG, "Fetching settings from Firestore")
                     val settings = firestore.collection("user_settings").get().await()
                         .documents.mapNotNull { doc ->
                             val userRef = doc.getDocumentReference("userId") ?: return@mapNotNull null
@@ -144,10 +158,15 @@ class DatabaseViewModel : ViewModel() {
                     Log.d(TAG, "Inserted remote data to local DB")
                     prefs.edit().putLong("last_sync", remoteTs).apply()
                 } else {
+                    Log.d(TAG, "Local database is newer, uploading data")
                     val users = db.userDao().getAllUsers()
+                    Log.d(TAG, "Fetched ${users.size} local users")
                     val vehicles = db.vehicleDao().getAllVehicles()
+                    Log.d(TAG, "Fetched ${vehicles.size} local vehicles")
                     val pois = db.poIDao().getAll()
+                    Log.d(TAG, "Fetched ${pois.size} local pois")
                     val settings = db.settingsDao().getAllSettings()
+                    Log.d(TAG, "Fetched ${settings.size} local settings")
 
                     Log.d(
                         TAG,
