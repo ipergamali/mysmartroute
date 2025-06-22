@@ -29,14 +29,18 @@ fun UserEntity.toFirestoreMap(): Map<String, Any> = mapOf(
 fun VehicleEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     "id" to id,
     "description" to description,
-    "userId" to userId,
+    "userId" to FirebaseFirestore.getInstance()
+        .collection("users")
+        .document(userId),
     "type" to type,
     "seat" to seat
 )
 
 /** Μετατροπή [SettingsEntity] σε Map. */
 fun SettingsEntity.toFirestoreMap(): Map<String, Any> = mapOf(
-    "userId" to userId,
+    "userId" to FirebaseFirestore.getInstance()
+        .collection("users")
+        .document(userId),
     "theme" to theme,
     "darkTheme" to darkTheme,
     "font" to font,
