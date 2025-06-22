@@ -40,13 +40,18 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
     ) { paddingValues ->
         ScreenContainer(modifier = Modifier.padding(paddingValues)) {
             ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
-                TextField(
+                OutlinedTextField(
                     value = type.name,
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("Type") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                    modifier = Modifier.menuAnchor().fillMaxWidth(),
+                    shape = MaterialTheme.shapes.small,
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                    )
                 )
                 DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                     VehicleType.values().forEach { option ->
@@ -61,19 +66,29 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
                 }
             }
             Spacer(Modifier.height(8.dp))
-            TextField(
+            OutlinedTextField(
                 value = description,
                 onValueChange = { description = it },
                 label = { Text("Description") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.small,
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                )
             )
             Spacer(Modifier.height(8.dp))
-            TextField(
+            OutlinedTextField(
                 value = seatInput,
                 onValueChange = { seatInput = it },
                 label = { Text("Seats") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.small,
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                )
             )
 
             if (state is VehicleViewModel.RegisterState.Error) {
