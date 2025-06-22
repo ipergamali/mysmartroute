@@ -22,6 +22,7 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.DatabaseMenuScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.LocalDatabaseScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.FirebaseDatabaseScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.AdminSignUpScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.DatabaseSyncScreen
 
 
 
@@ -119,6 +120,10 @@ fun NavigationHost(navController : NavHostController, openDrawer: () -> Unit) {
 
         composable("firebaseDb") {
             FirebaseDatabaseScreen(navController = navController, openDrawer = openDrawer)
+        }
+
+        composable("syncDb") {
+            DatabaseSyncScreen(navController = navController, openDrawer = openDrawer)
         }
 
         composable("adminSignup") {

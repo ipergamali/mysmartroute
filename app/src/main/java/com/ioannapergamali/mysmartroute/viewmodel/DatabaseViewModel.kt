@@ -37,6 +37,14 @@ class DatabaseViewModel : ViewModel() {
     private val _syncState = MutableStateFlow<SyncState>(SyncState.Idle)
     val syncState: StateFlow<SyncState> = _syncState
 
+    private val _lastSyncTime = MutableStateFlow(0L)
+    val lastSyncTime: StateFlow<Long> = _lastSyncTime
+
+    fun loadLastSync(context: Context) {
+        val prefs = context.getSharedPreferences("db_sync", Context.MODE_PRIVATE)
+        _lastSyncTime.value = prefs.getLong("last_sync", 0L)
+    }
+
     fun loadLocalData(context: Context) {
         viewModelScope.launch {
 
@@ -162,6 +170,7 @@ class DatabaseViewModel : ViewModel() {
                     settings.forEach { insertSettingsSafely(db.settingsDao(), db.userDao(), it) }
                     Log.d(TAG, "Inserted remote data to local DB")
                     prefs.edit().putLong("last_sync", remoteTs).apply()
+                    _lastSyncTime.value = remoteTs
                 } else {
                     Log.d(TAG, "Local database is newer, uploading data")
                     val users = db.userDao().getAllUsers()
@@ -200,6 +209,7 @@ class DatabaseViewModel : ViewModel() {
                     val newTs = System.currentTimeMillis()
                     firestore.collection("metadata").document("sync").set(mapOf("last_sync" to newTs)).await()
                     prefs.edit().putLong("last_sync", newTs).apply()
+                    _lastSyncTime.value = newTs
                 }
                 _syncState.value = SyncState.Success
             } catch (e: Exception) {
