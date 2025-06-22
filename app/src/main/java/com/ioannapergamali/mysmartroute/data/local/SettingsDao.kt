@@ -14,5 +14,5 @@ interface SettingsDao {
     suspend fun getSettings(userId: String): SettingsEntity?
 
     @Query("SELECT * FROM settings")
-    suspend fun getAllSettings(): List<SettingsEntity>
+    fun getAllSettings(): kotlinx.coroutines.flow.Flow<List<SettingsEntity>>
 }

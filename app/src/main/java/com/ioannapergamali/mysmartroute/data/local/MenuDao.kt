@@ -17,5 +17,5 @@ interface MenuDao {
 
     /** Επιστρέφει όλα τα μενού της βάσης. */
     @Query("SELECT * FROM menus")
-    suspend fun getAllMenus(): List<MenuEntity>
+    fun getAllMenus(): kotlinx.coroutines.flow.Flow<List<MenuEntity>>
 }

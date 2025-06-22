@@ -14,5 +14,5 @@ interface VehicleDao {
     suspend fun getVehiclesForUser(userId: String): List<VehicleEntity>
 
     @Query("SELECT * FROM vehicles")
-    suspend fun getAllVehicles(): List<VehicleEntity>
+    fun getAllVehicles(): kotlinx.coroutines.flow.Flow<List<VehicleEntity>>
 }

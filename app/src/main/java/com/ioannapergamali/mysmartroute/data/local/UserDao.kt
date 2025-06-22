@@ -14,5 +14,5 @@ interface UserDao {
     suspend fun getUser(id: String): UserEntity?
 
     @Query("SELECT * FROM users")
-    suspend fun getAllUsers(): List<UserEntity>
+    fun getAllUsers(): kotlinx.coroutines.flow.Flow<List<UserEntity>>
 }
