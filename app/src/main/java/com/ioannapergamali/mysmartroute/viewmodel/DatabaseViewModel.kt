@@ -54,8 +54,8 @@ class DatabaseViewModel : ViewModel() {
                 .documents.mapNotNull { it.toUserEntity() }
             val vehicles = firestore.collection("vehicles").get().await()
                 .documents.mapNotNull { doc ->
-                    val userId = doc.getDocumentReference("userId")?.id
-                        ?: doc.getString("userId")
+                    val userId = doc.getString("userId")
+                        ?: doc.getDocumentReference("userId")?.id
                         ?: return@mapNotNull null
                     VehicleEntity(
                         id = doc.getString("id") ?: "",
@@ -69,8 +69,8 @@ class DatabaseViewModel : ViewModel() {
                 .documents.mapNotNull { it.toObject(PoIEntity::class.java) }
             val settings = firestore.collection("user_settings").get().await()
                 .documents.mapNotNull { doc ->
-                    val userId = doc.getDocumentReference("userId")?.id
-                        ?: doc.getString("userId")
+                    val userId = doc.getString("userId")
+                        ?: doc.getDocumentReference("userId")?.id
                         ?: return@mapNotNull null
                     SettingsEntity(
                         userId = userId,
@@ -120,8 +120,8 @@ class DatabaseViewModel : ViewModel() {
                     Log.d(TAG, "Fetching vehicles from Firestore")
                     val vehicles = firestore.collection("vehicles").get().await()
                         .documents.mapNotNull { doc ->
-                            val userId = doc.getDocumentReference("userId")?.id
-                                ?: doc.getString("userId")
+                            val userId = doc.getString("userId")
+                                ?: doc.getDocumentReference("userId")?.id
                                 ?: return@mapNotNull null
                             VehicleEntity(
                                 id = doc.getString("id") ?: "",
@@ -138,8 +138,8 @@ class DatabaseViewModel : ViewModel() {
                     Log.d(TAG, "Fetching settings from Firestore")
                     val settings = firestore.collection("user_settings").get().await()
                         .documents.mapNotNull { doc ->
-                            val userId = doc.getDocumentReference("userId")?.id
-                                ?: doc.getString("userId")
+                            val userId = doc.getString("userId")
+                                ?: doc.getDocumentReference("userId")?.id
                                 ?: return@mapNotNull null
                             SettingsEntity(
                                 userId = userId,
