@@ -9,8 +9,10 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -102,7 +104,7 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedTheme.value) },
                     modifier = Modifier.menuAnchor(),
                     shape = MaterialTheme.shapes.small,
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                    colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
                         unfocusedBorderColor = MaterialTheme.colorScheme.primary
                     )
@@ -130,7 +132,7 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedFont.value) },
                     modifier = Modifier.menuAnchor(),
                     shape = MaterialTheme.shapes.small,
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                    colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
                         unfocusedBorderColor = MaterialTheme.colorScheme.primary
                     )
