@@ -27,7 +27,7 @@ class PoIViewModel : ViewModel() {
     fun loadPois(context: Context) {
         viewModelScope.launch {
             val dao = MySmartRouteDatabase.getInstance(context).poIDao()
-            _pois.value = dao.getAll().first()
+            _pois.value = 7dao.getAll().first()
             db.collection("pois").get()
                 .addOnSuccessListener { snapshot ->
                     val list = snapshot.documents.mapNotNull { doc ->
