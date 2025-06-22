@@ -17,6 +17,7 @@ import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.RoleViewModel
+import android.util.Log
 
 @Composable
 fun RolesScreen(navController: NavController, openDrawer: () -> Unit) {
@@ -25,6 +26,10 @@ fun RolesScreen(navController: NavController, openDrawer: () -> Unit) {
     val context = LocalContext.current
 
     LaunchedEffect(Unit) { viewModel.loadRoles(context) }
+
+    LaunchedEffect(roles) {
+        Log.d("RolesScreen", "Roles count: ${'$'}{roles.size}")
+    }
 
     Scaffold(
         topBar = {
