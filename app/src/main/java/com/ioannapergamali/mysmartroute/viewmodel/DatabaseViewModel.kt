@@ -128,7 +128,9 @@ class DatabaseViewModel : ViewModel() {
                 }
             Log.d(TAG, "Fetched ${'$'}{settings.size} settings from Firebase")
 
+            Log.d(TAG, "Fetching roles from Firestore")
             val rolesSnap = firestore.collection("roles").get().await()
+            Log.d(TAG, "Fetched ${rolesSnap.documents.size} role documents")
             val roles = rolesSnap.documents.map { doc ->
                 RoleEntity(
                     id = doc.getString("id") ?: doc.id,
@@ -140,7 +142,9 @@ class DatabaseViewModel : ViewModel() {
             val menuOptions = mutableListOf<MenuOptionEntity>()
             for (roleDoc in rolesSnap.documents) {
                 val roleId = roleDoc.getString("id") ?: roleDoc.id
+                Log.d(TAG, "Fetching menus for role $roleId")
                 val menusSnap = roleDoc.reference.collection("menus").get().await()
+                Log.d(TAG, "Fetched ${menusSnap.documents.size} menus for role $roleId")
                 for (menuDoc in menusSnap.documents) {
                     val menuId = menuDoc.getString("id") ?: menuDoc.id
                     menus.add(
@@ -150,7 +154,9 @@ class DatabaseViewModel : ViewModel() {
                             title = menuDoc.getString("title") ?: ""
                         )
                     )
+                    Log.d(TAG, "Fetching options for menu $menuId")
                     val optsSnap = menuDoc.reference.collection("options").get().await()
+                    Log.d(TAG, "Fetched ${optsSnap.documents.size} options for menu $menuId")
                     for (optDoc in optsSnap.documents) {
                         menuOptions.add(
                             MenuOptionEntity(
@@ -239,7 +245,9 @@ class DatabaseViewModel : ViewModel() {
                             )
                         }
 
+            Log.d(TAG, "Fetching roles from Firestore")
                     val rolesSnap = firestore.collection("roles").get().await()
+            Log.d(TAG, "Fetched ${rolesSnap.documents.size} role documents")
                     val roles = rolesSnap.documents.map { doc ->
                         RoleEntity(
                             id = doc.getString("id") ?: doc.id,
@@ -250,7 +258,9 @@ class DatabaseViewModel : ViewModel() {
                     val menuOptions = mutableListOf<MenuOptionEntity>()
                     for (roleDoc in rolesSnap.documents) {
                         val roleId = roleDoc.getString("id") ?: roleDoc.id
+                Log.d(TAG, "Fetching menus for role $roleId")
                         val menusSnap = roleDoc.reference.collection("menus").get().await()
+                Log.d(TAG, "Fetched ${menusSnap.documents.size} menus for role $roleId")
                         for (menuDoc in menusSnap.documents) {
                             val menuId = menuDoc.getString("id") ?: menuDoc.id
                             menus.add(
@@ -260,7 +270,9 @@ class DatabaseViewModel : ViewModel() {
                                     title = menuDoc.getString("title") ?: ""
                                 )
                             )
+                    Log.d(TAG, "Fetching options for menu $menuId")
                             val optsSnap = menuDoc.reference.collection("options").get().await()
+                    Log.d(TAG, "Fetched ${optsSnap.documents.size} options for menu $menuId")
                             for (optDoc in optsSnap.documents) {
                                 menuOptions.add(
                                     MenuOptionEntity(

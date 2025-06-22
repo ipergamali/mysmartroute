@@ -33,6 +33,7 @@ class AuthenticationViewModel : ViewModel() {
     private val auth = FirebaseAuth.getInstance()
     // Χρήση του Gson για μετατροπή JSON σε αντικείμενα Kotlin
     private val gson: Gson = Gson()
+    private companion object { const val TAG = "AuthenticationViewModel" }
 
     /**
      * Παράδειγμα μετατροπής JSON σε αντικείμενο [UserAddress].
@@ -233,19 +234,22 @@ class AuthenticationViewModel : ViewModel() {
                 ref.id
             }
 
+            Log.d(TAG, "Using roleId: $roleId")
             val menusLocal = dbLocal.menuDao().getMenusForRole(roleId)
             if (menusLocal.isNotEmpty()) {
                 _currentMenus.value = menusLocal
             } else {
                 val roleRef = db.collection("roles").document(roleId)
+                Log.d(TAG, "Fetching menus for role $roleId")
                 val snapshot = roleRef.collection("menus").get().await()
+                Log.d(TAG, "Fetched ${snapshot.documents.size} menus for role $roleId")
                 val menuDao = dbLocal.menuDao()
                 val optionDao = dbLocal.menuOptionDao()
                 val menusRemote = snapshot.documents.map { doc ->
                     val menuId = doc.getString("id") ?: doc.id
-                    val optionsSnap = roleRef.collection("menus").document(menuId)
-                        .collection("options").get().await()
-                    val options = optionsSnap.documents.map { optDoc ->
+                    Log.d(TAG, "Fetching options for menu $menuId")
+                    val optionsSnap = roleRef.collection("menus").document(menuId).collection("options").get().await()
+                    Log.d(TAG, "Fetched ${optionsSnap.documents.size} options for menu $menuId")
                         MenuOptionEntity(
                             id = optDoc.getString("id") ?: optDoc.id,
                             menuId = menuId,
