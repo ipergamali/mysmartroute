@@ -6,7 +6,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Switch
@@ -59,13 +60,18 @@ fun ThemePickerScreen(navController: NavController) {
             ScreenContainer(modifier = Modifier.padding(padding)) {
                 Text("Themes")
                 ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
-                    TextField(
+                    OutlinedTextField(
                         readOnly = true,
                         value = selectedTheme.label,
                         onValueChange = {},
                         label = { Text("Theme") },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                        modifier = Modifier.menuAnchor()
+                        modifier = Modifier.menuAnchor(),
+                        shape = MaterialTheme.shapes.small,
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                        )
                     )
                     DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                         AppTheme.values().forEach { theme ->

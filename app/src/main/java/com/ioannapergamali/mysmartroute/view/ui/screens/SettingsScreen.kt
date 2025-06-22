@@ -9,7 +9,8 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.TextField
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -93,13 +94,18 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
             Text("Θέμα")
             Divider(modifier = Modifier.padding(vertical = 4.dp))
             ExposedDropdownMenuBox(expanded = expandedTheme.value, onExpandedChange = { expandedTheme.value = !expandedTheme.value }) {
-                TextField(
+                OutlinedTextField(
                     readOnly = true,
                     value = selectedTheme.value.label,
                     onValueChange = {},
                     label = { Text("Theme") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedTheme.value) },
-                    modifier = Modifier.menuAnchor()
+                    modifier = Modifier.menuAnchor(),
+                    shape = MaterialTheme.shapes.small,
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                    )
                 )
                 DropdownMenu(expanded = expandedTheme.value, onDismissRequest = { expandedTheme.value = false }) {
                     AppTheme.values().forEach { theme ->
@@ -116,13 +122,18 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
             Text("Γραμματοσειρά", modifier = Modifier.padding(top = 16.dp))
             Divider(modifier = Modifier.padding(vertical = 4.dp))
             ExposedDropdownMenuBox(expanded = expandedFont.value, onExpandedChange = { expandedFont.value = !expandedFont.value }) {
-                TextField(
+                OutlinedTextField(
                     readOnly = true,
                     value = selectedFont.value.label,
                     onValueChange = {},
                     label = { Text("Fonts") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedFont.value) },
-                    modifier = Modifier.menuAnchor()
+                    modifier = Modifier.menuAnchor(),
+                    shape = MaterialTheme.shapes.small,
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                    )
                 )
                 DropdownMenu(expanded = expandedFont.value, onDismissRequest = { expandedFont.value = false }) {
                     AppFont.values().forEach { font ->

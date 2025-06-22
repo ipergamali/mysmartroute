@@ -3,6 +3,7 @@ package com.ioannapergamali.mysmartroute.view.ui.components
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -26,14 +27,19 @@ fun ScreenContainer(
     val scrollState = rememberScrollState()
     CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.primary) {
         SelectionContainer {
-            Column(
+            Box(
                 modifier = modifier
-                    .then(if (scrollable) Modifier.verticalScroll(scrollState) else Modifier)
                     .fillMaxSize()
                     .border(2.dp, MaterialTheme.colorScheme.primary)
-                    .padding(dimensionResource(id = R.dimen.padding_screen)),
-                content = content
-            )
+                    .padding(dimensionResource(id = R.dimen.padding_screen))
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .then(if (scrollable) Modifier.verticalScroll(scrollState) else Modifier),
+                    content = content
+                )
+            }
         }
     }
 }

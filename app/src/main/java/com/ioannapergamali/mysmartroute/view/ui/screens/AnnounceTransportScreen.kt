@@ -333,7 +333,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         Spacer(modifier = Modifier.height(8.dp))
 
         ExposedDropdownMenuBox(expanded = fromExpanded, onExpandedChange = { fromExpanded = !fromExpanded }) {
-            TextField(
+            OutlinedTextField(
                 value = fromQuery,
                 onValueChange = {
                     fromQuery = it
@@ -411,7 +411,12 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = fromExpanded)
                     }
                 },
-                modifier = Modifier.menuAnchor().fillMaxWidth()
+                modifier = Modifier.menuAnchor().fillMaxWidth(),
+                shape = MaterialTheme.shapes.small,
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                )
             )
             DropdownMenu(expanded = fromExpanded, onDismissRequest = { fromExpanded = false }) {
                 fromSuggestions.forEach { address ->
@@ -450,7 +455,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         Spacer(modifier = Modifier.height(8.dp))
 
         ExposedDropdownMenuBox(expanded = toExpanded, onExpandedChange = { toExpanded = !toExpanded }) {
-            TextField(
+            OutlinedTextField(
                 value = toQuery,
                 onValueChange = {
                     toQuery = it
@@ -528,7 +533,12 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = toExpanded)
                     }
                 },
-                modifier = Modifier.menuAnchor().fillMaxWidth()
+                modifier = Modifier.menuAnchor().fillMaxWidth(),
+                shape = MaterialTheme.shapes.small,
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                )
             )
             DropdownMenu(expanded = toExpanded, onDismissRequest = { toExpanded = false }) {
                 toSuggestions.forEach { address ->
@@ -569,13 +579,18 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         var vehicleMenuExpanded by remember { mutableStateOf(false) }
 
         ExposedDropdownMenuBox(expanded = vehicleMenuExpanded, onExpandedChange = { vehicleMenuExpanded = !vehicleMenuExpanded }) {
-            TextField(
+            OutlinedTextField(
                 value = selectedVehicleType?.name ?: "",
                 onValueChange = {},
                 readOnly = true,
                 label = { Text("Vehicle") },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = vehicleMenuExpanded) },
-                modifier = Modifier.menuAnchor().fillMaxWidth()
+                modifier = Modifier.menuAnchor().fillMaxWidth(),
+                shape = MaterialTheme.shapes.small,
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                )
             )
             DropdownMenu(expanded = vehicleMenuExpanded, onDismissRequest = { vehicleMenuExpanded = false }) {
                 vehicles.forEach { entity ->
@@ -595,11 +610,29 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         }
 
         Spacer(modifier = Modifier.height(8.dp))
-        TextField(value = costInput, onValueChange = { costInput = it }, label = { Text("Cost") })
+        OutlinedTextField(
+            value = costInput,
+            onValueChange = { costInput = it },
+            label = { Text("Cost") },
+            shape = MaterialTheme.shapes.small,
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.primary
+            )
+        )
         Spacer(modifier = Modifier.height(8.dp))
         Text(text = "Duration: $durationMinutes min")
         Spacer(modifier = Modifier.height(8.dp))
-        TextField(value = dateInput, onValueChange = { dateInput = it }, label = { Text("Date") })
+        OutlinedTextField(
+            value = dateInput,
+            onValueChange = { dateInput = it },
+            label = { Text("Date") },
+            shape = MaterialTheme.shapes.small,
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.primary
+            )
+        )
         Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = {
             if (fromQuery.isBlank() || startLatLng == null || toQuery.isBlank() || endLatLng == null) {

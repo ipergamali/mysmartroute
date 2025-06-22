@@ -5,6 +5,9 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
+import androidx.compose.material3.Shapes
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.material3.Typography
@@ -95,6 +98,11 @@ fun MysmartrouteTheme(
     androidx.compose.material3.MaterialTheme(
         colorScheme = colorScheme,
         typography = typographyWithFont(font),
+        shapes = Shapes(
+            extraSmall = RoundedCornerShape(8.dp),
+            small = RoundedCornerShape(8.dp),
+            medium = RoundedCornerShape(12.dp)
+        ),
         content = content
     )
 }

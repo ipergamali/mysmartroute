@@ -170,21 +170,31 @@ private fun HomeContent(
         Spacer(modifier = Modifier.height(16.dp))
 
         if (FirebaseAuth.getInstance().currentUser == null) {
-            TextField(
+            OutlinedTextField(
                 value = email,
                 onValueChange = onEmailChange,
                 label = { Text("Email") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.small,
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                )
             )
 
             Spacer(Modifier.height(8.dp))
 
-            TextField(
+            OutlinedTextField(
                 value = password,
                 onValueChange = onPasswordChange,
                 label = { Text("Password") },
                 visualTransformation = PasswordVisualTransformation(),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.small,
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                )
             )
 
             if (uiState is AuthenticationViewModel.LoginState.Error) {
