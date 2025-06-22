@@ -15,6 +15,7 @@ import com.ioannapergamali.mysmartroute.data.local.MenuEntity
 import com.ioannapergamali.mysmartroute.data.local.MenuOptionEntity
 import com.ioannapergamali.mysmartroute.data.local.MenuWithOptions
 import com.ioannapergamali.mysmartroute.data.local.insertMenuSafely
+import com.ioannapergamali.mysmartroute.data.local.RoleEntity
 import com.ioannapergamali.mysmartroute.model.classes.users.Admin
 import com.ioannapergamali.mysmartroute.model.classes.users.Driver
 import com.ioannapergamali.mysmartroute.model.classes.users.Passenger
@@ -288,40 +289,70 @@ class AuthenticationViewModel : ViewModel() {
         _currentUserRole.value = null
     }
 
+    /** Δημόσια μέθοδος που φροντίζει να δημιουργηθούν οι ρόλοι και τα μενού αν χρειάζεται. */
+    fun ensureMenusInitialized(context: Context) {
+        viewModelScope.launch {
+            initializeRolesAndMenusIfNeeded(context)
+        }
+    }
+
+
     private suspend fun initializeRolesAndMenusIfNeeded(context: Context) {
-        val rolesSnap = db.collection("roles").get().await()
-        if (rolesSnap.isEmpty) {
-            val json = context.assets.open("menus.json").bufferedReader().use { it.readText() }
-            val type = object : TypeToken<Map<String, RoleMenuConfig>>() {}.type
-            val map: Map<String, RoleMenuConfig> = gson.fromJson(json, type)
-            val batch = db.batch()
-            map.forEach { (roleName, cfg) ->
-                val role = UserRole.valueOf(roleName)
-                val roleId = roleIds[role] ?: "role_${role.name.lowercase()}"
-                val roleRef = db.collection("roles").document(roleId)
-                val data = mutableMapOf<String, Any>("id" to roleId, "name" to roleName)
-                cfg.inheritsFrom?.let {
-                    val parentId = roleIds[UserRole.valueOf(it)] ?: "role_${it.lowercase()}"
-                    data["parentRoleId"] = parentId
-                }
+        val json = context.assets.open("menus.json").bufferedReader().use { it.readText() }
+        val type = object : TypeToken<Map<String, RoleMenuConfig>>() {}.type
+        val map: Map<String, RoleMenuConfig> = gson.fromJson(json, type)
+
+        val dbLocal = MySmartRouteDatabase.getInstance(context)
+        val roleDao = dbLocal.roleDao()
+        val menuDao = dbLocal.menuDao()
+        val optionDao = dbLocal.menuOptionDao()
+
+        val existingRoles = db.collection("roles").get().await().documents.associateBy { it.id }
+        val batch = db.batch()
+        var commitNeeded = false
+
+        map.forEach { (roleName, cfg) ->
+            val role = UserRole.valueOf(roleName)
+            val roleId = roleIds[role] ?: "role_${'$'}{role.name.lowercase()}"
+            val roleRef = db.collection("roles").document(roleId)
+            val parentId = cfg.inheritsFrom?.let { parent ->
+                roleIds[UserRole.valueOf(parent)] ?: "role_${'$'}{parent.lowercase()}"
+            }
+            val data = mutableMapOf<String, Any>("id" to roleId, "name" to roleName)
+            parentId?.let { data["parentRoleId"] = it }
+
+            val existing = existingRoles[roleId]
+            if (existing == null || (parentId != null && existing.getString("parentRoleId") != parentId)) {
                 batch.set(roleRef, data)
+                commitNeeded = true
+            }
+
+            roleDao.insert(RoleEntity(id = roleId, name = roleName, parentRoleId = parentId))
+
+            val menusSnap = roleRef.collection("menus").get().await()
+            if (menusSnap.isEmpty) {
                 cfg.menus.forEach { menu ->
                     val menuId = UUID.randomUUID().toString()
                     val menuDoc = roleRef.collection("menus").document(menuId)
                     batch.set(menuDoc, mapOf("id" to menuId, "title" to menu.title))
+                    commitNeeded = true
+                    menuDao.insert(MenuEntity(menuId, roleId, menu.title))
                     menu.options.forEach { opt ->
                         val optId = UUID.randomUUID().toString()
                         batch.set(
                             menuDoc.collection("options").document(optId),
-                            mapOf("id" to optId, "title" to opt.title, "route" to opt.route)
+                            mapOf("id" to optId, "title" to opt.title, "route" to opt.route),
                         )
+                        optionDao.insert(MenuOptionEntity(optId, menuId, opt.title, opt.route))
                     }
                 }
             }
+        }
+
+        if (commitNeeded) {
             batch.commit().await()
         }
     }
-
     private fun defaultMenus(context: Context, role: UserRole): List<Pair<String, List<Pair<String, String>>>> {
         return try {
             val json = context.assets.open("menus.json").bufferedReader().use { it.readText() }
