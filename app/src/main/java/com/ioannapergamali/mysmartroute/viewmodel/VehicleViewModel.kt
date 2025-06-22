@@ -8,6 +8,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.VehicleEntity
+import com.ioannapergamali.mysmartroute.data.local.insertVehicleSafely
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -49,21 +50,23 @@ class VehicleViewModel : ViewModel() {
             val entity = VehicleEntity(vehicleId, description, userId, type.name, seat)
             val vehicleData = entity.toFirestoreMap()
 
-            val dao = MySmartRouteDatabase.getInstance(context).vehicleDao()
+            val dbLocal = MySmartRouteDatabase.getInstance(context)
+            val vehicleDao = dbLocal.vehicleDao()
+            val userDao = dbLocal.userDao()
 
             if (NetworkUtils.isInternetAvailable(context)) {
                 db.collection("vehicles")
                     .document(vehicleId)
                     .set(vehicleData)
                     .addOnSuccessListener {
-                        viewModelScope.launch { dao.insert(entity) }
+                        viewModelScope.launch { insertVehicleSafely(vehicleDao, userDao, entity) }
                         _registerState.value = RegisterState.Success
                     }
                     .addOnFailureListener { e ->
                         _registerState.value = RegisterState.Error(e.localizedMessage ?: "Failed")
                     }
             } else {
-                dao.insert(entity)
+                insertVehicleSafely(vehicleDao, userDao, entity)
                 _registerState.value = RegisterState.Success
             }
         }
