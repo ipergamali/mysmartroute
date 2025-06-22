@@ -31,7 +31,7 @@ class AuthenticationViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
     // Χρήση του Gson για μετατροπή JSON σε αντικείμενα Kotlin
-    private val gson = Gson()
+    private val gson: Gson = Gson()
 
     /**
      * Παράδειγμα μετατροπής JSON σε αντικείμενο [UserAddress].
