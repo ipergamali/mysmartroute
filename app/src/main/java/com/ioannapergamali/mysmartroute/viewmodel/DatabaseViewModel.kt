@@ -73,6 +73,13 @@ class DatabaseViewModel : ViewModel() {
                 val options = values[6] as List<MenuOptionEntity>
                 DatabaseData(users, vehicles, pois, settings, roles, menus, options)
             }.collect { data ->
+                Log.d(
+                    TAG,
+                    "Local -> users:${'$'}{data.users.size} vehicles:${'$'}{data.vehicles.size} " +
+                        "pois:${'$'}{data.pois.size} settings:${'$'}{data.settings.size} " +
+                        "roles:${'$'}{data.roles.size} menus:${'$'}{data.menus.size} " +
+                        "options:${'$'}{data.menuOptions.size}"
+                )
                 _localData.value = data
             }
         }

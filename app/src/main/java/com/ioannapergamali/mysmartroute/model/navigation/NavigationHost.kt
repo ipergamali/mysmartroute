@@ -23,6 +23,7 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.LocalDatabaseScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.FirebaseDatabaseScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.AdminSignUpScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.DatabaseSyncScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.RolesScreen
 
 
 
@@ -96,6 +97,10 @@ fun NavigationHost(navController : NavHostController, openDrawer: () -> Unit) {
 
         composable("fontPicker") {
             FontPickerScreen(navController = navController)
+        }
+
+        composable("roles") {
+            RolesScreen(navController = navController, openDrawer = openDrawer)
         }
 
         composable("soundPicker") {
