@@ -413,7 +413,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 },
                 modifier = Modifier.menuAnchor().fillMaxWidth(),
                 shape = MaterialTheme.shapes.small,
-                colors = TextFieldDefaults.outlinedTextFieldColors(
+                colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                     unfocusedBorderColor = MaterialTheme.colorScheme.primary
                 )
@@ -535,7 +535,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 },
                 modifier = Modifier.menuAnchor().fillMaxWidth(),
                 shape = MaterialTheme.shapes.small,
-                colors = TextFieldDefaults.outlinedTextFieldColors(
+                colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                     unfocusedBorderColor = MaterialTheme.colorScheme.primary
                 )
@@ -587,7 +587,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = vehicleMenuExpanded) },
                 modifier = Modifier.menuAnchor().fillMaxWidth(),
                 shape = MaterialTheme.shapes.small,
-                colors = TextFieldDefaults.outlinedTextFieldColors(
+                colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                     unfocusedBorderColor = MaterialTheme.colorScheme.primary
                 )
@@ -615,7 +615,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
             onValueChange = { costInput = it },
             label = { Text("Cost") },
             shape = MaterialTheme.shapes.small,
-            colors = TextFieldDefaults.outlinedTextFieldColors(
+            colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
                 unfocusedBorderColor = MaterialTheme.colorScheme.primary
             )
@@ -628,7 +628,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
             onValueChange = { dateInput = it },
             label = { Text("Date") },
             shape = MaterialTheme.shapes.small,
-            colors = TextFieldDefaults.outlinedTextFieldColors(
+            colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
                 unfocusedBorderColor = MaterialTheme.colorScheme.primary
             )

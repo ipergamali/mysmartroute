@@ -72,7 +72,7 @@ fun SignUpScreen(
                     label = { Text("Name") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = MaterialTheme.shapes.small,
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                    colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
                         unfocusedBorderColor = MaterialTheme.colorScheme.primary
                     )
@@ -84,7 +84,7 @@ fun SignUpScreen(
                     label = { Text("Surname") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = MaterialTheme.shapes.small,
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                    colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
                         unfocusedBorderColor = MaterialTheme.colorScheme.primary
                     )
@@ -96,7 +96,7 @@ fun SignUpScreen(
                     label = { Text("Username") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = MaterialTheme.shapes.small,
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                    colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
                         unfocusedBorderColor = MaterialTheme.colorScheme.primary
                     )
@@ -108,7 +108,7 @@ fun SignUpScreen(
                     label = { Text("Email") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = MaterialTheme.shapes.small,
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                    colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
                         unfocusedBorderColor = MaterialTheme.colorScheme.primary
                     )
@@ -121,7 +121,7 @@ fun SignUpScreen(
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                     shape = MaterialTheme.shapes.small,
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                    colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
                         unfocusedBorderColor = MaterialTheme.colorScheme.primary
                     )
@@ -134,7 +134,7 @@ fun SignUpScreen(
                     modifier = Modifier.fillMaxWidth(),
                     visualTransformation = PasswordVisualTransformation(),
                     shape = MaterialTheme.shapes.small,
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                    colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
                         unfocusedBorderColor = MaterialTheme.colorScheme.primary
                     )
@@ -148,7 +148,7 @@ fun SignUpScreen(
                     label = { Text("City") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = MaterialTheme.shapes.small,
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                    colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
                         unfocusedBorderColor = MaterialTheme.colorScheme.primary
                     )
@@ -160,7 +160,7 @@ fun SignUpScreen(
                     label = { Text("Street Name") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = MaterialTheme.shapes.small,
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                    colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
                         unfocusedBorderColor = MaterialTheme.colorScheme.primary
                     )
@@ -173,7 +173,7 @@ fun SignUpScreen(
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     shape = MaterialTheme.shapes.small,
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                    colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
                         unfocusedBorderColor = MaterialTheme.colorScheme.primary
                     )
@@ -186,7 +186,7 @@ fun SignUpScreen(
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     shape = MaterialTheme.shapes.small,
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                    colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
                         unfocusedBorderColor = MaterialTheme.colorScheme.primary
                     )
