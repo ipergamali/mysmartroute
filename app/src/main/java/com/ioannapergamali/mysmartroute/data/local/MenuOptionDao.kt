@@ -15,5 +15,5 @@ interface MenuOptionDao {
 
     /** Επιστρέφει όλες τις επιλογές μενού. */
     @Query("SELECT * FROM menu_options")
-    suspend fun getAllMenuOptions(): List<MenuOptionEntity>
+    fun getAllMenuOptions(): kotlinx.coroutines.flow.Flow<List<MenuOptionEntity>>
 }

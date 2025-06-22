@@ -15,5 +15,5 @@ interface RoleDao {
 
     /** Επιστρέφει όλους τους ρόλους της βάσης. */
     @Query("SELECT * FROM roles")
-    suspend fun getAllRoles(): List<RoleEntity>
+    fun getAllRoles(): kotlinx.coroutines.flow.Flow<List<RoleEntity>>
 }

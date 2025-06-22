@@ -22,6 +22,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 
 /** ViewModel για προβολή δεδομένων βάσεων. */
 class DatabaseViewModel : ViewModel() {
@@ -50,16 +52,20 @@ class DatabaseViewModel : ViewModel() {
 
     fun loadLocalData(context: Context) {
         viewModelScope.launch {
-
             val db = MySmartRouteDatabase.getInstance(context)
-            val users = db.userDao().getAllUsers()
-            val vehicles = db.vehicleDao().getAllVehicles()
-            val pois = db.poIDao().getAll()
-            val settings = db.settingsDao().getAllSettings()
-            val roles = db.roleDao().getAllRoles()
-            val menus = db.menuDao().getAllMenus()
-            val options = db.menuOptionDao().getAllMenuOptions()
-            _localData.value = DatabaseData(users, vehicles, pois, settings, roles, menus, options)
+            kotlinx.coroutines.flow.combine(
+                db.userDao().getAllUsers(),
+                db.vehicleDao().getAllVehicles(),
+                db.poIDao().getAll(),
+                db.settingsDao().getAllSettings(),
+                db.roleDao().getAllRoles(),
+                db.menuDao().getAllMenus(),
+                db.menuOptionDao().getAllMenuOptions()
+            ) { users, vehicles, pois, settings, roles, menus, options ->
+                DatabaseData(users, vehicles, pois, settings, roles, menus, options)
+            }.collect { data ->
+                _localData.value = data
+            }
         }
     }
 
@@ -253,19 +259,19 @@ class DatabaseViewModel : ViewModel() {
                     _lastSyncTime.value = remoteTs
                 } else {
                     Log.d(TAG, "Local database is newer, uploading data")
-                    val users = db.userDao().getAllUsers()
+                    val users = db.userDao().getAllUsers().first()
                     Log.d(TAG, "Fetched ${users.size} local users")
-                    val vehicles = db.vehicleDao().getAllVehicles()
+                    val vehicles = db.vehicleDao().getAllVehicles().first()
                     Log.d(TAG, "Fetched ${vehicles.size} local vehicles")
-                    val pois = db.poIDao().getAll()
+                    val pois = db.poIDao().getAll().first()
                     Log.d(TAG, "Fetched ${pois.size} local pois")
-                    val settings = db.settingsDao().getAllSettings()
+                    val settings = db.settingsDao().getAllSettings().first()
                     Log.d(TAG, "Fetched ${settings.size} local settings")
-                    val roles = db.roleDao().getAllRoles()
+                    val roles = db.roleDao().getAllRoles().first()
                     Log.d(TAG, "Fetched ${roles.size} local roles")
-                    val menus = db.menuDao().getAllMenus()
+                    val menus = db.menuDao().getAllMenus().first()
                     Log.d(TAG, "Fetched ${menus.size} local menus")
-                    val menuOptions = db.menuOptionDao().getAllMenuOptions()
+                    val menuOptions = db.menuOptionDao().getAllMenuOptions().first()
                     Log.d(TAG, "Fetched ${menuOptions.size} local options")
 
                     Log.d(
