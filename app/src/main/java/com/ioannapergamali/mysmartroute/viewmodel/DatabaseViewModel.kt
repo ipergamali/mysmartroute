@@ -12,6 +12,7 @@ import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.data.local.SettingsEntity
 import com.ioannapergamali.mysmartroute.data.local.insertSettingsSafely
 import com.ioannapergamali.mysmartroute.data.local.insertVehicleSafely
+import com.ioannapergamali.mysmartroute.data.local.insertMenuSafely
 import com.ioannapergamali.mysmartroute.data.local.RoleEntity
 import com.ioannapergamali.mysmartroute.data.local.MenuEntity
 import com.ioannapergamali.mysmartroute.data.local.MenuOptionEntity
@@ -259,7 +260,7 @@ class DatabaseViewModel : ViewModel() {
                     pois.forEach { db.poIDao().insert(it) }
                     settings.forEach { insertSettingsSafely(db.settingsDao(), db.userDao(), it) }
                     roles.forEach { db.roleDao().insert(it) }
-                    menus.forEach { db.menuDao().insert(it) }
+                    menus.forEach { insertMenuSafely(db.menuDao(), db.roleDao(), it) }
                     menuOptions.forEach { db.menuOptionDao().insert(it) }
                     Log.d(TAG, "Inserted remote data to local DB")
                     prefs.edit().putLong("last_sync", remoteTs).apply()

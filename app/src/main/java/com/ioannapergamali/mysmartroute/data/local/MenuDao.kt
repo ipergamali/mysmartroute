@@ -11,6 +11,9 @@ interface MenuDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(menu: MenuEntity)
 
+    @Query("SELECT * FROM menus WHERE id = :id LIMIT 1")
+    suspend fun getMenu(id: String): MenuEntity?
+
     @Transaction
     @Query("SELECT * FROM menus WHERE roleId = :roleId")
     suspend fun getMenusForRole(roleId: String): List<MenuWithOptions>

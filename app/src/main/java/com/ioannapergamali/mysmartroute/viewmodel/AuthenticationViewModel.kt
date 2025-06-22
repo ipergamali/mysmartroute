@@ -13,6 +13,7 @@ import com.ioannapergamali.mysmartroute.data.local.UserEntity
 import com.ioannapergamali.mysmartroute.data.local.MenuEntity
 import com.ioannapergamali.mysmartroute.data.local.MenuOptionEntity
 import com.ioannapergamali.mysmartroute.data.local.MenuWithOptions
+import com.ioannapergamali.mysmartroute.data.local.insertMenuSafely
 import com.ioannapergamali.mysmartroute.model.classes.users.Admin
 import com.ioannapergamali.mysmartroute.model.classes.users.Driver
 import com.ioannapergamali.mysmartroute.model.classes.users.Passenger
@@ -252,7 +253,7 @@ class AuthenticationViewModel : ViewModel() {
                             route = optDoc.getString("route") ?: ""
                         )
                     }
-                    menuDao.insert(MenuEntity(menuId, roleId, doc.getString("title") ?: ""))
+                    insertMenuSafely(menuDao, dbLocal.roleDao(), MenuEntity(menuId, roleId, doc.getString("title") ?: ""))
                     options.forEach { optionDao.insert(it) }
                     MenuWithOptions(MenuEntity(menuId, roleId, doc.getString("title") ?: ""), options)
                 }
