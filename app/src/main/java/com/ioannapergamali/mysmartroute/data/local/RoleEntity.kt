@@ -8,5 +8,6 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "roles")
 data class RoleEntity(
     @PrimaryKey var id: String = "",
-    var name: String = ""
+    var name: String = "",
+    var parentRoleId: String? = null
 )

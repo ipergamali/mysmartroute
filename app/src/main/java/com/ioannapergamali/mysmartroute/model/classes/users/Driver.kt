@@ -1,18 +1,16 @@
 package com.ioannapergamali.mysmartroute.model.classes.users
 
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
-import com.ioannapergamali.mysmartroute.model.interfaces.User
 
-class Driver (
-    override val id: String,
-    override val name: String,
-    override val email: String,
-    override val surname: String,
-    override val address: UserAddress,
-    override val phoneNum: String,
-    override val username: String,
-    override val password: String
-
-) : User {
+open class Driver(
+    id: String,
+    name: String,
+    email: String,
+    surname: String,
+    address: UserAddress,
+    phoneNum: String,
+    username: String,
+    password: String
+) : Passenger(id, name, email, surname, address, phoneNum, username, password) {
     override fun getRole() = UserRole.DRIVER
 }
