@@ -134,7 +134,8 @@ class DatabaseViewModel : ViewModel() {
             val roles = rolesSnap.documents.map { doc ->
                 RoleEntity(
                     id = doc.getString("id") ?: doc.id,
-                    name = doc.getString("name") ?: ""
+                    name = doc.getString("name") ?: "",
+                    parentRoleId = doc.getString("parentRoleId")?.takeIf { it.isNotEmpty() }
                 )
             }
             Log.d(TAG, "Fetched ${roles.size} roles from Firebase")
@@ -251,7 +252,8 @@ class DatabaseViewModel : ViewModel() {
                     val roles = rolesSnap.documents.map { doc ->
                         RoleEntity(
                             id = doc.getString("id") ?: doc.id,
-                            name = doc.getString("name") ?: ""
+                            name = doc.getString("name") ?: "",
+                            parentRoleId = doc.getString("parentRoleId")?.takeIf { it.isNotEmpty() }
                         )
                     }
                     val menus = mutableListOf<MenuEntity>()
