@@ -82,6 +82,33 @@ fun LocalDatabaseScreen(navController: NavController, openDrawer: () -> Unit) {
                         Text("${setting.userId} -> ${setting.theme}, dark ${setting.darkTheme}")
                     }
                 }
+                item { Spacer(modifier = Modifier.padding(8.dp)) }
+                item { Text("Roles", style = MaterialTheme.typography.titleMedium) }
+                if (data!!.roles.isEmpty()) {
+                    item { Text("Ο πίνακας είναι άδειος") }
+                } else {
+                    items(data!!.roles) { role ->
+                        Text("${role.id} - ${role.name}")
+                    }
+                }
+                item { Spacer(modifier = Modifier.padding(8.dp)) }
+                item { Text("Menus", style = MaterialTheme.typography.titleMedium) }
+                if (data!!.menus.isEmpty()) {
+                    item { Text("Ο πίνακας είναι άδειος") }
+                } else {
+                    items(data!!.menus) { menu ->
+                        Text("${menu.id} (${menu.roleId}) - ${menu.title}")
+                    }
+                }
+                item { Spacer(modifier = Modifier.padding(8.dp)) }
+                item { Text("Menu Options", style = MaterialTheme.typography.titleMedium) }
+                if (data!!.menuOptions.isEmpty()) {
+                    item { Text("Ο πίνακας είναι άδειος") }
+                } else {
+                    items(data!!.menuOptions) { opt ->
+                        Text("${opt.id} (${opt.menuId}) -> ${opt.title} -> ${opt.route}")
+                    }
+                }
                 }
             }
         }

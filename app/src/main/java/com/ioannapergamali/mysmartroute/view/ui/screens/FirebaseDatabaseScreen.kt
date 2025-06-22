@@ -65,6 +65,21 @@ fun FirebaseDatabaseScreen(navController: NavController, openDrawer: () -> Unit)
                     Text("${setting.userId} -> ${setting.theme}, dark ${setting.darkTheme}")
                 }
                 item { Spacer(modifier = Modifier.padding(8.dp)) }
+                item { Text("Roles", style = MaterialTheme.typography.titleMedium) }
+                items(data!!.roles) { role ->
+                    Text("${role.id} - ${role.name}")
+                }
+                item { Spacer(modifier = Modifier.padding(8.dp)) }
+                item { Text("Menus", style = MaterialTheme.typography.titleMedium) }
+                items(data!!.menus) { menu ->
+                    Text("${menu.id} (${menu.roleId}) - ${menu.title}")
+                }
+                item { Spacer(modifier = Modifier.padding(8.dp)) }
+                item { Text("Menu Options", style = MaterialTheme.typography.titleMedium) }
+                items(data!!.menuOptions) { opt ->
+                    Text("${opt.id} (${opt.menuId}) -> ${opt.title} -> ${opt.route}")
+                }
+                item { Spacer(modifier = Modifier.padding(8.dp)) }
                 item { Text("Authentication table δεν είναι διαθέσιμη από το client", color = MaterialTheme.colorScheme.error) }
                 }
             }

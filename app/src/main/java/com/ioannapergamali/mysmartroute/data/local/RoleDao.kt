@@ -12,4 +12,8 @@ interface RoleDao {
 
     @Query("SELECT * FROM roles WHERE id = :id")
     suspend fun getRole(id: String): RoleEntity?
+
+    /** Επιστρέφει όλους τους ρόλους της βάσης. */
+    @Query("SELECT * FROM roles")
+    suspend fun getAllRoles(): List<RoleEntity>
 }

@@ -4,6 +4,9 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.SettingsEntity
 import com.ioannapergamali.mysmartroute.data.local.UserEntity
 import com.ioannapergamali.mysmartroute.data.local.VehicleEntity
+import com.ioannapergamali.mysmartroute.data.local.RoleEntity
+import com.ioannapergamali.mysmartroute.data.local.MenuEntity
+import com.ioannapergamali.mysmartroute.data.local.MenuOptionEntity
 
 /** Βοηθητικά extensions για μετατροπή οντοτήτων σε δομές κατάλληλες για το Firestore. */
 /** Μετατροπή ενός [UserEntity] σε Map. */
@@ -67,3 +70,19 @@ fun DocumentSnapshot.toUserEntity(): UserEntity? {
         postalCode = (getLong("postalCode") ?: 0L).toInt()
     )
 }
+
+fun RoleEntity.toFirestoreMap(): Map<String, Any> = mapOf(
+    "id" to id,
+    "name" to name
+)
+
+fun MenuEntity.toFirestoreMap(): Map<String, Any> = mapOf(
+    "id" to id,
+    "title" to title
+)
+
+fun MenuOptionEntity.toFirestoreMap(): Map<String, Any> = mapOf(
+    "id" to id,
+    "title" to title,
+    "route" to route
+)

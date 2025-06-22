@@ -14,4 +14,8 @@ interface MenuDao {
     @Transaction
     @Query("SELECT * FROM menus WHERE roleId = :roleId")
     suspend fun getMenusForRole(roleId: String): List<MenuWithOptions>
+
+    /** Επιστρέφει όλα τα μενού της βάσης. */
+    @Query("SELECT * FROM menus")
+    suspend fun getAllMenus(): List<MenuEntity>
 }
