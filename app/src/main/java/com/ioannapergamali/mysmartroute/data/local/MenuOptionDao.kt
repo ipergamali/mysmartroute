@@ -12,4 +12,8 @@ interface MenuOptionDao {
 
     @Query("SELECT * FROM menu_options WHERE menuId = :menuId")
     suspend fun getOptionsForMenu(menuId: String): List<MenuOptionEntity>
+
+    /** Επιστρέφει όλες τις επιλογές μενού. */
+    @Query("SELECT * FROM menu_options")
+    suspend fun getAllMenuOptions(): List<MenuOptionEntity>
 }
