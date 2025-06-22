@@ -37,8 +37,7 @@ class AuthenticationViewModel : ViewModel() {
      * Παράδειγμα μετατροπής JSON σε αντικείμενο [UserAddress].
      */
     private fun parseUserAddressJson(json: String): UserAddress {
-        val type = object : TypeToken<UserAddress>() {}.type
-        return gson.fromJson(json, type)
+        return gson.fromJson(json, UserAddress::class.java)
     }
 
     private val _signUpState = MutableStateFlow<SignUpState>(SignUpState.Idle)
