@@ -10,3 +10,9 @@ data class OptionConfig(
     val title: String,
     val route: String
 )
+
+/** Δομή για τα μενού που αντιστοιχούν σε έναν ρόλο. */
+data class RoleMenuConfig(
+    val inheritsFrom: String? = null,
+    val menus: List<MenuConfig> = emptyList()
+)

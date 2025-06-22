@@ -22,7 +22,7 @@ import com.ioannapergamali.mysmartroute.data.local.MenuOptionEntity
         MenuEntity::class,
         MenuOptionEntity::class
     ],
-    version = 16
+    version = 17
 )
 abstract class MySmartRouteDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
@@ -123,13 +123,16 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     "CREATE TABLE IF NOT EXISTS `roles` (" +
                         "`id` TEXT NOT NULL, " +
                         "`name` TEXT NOT NULL, " +
+                        "`parentRoleId` TEXT, " +
                         "PRIMARY KEY(`id`)" +
                     ")"
                 )
-                database.execSQL("INSERT INTO roles (id, name) VALUES " +
-                        "('role_passenger', 'PASSENGER')," +
-                        "('role_driver', 'DRIVER')," +
-                        "('role_admin', 'ADMIN')")
+                database.execSQL(
+                    "INSERT INTO roles (id, name, parentRoleId) VALUES " +
+                        "('role_passenger', 'PASSENGER', NULL)," +
+                        "('role_driver', 'DRIVER', 'role_passenger')," +
+                        "('role_admin', 'ADMIN', 'role_driver')"
+                )
             }
         }
 
@@ -233,13 +236,22 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_16_17 = object : Migration(16, 17) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE `roles` ADD COLUMN `parentRoleId` TEXT")
+                database.execSQL("UPDATE roles SET parentRoleId = NULL WHERE id = 'role_passenger'")
+                database.execSQL("UPDATE roles SET parentRoleId = 'role_passenger' WHERE id = 'role_driver'")
+                database.execSQL("UPDATE roles SET parentRoleId = 'role_driver' WHERE id = 'role_admin'")
+            }
+        }
+
         private fun prepopulate(db: SupportSQLiteDatabase) {
             Log.d(TAG, "Prepopulating database")
             db.execSQL(
-                "INSERT INTO roles (id, name) VALUES " +
-                    "('role_passenger', 'PASSENGER')," +
-                    "('role_driver', 'DRIVER')," +
-                    "('role_admin', 'ADMIN')"
+                "INSERT INTO roles (id, name, parentRoleId) VALUES " +
+                    "('role_passenger', 'PASSENGER', NULL)," +
+                    "('role_driver', 'DRIVER', 'role_passenger')," +
+                    "('role_admin', 'ADMIN', 'role_driver')"
             )
 
             fun insertMenu(id: String, roleId: String, title: String) {
@@ -313,7 +325,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_12_13,
                     MIGRATION_13_14,
                     MIGRATION_14_15,
-                    MIGRATION_15_16
+                    MIGRATION_15_16,
+                    MIGRATION_16_17
                 )
                     .addCallback(object : RoomDatabase.Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {

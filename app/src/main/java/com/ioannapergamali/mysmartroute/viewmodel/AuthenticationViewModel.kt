@@ -287,11 +287,18 @@ class AuthenticationViewModel : ViewModel() {
     private fun defaultMenus(context: Context, role: UserRole): List<Pair<String, List<Pair<String, String>>>> {
         return try {
             val json = context.assets.open("menus.json").bufferedReader().use { it.readText() }
-            val type = object : TypeToken<Map<String, List<MenuConfig>>>() {}.type
-            // Παράδειγμα χρήσης του Gson για ανάγνωση του menus.json
-            val map: Map<String, List<MenuConfig>> = gson.fromJson(json, type)
-            val roleMenus = map[role.name].orEmpty()
-            roleMenus.map { menu ->
+            val type = object : TypeToken<Map<String, RoleMenuConfig>>() {}.type
+            val map: Map<String, RoleMenuConfig> = gson.fromJson(json, type)
+
+            fun collect(roleName: String, acc: MutableList<MenuConfig>) {
+                val cfg = map[roleName] ?: return
+                cfg.inheritsFrom?.let { collect(it, acc) }
+                acc.addAll(cfg.menus)
+            }
+
+            val allMenus = mutableListOf<MenuConfig>()
+            collect(role.name, allMenus)
+            allMenus.map { menu ->
                 menu.title to menu.options.map { it.title to it.route }
             }
         } catch (e: Exception) {

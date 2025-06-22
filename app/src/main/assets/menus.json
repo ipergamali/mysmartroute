@@ -1,54 +1,62 @@
 {
-  "PASSENGER": [
-    {
-      "title": "Passenger Menu",
-      "options": [
-        {"title": "Sign out", "route": "signOut"},
-        {"title": "Manage Favorite Means of Transport", "route": "manageFavorites"},
-        {"title": "Mode Of Transportation For A Specific Route", "route": "routeMode"},
-        {"title": "Find a Vehicle for a specific Transport", "route": "findVehicle"},
-        {"title": "Find Way of Transport", "route": "findWay"},
-        {"title": "Book a Seat or Buy a Ticket", "route": "bookSeat"},
-        {"title": "View Interesting Routes", "route": "viewRoutes"},
-        {"title": "View Transports", "route": "viewTransports"},
-        {"title": "Print Booked Seat or Ticket", "route": "printTicket"},
-        {"title": "Cancel Booked Seat", "route": "cancelSeat"},
-        {"title": "View, Rank and Comment on Completed Transports", "route": "rankTransports"},
-        {"title": "Shut Down the System", "route": "shutdown"}
-      ]
-    }
-  ],
-  "DRIVER": [
-    {
-      "title": "Driver Menu",
-      "options": [
-        {"title": "Register Vehicle", "route": "registerVehicle"},
-        {"title": "Announce Availability for a specific Transport", "route": "announceAvailability"},
-        {"title": "Find Passengers", "route": "findPassengers"},
-        {"title": "Print Passenger List", "route": "printList"},
-        {"title": "Print Passenger List for Scheduled Transports", "route": "printScheduled"},
-        {"title": "Print Passenger List for Completed Transports", "route": "printCompleted"}
-      ]
-    }
-  ],
-  "ADMIN": [
-    {
-      "title": "Admin Menu",
-      "options": [
-        {"title": "Initialize System", "route": "initSystem"},
-        {"title": "Create User Account", "route": "createUser"},
-        {"title": "Promote or Demote User", "route": "editPrivileges"},
-        {"title": "Define Point of Interest", "route": "definePoi"},
-        {"title": "Define Duration of Travel by Foot", "route": "defineDuration"},
-        {"title": "View List of Unassigned Routes", "route": "viewUnassigned"},
-        {"title": "Review Point of Interest Names", "route": "reviewPoi"},
-        {"title": "Show 10 Best and Worst Drivers", "route": "rankDrivers"},
-        {"title": "View 10 Happiest/Least Happy Passengers", "route": "rankPassengers"},
-        {"title": "View Available Vehicles", "route": "viewVehicles"},
-        {"title": "View PoIs", "route": "viewPois"},
-        {"title": "View Users", "route": "viewUsers"},
-        {"title": "Advance Date", "route": "advanceDate"}
-      ]
-    }
-  ]
+  "PASSENGER": {
+    "menus": [
+      {
+        "title": "Passenger Menu",
+        "options": [
+          {"title": "Sign out", "route": "signOut"},
+          {"title": "Manage Favorite Means of Transport", "route": "manageFavorites"},
+          {"title": "Mode Of Transportation For A Specific Route", "route": "routeMode"},
+          {"title": "Find a Vehicle for a specific Transport", "route": "findVehicle"},
+          {"title": "Find Way of Transport", "route": "findWay"},
+          {"title": "Book a Seat or Buy a Ticket", "route": "bookSeat"},
+          {"title": "View Interesting Routes", "route": "viewRoutes"},
+          {"title": "View Transports", "route": "viewTransports"},
+          {"title": "Print Booked Seat or Ticket", "route": "printTicket"},
+          {"title": "Cancel Booked Seat", "route": "cancelSeat"},
+          {"title": "View, Rank and Comment on Completed Transports", "route": "rankTransports"},
+          {"title": "Shut Down the System", "route": "shutdown"}
+        ]
+      }
+    ]
+  },
+  "DRIVER": {
+    "inheritsFrom": "PASSENGER",
+    "menus": [
+      {
+        "title": "Driver Menu",
+        "options": [
+          {"title": "Register Vehicle", "route": "registerVehicle"},
+          {"title": "Announce Availability for a specific Transport", "route": "announceAvailability"},
+          {"title": "Find Passengers", "route": "findPassengers"},
+          {"title": "Print Passenger List", "route": "printList"},
+          {"title": "Print Passenger List for Scheduled Transports", "route": "printScheduled"},
+          {"title": "Print Passenger List for Completed Transports", "route": "printCompleted"}
+        ]
+      }
+    ]
+  },
+  "ADMIN": {
+    "inheritsFrom": "DRIVER",
+    "menus": [
+      {
+        "title": "Admin Menu",
+        "options": [
+          {"title": "Initialize System", "route": "initSystem"},
+          {"title": "Create User Account", "route": "createUser"},
+          {"title": "Promote or Demote User", "route": "editPrivileges"},
+          {"title": "Define Point of Interest", "route": "definePoi"},
+          {"title": "Define Duration of Travel by Foot", "route": "defineDuration"},
+          {"title": "View List of Unassigned Routes", "route": "viewUnassigned"},
+          {"title": "Review Point of Interest Names", "route": "reviewPoi"},
+          {"title": "Show 10 Best and Worst Drivers", "route": "rankDrivers"},
+          {"title": "View 10 Happiest/Least Happy Passengers", "route": "rankPassengers"},
+          {"title": "View Available Vehicles", "route": "viewVehicles"},
+          {"title": "View PoIs", "route": "viewPois"},
+          {"title": "View Users", "route": "viewUsers"},
+          {"title": "Advance Date", "route": "advanceDate"}
+        ]
+      }
+    ]
+  }
 }
