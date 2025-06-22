@@ -53,7 +53,11 @@ fun SettingsEntity.toFirestoreMap(): Map<String, Any> = mapOf(
 
 /** Μετατροπή εγγράφου Firestore σε [UserEntity]. */
 fun DocumentSnapshot.toUserEntity(): UserEntity? {
-    val id = getDocumentReference("id")?.id ?: getString("id") ?: return null
+    val id = when (val rawId = get("id")) {
+        is com.google.firebase.firestore.DocumentReference -> rawId.id
+        is String -> rawId
+        else -> getString("id")
+    } ?: return null
     return UserEntity(
         id = id,
         name = getString("name") ?: "",
@@ -63,7 +67,11 @@ fun DocumentSnapshot.toUserEntity(): UserEntity? {
         phoneNum = getString("phoneNum") ?: "",
         password = getString("password") ?: "",
         role = getString("role") ?: "",
-        roleId = getDocumentReference("roleId")?.id ?: getString("roleId") ?: "",
+        roleId = when (val rawRole = get("roleId")) {
+            is com.google.firebase.firestore.DocumentReference -> rawRole.id
+            is String -> rawRole
+            else -> getString("roleId")
+        } ?: "",
         city = getString("city") ?: "",
         streetName = getString("streetName") ?: "",
         streetNum = (getLong("streetNum") ?: 0L).toInt(),
