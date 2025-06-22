@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.DocumentReference
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.utils.toUserEntity
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
@@ -83,9 +84,11 @@ class DatabaseViewModel : ViewModel() {
                 .documents.mapNotNull { it.toUserEntity() }
             val vehicles = firestore.collection("vehicles").get().await()
                 .documents.mapNotNull { doc ->
-                    val userId = doc.getString("userId")
-                        ?: doc.getDocumentReference("userId")?.id
-                        ?: return@mapNotNull null
+                    val userId = when (val uid = doc.get("userId")) {
+                        is String -> uid
+                        is DocumentReference -> uid.id
+                        else -> null
+                    } ?: return@mapNotNull null
                     VehicleEntity(
                         id = doc.getString("id") ?: "",
                         description = doc.getString("description") ?: "",
@@ -98,9 +101,11 @@ class DatabaseViewModel : ViewModel() {
                 .documents.mapNotNull { it.toObject(PoIEntity::class.java) }
             val settings = firestore.collection("user_settings").get().await()
                 .documents.mapNotNull { doc ->
-                    val userId = doc.getString("userId")
-                        ?: doc.getDocumentReference("userId")?.id
-                        ?: return@mapNotNull null
+                    val userId = when (val uid = doc.get("userId")) {
+                        is String -> uid
+                        is DocumentReference -> uid.id
+                        else -> null
+                    } ?: return@mapNotNull null
                     SettingsEntity(
                         userId = userId,
                         theme = doc.getString("theme") ?: "",
@@ -185,9 +190,11 @@ class DatabaseViewModel : ViewModel() {
                     Log.d(TAG, "Fetching vehicles from Firestore")
                     val vehicles = firestore.collection("vehicles").get().await()
                         .documents.mapNotNull { doc ->
-                            val userId = doc.getString("userId")
-                                ?: doc.getDocumentReference("userId")?.id
-                                ?: return@mapNotNull null
+                            val userId = when (val uid = doc.get("userId")) {
+                                is String -> uid
+                                is DocumentReference -> uid.id
+                                else -> null
+                            } ?: return@mapNotNull null
                             VehicleEntity(
                                 id = doc.getString("id") ?: "",
                                 description = doc.getString("description") ?: "",
@@ -203,9 +210,11 @@ class DatabaseViewModel : ViewModel() {
                     Log.d(TAG, "Fetching settings from Firestore")
                     val settings = firestore.collection("user_settings").get().await()
                         .documents.mapNotNull { doc ->
-                            val userId = doc.getString("userId")
-                                ?: doc.getDocumentReference("userId")?.id
-                                ?: return@mapNotNull null
+                            val userId = when (val uid = doc.get("userId")) {
+                                is String -> uid
+                                is DocumentReference -> uid.id
+                                else -> null
+                            } ?: return@mapNotNull null
                             SettingsEntity(
                                 userId = userId,
                                 theme = doc.getString("theme") ?: "",
