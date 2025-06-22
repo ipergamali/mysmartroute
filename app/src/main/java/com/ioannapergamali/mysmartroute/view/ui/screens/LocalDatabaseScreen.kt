@@ -52,7 +52,7 @@ fun LocalDatabaseScreen(navController: NavController, openDrawer: () -> Unit) {
                     item { Text("Ο πίνακας είναι άδειος") }
                 } else {
                     items(data!!.users) { user ->
-                        Text("${user.id} - ${user.username}")
+                        Text("ID: ${user.id}, ${user.name} ${user.surname}, ${user.username}")
                     }
                 }
                 item { Spacer(modifier = Modifier.padding(8.dp)) }
@@ -61,7 +61,7 @@ fun LocalDatabaseScreen(navController: NavController, openDrawer: () -> Unit) {
                     item { Text("Ο πίνακας είναι άδειος") }
                 } else {
                     items(data!!.vehicles) { vehicle ->
-                        Text("${vehicle.id} - ${vehicle.description}")
+                        Text("${vehicle.description}, τύπος ${vehicle.type}, θέσεις ${vehicle.seat}")
                     }
                 }
                 item { Spacer(modifier = Modifier.padding(8.dp)) }
@@ -70,7 +70,7 @@ fun LocalDatabaseScreen(navController: NavController, openDrawer: () -> Unit) {
                     item { Text("Ο πίνακας είναι άδειος") }
                 } else {
                     items(data!!.pois) { poi ->
-                        Text("${poi.id} - ${poi.name}")
+                        Text("${poi.name} (${poi.type}) - ${poi.description}")
                     }
                 }
                 item { Spacer(modifier = Modifier.padding(8.dp)) }
@@ -79,7 +79,7 @@ fun LocalDatabaseScreen(navController: NavController, openDrawer: () -> Unit) {
                     item { Text("Ο πίνακας είναι άδειος") }
                 } else {
                     items(data!!.settings) { setting ->
-                        Text("${setting.userId} - ${setting.theme}")
+                        Text("${setting.userId} -> ${setting.theme}, dark ${setting.darkTheme}")
                     }
                 }
                 }

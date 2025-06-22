@@ -47,22 +47,22 @@ fun FirebaseDatabaseScreen(navController: NavController, openDrawer: () -> Unit)
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
                 item { Text("Users", style = MaterialTheme.typography.titleMedium) }
                 items(data!!.users) { user ->
-                    Text("${user.id} - ${user.username}")
+                    Text("ID: ${user.id}, ${user.name} ${user.surname}, ${user.username}")
                 }
                 item { Spacer(modifier = Modifier.padding(8.dp)) }
                 item { Text("Vehicles", style = MaterialTheme.typography.titleMedium) }
                 items(data!!.vehicles) { vehicle ->
-                    Text("${vehicle.id} - ${vehicle.description}")
+                    Text("${vehicle.description}, τύπος ${vehicle.type}, θέσεις ${vehicle.seat}")
                 }
                 item { Spacer(modifier = Modifier.padding(8.dp)) }
                 item { Text("PoIs", style = MaterialTheme.typography.titleMedium) }
                 items(data!!.pois) { poi ->
-                    Text("${poi.id} - ${poi.name}")
+                    Text("${poi.name} (${poi.type}) - ${poi.description}")
                 }
                 item { Spacer(modifier = Modifier.padding(8.dp)) }
                 item { Text("Settings", style = MaterialTheme.typography.titleMedium) }
                 items(data!!.settings) { setting ->
-                    Text("${setting.userId} - ${setting.theme}")
+                    Text("${setting.userId} -> ${setting.theme}, dark ${setting.darkTheme}")
                 }
                 item { Spacer(modifier = Modifier.padding(8.dp)) }
                 item { Text("Authentication table δεν είναι διαθέσιμη από το client", color = MaterialTheme.colorScheme.error) }
