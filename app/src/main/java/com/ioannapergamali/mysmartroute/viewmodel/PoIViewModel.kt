@@ -8,6 +8,7 @@ import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.util.UUID
 
@@ -26,7 +27,7 @@ class PoIViewModel : ViewModel() {
     fun loadPois(context: Context) {
         viewModelScope.launch {
             val dao = MySmartRouteDatabase.getInstance(context).poIDao()
-            _pois.value = dao.getAll()
+            _pois.value = dao.getAll().first()
             db.collection("pois").get()
                 .addOnSuccessListener { snapshot ->
                     val list = snapshot.documents.mapNotNull { doc ->
