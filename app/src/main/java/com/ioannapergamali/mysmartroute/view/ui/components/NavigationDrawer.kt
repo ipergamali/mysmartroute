@@ -12,6 +12,7 @@ import com.ioannapergamali.mysmartroute.view.ui.components.LogoAssets
 import com.google.firebase.auth.FirebaseAuth
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
@@ -34,9 +35,13 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
             LogoImage(
                 drawableRes = LogoAssets.LOGO,
                 contentDescription = "logo",
-                modifier = Modifier.padding(end = 8.dp)
+                modifier = Modifier.padding(end = 8.dp),
+                size = 36.dp
             )
-            Text("Menu")
+            Text(
+                "Menu",
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+            )
         }
         val context = LocalContext.current
         val user = FirebaseAuth.getInstance().currentUser
