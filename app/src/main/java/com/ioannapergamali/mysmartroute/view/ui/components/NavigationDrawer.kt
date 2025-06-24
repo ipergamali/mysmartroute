@@ -10,7 +10,7 @@ import androidx.compose.material.icons.filled.AdminPanelSettings
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Login
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.People
+import androidx.compose.material.icons.filled.Menu
 import com.google.firebase.auth.FirebaseAuth
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme
@@ -138,13 +138,13 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
                 icon = { Icon(Icons.Filled.Settings, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
             )
             NavigationDrawerItem(
-                label = { Text("Roles") },
+                label = { Text("Μενού") },
                 selected = false,
                 onClick = {
-                    navController.navigate("roles")
+                    navController.navigate("menu")
                     closeDrawer()
                 },
-                icon = { Icon(Icons.Filled.People, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
+                icon = { Icon(Icons.Filled.Menu, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
             )
             NavigationDrawerItem(
                 label = { Text("Logout") },
