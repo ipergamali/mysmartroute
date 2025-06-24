@@ -48,7 +48,8 @@ fun SettingsEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     "darkTheme" to darkTheme,
     "font" to font,
     "soundEnabled" to soundEnabled,
-    "soundVolume" to soundVolume
+    "soundVolume" to soundVolume,
+    "language" to language
 )
 
 /** Μετατροπή εγγράφου Firestore σε [UserEntity]. */
