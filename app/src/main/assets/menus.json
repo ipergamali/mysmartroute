@@ -1,5 +1,6 @@
 {
   "PASSENGER": {
+    "inheritsFrom": null,
     "menus": [
       {
         "title": "Passenger Menu",
