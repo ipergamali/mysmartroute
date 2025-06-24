@@ -23,7 +23,11 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
-    ModalDrawerSheet {
+    ModalDrawerSheet(
+        drawerContainerColor = MaterialTheme.colorScheme.surface,
+        drawerContentColor = MaterialTheme.colorScheme.onSurface,
+        drawerTonalElevation = 4.dp
+    ) {
         Text("Menu", modifier = Modifier.padding(16.dp))
         val context = LocalContext.current
         val user = FirebaseAuth.getInstance().currentUser
@@ -119,7 +123,8 @@ fun DrawerWrapper(
         drawerState = drawerState,
         drawerContent = {
             DrawerMenu(navController) { scope.launch { drawerState.close() } }
-        }
+        },
+        scrimColor = MaterialTheme.colorScheme.scrim
     ) {
         content { scope.launch { drawerState.open() } }
     }
