@@ -9,6 +9,8 @@ import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.AdminPanelSettings
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Login
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.People
 import com.google.firebase.auth.FirebaseAuth
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme
@@ -117,6 +119,33 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
             icon = { Icon(Icons.Filled.AdminPanelSettings, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
         )
         if (user != null) {
+            NavigationDrawerItem(
+                label = { Text("Profile") },
+                selected = false,
+                onClick = {
+                    navController.navigate("profile")
+                    closeDrawer()
+                },
+                icon = { Icon(Icons.Filled.Person, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
+            )
+            NavigationDrawerItem(
+                label = { Text("Settings") },
+                selected = false,
+                onClick = {
+                    navController.navigate("settings")
+                    closeDrawer()
+                },
+                icon = { Icon(Icons.Filled.Settings, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
+            )
+            NavigationDrawerItem(
+                label = { Text("Roles") },
+                selected = false,
+                onClick = {
+                    navController.navigate("roles")
+                    closeDrawer()
+                },
+                icon = { Icon(Icons.Filled.People, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
+            )
             NavigationDrawerItem(
                 label = { Text("Logout") },
                 selected = false,
