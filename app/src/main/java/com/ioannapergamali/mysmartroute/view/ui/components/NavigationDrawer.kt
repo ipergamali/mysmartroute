@@ -30,8 +30,10 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.compose.ui.platform.LocalContext
 import android.app.Activity
+import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.launch
 import com.google.firebase.firestore.FirebaseFirestore
+import com.ioannapergamali.mysmartroute.R
 
 @Composable
 fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
@@ -132,7 +134,7 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
                 icon = { Icon(Icons.Filled.Person, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
             )
             NavigationDrawerItem(
-                label = { Text("Settings") },
+                label = { Text(stringResource(R.string.settings)) },
                 selected = false,
                 onClick = {
                     navController.navigate("settings")
