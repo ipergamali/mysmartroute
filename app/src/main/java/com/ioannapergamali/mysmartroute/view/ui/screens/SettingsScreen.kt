@@ -94,7 +94,10 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
         ) { padding ->
             ScreenContainer(modifier = Modifier.padding(padding)) {
             Text("Θέμα")
-            Divider(modifier = Modifier.padding(vertical = 4.dp))
+            Divider(
+                modifier = Modifier.padding(vertical = 4.dp),
+                color = MaterialTheme.colorScheme.outline
+            )
             ExposedDropdownMenuBox(expanded = expandedTheme.value, onExpandedChange = { expandedTheme.value = !expandedTheme.value }) {
                 OutlinedTextField(
                     readOnly = true,
@@ -122,7 +125,10 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
             Switch(checked = dark.value, onCheckedChange = { dark.value = it })
 
             Text("Γραμματοσειρά", modifier = Modifier.padding(top = 16.dp))
-            Divider(modifier = Modifier.padding(vertical = 4.dp))
+            Divider(
+                modifier = Modifier.padding(vertical = 4.dp),
+                color = MaterialTheme.colorScheme.outline
+            )
             ExposedDropdownMenuBox(expanded = expandedFont.value, onExpandedChange = { expandedFont.value = !expandedFont.value }) {
                 OutlinedTextField(
                     readOnly = true,
@@ -148,7 +154,10 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
             }
 
             Text("Ήχος", modifier = Modifier.padding(top = 16.dp))
-            Divider(modifier = Modifier.padding(vertical = 4.dp))
+            Divider(
+                modifier = Modifier.padding(vertical = 4.dp),
+                color = MaterialTheme.colorScheme.outline
+            )
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = {
                     val newState = !soundState.value
