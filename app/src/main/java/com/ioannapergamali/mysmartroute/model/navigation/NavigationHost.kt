@@ -24,6 +24,7 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.FirebaseDatabaseScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.AdminSignUpScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.DatabaseSyncScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.RolesScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.AdminTemplateScreen
 
 
 
@@ -139,6 +140,10 @@ fun NavigationHost(navController : NavHostController, openDrawer: () -> Unit) {
                 },
                 openDrawer = openDrawer
             )
+        }
+
+        composable("adminDashboard") {
+            AdminTemplateScreen(navController = navController, openDrawer = openDrawer)
         }
 
 
