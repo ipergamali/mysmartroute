@@ -40,6 +40,7 @@ fun HomeScreen(
                 navController = navController,
                 showMenu = true,
                 showBack = false,
+                showHomeIcon = false,
                 onMenuClick = openDrawer
             )
         }
