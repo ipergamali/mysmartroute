@@ -34,8 +34,8 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
 
         user?.email?.let { email ->
             Text(email, modifier = Modifier.padding(start = 16.dp, bottom = 8.dp))
-            Divider()
-        } ?: Divider()
+            Divider(color = MaterialTheme.colorScheme.outline)
+        } ?: Divider(color = MaterialTheme.colorScheme.outline)
 
         if (user != null) {
             NavigationDrawerItem(
