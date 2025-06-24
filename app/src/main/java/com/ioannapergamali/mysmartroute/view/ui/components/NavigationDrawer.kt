@@ -98,6 +98,15 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
             },
             icon = { Icon(Icons.Filled.Dashboard, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
         )
+        NavigationDrawerItem(
+            label = { Text("Materialize Dashboard") },
+            selected = false,
+            onClick = {
+                navController.navigate("materializeDashboard")
+                closeDrawer()
+            },
+            icon = { Icon(Icons.Filled.Dashboard, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
+        )
         if (user != null) {
             NavigationDrawerItem(
                 label = { Text("Logout") },
