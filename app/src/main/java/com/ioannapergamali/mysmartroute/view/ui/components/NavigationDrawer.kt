@@ -7,7 +7,6 @@ import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.AdminPanelSettings
-import androidx.compose.material.icons.filled.Dashboard
 import com.ioannapergamali.mysmartroute.view.ui.components.LogoImage
 import com.ioannapergamali.mysmartroute.view.ui.components.LogoAssets
 import com.google.firebase.auth.FirebaseAuth
@@ -88,24 +87,6 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
                 closeDrawer()
             },
             icon = { Icon(Icons.Filled.AdminPanelSettings, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
-        )
-        NavigationDrawerItem(
-            label = { Text("Admin Dashboard") },
-            selected = false,
-            onClick = {
-                navController.navigate("adminDashboard")
-                closeDrawer()
-            },
-            icon = { Icon(Icons.Filled.Dashboard, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
-        )
-        NavigationDrawerItem(
-            label = { Text("Materialize Dashboard") },
-            selected = false,
-            onClick = {
-                navController.navigate("materializeDashboard")
-                closeDrawer()
-            },
-            icon = { Icon(Icons.Filled.Dashboard, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
         )
         if (user != null) {
             NavigationDrawerItem(
