@@ -100,14 +100,3 @@ val user: User = gson.fromJson(jsonString, type)
 Μετά την προσθήκη ή επιβεβαίωση της παραπάνω εξάρτησης, κάνε "Sync Project with Gradle Files" ώστε να κατέβει το library και να λυθούν τα σφάλματα.
 
 
-### Λήψη Materialize themes
-
-Για να κατεβάσεις αυτόματα τα διαθέσιμα Materialize θέματα από τους ιστότοπους ThemeForest και BootstrapMade, υπάρχει το script `scripts/fetch_materialize_themes.py`. Το script χρησιμοποιεί τις βιβλιοθήκες `requests` και `beautifulsoup4` για να ανακτήσει τις σελίδες και να δημιουργήσει το αρχείο `app/src/main/assets/themes.json` με τα ονόματα και τα χρώματα των θεμάτων.
-
-```bash
-pip install requests beautifulsoup4
-python scripts/fetch_materialize_themes.py
-```
-
-Λόγω περιορισμών δικτύου ενδέχεται να χρειαστεί να εκτελέσεις το script εκτός του περιβάλλοντος του Codex. Το παραγόμενο `themes.json` μπορεί στη συνέχεια να αντιγραφεί στο φάκελο `app/src/main/assets` της εφαρμογής, ώστε να χρησιμοποιηθεί στις ρυθμίσεις θεμάτων.
-Αφού δημιουργηθεί το `themes.json`, τα νέα θέματα θα εμφανιστούν αυτόματα στην οθόνη ρυθμίσεων.
