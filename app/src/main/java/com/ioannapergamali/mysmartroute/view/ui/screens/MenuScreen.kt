@@ -55,7 +55,7 @@ fun MenuScreen(navController: NavController, openDrawer: () -> Unit) {
             )
         }
     ) { paddingValues ->
-        ScreenContainer(modifier = Modifier.padding(paddingValues)) {
+        ScreenContainer(modifier = Modifier.padding(paddingValues), scrollable = false) {
             if (menus.isEmpty()) {
                 CircularProgressIndicator()
             } else {
