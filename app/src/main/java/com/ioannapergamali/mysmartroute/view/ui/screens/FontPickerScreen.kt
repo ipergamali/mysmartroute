@@ -33,6 +33,7 @@ import com.ioannapergamali.mysmartroute.utils.ThemePreferenceManager
 import com.ioannapergamali.mysmartroute.utils.FontPreferenceManager
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
+import com.ioannapergamali.mysmartroute.model.interfaces.ThemeOption
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
