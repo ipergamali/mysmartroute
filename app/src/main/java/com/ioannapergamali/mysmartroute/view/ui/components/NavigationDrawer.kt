@@ -40,12 +40,13 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
         drawerContentColor = MaterialTheme.colorScheme.onSurface,
         drawerTonalElevation = 4.dp
     ) {
-        val user = FirebaseAuth.getInstance().currentUser
+        val userState = remember { mutableStateOf(FirebaseAuth.getInstance().currentUser) }
         val username = remember { mutableStateOf<String?>(null) }
 
         DisposableEffect(Unit) {
             val auth = FirebaseAuth.getInstance()
             val listener = FirebaseAuth.AuthStateListener { firebaseAuth ->
+                userState.value = firebaseAuth.currentUser
                 val uid = firebaseAuth.currentUser?.uid
                 if (uid != null) {
                     FirebaseFirestore.getInstance().collection("users")
@@ -61,6 +62,8 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
             auth.addAuthStateListener(listener)
             onDispose { auth.removeAuthStateListener(listener) }
         }
+
+        val user = userState.value
 
         Row(
             modifier = Modifier.padding(16.dp),
