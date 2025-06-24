@@ -47,6 +47,7 @@ fun SettingsEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     "theme" to theme,
     "darkTheme" to darkTheme,
     "font" to font,
+    "language" to language,
     "soundEnabled" to soundEnabled,
     "soundVolume" to soundVolume
 )

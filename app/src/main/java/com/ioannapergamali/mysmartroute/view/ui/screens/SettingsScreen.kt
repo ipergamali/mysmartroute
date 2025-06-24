@@ -41,6 +41,7 @@ import com.ioannapergamali.mysmartroute.utils.SoundManager
 import com.ioannapergamali.mysmartroute.utils.SoundPreferenceManager
 import com.ioannapergamali.mysmartroute.utils.ThemePreferenceManager
 import com.ioannapergamali.mysmartroute.utils.FontPreferenceManager
+import com.ioannapergamali.mysmartroute.utils.LanguagePreferenceManager
 import com.ioannapergamali.mysmartroute.view.ui.AppFont
 import com.ioannapergamali.mysmartroute.view.ui.AppTheme
 import com.ioannapergamali.mysmartroute.view.ui.MysmartrouteTheme
@@ -49,6 +50,7 @@ import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.viewmodel.SettingsViewModel
 import com.ioannapergamali.mysmartroute.model.interfaces.ThemeOption
 import com.ioannapergamali.mysmartroute.data.ThemeLoader
+import com.ioannapergamali.mysmartroute.model.enumerations.AppLanguage
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,6 +61,7 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
     val currentTheme by ThemePreferenceManager.themeFlow(context).collectAsState(initial = AppTheme.Ocean)
     val currentDark by ThemePreferenceManager.darkThemeFlow(context).collectAsState(initial = false)
     val currentFont by FontPreferenceManager.fontFlow(context).collectAsState(initial = AppFont.SansSerif)
+    val currentLanguage by LanguagePreferenceManager.languageFlow(context).collectAsState(initial = AppLanguage.ENGLISH)
     val soundEnabled by SoundPreferenceManager.soundEnabledFlow(context).collectAsState(initial = true)
     val currentVolume by SoundPreferenceManager.soundVolumeFlow(context).collectAsState(initial = 1f)
 
@@ -70,6 +73,9 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
     val expandedFont = remember { mutableStateOf(false) }
     val selectedFont = remember { mutableStateOf(currentFont) }
 
+    val expandedLanguage = remember { mutableStateOf(false) }
+    val selectedLanguage = remember { mutableStateOf(currentLanguage) }
+
     val soundState = remember { mutableStateOf(soundEnabled) }
     val volumeState = remember { mutableFloatStateOf(currentVolume) }
 
@@ -77,6 +83,7 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
     LaunchedEffect(currentTheme) { selectedTheme.value = currentTheme }
     LaunchedEffect(currentDark) { dark.value = currentDark }
     LaunchedEffect(currentFont) { selectedFont.value = currentFont }
+    LaunchedEffect(currentLanguage) { selectedLanguage.value = currentLanguage }
     LaunchedEffect(soundEnabled) { soundState.value = soundEnabled }
     LaunchedEffect(currentVolume) { volumeState.floatValue = currentVolume }
 
@@ -156,6 +163,35 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
                 }
             }
 
+            Text("Γλώσσα", modifier = Modifier.padding(top = 16.dp))
+            Divider(
+                modifier = Modifier.padding(vertical = 4.dp),
+                color = MaterialTheme.colorScheme.outline
+            )
+            ExposedDropdownMenuBox(expanded = expandedLanguage.value, onExpandedChange = { expandedLanguage.value = !expandedLanguage.value }) {
+                OutlinedTextField(
+                    readOnly = true,
+                    value = selectedLanguage.value.label,
+                    onValueChange = {},
+                    label = { Text("Language") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedLanguage.value) },
+                    modifier = Modifier.menuAnchor(),
+                    shape = MaterialTheme.shapes.small,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                    )
+                )
+                DropdownMenu(expanded = expandedLanguage.value, onDismissRequest = { expandedLanguage.value = false }) {
+                    AppLanguage.values().forEach { lang ->
+                        DropdownMenuItem(text = { Text(lang.label) }, onClick = {
+                            selectedLanguage.value = lang
+                            expandedLanguage.value = false
+                        })
+                    }
+                }
+            }
+
             Text("Ήχος", modifier = Modifier.padding(top = 16.dp))
             Divider(
                 modifier = Modifier.padding(vertical = 4.dp),
@@ -193,6 +229,7 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
                         selectedTheme.value,
                         dark.value,
                         selectedFont.value,
+                        selectedLanguage.value,
                         soundState.value,
                         volumeState.floatValue
                     )

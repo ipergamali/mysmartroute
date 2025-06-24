@@ -18,6 +18,7 @@ import com.ioannapergamali.mysmartroute.data.local.RoleEntity
 import com.ioannapergamali.mysmartroute.data.local.MenuEntity
 import com.ioannapergamali.mysmartroute.data.local.MenuOptionEntity
 import com.ioannapergamali.mysmartroute.data.local.UserEntity
+import com.ioannapergamali.mysmartroute.model.enumerations.AppLanguage
 import com.ioannapergamali.mysmartroute.data.local.VehicleEntity
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -122,6 +123,7 @@ class DatabaseViewModel : ViewModel() {
                         theme = doc.getString("theme") ?: "",
                         darkTheme = doc.getBoolean("darkTheme") ?: false,
                         font = doc.getString("font") ?: "",
+                        language = doc.getString("language") ?: AppLanguage.ENGLISH.name,
                         soundEnabled = doc.getBoolean("soundEnabled") ?: false,
                         soundVolume = (doc.getDouble("soundVolume") ?: 0.0).toFloat()
                     )
@@ -241,6 +243,7 @@ class DatabaseViewModel : ViewModel() {
                                 theme = doc.getString("theme") ?: "",
                                 darkTheme = doc.getBoolean("darkTheme") ?: false,
                                 font = doc.getString("font") ?: "",
+                                language = doc.getString("language") ?: AppLanguage.ENGLISH.name,
                                 soundEnabled = doc.getBoolean("soundEnabled") ?: false,
                                 soundVolume = (doc.getDouble("soundVolume") ?: 0.0).toFloat()
                             )

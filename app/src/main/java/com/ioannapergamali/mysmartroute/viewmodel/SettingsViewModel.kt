@@ -17,9 +17,11 @@ import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import kotlinx.coroutines.tasks.await
 import com.ioannapergamali.mysmartroute.utils.ThemePreferenceManager
 import com.ioannapergamali.mysmartroute.utils.FontPreferenceManager
+import com.ioannapergamali.mysmartroute.utils.LanguagePreferenceManager
 import com.ioannapergamali.mysmartroute.view.ui.AppFont
 import com.ioannapergamali.mysmartroute.model.interfaces.ThemeOption
 import com.ioannapergamali.mysmartroute.utils.SoundPreferenceManager
+import com.ioannapergamali.mysmartroute.model.enumerations.AppLanguage
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -51,6 +53,7 @@ class SettingsViewModel : ViewModel() {
             theme = AppTheme.Ocean.name,
             darkTheme = false,
             font = AppFont.SansSerif.name,
+            language = AppLanguage.ENGLISH.name,
             soundEnabled = true,
             soundVolume = 1f
         )
@@ -112,6 +115,7 @@ class SettingsViewModel : ViewModel() {
         theme: ThemeOption,
         dark: Boolean,
         font: AppFont,
+        language: AppLanguage,
         soundEnabled: Boolean,
         soundVolume: Float
     ) {
@@ -119,6 +123,8 @@ class SettingsViewModel : ViewModel() {
             ThemePreferenceManager.setTheme(context, theme)
             ThemePreferenceManager.setDarkTheme(context, dark)
             FontPreferenceManager.setFont(context, font)
+            LanguagePreferenceManager.setLanguage(context, language)
+            LanguagePreferenceManager.applyLanguage(context, language)
             SoundPreferenceManager.setSoundEnabled(context, soundEnabled)
             SoundPreferenceManager.setSoundVolume(context, soundVolume)
             updateSettings(context) {
@@ -126,6 +132,7 @@ class SettingsViewModel : ViewModel() {
                     theme = (theme as? AppTheme)?.name ?: theme.label,
                     darkTheme = dark,
                     font = font.name,
+                    language = language.name,
                     soundEnabled = soundEnabled,
                     soundVolume = soundVolume
                 )
@@ -179,6 +186,7 @@ class SettingsViewModel : ViewModel() {
                             theme = doc.getString("theme") ?: AppTheme.Ocean.name,
                             darkTheme = doc.getBoolean("darkTheme") ?: false,
                             font = doc.getString("font") ?: AppFont.SansSerif.name,
+                            language = doc.getString("language") ?: AppLanguage.ENGLISH.name,
                             soundEnabled = doc.getBoolean("soundEnabled") ?: true,
                             soundVolume = (doc.getDouble("soundVolume") ?: 1.0).toFloat()
                         )
@@ -194,6 +202,8 @@ class SettingsViewModel : ViewModel() {
             ThemePreferenceManager.setTheme(context, AppTheme.valueOf(settings.theme))
             ThemePreferenceManager.setDarkTheme(context, settings.darkTheme)
             FontPreferenceManager.setFont(context, AppFont.valueOf(settings.font))
+            LanguagePreferenceManager.setLanguage(context, AppLanguage.valueOf(settings.language))
+            LanguagePreferenceManager.applyLanguage(context, AppLanguage.valueOf(settings.language))
             SoundPreferenceManager.setSoundEnabled(context, settings.soundEnabled)
             SoundPreferenceManager.setSoundVolume(context, settings.soundVolume)
         }
@@ -208,6 +218,7 @@ class SettingsViewModel : ViewModel() {
             val theme = ThemePreferenceManager.themeFlow(context).first()
             val dark = ThemePreferenceManager.darkThemeFlow(context).first()
             val font = FontPreferenceManager.fontFlow(context).first()
+            val language = LanguagePreferenceManager.languageFlow(context).first()
             val soundEnabled = SoundPreferenceManager.getSoundEnabled(context)
             val soundVolume = SoundPreferenceManager.getSoundVolume(context)
             updateSettings(context) {
@@ -215,6 +226,7 @@ class SettingsViewModel : ViewModel() {
                     theme = (theme as? AppTheme)?.name ?: theme.label,
                     darkTheme = dark,
                     font = font.name,
+                    language = language.name,
                     soundEnabled = soundEnabled,
                     soundVolume = soundVolume
                 )
@@ -230,6 +242,7 @@ class SettingsViewModel : ViewModel() {
                     theme = AppTheme.Ocean.name,
                     darkTheme = false,
                     font = AppFont.SansSerif.name,
+                    language = AppLanguage.ENGLISH.name,
                     soundEnabled = true,
                     soundVolume = 1f
                 )

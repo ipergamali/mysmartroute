@@ -22,7 +22,7 @@ import com.ioannapergamali.mysmartroute.data.local.MenuOptionEntity
         MenuEntity::class,
         MenuOptionEntity::class
     ],
-    version = 17
+    version = 18
 )
 abstract class MySmartRouteDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
@@ -245,6 +245,12 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_17_18 = object : Migration(17, 18) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE `settings` ADD COLUMN `language` TEXT NOT NULL DEFAULT 'ENGLISH'")
+            }
+        }
+
         private fun prepopulate(db: SupportSQLiteDatabase) {
             Log.d(TAG, "Prepopulating database")
             db.execSQL(
@@ -326,7 +332,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_13_14,
                     MIGRATION_14_15,
                     MIGRATION_15_16,
-                    MIGRATION_16_17
+                    MIGRATION_16_17,
+                    MIGRATION_17_18
                 )
                     .addCallback(object : RoomDatabase.Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {

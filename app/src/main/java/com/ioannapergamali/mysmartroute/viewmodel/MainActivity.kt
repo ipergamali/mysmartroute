@@ -28,6 +28,8 @@ import com.ioannapergamali.mysmartroute.utils.SoundPreferenceManager
 import com.ioannapergamali.mysmartroute.utils.SoundManager
 import com.ioannapergamali.mysmartroute.viewmodel.SettingsViewModel
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
+import com.ioannapergamali.mysmartroute.utils.LanguagePreferenceManager
+import com.ioannapergamali.mysmartroute.model.enumerations.AppLanguage
 import kotlinx.coroutines.launch
 import com.ioannapergamali.mysmartroute.model.interfaces.ThemeOption
 
@@ -69,6 +71,7 @@ class MainActivity : ComponentActivity() {
             val theme by ThemePreferenceManager.themeFlow(context).collectAsState(initial = AppTheme.Ocean)
             val dark by ThemePreferenceManager.darkThemeFlow(context).collectAsState(initial = false)
             val font by FontPreferenceManager.fontFlow(context).collectAsState(initial = AppFont.SansSerif)
+            val language by LanguagePreferenceManager.languageFlow(context).collectAsState(initial = AppLanguage.ENGLISH)
             val soundEnabled by SoundPreferenceManager.soundEnabledFlow(context).collectAsState(initial = true)
             val soundVolume by SoundPreferenceManager.soundVolumeFlow(context).collectAsState(initial = 1f)
 
@@ -79,6 +82,10 @@ class MainActivity : ComponentActivity() {
                 } else {
                     if (SoundManager.isPlaying) SoundManager.pause()
                 }
+            }
+
+            LaunchedEffect(language) {
+                LanguagePreferenceManager.applyLanguage(context, language)
             }
 
             MysmartrouteTheme(theme = theme, darkTheme = dark, font = font.fontFamily) {
