@@ -5,15 +5,11 @@ import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Logout
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.clickable
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -27,7 +23,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.padding
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,28 +43,7 @@ fun TopBar(
         }
     }
 ) {
-    val username = remember { mutableStateOf<String?>(null) }
 
-    DisposableEffect(Unit) {
-        val auth = FirebaseAuth.getInstance()
-        val listener = FirebaseAuth.AuthStateListener { firebaseAuth ->
-            val uid = firebaseAuth.currentUser?.uid
-            if (uid != null) {
-                FirebaseFirestore.getInstance().collection("users")
-                    .document(uid)
-                    .get()
-                    .addOnSuccessListener { doc ->
-                        username.value = doc.getString("username")
-                    }
-            } else {
-                username.value = null
-            }
-        }
-        auth.addAuthStateListener(listener)
-        onDispose { auth.removeAuthStateListener(listener) }
-    }
-
-    var menuExpanded by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.statusBarsPadding()) {
         TopAppBar(
@@ -119,37 +94,6 @@ fun TopBar(
             }
         },
         actions = {
-            username.value?.let { name ->
-                Box {
-                    Text(
-                        name,
-                        modifier = Modifier
-                            .padding(end = 8.dp)
-                            .clickable { menuExpanded = true }
-                    )
-                    DropdownMenu(
-                        expanded = menuExpanded,
-                        onDismissRequest = { menuExpanded = false }
-                    ) {
-                        DropdownMenuItem(text = { Text("Προφίλ") }, onClick = {
-                            menuExpanded = false
-                            navController.navigate("profile")
-                        })
-                        DropdownMenuItem(text = { Text("Μενού χρήστη") }, onClick = {
-                            menuExpanded = false
-                            navController.navigate("menu")
-                        })
-                        DropdownMenuItem(text = { Text("Settings") }, onClick = {
-                            menuExpanded = false
-                            navController.navigate("settings")
-                        })
-                        DropdownMenuItem(text = { Text("Logout") }, onClick = {
-                            menuExpanded = false
-                            onLogout()
-                        })
-                    }
-                }
-            }
             if (showLogout) {
                 IconButton(onClick = onLogout) {
                     Icon(
