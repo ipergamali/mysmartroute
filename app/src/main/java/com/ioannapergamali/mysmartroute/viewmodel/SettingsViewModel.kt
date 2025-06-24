@@ -14,6 +14,7 @@ import com.ioannapergamali.mysmartroute.data.local.UserEntity
 import com.ioannapergamali.mysmartroute.data.local.insertSettingsSafely
 import com.ioannapergamali.mysmartroute.view.ui.AppTheme
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
+import com.ioannapergamali.mysmartroute.data.ThemeOption
 import kotlinx.coroutines.tasks.await
 import com.ioannapergamali.mysmartroute.utils.ThemePreferenceManager
 import com.ioannapergamali.mysmartroute.utils.FontPreferenceManager
@@ -108,7 +109,7 @@ class SettingsViewModel : ViewModel() {
 
     fun applyAllSettings(
         context: Context,
-        theme: AppTheme,
+        theme: ThemeOption,
         dark: Boolean,
         font: AppFont,
         soundEnabled: Boolean,
@@ -122,7 +123,7 @@ class SettingsViewModel : ViewModel() {
             SoundPreferenceManager.setSoundVolume(context, soundVolume)
             updateSettings(context) {
                 it.copy(
-                    theme = theme.name,
+                    theme = ThemePreferenceManager.encodeTheme(theme),
                     darkTheme = dark,
                     font = font.name,
                     soundEnabled = soundEnabled,
@@ -132,7 +133,7 @@ class SettingsViewModel : ViewModel() {
         }
     }
 
-    fun applyTheme(context: Context, theme: AppTheme, dark: Boolean) {
+    fun applyTheme(context: Context, theme: ThemeOption, dark: Boolean) {
         viewModelScope.launch {
             ThemePreferenceManager.setTheme(context, theme)
             ThemePreferenceManager.setDarkTheme(context, dark)
@@ -190,7 +191,7 @@ class SettingsViewModel : ViewModel() {
             val settings = remote ?: local ?: return@launch
 
             insertSettingsSafely(dao, userDao, settings)
-            ThemePreferenceManager.setTheme(context, AppTheme.valueOf(settings.theme))
+            ThemePreferenceManager.setTheme(context, ThemePreferenceManager.decodeTheme(settings.theme))
             ThemePreferenceManager.setDarkTheme(context, settings.darkTheme)
             FontPreferenceManager.setFont(context, AppFont.valueOf(settings.font))
             SoundPreferenceManager.setSoundEnabled(context, settings.soundEnabled)
@@ -211,7 +212,7 @@ class SettingsViewModel : ViewModel() {
             val soundVolume = SoundPreferenceManager.getSoundVolume(context)
             updateSettings(context) {
                 it.copy(
-                    theme = theme.name,
+                    theme = ThemePreferenceManager.encodeTheme(theme),
                     darkTheme = dark,
                     font = font.name,
                     soundEnabled = soundEnabled,
@@ -226,7 +227,7 @@ class SettingsViewModel : ViewModel() {
             Log.d("SettingsViewModel", "Επαναφορά ρυθμίσεων στα προεπιλεγμένα")
             updateSettings(context) {
                 it.copy(
-                    theme = AppTheme.Ocean.name,
+                    theme = ThemePreferenceManager.encodeTheme(AppTheme.Ocean),
                     darkTheme = false,
                     font = AppFont.SansSerif.name,
                     soundEnabled = true,
