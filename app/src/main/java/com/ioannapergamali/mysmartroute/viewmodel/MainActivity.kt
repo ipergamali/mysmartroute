@@ -29,6 +29,7 @@ import com.ioannapergamali.mysmartroute.utils.SoundManager
 import com.ioannapergamali.mysmartroute.viewmodel.SettingsViewModel
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import kotlinx.coroutines.launch
+import com.ioannapergamali.mysmartroute.model.interfaces.ThemeOption
 
 
 

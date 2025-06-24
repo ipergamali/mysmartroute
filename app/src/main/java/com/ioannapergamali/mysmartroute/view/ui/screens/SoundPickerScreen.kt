@@ -34,6 +34,7 @@ import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.SettingsViewModel
 import androidx.compose.material3.Slider
 import com.ioannapergamali.mysmartroute.utils.SoundManager
+import com.ioannapergamali.mysmartroute.model.interfaces.ThemeOption
 
 @Composable
 fun SoundPickerScreen(navController: NavController) {

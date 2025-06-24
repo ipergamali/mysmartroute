@@ -47,6 +47,8 @@ import com.ioannapergamali.mysmartroute.view.ui.MysmartrouteTheme
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.viewmodel.SettingsViewModel
+import com.ioannapergamali.mysmartroute.model.interfaces.ThemeOption
+import com.ioannapergamali.mysmartroute.data.ThemeLoader
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -61,7 +63,8 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
     val currentVolume by SoundPreferenceManager.soundVolumeFlow(context).collectAsState(initial = 1f)
 
     val expandedTheme = remember { mutableStateOf(false) }
-    val selectedTheme = remember { mutableStateOf(currentTheme) }
+    val selectedTheme = remember { mutableStateOf<ThemeOption>(currentTheme) }
+    val customThemes = remember { ThemeLoader.load(context) }
     val dark = remember { mutableStateOf(currentDark) }
 
     val expandedFont = remember { mutableStateOf(false) }
@@ -113,7 +116,7 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
                     )
                 )
                 DropdownMenu(expanded = expandedTheme.value, onDismissRequest = { expandedTheme.value = false }) {
-                    AppTheme.values().forEach { theme ->
+                    (AppTheme.values().toList() + customThemes).forEach { theme ->
                         DropdownMenuItem(text = { Text(theme.label) }, onClick = {
                             selectedTheme.value = theme
                             expandedTheme.value = false

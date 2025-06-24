@@ -11,8 +11,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.material3.Typography
+import com.ioannapergamali.mysmartroute.model.interfaces.ThemeOption
 
-enum class AppTheme(val label: String, val seed: Color, val fontFamily: FontFamily) {
+enum class AppTheme(
+    override val label: String,
+    override val seed: Color,
+    override val fontFamily: FontFamily
+) : ThemeOption {
     Ocean("Ocean", Color(0xFF2196F3), FontFamily.SansSerif),
     Sunset("Sunset", Color(0xFFEF5350), FontFamily.Serif),
     Forest("Forest", Color(0xFF2E7D32), FontFamily.Monospace),
@@ -32,36 +37,34 @@ enum class AppTheme(val label: String, val seed: Color, val fontFamily: FontFami
     DeepOrange("Deep Orange", Color(0xFFFF5722), FontFamily.SansSerif),
     Gray("Gray", Color(0xFF9E9E9E), FontFamily.Serif);
 
-    private fun isColorDark(color: Color): Boolean {
-        val darkness = 1 - (0.299 * color.red + 0.587 * color.green + 0.114 * color.blue)
-        return darkness >= 0.5
-    }
-
-    private fun onColor(seed: Color): Color = if (isColorDark(seed)) Color.White else Color.Black
-
-    val lightColors: ColorScheme
-        get() = lightColorScheme(
-            primary = seed,
-            secondary = seed,
-            tertiary = seed,
-            onPrimary = onColor(seed),
-            onSecondary = onColor(seed),
-            onTertiary = onColor(seed)
-        )
-
-    val darkColors: ColorScheme
-        get() = darkColorScheme(
-            primary = seed,
-            secondary = seed,
-            tertiary = seed,
-            onPrimary = onColor(seed),
-            onSecondary = onColor(seed),
-            onTertiary = onColor(seed)
-        )
-
     val typography: Typography
         get() = Typography()
 }
+
+private fun isColorDark(color: Color): Boolean {
+    val darkness = 1 - (0.299 * color.red + 0.587 * color.green + 0.114 * color.blue)
+    return darkness >= 0.5
+}
+
+private fun onColor(seed: Color): Color = if (isColorDark(seed)) Color.White else Color.Black
+
+fun ThemeOption.lightColors(): ColorScheme = lightColorScheme(
+    primary = seed,
+    secondary = seed,
+    tertiary = seed,
+    onPrimary = onColor(seed),
+    onSecondary = onColor(seed),
+    onTertiary = onColor(seed)
+)
+
+fun ThemeOption.darkColors(): ColorScheme = darkColorScheme(
+    primary = seed,
+    secondary = seed,
+    tertiary = seed,
+    onPrimary = onColor(seed),
+    onSecondary = onColor(seed),
+    onTertiary = onColor(seed)
+)
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -89,12 +92,12 @@ private fun typographyWithFont(font: FontFamily): Typography {
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun MysmartrouteTheme(
-    theme: AppTheme,
+    theme: ThemeOption,
     darkTheme: Boolean,
     font: FontFamily,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (darkTheme) theme.darkColors else theme.lightColors
+    val colorScheme = if (darkTheme) theme.darkColors() else theme.lightColors()
     androidx.compose.material3.MaterialTheme(
         colorScheme = colorScheme,
         typography = typographyWithFont(font),

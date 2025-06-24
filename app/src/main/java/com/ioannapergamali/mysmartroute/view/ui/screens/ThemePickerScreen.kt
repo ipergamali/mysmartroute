@@ -29,6 +29,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.view.ui.AppTheme
 import com.ioannapergamali.mysmartroute.view.ui.AppFont
+import com.ioannapergamali.mysmartroute.data.ThemeLoader
+import com.ioannapergamali.mysmartroute.model.interfaces.ThemeOption
 import com.ioannapergamali.mysmartroute.viewmodel.SettingsViewModel
 import com.ioannapergamali.mysmartroute.utils.ThemePreferenceManager
 import com.ioannapergamali.mysmartroute.utils.FontPreferenceManager
@@ -45,11 +47,13 @@ fun ThemePickerScreen(navController: NavController) {
     val currentFont by FontPreferenceManager.fontFlow(context).collectAsState(initial = AppFont.SansSerif)
 
     var expanded by remember { mutableStateOf(false) }
-    var selectedTheme by remember { mutableStateOf(currentTheme) }
+    var selectedTheme by remember { mutableStateOf<ThemeOption>(currentTheme) }
     var dark by remember { mutableStateOf(currentDark) }
 
     LaunchedEffect(currentTheme) { selectedTheme = currentTheme }
     LaunchedEffect(currentDark) { dark = currentDark }
+
+    val customThemes = remember { ThemeLoader.load(context) }
 
     MysmartrouteTheme(theme = selectedTheme, darkTheme = dark, font = currentFont.fontFamily) {
         Scaffold(
@@ -75,7 +79,7 @@ fun ThemePickerScreen(navController: NavController) {
                         )
                     )
                     DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                        AppTheme.values().forEach { theme ->
+                        (AppTheme.values().toList() + customThemes).forEach { theme ->
                             DropdownMenuItem(text = { Text(theme.label) }, onClick = {
                                 selectedTheme = theme
                                 expanded = false

@@ -18,6 +18,7 @@ import kotlinx.coroutines.tasks.await
 import com.ioannapergamali.mysmartroute.utils.ThemePreferenceManager
 import com.ioannapergamali.mysmartroute.utils.FontPreferenceManager
 import com.ioannapergamali.mysmartroute.view.ui.AppFont
+import com.ioannapergamali.mysmartroute.model.interfaces.ThemeOption
 import com.ioannapergamali.mysmartroute.utils.SoundPreferenceManager
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.first
@@ -108,7 +109,7 @@ class SettingsViewModel : ViewModel() {
 
     fun applyAllSettings(
         context: Context,
-        theme: AppTheme,
+        theme: ThemeOption,
         dark: Boolean,
         font: AppFont,
         soundEnabled: Boolean,
@@ -122,7 +123,7 @@ class SettingsViewModel : ViewModel() {
             SoundPreferenceManager.setSoundVolume(context, soundVolume)
             updateSettings(context) {
                 it.copy(
-                    theme = theme.name,
+                    theme = (theme as? AppTheme)?.name ?: theme.label,
                     darkTheme = dark,
                     font = font.name,
                     soundEnabled = soundEnabled,
@@ -132,7 +133,7 @@ class SettingsViewModel : ViewModel() {
         }
     }
 
-    fun applyTheme(context: Context, theme: AppTheme, dark: Boolean) {
+    fun applyTheme(context: Context, theme: ThemeOption, dark: Boolean) {
         viewModelScope.launch {
             ThemePreferenceManager.setTheme(context, theme)
             ThemePreferenceManager.setDarkTheme(context, dark)
@@ -211,7 +212,7 @@ class SettingsViewModel : ViewModel() {
             val soundVolume = SoundPreferenceManager.getSoundVolume(context)
             updateSettings(context) {
                 it.copy(
-                    theme = theme.name,
+                    theme = (theme as? AppTheme)?.name ?: theme.label,
                     darkTheme = dark,
                     font = font.name,
                     soundEnabled = soundEnabled,
