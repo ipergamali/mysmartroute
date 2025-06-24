@@ -123,7 +123,8 @@ class DatabaseViewModel : ViewModel() {
                         darkTheme = doc.getBoolean("darkTheme") ?: false,
                         font = doc.getString("font") ?: "",
                         soundEnabled = doc.getBoolean("soundEnabled") ?: false,
-                        soundVolume = (doc.getDouble("soundVolume") ?: 0.0).toFloat()
+                        soundVolume = (doc.getDouble("soundVolume") ?: 0.0).toFloat(),
+                        language = doc.getString("language") ?: "el"
                     )
                 }
             Log.d(TAG, "Fetched ${'$'}{settings.size} settings from Firebase")
@@ -242,7 +243,8 @@ class DatabaseViewModel : ViewModel() {
                                 darkTheme = doc.getBoolean("darkTheme") ?: false,
                                 font = doc.getString("font") ?: "",
                                 soundEnabled = doc.getBoolean("soundEnabled") ?: false,
-                                soundVolume = (doc.getDouble("soundVolume") ?: 0.0).toFloat()
+                                soundVolume = (doc.getDouble("soundVolume") ?: 0.0).toFloat(),
+                                language = doc.getString("language") ?: "el"
                             )
                         }
 

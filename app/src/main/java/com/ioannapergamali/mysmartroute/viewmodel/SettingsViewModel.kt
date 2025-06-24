@@ -20,6 +20,8 @@ import com.ioannapergamali.mysmartroute.utils.FontPreferenceManager
 import com.ioannapergamali.mysmartroute.view.ui.AppFont
 import com.ioannapergamali.mysmartroute.model.interfaces.ThemeOption
 import com.ioannapergamali.mysmartroute.utils.SoundPreferenceManager
+import com.ioannapergamali.mysmartroute.utils.LanguagePreferenceManager
+import com.ioannapergamali.mysmartroute.utils.LocaleUtils
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -52,7 +54,8 @@ class SettingsViewModel : ViewModel() {
             darkTheme = false,
             font = AppFont.SansSerif.name,
             soundEnabled = true,
-            soundVolume = 1f
+            soundVolume = 1f,
+            language = "el"
         )
         val updated = transform(current)
         val checkingMessage = "Γίνονται έλεγχοι αποθήκευσης"
@@ -113,7 +116,8 @@ class SettingsViewModel : ViewModel() {
         dark: Boolean,
         font: AppFont,
         soundEnabled: Boolean,
-        soundVolume: Float
+        soundVolume: Float,
+        language: String
     ) {
         viewModelScope.launch {
             ThemePreferenceManager.setTheme(context, theme)
@@ -121,13 +125,16 @@ class SettingsViewModel : ViewModel() {
             FontPreferenceManager.setFont(context, font)
             SoundPreferenceManager.setSoundEnabled(context, soundEnabled)
             SoundPreferenceManager.setSoundVolume(context, soundVolume)
+            LanguagePreferenceManager.setLanguage(context, language)
+            LocaleUtils.updateLocale(context, language)
             updateSettings(context) {
                 it.copy(
                     theme = (theme as? AppTheme)?.name ?: theme.label,
                     darkTheme = dark,
                     font = font.name,
                     soundEnabled = soundEnabled,
-                    soundVolume = soundVolume
+                    soundVolume = soundVolume,
+                    language = language
                 )
             }
         }
@@ -158,6 +165,13 @@ class SettingsViewModel : ViewModel() {
         }
     }
 
+    fun applyLanguage(context: Context, language: String) {
+        viewModelScope.launch {
+            LanguagePreferenceManager.setLanguage(context, language)
+            LocaleUtils.updateLocale(context, language)
+        }
+    }
+
     fun syncSettings(context: Context) {
         viewModelScope.launch {
             val userId = auth.currentUser?.uid ?: return@launch
@@ -180,7 +194,8 @@ class SettingsViewModel : ViewModel() {
                             darkTheme = doc.getBoolean("darkTheme") ?: false,
                             font = doc.getString("font") ?: AppFont.SansSerif.name,
                             soundEnabled = doc.getBoolean("soundEnabled") ?: true,
-                            soundVolume = (doc.getDouble("soundVolume") ?: 1.0).toFloat()
+                            soundVolume = (doc.getDouble("soundVolume") ?: 1.0).toFloat(),
+                            language = doc.getString("language") ?: "el"
                         )
                     } else null
                 } catch (_: Exception) {
@@ -196,6 +211,8 @@ class SettingsViewModel : ViewModel() {
             FontPreferenceManager.setFont(context, AppFont.valueOf(settings.font))
             SoundPreferenceManager.setSoundEnabled(context, settings.soundEnabled)
             SoundPreferenceManager.setSoundVolume(context, settings.soundVolume)
+            LanguagePreferenceManager.setLanguage(context, settings.language)
+            LocaleUtils.updateLocale(context, settings.language)
         }
     }
 
@@ -210,13 +227,15 @@ class SettingsViewModel : ViewModel() {
             val font = FontPreferenceManager.fontFlow(context).first()
             val soundEnabled = SoundPreferenceManager.getSoundEnabled(context)
             val soundVolume = SoundPreferenceManager.getSoundVolume(context)
+            val language = LanguagePreferenceManager.languageFlow(context).first()
             updateSettings(context) {
                 it.copy(
                     theme = (theme as? AppTheme)?.name ?: theme.label,
                     darkTheme = dark,
                     font = font.name,
                     soundEnabled = soundEnabled,
-                    soundVolume = soundVolume
+                    soundVolume = soundVolume,
+                    language = language
                 )
             }
         }
@@ -231,7 +250,8 @@ class SettingsViewModel : ViewModel() {
                     darkTheme = false,
                     font = AppFont.SansSerif.name,
                     soundEnabled = true,
-                    soundVolume = 1f
+                    soundVolume = 1f,
+                    language = "el"
                 )
             }
         }

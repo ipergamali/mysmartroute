@@ -22,7 +22,7 @@ import com.ioannapergamali.mysmartroute.data.local.MenuOptionEntity
         MenuEntity::class,
         MenuOptionEntity::class
     ],
-    version = 17
+    version = 18
 )
 abstract class MySmartRouteDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
@@ -104,13 +104,14 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                         "`font` TEXT NOT NULL, " +
                         "`soundEnabled` INTEGER NOT NULL, " +
                         "`soundVolume` REAL NOT NULL, " +
+                        "`language` TEXT NOT NULL DEFAULT 'el', " +
                         "FOREIGN KEY(`userId`) REFERENCES `users`(`id`) ON DELETE CASCADE, " +
                         "PRIMARY KEY(`userId`)" +
                     ")"
                 )
                 database.execSQL(
-                    "INSERT INTO `settings_new` (`userId`, `theme`, `darkTheme`, `font`, `soundEnabled`, `soundVolume`) " +
-                        "SELECT `userId`, `theme`, `darkTheme`, `font`, `soundEnabled`, `soundVolume` FROM `settings`"
+                    "INSERT INTO `settings_new` (`userId`, `theme`, `darkTheme`, `font`, `soundEnabled`, `soundVolume`, `language`) " +
+                        "SELECT `userId`, `theme`, `darkTheme`, `font`, `soundEnabled`, `soundVolume`, 'el' FROM `settings`"
                 )
                 database.execSQL("DROP TABLE `settings`")
                 database.execSQL("ALTER TABLE `settings_new` RENAME TO `settings`")
@@ -245,6 +246,12 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_17_18 = object : Migration(17, 18) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE `settings` ADD COLUMN `language` TEXT NOT NULL DEFAULT 'el'")
+            }
+        }
+
         private fun prepopulate(db: SupportSQLiteDatabase) {
             Log.d(TAG, "Prepopulating database")
             db.execSQL(
@@ -326,7 +333,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_13_14,
                     MIGRATION_14_15,
                     MIGRATION_15_16,
-                    MIGRATION_16_17
+                    MIGRATION_16_17,
+                    MIGRATION_17_18
                 )
                     .addCallback(object : RoomDatabase.Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {

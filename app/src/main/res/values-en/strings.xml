@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">mysmartroute</string>
+    <string name="invalid_coordinates">Invalid coordinates</string>
+    <string name="no_internet">No internet connection</string>
+    <string name="directions">Get Directions</string>
+    <string name="coordinates_valid">Coordinates are valid</string>
+    <string name="coordinates_missing">Missing coordinates</string>
+    <string name="check_coordinates">Check coordinates</string>
+    <string name="internet_available">Internet connection available</string>
+    <string name="check_internet">Check connection</string>
+    <string name="map_api_key_missing">Maps API key missing</string>
+</resources>
