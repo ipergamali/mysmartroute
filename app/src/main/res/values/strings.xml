@@ -11,4 +11,14 @@
     <string name="internet_available">Η σύνδεση στο διαδίκτυο είναι διαθέσιμη</string>
     <string name="check_internet">Έλεγχος σύνδεσης</string>
     <string name="map_api_key_missing">Λείπει το κλειδί API των χαρτών</string>
+    <!-- Settings related strings -->
+    <string name="settings">Ρυθμίσεις</string>
+    <string name="theme">Θέμα</string>
+    <string name="dark_theme">Σκοτεινό θέμα</string>
+    <string name="font_label">Γραμματοσειρά</string>
+    <string name="fonts">Γραμματοσειρές</string>
+    <string name="language">Γλώσσα</string>
+    <string name="sound">Ήχος</string>
+    <string name="apply">Εφαρμογή</string>
+    <string name="applying_settings">Εφαρμογή ρυθμίσεων...</string>
 </resources>

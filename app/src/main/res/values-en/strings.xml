@@ -9,4 +9,14 @@
     <string name="internet_available">Internet connection available</string>
     <string name="check_internet">Check connection</string>
     <string name="map_api_key_missing">Maps API key missing</string>
+    <!-- Settings related strings -->
+    <string name="settings">Settings</string>
+    <string name="theme">Theme</string>
+    <string name="dark_theme">Dark Theme</string>
+    <string name="font_label">Font</string>
+    <string name="fonts">Fonts</string>
+    <string name="language">Language</string>
+    <string name="sound">Sound</string>
+    <string name="apply">Apply</string>
+    <string name="applying_settings">Applying settings...</string>
 </resources>

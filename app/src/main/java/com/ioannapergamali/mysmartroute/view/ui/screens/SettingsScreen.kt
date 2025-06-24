@@ -29,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import android.widget.Toast
 import android.util.Log
 import androidx.compose.ui.unit.dp
@@ -51,6 +52,7 @@ import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.viewmodel.SettingsViewModel
 import com.ioannapergamali.mysmartroute.model.interfaces.ThemeOption
 import com.ioannapergamali.mysmartroute.data.ThemeLoader
+import com.ioannapergamali.mysmartroute.R
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -93,16 +95,16 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
     ) {
         Scaffold(
             topBar = {
-                TopBar(
-                    title = "Settings",
-                    navController = navController,
-                    showMenu = true,
-                    onMenuClick = openDrawer
-                )
-            }
+            TopBar(
+                title = stringResource(R.string.settings),
+                navController = navController,
+                showMenu = true,
+                onMenuClick = openDrawer
+            )
+        }
         ) { padding ->
             ScreenContainer(modifier = Modifier.padding(padding)) {
-            Text("Θέμα")
+            Text(stringResource(R.string.theme))
             Divider(
                 modifier = Modifier.padding(vertical = 4.dp),
                 color = MaterialTheme.colorScheme.outline
@@ -112,7 +114,7 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
                     readOnly = true,
                     value = selectedTheme.value.label,
                     onValueChange = {},
-                    label = { Text("Theme") },
+                    label = { Text(stringResource(R.string.theme)) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedTheme.value) },
                     modifier = Modifier.menuAnchor(),
                     shape = MaterialTheme.shapes.small,
@@ -130,10 +132,10 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
                     }
                 }
             }
-            Text("Dark Theme")
+            Text(stringResource(R.string.dark_theme))
             Switch(checked = dark.value, onCheckedChange = { dark.value = it })
 
-            Text("Γραμματοσειρά", modifier = Modifier.padding(top = 16.dp))
+            Text(stringResource(R.string.font_label), modifier = Modifier.padding(top = 16.dp))
             Divider(
                 modifier = Modifier.padding(vertical = 4.dp),
                 color = MaterialTheme.colorScheme.outline
@@ -143,7 +145,7 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
                     readOnly = true,
                     value = selectedFont.value.label,
                     onValueChange = {},
-                    label = { Text("Fonts") },
+                    label = { Text(stringResource(R.string.fonts)) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedFont.value) },
                     modifier = Modifier.menuAnchor(),
                     shape = MaterialTheme.shapes.small,
@@ -162,7 +164,7 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
                 }
             }
 
-            Text("Γλώσσα", modifier = Modifier.padding(top = 16.dp))
+            Text(stringResource(R.string.language), modifier = Modifier.padding(top = 16.dp))
             Divider(
                 modifier = Modifier.padding(vertical = 4.dp),
                 color = MaterialTheme.colorScheme.outline
@@ -172,7 +174,7 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
                     readOnly = true,
                     value = AppLanguage.values().first { it.code == selectedLanguage.value }.let { it.flag + " " + it.label },
                     onValueChange = {},
-                    label = { Text("Language") },
+                    label = { Text(stringResource(R.string.language)) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedLanguage.value) },
                     modifier = Modifier.menuAnchor(),
                     shape = MaterialTheme.shapes.small,
@@ -191,7 +193,7 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
                 }
             }
 
-            Text("Ήχος", modifier = Modifier.padding(top = 16.dp))
+            Text(stringResource(R.string.sound), modifier = Modifier.padding(top = 16.dp))
             Divider(
                 modifier = Modifier.padding(vertical = 4.dp),
                 color = MaterialTheme.colorScheme.outline
@@ -220,7 +222,7 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
 
             Button(
                 onClick = {
-                    val applyMessage = "Εφαρμογή ρυθμίσεων..."
+                    val applyMessage = context.getString(R.string.applying_settings)
                     Log.d("SettingsScreen", applyMessage)
                     Toast.makeText(context, applyMessage, Toast.LENGTH_SHORT).show()
                     viewModel.applyAllSettings(
@@ -232,10 +234,11 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
                         volumeState.floatValue,
                         selectedLanguage.value
                     )
+                    (context as? android.app.Activity)?.recreate()
                 },
                 modifier = Modifier.padding(top = 8.dp)
             ) {
-                Text("Apply")
+                Text(stringResource(R.string.apply))
             }
         }
     }
