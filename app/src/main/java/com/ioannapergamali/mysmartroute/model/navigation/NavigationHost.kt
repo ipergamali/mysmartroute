@@ -25,6 +25,7 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.AdminSignUpScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.DatabaseSyncScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.RolesScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.AdminTemplateScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.MaterializeAdminScreen
 
 
 
@@ -144,6 +145,10 @@ fun NavigationHost(navController : NavHostController, openDrawer: () -> Unit) {
 
         composable("adminDashboard") {
             AdminTemplateScreen(navController = navController, openDrawer = openDrawer)
+        }
+
+        composable("materializeDashboard") {
+            MaterializeAdminScreen(navController = navController, openDrawer = openDrawer)
         }
 
 
