@@ -24,6 +24,7 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.FirebaseDatabaseScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.AdminSignUpScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.DatabaseSyncScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.RolesScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.ProfileScreen
 
 
 
@@ -101,6 +102,10 @@ fun NavigationHost(navController : NavHostController, openDrawer: () -> Unit) {
 
         composable("roles") {
             RolesScreen(navController = navController, openDrawer = openDrawer)
+        }
+
+        composable("profile") {
+            ProfileScreen(navController = navController, openDrawer = openDrawer)
         }
 
         composable("soundPicker") {
