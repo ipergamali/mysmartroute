@@ -2,15 +2,17 @@ package com.ioannapergamali.mysmartroute.view.ui.components
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.AdminPanelSettings
+import com.ioannapergamali.mysmartroute.view.ui.components.LogoImage
+import com.ioannapergamali.mysmartroute.view.ui.components.LogoAssets
 import com.google.firebase.auth.FirebaseAuth
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
@@ -28,7 +30,14 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
         drawerContentColor = MaterialTheme.colorScheme.onSurface,
         drawerTonalElevation = 4.dp
     ) {
-        Text("Menu", modifier = Modifier.padding(16.dp))
+        Row(modifier = Modifier.padding(16.dp)) {
+            LogoImage(
+                drawableRes = LogoAssets.LOGO,
+                contentDescription = "logo",
+                modifier = Modifier.padding(end = 8.dp)
+            )
+            Text("Menu")
+        }
         val context = LocalContext.current
         val user = FirebaseAuth.getInstance().currentUser
 
@@ -37,17 +46,7 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
             Divider(color = MaterialTheme.colorScheme.outline)
         } ?: Divider(color = MaterialTheme.colorScheme.outline)
 
-        if (user != null) {
-            NavigationDrawerItem(
-                label = { Text("Settings") },
-                selected = false,
-                onClick = {
-                    navController.navigate("settings")
-                    closeDrawer()
-                },
-                icon = { Icon(Icons.Filled.Settings, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
-            )
-        }
+        
         NavigationDrawerItem(
             label = { Text("About") },
             selected = false,

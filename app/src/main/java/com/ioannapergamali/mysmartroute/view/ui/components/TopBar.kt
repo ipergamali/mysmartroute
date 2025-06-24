@@ -38,6 +38,7 @@ fun TopBar(
     showMenu: Boolean = false,
     showLogout: Boolean = false,
     showBack: Boolean = true,
+    showHomeIcon: Boolean = true,
     onMenuClick: () -> Unit = {},
     onLogout: () -> Unit = {
         FirebaseAuth.getInstance().signOut()
@@ -92,12 +93,18 @@ fun TopBar(
                     )
                 }
 
-                IconButton(onClick = {
-                    navController.navigate("home") {
-                        popUpTo("home") { inclusive = true }
+                if (showHomeIcon) {
+                    IconButton(onClick = {
+                        navController.navigate("home") {
+                            popUpTo("home") { inclusive = true }
+                        }
+                    }) {
+                        Icon(
+                            Icons.Filled.Home,
+                            contentDescription = "home",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
                     }
-                }) {
-                    Icon(Icons.Filled.Home, contentDescription = "home", tint = MaterialTheme.colorScheme.primary)
                 }
 
                 if (showBack) {
@@ -132,6 +139,10 @@ fun TopBar(
                             menuExpanded = false
                             navController.navigate("menu")
                         })
+                        DropdownMenuItem(text = { Text("Settings") }, onClick = {
+                            menuExpanded = false
+                            navController.navigate("settings")
+                        })
                         DropdownMenuItem(text = { Text("Logout") }, onClick = {
                             menuExpanded = false
                             onLogout()
@@ -139,15 +150,7 @@ fun TopBar(
                     }
                 }
             }
-            if (FirebaseAuth.getInstance().currentUser != null) {
-                IconButton(onClick = { navController.navigate("settings") }) {
-                    Icon(
-                        Icons.Filled.Settings,
-                        contentDescription = "settings",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-            } else if (showLogout) {
+            if (showLogout) {
                 IconButton(onClick = onLogout) {
                     Icon(
                         Icons.Filled.Logout,
