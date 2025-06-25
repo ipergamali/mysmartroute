@@ -26,6 +26,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -79,6 +81,8 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
     val volumeState = remember { mutableFloatStateOf(currentVolume) }
     val expandedLanguage = remember { mutableStateOf(false) }
     val selectedLanguage = remember { mutableStateOf(currentLanguage) }
+
+    val coroutineScope = rememberCoroutineScope()
 
 
     LaunchedEffect(currentTheme) { selectedTheme.value = currentTheme }
@@ -225,16 +229,18 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
                     val applyMessage = context.getString(R.string.applying_settings)
                     Log.d("SettingsScreen", applyMessage)
                     Toast.makeText(context, applyMessage, Toast.LENGTH_SHORT).show()
-                    viewModel.applyAllSettings(
-                        context,
-                        selectedTheme.value,
-                        dark.value,
-                        selectedFont.value,
-                        soundState.value,
-                        volumeState.floatValue,
-                        selectedLanguage.value
-                    )
-                    (context as? android.app.Activity)?.recreate()
+                    coroutineScope.launch {
+                        viewModel.applyAllSettings(
+                            context,
+                            selectedTheme.value,
+                            dark.value,
+                            selectedFont.value,
+                            soundState.value,
+                            volumeState.floatValue,
+                            selectedLanguage.value
+                        )
+                        (context as? android.app.Activity)?.recreate()
+                    }
                 },
                 modifier = Modifier.padding(top = 8.dp)
             ) {

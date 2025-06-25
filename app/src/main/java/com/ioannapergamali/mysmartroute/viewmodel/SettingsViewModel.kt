@@ -110,7 +110,7 @@ class SettingsViewModel : ViewModel() {
         }
     }
 
-    fun applyAllSettings(
+    suspend fun applyAllSettings(
         context: Context,
         theme: ThemeOption,
         dark: Boolean,
@@ -119,24 +119,22 @@ class SettingsViewModel : ViewModel() {
         soundVolume: Float,
         language: String
     ) {
-        viewModelScope.launch {
-            ThemePreferenceManager.setTheme(context, theme)
-            ThemePreferenceManager.setDarkTheme(context, dark)
-            FontPreferenceManager.setFont(context, font)
-            SoundPreferenceManager.setSoundEnabled(context, soundEnabled)
-            SoundPreferenceManager.setSoundVolume(context, soundVolume)
-            LanguagePreferenceManager.setLanguage(context, language)
-            LocaleUtils.updateLocale(context, language)
-            updateSettings(context) {
-                it.copy(
-                    theme = (theme as? AppTheme)?.name ?: theme.label,
-                    darkTheme = dark,
-                    font = font.name,
-                    soundEnabled = soundEnabled,
-                    soundVolume = soundVolume,
-                    language = language
-                )
-            }
+        ThemePreferenceManager.setTheme(context, theme)
+        ThemePreferenceManager.setDarkTheme(context, dark)
+        FontPreferenceManager.setFont(context, font)
+        SoundPreferenceManager.setSoundEnabled(context, soundEnabled)
+        SoundPreferenceManager.setSoundVolume(context, soundVolume)
+        LanguagePreferenceManager.setLanguage(context, language)
+        LocaleUtils.updateLocale(context, language)
+        updateSettings(context) {
+            it.copy(
+                theme = (theme as? AppTheme)?.name ?: theme.label,
+                darkTheme = dark,
+                font = font.name,
+                soundEnabled = soundEnabled,
+                soundVolume = soundVolume,
+                language = language
+            )
         }
     }
 
