@@ -17,6 +17,8 @@ import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.RoleViewModel
+import androidx.compose.ui.res.stringResource
+import com.ioannapergamali.mysmartroute.R
 
 @Composable
 fun RolesScreen(navController: NavController, openDrawer: () -> Unit) {
@@ -29,7 +31,7 @@ fun RolesScreen(navController: NavController, openDrawer: () -> Unit) {
     Scaffold(
         topBar = {
             TopBar(
-                title = "Roles",
+                title = stringResource(R.string.roles_title),
                 navController = navController,
                 showMenu = true,
                 onMenuClick = openDrawer
