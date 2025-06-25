@@ -122,6 +122,8 @@ class AuthenticationViewModel : ViewModel() {
                     val roleId = roleIds[role] ?: "role_passenger"
                     val roleRef = db.collection("roles").document(roleId)
 
+                    // Αποθηκεύουμε το roleId ως απλό String ώστε να είναι πάντα
+                    // συμβατό με την ανάγνωση από την εφαρμογή.
                     val userData = mapOf(
                         "id" to authRef,
                         "name" to name,
@@ -131,7 +133,7 @@ class AuthenticationViewModel : ViewModel() {
                         "phoneNum" to phoneNum,
                         "password" to password,
                         "role" to role.name,
-                        "roleId" to roleRef,
+                        "roleId" to roleId,
                         "city" to address.city,
                         "streetName" to address.streetName,
                         "streetNum" to address.streetNum,
