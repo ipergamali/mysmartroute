@@ -149,22 +149,26 @@ class DatabaseViewModel : ViewModel() {
                 Log.d(TAG, "Fetched ${menusSnap.documents.size} menus for role $roleId")
                 for (menuDoc in menusSnap.documents) {
                     val menuId = menuDoc.getString("id") ?: menuDoc.id
+                    val menuTitleKey = menuDoc.getString("titleKey")
+                        ?: menuDoc.getString("titleResKey")
+                        ?: ""
                     menus.add(
                         MenuEntity(
                             id = menuId,
                             roleId = roleId,
-                            titleResKey = menuDoc.getString("titleKey") ?: ""
+                            titleResKey = menuTitleKey
                         )
                     )
                     Log.d(TAG, "Fetching options for menu $menuId")
                     val optsSnap = menuDoc.reference.collection("options").get().await()
                     Log.d(TAG, "Fetched ${optsSnap.documents.size} options for menu $menuId")
                     for (optDoc in optsSnap.documents) {
+                        val optionTitleKey = optDoc.getString("titleKey") ?: optDoc.getString("titleResKey") ?: ""
                         menuOptions.add(
                             MenuOptionEntity(
                                 id = optDoc.getString("id") ?: optDoc.id,
                                 menuId = menuId,
-                                titleResKey = optDoc.getString("titleKey") ?: "",
+                                titleResKey = optionTitleKey,
                                 route = optDoc.getString("route") ?: ""
                             )
                         )
