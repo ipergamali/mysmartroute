@@ -21,6 +21,8 @@ import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.viewmodel.DatabaseViewModel
+import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
+import com.ioannapergamali.mysmartroute.model.enumerations.localizedName
 
 @Composable
 fun LocalDatabaseScreen(navController: NavController, openDrawer: () -> Unit) {
@@ -88,7 +90,13 @@ fun LocalDatabaseScreen(navController: NavController, openDrawer: () -> Unit) {
                     item { Text("Ο πίνακας είναι άδειος") }
                 } else {
                     items(data!!.roles) { role ->
-                        Text("${role.id} - ${role.name}")
+                        val roleEnum = try {
+                            UserRole.valueOf(role.name)
+                        } catch (_: Exception) {
+                            null
+                        }
+                        val name = roleEnum?.localizedName() ?: role.name
+                        Text("${'$'}{role.id} - ${'$'}name")
                     }
                 }
                 item { Spacer(modifier = Modifier.padding(8.dp)) }
@@ -97,7 +105,7 @@ fun LocalDatabaseScreen(navController: NavController, openDrawer: () -> Unit) {
                     item { Text("Ο πίνακας είναι άδειος") }
                 } else {
                     items(data!!.menus) { menu ->
-                        Text("${menu.id} (${menu.roleId}) - ${menu.title}")
+                        Text("${menu.id} (${menu.roleId}) - ${menu.titleResKey}")
                     }
                 }
                 item { Spacer(modifier = Modifier.padding(8.dp)) }
@@ -106,7 +114,7 @@ fun LocalDatabaseScreen(navController: NavController, openDrawer: () -> Unit) {
                     item { Text("Ο πίνακας είναι άδειος") }
                 } else {
                     items(data!!.menuOptions) { opt ->
-                        Text("${opt.id} (${opt.menuId}) -> ${opt.title} -> ${opt.route}")
+                        Text("${opt.id} (${opt.menuId}) -> ${opt.titleResKey} -> ${opt.route}")
                     }
                 }
                 }

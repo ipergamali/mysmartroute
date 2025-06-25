@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.DocumentReference
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
@@ -121,6 +122,8 @@ class AuthenticationViewModel : ViewModel() {
                     val roleId = roleIds[role] ?: "role_passenger"
                     val roleRef = db.collection("roles").document(roleId)
 
+                    // Αποθηκεύουμε το roleId ως απλό String ώστε να είναι πάντα
+                    // συμβατό με την ανάγνωση από την εφαρμογή.
                     val userData = mapOf(
                         "id" to authRef,
                         "name" to name,
@@ -130,7 +133,7 @@ class AuthenticationViewModel : ViewModel() {
                         "phoneNum" to phoneNum,
                         "password" to password,
                         "role" to role.name,
-                        "roleId" to roleRef,
+                        "roleId" to roleId,
                         "city" to address.city,
                         "streetName" to address.streetName,
                         "streetNum" to address.streetNum,
@@ -147,12 +150,12 @@ class AuthenticationViewModel : ViewModel() {
                         defaultMenus(context, role).forEach { (menuTitle, options) ->
                             val menuId = UUID.randomUUID().toString()
                             val menuDoc = roleMenusRef.document(menuId)
-                            batch.set(menuDoc, mapOf("id" to menuId, "title" to menuTitle))
+                            batch.set(menuDoc, mapOf("id" to menuId, "titleKey" to menuTitle))
                             options.forEach { (optTitle, route) ->
                                 val optId = UUID.randomUUID().toString()
                                 batch.set(
                                     menuDoc.collection("options").document(optId),
-                                    mapOf("id" to optId, "title" to optTitle, "route" to route)
+                                    mapOf("id" to optId, "titleKey" to optTitle, "route" to route)
                                 )
                             }
                         }
@@ -243,16 +246,29 @@ class AuthenticationViewModel : ViewModel() {
                 val menuId = menuDoc.getString("id") ?: menuDoc.id
                 val optionsSnap = menuDoc.reference.collection("options").get().await()
                 val options = optionsSnap.documents.map { optDoc ->
+                    val titleKey = optDoc.getString("titleKey")
+                        ?: optDoc.getString("titleResKey")
+                        ?: ""
                     MenuOptionEntity(
                         id = optDoc.getString("id") ?: optDoc.id,
                         menuId = menuId,
-                        title = optDoc.getString("title") ?: "",
+                        titleResKey = titleKey,
                         route = optDoc.getString("route") ?: ""
                     )
                 }
-                insertMenuSafely(menuDao, dbLocal.roleDao(), MenuEntity(menuId, roleId, menuDoc.getString("title") ?: ""))
+                val menuTitleKey = menuDoc.getString("titleKey")
+                    ?: menuDoc.getString("titleResKey")
+                    ?: ""
+                insertMenuSafely(
+                    menuDao,
+                    dbLocal.roleDao(),
+                    MenuEntity(menuId, roleId, menuTitleKey)
+                )
                 options.forEach { optionDao.insert(it) }
-                menus += MenuWithOptions(MenuEntity(menuId, roleId, menuDoc.getString("title") ?: ""), options)
+                menus += MenuWithOptions(
+                    MenuEntity(menuId, roleId, menuTitleKey),
+                    options
+                )
             }
             val parent = roleDoc.getString("parentRoleId")
             if (!parent.isNullOrEmpty()) {
@@ -267,10 +283,15 @@ class AuthenticationViewModel : ViewModel() {
             val uid = auth.currentUser?.uid ?: return@launch
             val dbLocal = MySmartRouteDatabase.getInstance(context)
             val user = dbLocal.userDao().getUser(uid)
-            val roleId = user?.roleId.takeIf { !it.isNullOrEmpty() } ?: run {
+            val roleId = user?.roleId?.takeIf { it.isNotEmpty() } ?: run {
                 val doc = db.collection("users").document(uid).get().await()
-                val ref = doc.getDocumentReference("roleId") ?: return@launch
-                ref.id
+                val remoteRoleId = when (val field = doc.get("roleId")) {
+                    is String -> field
+                    is DocumentReference -> field.id
+                    else -> null
+                } ?: return@launch
+                user?.let { dbLocal.userDao().insert(it.copy(roleId = remoteRoleId)) }
+                remoteRoleId
             }
 
             Log.d(TAG, "Using roleId: $roleId")
@@ -334,16 +355,16 @@ class AuthenticationViewModel : ViewModel() {
                 cfg.menus.forEach { menu ->
                     val menuId = UUID.randomUUID().toString()
                     val menuDoc = roleRef.collection("menus").document(menuId)
-                    batch.set(menuDoc, mapOf("id" to menuId, "title" to menu.title))
+                    batch.set(menuDoc, mapOf("id" to menuId, "titleKey" to menu.titleKey))
                     commitNeeded = true
-                    menuDao.insert(MenuEntity(menuId, roleId, menu.title))
+                    menuDao.insert(MenuEntity(menuId, roleId, menu.titleKey))
                     menu.options.forEach { opt ->
                         val optId = UUID.randomUUID().toString()
                         batch.set(
                             menuDoc.collection("options").document(optId),
-                            mapOf("id" to optId, "title" to opt.title, "route" to opt.route),
+                            mapOf("id" to optId, "titleKey" to opt.titleKey, "route" to opt.route),
                         )
-                        optionDao.insert(MenuOptionEntity(optId, menuId, opt.title, opt.route))
+                        optionDao.insert(MenuOptionEntity(optId, menuId, opt.titleKey, opt.route))
                     }
                 }
             }
@@ -368,7 +389,7 @@ class AuthenticationViewModel : ViewModel() {
             val allMenus = mutableListOf<MenuConfig>()
             collect(role.name, allMenus)
             allMenus.map { menu ->
-                menu.title to menu.options.map { it.title to it.route }
+                menu.titleKey to menu.options.map { it.titleKey to it.route }
             }
         } catch (e: Exception) {
             emptyList()

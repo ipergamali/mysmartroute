@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import android.app.Activity
 import android.widget.Toast
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
@@ -193,16 +194,16 @@ fun SignUpScreen(
                 )
 
                 Spacer(Modifier.height(16.dp))
-                Text("Select Role", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.select_role), style = MaterialTheme.typography.titleMedium)
                 Row {
                     RadioButton(
                         selected = selectedRole == UserRole.DRIVER,
                         onClick = { selectedRole = UserRole.DRIVER })
-                    Text("Driver", modifier = Modifier.padding(end = 16.dp))
+                    Text(stringResource(R.string.role_driver), modifier = Modifier.padding(end = 16.dp))
                     RadioButton(
                         selected = selectedRole == UserRole.PASSENGER,
                         onClick = { selectedRole = UserRole.PASSENGER })
-                    Text("Passenger")
+                    Text(stringResource(R.string.role_passenger))
                 }
 
                 if (uiState is AuthenticationViewModel.SignUpState.Error) {

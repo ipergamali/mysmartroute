@@ -48,7 +48,8 @@ fun SettingsEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     "darkTheme" to darkTheme,
     "font" to font,
     "soundEnabled" to soundEnabled,
-    "soundVolume" to soundVolume
+    "soundVolume" to soundVolume,
+    "language" to language
 )
 
 /** Μετατροπή εγγράφου Firestore σε [UserEntity]. */
@@ -87,11 +88,11 @@ fun RoleEntity.toFirestoreMap(): Map<String, Any> = mapOf(
 
 fun MenuEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     "id" to id,
-    "title" to title
+    "titleKey" to titleResKey
 )
 
 fun MenuOptionEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     "id" to id,
-    "title" to title,
+    "titleKey" to titleResKey,
     "route" to route
 )

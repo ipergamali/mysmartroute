@@ -22,7 +22,7 @@ import com.ioannapergamali.mysmartroute.data.local.MenuOptionEntity
         MenuEntity::class,
         MenuOptionEntity::class
     ],
-    version = 17
+    version = 18
 )
 abstract class MySmartRouteDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
@@ -104,13 +104,14 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                         "`font` TEXT NOT NULL, " +
                         "`soundEnabled` INTEGER NOT NULL, " +
                         "`soundVolume` REAL NOT NULL, " +
+                        "`language` TEXT NOT NULL DEFAULT 'el', " +
                         "FOREIGN KEY(`userId`) REFERENCES `users`(`id`) ON DELETE CASCADE, " +
                         "PRIMARY KEY(`userId`)" +
                     ")"
                 )
                 database.execSQL(
-                    "INSERT INTO `settings_new` (`userId`, `theme`, `darkTheme`, `font`, `soundEnabled`, `soundVolume`) " +
-                        "SELECT `userId`, `theme`, `darkTheme`, `font`, `soundEnabled`, `soundVolume` FROM `settings`"
+                    "INSERT INTO `settings_new` (`userId`, `theme`, `darkTheme`, `font`, `soundEnabled`, `soundVolume`, `language`) " +
+                        "SELECT `userId`, `theme`, `darkTheme`, `font`, `soundEnabled`, `soundVolume`, 'el' FROM `settings`"
                 )
                 database.execSQL("DROP TABLE `settings`")
                 database.execSQL("ALTER TABLE `settings_new` RENAME TO `settings`")
@@ -142,7 +143,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     "CREATE TABLE IF NOT EXISTS `menus` (" +
                         "`id` TEXT NOT NULL, " +
                         "`roleId` TEXT NOT NULL, " +
-                        "`title` TEXT NOT NULL, " +
+                        "`titleResKey` TEXT NOT NULL, " +
                         "`route` TEXT NOT NULL, " +
                         "FOREIGN KEY(`roleId`) REFERENCES `roles`(`id`) ON DELETE CASCADE, " +
                         "PRIMARY KEY(`id`)" +
@@ -157,7 +158,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     "CREATE TABLE IF NOT EXISTS `menu_options` (" +
                         "`id` TEXT NOT NULL, " +
                         "`menuId` TEXT NOT NULL, " +
-                        "`title` TEXT NOT NULL, " +
+                        "`titleResKey` TEXT NOT NULL, " +
                         "`route` TEXT NOT NULL, " +
                         "FOREIGN KEY(`menuId`) REFERENCES `menus`(`id`) ON DELETE CASCADE, " +
                         "PRIMARY KEY(`id`)" +
@@ -166,12 +167,12 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                 database.execSQL("CREATE TABLE IF NOT EXISTS `menus_new` (" +
                         "`id` TEXT NOT NULL, " +
                         "`roleId` TEXT NOT NULL, " +
-                        "`title` TEXT NOT NULL, " +
+                        "`titleResKey` TEXT NOT NULL, " +
                         "PRIMARY KEY(`id`)" +
                         ")")
                 database.execSQL(
-                    "INSERT INTO `menus_new` (`id`, `roleId`, `title`) " +
-                        "SELECT `id`, `roleId`, `title` FROM `menus`"
+                    "INSERT INTO `menus_new` (`id`, `roleId`, `titleResKey`) " +
+                        "SELECT `id`, `roleId`, `titleResKey` FROM `menus`"
                 )
                 database.execSQL("DROP TABLE `menus`")
                 database.execSQL("ALTER TABLE `menus_new` RENAME TO `menus`")
@@ -180,59 +181,59 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
 
         private val MIGRATION_15_16 = object : Migration(15, 16) {
             override fun migrate(database: SupportSQLiteDatabase) {
-                fun insertMenu(id: String, roleId: String, title: String) {
+                fun insertMenu(id: String, roleId: String, titleResKey: String) {
                     database.execSQL(
-                        "INSERT OR IGNORE INTO `menus` (`id`, `roleId`, `title`) VALUES ('" +
-                            id + "', '" + roleId + "', '" + title + "')"
+                        "INSERT OR IGNORE INTO `menus` (`id`, `roleId`, `titleResKey`) VALUES ('" +
+                            id + "', '" + roleId + "', '" + titleResKey + "')"
                     )
                 }
 
-                fun insertOption(id: String, menuId: String, title: String, route: String) {
+                fun insertOption(id: String, menuId: String, titleResKey: String, route: String) {
                     database.execSQL(
-                        "INSERT OR IGNORE INTO `menu_options` (`id`, `menuId`, `title`, `route`) VALUES ('" +
-                            id + "', '" + menuId + "', '" + title + "', '" + route + "')"
+                        "INSERT OR IGNORE INTO `menu_options` (`id`, `menuId`, `titleResKey`, `route`) VALUES ('" +
+                            id + "', '" + menuId + "', '" + titleResKey + "', '" + route + "')"
                     )
                 }
 
                 val passengerMenuId = "menu_passenger_main"
-                insertMenu(passengerMenuId, "role_passenger", "Passenger Menu")
-                insertOption("opt_passenger_0", passengerMenuId, "Sign out", "signOut")
-                insertOption("opt_passenger_1", passengerMenuId, "Manage Favorite Means of Transport", "manageFavorites")
-                insertOption("opt_passenger_2", passengerMenuId, "Mode Of Transportation For A Specific Route", "routeMode")
-                insertOption("opt_passenger_3", passengerMenuId, "Find a Vehicle for a specific Transport", "findVehicle")
-                insertOption("opt_passenger_4", passengerMenuId, "Find Way of Transport", "findWay")
-                insertOption("opt_passenger_5", passengerMenuId, "Book a Seat or Buy a Ticket", "bookSeat")
-                insertOption("opt_passenger_6", passengerMenuId, "View Interesting Routes", "viewRoutes")
-                insertOption("opt_passenger_7", passengerMenuId, "View Transports", "viewTransports")
-                insertOption("opt_passenger_8", passengerMenuId, "Print Booked Seat or Ticket", "printTicket")
-                insertOption("opt_passenger_9", passengerMenuId, "Cancel Booked Seat", "cancelSeat")
-                insertOption("opt_passenger_10", passengerMenuId, "View, Rank and Comment on Completed Transports", "rankTransports")
-                insertOption("opt_passenger_11", passengerMenuId, "Shut Down the System", "shutdown")
+                insertMenu(passengerMenuId, "role_passenger", "passenger_menu_title")
+                insertOption("opt_passenger_0", passengerMenuId, "sign_out", "signOut")
+                insertOption("opt_passenger_1", passengerMenuId, "manage_favorites", "manageFavorites")
+                insertOption("opt_passenger_2", passengerMenuId, "route_mode", "routeMode")
+                insertOption("opt_passenger_3", passengerMenuId, "find_vehicle", "findVehicle")
+                insertOption("opt_passenger_4", passengerMenuId, "find_way", "findWay")
+                insertOption("opt_passenger_5", passengerMenuId, "book_seat", "bookSeat")
+                insertOption("opt_passenger_6", passengerMenuId, "view_routes", "viewRoutes")
+                insertOption("opt_passenger_7", passengerMenuId, "view_transports", "viewTransports")
+                insertOption("opt_passenger_8", passengerMenuId, "print_ticket", "printTicket")
+                insertOption("opt_passenger_9", passengerMenuId, "cancel_seat", "cancelSeat")
+                insertOption("opt_passenger_10", passengerMenuId, "rank_transports", "rankTransports")
+                insertOption("opt_passenger_11", passengerMenuId, "shutdown", "shutdown")
 
                 val driverMenuId = "menu_driver_main"
-                insertMenu(driverMenuId, "role_driver", "Driver Menu")
-                insertOption("opt_driver_1", driverMenuId, "Register Vehicle", "registerVehicle")
-                insertOption("opt_driver_2", driverMenuId, "Announce Availability for a specific Transport", "announceAvailability")
-                insertOption("opt_driver_3", driverMenuId, "Find Passengers", "findPassengers")
-                insertOption("opt_driver_4", driverMenuId, "Print Passenger List", "printList")
-                insertOption("opt_driver_5", driverMenuId, "Print Passenger List for Scheduled Transports", "printScheduled")
-                insertOption("opt_driver_6", driverMenuId, "Print Passenger List for Completed Transports", "printCompleted")
+                insertMenu(driverMenuId, "role_driver", "driver_menu_title")
+                insertOption("opt_driver_1", driverMenuId, "register_vehicle", "registerVehicle")
+                insertOption("opt_driver_2", driverMenuId, "announce_availability", "announceAvailability")
+                insertOption("opt_driver_3", driverMenuId, "find_passengers", "findPassengers")
+                insertOption("opt_driver_4", driverMenuId, "print_list", "printList")
+                insertOption("opt_driver_5", driverMenuId, "print_scheduled", "printScheduled")
+                insertOption("opt_driver_6", driverMenuId, "print_completed", "printCompleted")
 
                 val adminMenuId = "menu_admin_main"
-                insertMenu(adminMenuId, "role_admin", "Admin Menu")
-                insertOption("opt_admin_1", adminMenuId, "Initialize System", "initSystem")
-                insertOption("opt_admin_2", adminMenuId, "Create User Account", "createUser")
-                insertOption("opt_admin_3", adminMenuId, "Promote or Demote User", "editPrivileges")
-                insertOption("opt_admin_4", adminMenuId, "Define Point of Interest", "definePoi")
-                insertOption("opt_admin_5", adminMenuId, "Define Duration of Travel by Foot", "defineDuration")
-                insertOption("opt_admin_6", adminMenuId, "View List of Unassigned Routes", "viewUnassigned")
-                insertOption("opt_admin_7", adminMenuId, "Review Point of Interest Names", "reviewPoi")
-                insertOption("opt_admin_8", adminMenuId, "Show 10 Best and Worst Drivers", "rankDrivers")
-                insertOption("opt_admin_9", adminMenuId, "View 10 Happiest/Least Happy Passengers", "rankPassengers")
-                insertOption("opt_admin_10", adminMenuId, "View Available Vehicles", "viewVehicles")
-                insertOption("opt_admin_11", adminMenuId, "View PoIs", "viewPois")
-                insertOption("opt_admin_12", adminMenuId, "View Users", "viewUsers")
-                insertOption("opt_admin_13", adminMenuId, "Advance Date", "advanceDate")
+                insertMenu(adminMenuId, "role_admin", "admin_menu_title")
+                insertOption("opt_admin_1", adminMenuId, "init_system", "initSystem")
+                insertOption("opt_admin_2", adminMenuId, "create_user", "createUser")
+                insertOption("opt_admin_3", adminMenuId, "edit_privileges", "editPrivileges")
+                insertOption("opt_admin_4", adminMenuId, "define_poi", "definePoi")
+                insertOption("opt_admin_5", adminMenuId, "define_duration", "defineDuration")
+                insertOption("opt_admin_6", adminMenuId, "view_unassigned", "viewUnassigned")
+                insertOption("opt_admin_7", adminMenuId, "review_poi", "reviewPoi")
+                insertOption("opt_admin_8", adminMenuId, "rank_drivers", "rankDrivers")
+                insertOption("opt_admin_9", adminMenuId, "rank_passengers", "rankPassengers")
+                insertOption("opt_admin_10", adminMenuId, "view_vehicles", "viewVehicles")
+                insertOption("opt_admin_11", adminMenuId, "view_pois", "viewPois")
+                insertOption("opt_admin_12", adminMenuId, "view_users", "viewUsers")
+                insertOption("opt_admin_13", adminMenuId, "advance_date", "advanceDate")
             }
         }
 
@@ -245,6 +246,12 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_17_18 = object : Migration(17, 18) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE `settings` ADD COLUMN `language` TEXT NOT NULL DEFAULT 'el'")
+            }
+        }
+
         private fun prepopulate(db: SupportSQLiteDatabase) {
             Log.d(TAG, "Prepopulating database")
             db.execSQL(
@@ -254,59 +261,59 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     "('role_admin', 'ADMIN', 'role_driver')"
             )
 
-            fun insertMenu(id: String, roleId: String, title: String) {
+            fun insertMenu(id: String, roleId: String, titleResKey: String) {
                 db.execSQL(
-                    "INSERT OR IGNORE INTO `menus` (`id`, `roleId`, `title`) VALUES ('" +
-                        id + "', '" + roleId + "', '" + title + "')"
+                    "INSERT OR IGNORE INTO `menus` (`id`, `roleId`, `titleResKey`) VALUES ('" +
+                        id + "', '" + roleId + "', '" + titleResKey + "')"
                 )
             }
 
-            fun insertOption(id: String, menuId: String, title: String, route: String) {
+            fun insertOption(id: String, menuId: String, titleResKey: String, route: String) {
                 db.execSQL(
-                    "INSERT OR IGNORE INTO `menu_options` (`id`, `menuId`, `title`, `route`) VALUES ('" +
-                        id + "', '" + menuId + "', '" + title + "', '" + route + "')"
+                    "INSERT OR IGNORE INTO `menu_options` (`id`, `menuId`, `titleResKey`, `route`) VALUES ('" +
+                        id + "', '" + menuId + "', '" + titleResKey + "', '" + route + "')"
                 )
             }
 
             val passengerMenuId = "menu_passenger_main"
-            insertMenu(passengerMenuId, "role_passenger", "Passenger Menu")
-            insertOption("opt_passenger_0", passengerMenuId, "Sign out", "signOut")
-            insertOption("opt_passenger_1", passengerMenuId, "Manage Favorite Means of Transport", "manageFavorites")
-            insertOption("opt_passenger_2", passengerMenuId, "Mode Of Transportation For A Specific Route", "routeMode")
-            insertOption("opt_passenger_3", passengerMenuId, "Find a Vehicle for a specific Transport", "findVehicle")
-            insertOption("opt_passenger_4", passengerMenuId, "Find Way of Transport", "findWay")
-            insertOption("opt_passenger_5", passengerMenuId, "Book a Seat or Buy a Ticket", "bookSeat")
-            insertOption("opt_passenger_6", passengerMenuId, "View Interesting Routes", "viewRoutes")
-            insertOption("opt_passenger_7", passengerMenuId, "View Transports", "viewTransports")
-            insertOption("opt_passenger_8", passengerMenuId, "Print Booked Seat or Ticket", "printTicket")
-            insertOption("opt_passenger_9", passengerMenuId, "Cancel Booked Seat", "cancelSeat")
-            insertOption("opt_passenger_10", passengerMenuId, "View, Rank and Comment on Completed Transports", "rankTransports")
-            insertOption("opt_passenger_11", passengerMenuId, "Shut Down the System", "shutdown")
+            insertMenu(passengerMenuId, "role_passenger", "passenger_menu_title")
+            insertOption("opt_passenger_0", passengerMenuId, "sign_out", "signOut")
+            insertOption("opt_passenger_1", passengerMenuId, "manage_favorites", "manageFavorites")
+            insertOption("opt_passenger_2", passengerMenuId, "route_mode", "routeMode")
+            insertOption("opt_passenger_3", passengerMenuId, "find_vehicle", "findVehicle")
+            insertOption("opt_passenger_4", passengerMenuId, "find_way", "findWay")
+            insertOption("opt_passenger_5", passengerMenuId, "book_seat", "bookSeat")
+            insertOption("opt_passenger_6", passengerMenuId, "view_routes", "viewRoutes")
+            insertOption("opt_passenger_7", passengerMenuId, "view_transports", "viewTransports")
+            insertOption("opt_passenger_8", passengerMenuId, "print_ticket", "printTicket")
+            insertOption("opt_passenger_9", passengerMenuId, "cancel_seat", "cancelSeat")
+            insertOption("opt_passenger_10", passengerMenuId, "rank_transports", "rankTransports")
+            insertOption("opt_passenger_11", passengerMenuId, "shutdown", "shutdown")
 
             val driverMenuId = "menu_driver_main"
-            insertMenu(driverMenuId, "role_driver", "Driver Menu")
-            insertOption("opt_driver_1", driverMenuId, "Register Vehicle", "registerVehicle")
-            insertOption("opt_driver_2", driverMenuId, "Announce Availability for a specific Transport", "announceAvailability")
-            insertOption("opt_driver_3", driverMenuId, "Find Passengers", "findPassengers")
-            insertOption("opt_driver_4", driverMenuId, "Print Passenger List", "printList")
-            insertOption("opt_driver_5", driverMenuId, "Print Passenger List for Scheduled Transports", "printScheduled")
-            insertOption("opt_driver_6", driverMenuId, "Print Passenger List for Completed Transports", "printCompleted")
+            insertMenu(driverMenuId, "role_driver", "driver_menu_title")
+            insertOption("opt_driver_1", driverMenuId, "register_vehicle", "registerVehicle")
+            insertOption("opt_driver_2", driverMenuId, "announce_availability", "announceAvailability")
+            insertOption("opt_driver_3", driverMenuId, "find_passengers", "findPassengers")
+            insertOption("opt_driver_4", driverMenuId, "print_list", "printList")
+            insertOption("opt_driver_5", driverMenuId, "print_scheduled", "printScheduled")
+            insertOption("opt_driver_6", driverMenuId, "print_completed", "printCompleted")
 
             val adminMenuId = "menu_admin_main"
-            insertMenu(adminMenuId, "role_admin", "Admin Menu")
-            insertOption("opt_admin_1", adminMenuId, "Initialize System", "initSystem")
-            insertOption("opt_admin_2", adminMenuId, "Create User Account", "createUser")
-            insertOption("opt_admin_3", adminMenuId, "Promote or Demote User", "editPrivileges")
-            insertOption("opt_admin_4", adminMenuId, "Define Point of Interest", "definePoi")
-            insertOption("opt_admin_5", adminMenuId, "Define Duration of Travel by Foot", "defineDuration")
-            insertOption("opt_admin_6", adminMenuId, "View List of Unassigned Routes", "viewUnassigned")
-            insertOption("opt_admin_7", adminMenuId, "Review Point of Interest Names", "reviewPoi")
-            insertOption("opt_admin_8", adminMenuId, "Show 10 Best and Worst Drivers", "rankDrivers")
-            insertOption("opt_admin_9", adminMenuId, "View 10 Happiest/Least Happy Passengers", "rankPassengers")
-            insertOption("opt_admin_10", adminMenuId, "View Available Vehicles", "viewVehicles")
-            insertOption("opt_admin_11", adminMenuId, "View PoIs", "viewPois")
-            insertOption("opt_admin_12", adminMenuId, "View Users", "viewUsers")
-            insertOption("opt_admin_13", adminMenuId, "Advance Date", "advanceDate")
+            insertMenu(adminMenuId, "role_admin", "admin_menu_title")
+            insertOption("opt_admin_1", adminMenuId, "init_system", "initSystem")
+            insertOption("opt_admin_2", adminMenuId, "create_user", "createUser")
+            insertOption("opt_admin_3", adminMenuId, "edit_privileges", "editPrivileges")
+            insertOption("opt_admin_4", adminMenuId, "define_poi", "definePoi")
+            insertOption("opt_admin_5", adminMenuId, "define_duration", "defineDuration")
+            insertOption("opt_admin_6", adminMenuId, "view_unassigned", "viewUnassigned")
+            insertOption("opt_admin_7", adminMenuId, "review_poi", "reviewPoi")
+            insertOption("opt_admin_8", adminMenuId, "rank_drivers", "rankDrivers")
+            insertOption("opt_admin_9", adminMenuId, "rank_passengers", "rankPassengers")
+            insertOption("opt_admin_10", adminMenuId, "view_vehicles", "viewVehicles")
+            insertOption("opt_admin_11", adminMenuId, "view_pois", "viewPois")
+            insertOption("opt_admin_12", adminMenuId, "view_users", "viewUsers")
+            insertOption("opt_admin_13", adminMenuId, "advance_date", "advanceDate")
 
             Log.d(TAG, "Prepopulate complete")
         }
@@ -326,7 +333,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_13_14,
                     MIGRATION_14_15,
                     MIGRATION_15_16,
-                    MIGRATION_16_17
+                    MIGRATION_16_17,
+                    MIGRATION_17_18
                 )
                     .addCallback(object : RoomDatabase.Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {
