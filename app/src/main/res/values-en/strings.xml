@@ -44,4 +44,41 @@
     <string name="credits">Credits</string>
     <string name="support_email">Email: smartroute@info.gr</string>
     <string name="support_address">Address: Πάροδος Κρήτης 8, Γάζι, ΤΚ 71414</string>
+    <!-- Dynamic menu titles -->
+    <string name="passenger_menu_title">Passenger Menu</string>
+    <string name="driver_menu_title">Driver Menu</string>
+    <string name="admin_menu_title">Admin Menu</string>
+
+    <!-- Menu options -->
+    <string name="sign_out">Sign out</string>
+    <string name="manage_favorites">Manage Favorite Means of Transport</string>
+    <string name="route_mode">Mode Of Transportation For A Specific Route</string>
+    <string name="find_vehicle">Find a Vehicle for a specific Transport</string>
+    <string name="find_way">Find Way of Transport</string>
+    <string name="book_seat">Book a Seat or Buy a Ticket</string>
+    <string name="view_routes">View Interesting Routes</string>
+    <string name="view_transports">View Transports</string>
+    <string name="print_ticket">Print Booked Seat or Ticket</string>
+    <string name="cancel_seat">Cancel Booked Seat</string>
+    <string name="rank_transports">View, Rank and Comment on Completed Transports</string>
+    <string name="shutdown">Shut Down the System</string>
+    <string name="register_vehicle">Register Vehicle</string>
+    <string name="announce_availability">Announce Availability for a specific Transport</string>
+    <string name="find_passengers">Find Passengers</string>
+    <string name="print_list">Print Passenger List</string>
+    <string name="print_scheduled">Print Passenger List for Scheduled Transports</string>
+    <string name="print_completed">Print Passenger List for Completed Transports</string>
+    <string name="init_system">Initialize System</string>
+    <string name="create_user">Create User Account</string>
+    <string name="edit_privileges">Promote or Demote User</string>
+    <string name="define_poi">Define Point of Interest</string>
+    <string name="define_duration">Define Duration of Travel by Foot</string>
+    <string name="view_unassigned">View List of Unassigned Routes</string>
+    <string name="review_poi">Review Point of Interest Names</string>
+    <string name="rank_drivers">Show 10 Best and Worst Drivers</string>
+    <string name="rank_passengers">View 10 Happiest/Least Happy Passengers</string>
+    <string name="view_vehicles">View Available Vehicles</string>
+    <string name="view_pois">View PoIs</string>
+    <string name="view_users">View Users</string>
+    <string name="advance_date">Advance Date</string>
 </resources>

@@ -21,6 +21,7 @@ import androidx.room.PrimaryKey
 data class MenuOptionEntity(
     @PrimaryKey var id: String = "",
     var menuId: String = "",
-    var title: String = "",
+    /** Κλειδί πόρου για τον τίτλο της επιλογής */
+    var titleResKey: String = "",
     var route: String = ""
 )

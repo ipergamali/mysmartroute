@@ -26,6 +26,7 @@ import com.ioannapergamali.mysmartroute.data.local.MenuWithOptions
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import androidx.compose.ui.res.stringResource
 import com.ioannapergamali.mysmartroute.R
+import androidx.compose.runtime.remember
 
 @Composable
 fun MenuScreen(navController: NavController, openDrawer: () -> Unit) {
@@ -92,14 +93,14 @@ private fun RoleMenu(
                 menus.forEach { menuWithOptions ->
                     item {
                         Text(
-                            text = menuWithOptions.menu.title,
+                            text = resolveString(menuWithOptions.menu.titleResKey),
                             style = MaterialTheme.typography.titleMedium,
                             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                         )
-                        Divider(color = MaterialTheme.colorScheme.outline)
+                    Divider(color = MaterialTheme.colorScheme.outline)
                     }
                     items(menuWithOptions.options) { option ->
-                        MenuItemRow(option.title) { onOptionClick(option.route) }
+                        MenuItemRow(option.titleResKey) { onOptionClick(option.route) }
                         Divider(color = MaterialTheme.colorScheme.outline)
                     }
                 }
@@ -109,7 +110,7 @@ private fun RoleMenu(
 }
 
 @Composable
-private fun MenuItemRow(title: String, onClick: () -> Unit) {
+private fun MenuItemRow(titleKey: String, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -124,9 +125,18 @@ private fun MenuItemRow(title: String, onClick: () -> Unit) {
         )
         Spacer(Modifier.width(12.dp))
         Text(
-            text = title,
+            text = resolveString(titleKey),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurface
         )
     }
+}
+
+@Composable
+private fun resolveString(key: String): String {
+    val context = LocalContext.current
+    val resId = remember(key) {
+        context.resources.getIdentifier(key, "string", context.packageName)
+    }
+    return stringResource(id = resId)
 }

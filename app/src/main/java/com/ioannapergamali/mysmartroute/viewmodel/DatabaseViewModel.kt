@@ -153,7 +153,7 @@ class DatabaseViewModel : ViewModel() {
                         MenuEntity(
                             id = menuId,
                             roleId = roleId,
-                            title = menuDoc.getString("title") ?: ""
+                            titleResKey = menuDoc.getString("titleKey") ?: ""
                         )
                     )
                     Log.d(TAG, "Fetching options for menu $menuId")
@@ -164,7 +164,7 @@ class DatabaseViewModel : ViewModel() {
                             MenuOptionEntity(
                                 id = optDoc.getString("id") ?: optDoc.id,
                                 menuId = menuId,
-                                title = optDoc.getString("title") ?: "",
+                                titleResKey = optDoc.getString("titleKey") ?: "",
                                 route = optDoc.getString("route") ?: ""
                             )
                         )
@@ -271,7 +271,7 @@ class DatabaseViewModel : ViewModel() {
                                 MenuEntity(
                                     id = menuId,
                                     roleId = roleId,
-                                    title = menuDoc.getString("title") ?: ""
+                                    titleResKey = menuDoc.getString("titleKey") ?: ""
                                 )
                             )
                     Log.d(TAG, "Fetching options for menu $menuId")
@@ -282,7 +282,7 @@ class DatabaseViewModel : ViewModel() {
                                     MenuOptionEntity(
                                         id = optDoc.getString("id") ?: optDoc.id,
                                         menuId = menuId,
-                                        title = optDoc.getString("title") ?: "",
+                                        titleResKey = optDoc.getString("titleKey") ?: "",
                                         route = optDoc.getString("route") ?: ""
                                     )
                                 )
