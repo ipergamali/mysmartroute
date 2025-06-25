@@ -123,7 +123,8 @@ class DatabaseViewModel : ViewModel() {
                         darkTheme = doc.getBoolean("darkTheme") ?: false,
                         font = doc.getString("font") ?: "",
                         soundEnabled = doc.getBoolean("soundEnabled") ?: false,
-                        soundVolume = (doc.getDouble("soundVolume") ?: 0.0).toFloat()
+                        soundVolume = (doc.getDouble("soundVolume") ?: 0.0).toFloat(),
+                        language = doc.getString("language") ?: "el"
                     )
                 }
             Log.d(TAG, "Fetched ${'$'}{settings.size} settings from Firebase")
@@ -148,22 +149,26 @@ class DatabaseViewModel : ViewModel() {
                 Log.d(TAG, "Fetched ${menusSnap.documents.size} menus for role $roleId")
                 for (menuDoc in menusSnap.documents) {
                     val menuId = menuDoc.getString("id") ?: menuDoc.id
+                    val menuTitleKey = menuDoc.getString("titleKey")
+                        ?: menuDoc.getString("titleResKey")
+                        ?: ""
                     menus.add(
                         MenuEntity(
                             id = menuId,
                             roleId = roleId,
-                            title = menuDoc.getString("title") ?: ""
+                            titleResKey = menuTitleKey
                         )
                     )
                     Log.d(TAG, "Fetching options for menu $menuId")
                     val optsSnap = menuDoc.reference.collection("options").get().await()
                     Log.d(TAG, "Fetched ${optsSnap.documents.size} options for menu $menuId")
                     for (optDoc in optsSnap.documents) {
+                        val optionTitleKey = optDoc.getString("titleKey") ?: optDoc.getString("titleResKey") ?: ""
                         menuOptions.add(
                             MenuOptionEntity(
                                 id = optDoc.getString("id") ?: optDoc.id,
                                 menuId = menuId,
-                                title = optDoc.getString("title") ?: "",
+                                titleResKey = optionTitleKey,
                                 route = optDoc.getString("route") ?: ""
                             )
                         )
@@ -242,7 +247,8 @@ class DatabaseViewModel : ViewModel() {
                                 darkTheme = doc.getBoolean("darkTheme") ?: false,
                                 font = doc.getString("font") ?: "",
                                 soundEnabled = doc.getBoolean("soundEnabled") ?: false,
-                                soundVolume = (doc.getDouble("soundVolume") ?: 0.0).toFloat()
+                                soundVolume = (doc.getDouble("soundVolume") ?: 0.0).toFloat(),
+                                language = doc.getString("language") ?: "el"
                             )
                         }
 
@@ -269,7 +275,7 @@ class DatabaseViewModel : ViewModel() {
                                 MenuEntity(
                                     id = menuId,
                                     roleId = roleId,
-                                    title = menuDoc.getString("title") ?: ""
+                                    titleResKey = menuDoc.getString("titleKey") ?: ""
                                 )
                             )
                     Log.d(TAG, "Fetching options for menu $menuId")
@@ -280,7 +286,7 @@ class DatabaseViewModel : ViewModel() {
                                     MenuOptionEntity(
                                         id = optDoc.getString("id") ?: optDoc.id,
                                         menuId = menuId,
-                                        title = optDoc.getString("title") ?: "",
+                                        titleResKey = optDoc.getString("titleKey") ?: "",
                                         route = optDoc.getString("route") ?: ""
                                     )
                                 )

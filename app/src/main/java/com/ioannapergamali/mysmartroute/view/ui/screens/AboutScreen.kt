@@ -13,6 +13,7 @@ import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
+import androidx.compose.ui.res.stringResource
 import com.ioannapergamali.mysmartroute.view.ui.components.LogoImage
 import com.ioannapergamali.mysmartroute.view.ui.components.LogoAssets
 
@@ -21,7 +22,7 @@ fun AboutScreen(navController: NavController, openDrawer: () -> Unit) {
     Scaffold(
         topBar = {
             TopBar(
-                title = "About",
+                title = stringResource(R.string.about_title),
                 navController = navController,
                 showMenu = true,
                 onMenuClick = openDrawer
@@ -41,7 +42,7 @@ fun AboutScreen(navController: NavController, openDrawer: () -> Unit) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = "Credits",
+                    text = stringResource(R.string.credits),
                     style = MaterialTheme.typography.titleLarge
                 )
 

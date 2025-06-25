@@ -11,13 +11,15 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
+import androidx.compose.ui.res.stringResource
+import com.ioannapergamali.mysmartroute.R
 
 @Composable
 fun DatabaseMenuScreen(navController: NavController, openDrawer: () -> Unit) {
     Scaffold(
         topBar = {
             TopBar(
-                title = "Databases",
+                title = stringResource(R.string.databases_title),
                 navController = navController,
                 showMenu = true,
                 onMenuClick = openDrawer
@@ -26,15 +28,15 @@ fun DatabaseMenuScreen(navController: NavController, openDrawer: () -> Unit) {
     ) { padding ->
         ScreenContainer(modifier = Modifier.padding(padding)) {
             Button(onClick = { navController.navigate("localDb") }) {
-                Text("Local DB")
+                Text(stringResource(R.string.local_db))
             }
             Spacer(modifier = Modifier.padding(8.dp))
             Button(onClick = { navController.navigate("firebaseDb") }) {
-                Text("Firestore DB")
+                Text(stringResource(R.string.firebase_db))
             }
             Spacer(modifier = Modifier.padding(8.dp))
             Button(onClick = { navController.navigate("syncDb") }) {
-                Text("Synchronization")
+                Text(stringResource(R.string.sync_db))
             }
         }
     }

@@ -17,6 +17,7 @@ import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.view.ui.components.LogoImage
 import com.ioannapergamali.mysmartroute.view.ui.components.LogoAssets
 import com.ioannapergamali.mysmartroute.R
+import androidx.compose.ui.res.stringResource
 import com.ioannapergamali.mysmartroute.view.ui.animation.rememberBreathingAnimation
 import com.ioannapergamali.mysmartroute.view.ui.animation.rememberSlideFadeInAnimation
 import androidx.compose.ui.platform.LocalContext
@@ -36,7 +37,7 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             TopBar(
-                title = "Home",
+                title = stringResource(R.string.home_title),
                 navController = navController,
                 showMenu = true,
                 showBack = false,
@@ -149,7 +150,7 @@ private fun HomeContent(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "Welcome",
+            text = stringResource(R.string.welcome),
             style = MaterialTheme.typography.headlineLarge,
             modifier = Modifier
                 .offset(y = textOffset)
@@ -174,7 +175,7 @@ private fun HomeContent(
             OutlinedTextField(
                 value = email,
                 onValueChange = onEmailChange,
-                label = { Text("Email") },
+                label = { Text(stringResource(R.string.email)) },
                 modifier = Modifier.fillMaxWidth(),
                 shape = MaterialTheme.shapes.small,
                 colors = OutlinedTextFieldDefaults.colors(
@@ -188,7 +189,7 @@ private fun HomeContent(
             OutlinedTextField(
                 value = password,
                 onValueChange = onPasswordChange,
-                label = { Text("Password") },
+                label = { Text(stringResource(R.string.password)) },
                 visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth(),
                 shape = MaterialTheme.shapes.small,
@@ -209,15 +210,15 @@ private fun HomeContent(
             Spacer(Modifier.height(16.dp))
 
             Button(onClick = onLogin) {
-                Text("Login")
+                Text(stringResource(R.string.login))
             }
 
             Spacer(modifier = Modifier.height(8.dp))
 
             Row {
-                Text("If you don't have account ")
+                Text(stringResource(R.string.no_account))
                 Text(
-                    text = "Sign Up",
+                    text = stringResource(R.string.sign_up),
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.clickable { onNavigateToSignUp() }
                 )
@@ -226,7 +227,7 @@ private fun HomeContent(
             Spacer(Modifier.height(16.dp))
 
             Button(onClick = onLogout) {
-                Text("Logout")
+                Text(stringResource(R.string.logout))
             }
         }
     }

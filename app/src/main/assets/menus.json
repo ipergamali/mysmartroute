@@ -3,20 +3,20 @@
     "inheritsFrom": null,
     "menus": [
       {
-        "title": "Passenger Menu",
+        "titleKey": "passenger_menu_title",
         "options": [
-          {"title": "Sign out", "route": "signOut"},
-          {"title": "Manage Favorite Means of Transport", "route": "manageFavorites"},
-          {"title": "Mode Of Transportation For A Specific Route", "route": "routeMode"},
-          {"title": "Find a Vehicle for a specific Transport", "route": "findVehicle"},
-          {"title": "Find Way of Transport", "route": "findWay"},
-          {"title": "Book a Seat or Buy a Ticket", "route": "bookSeat"},
-          {"title": "View Interesting Routes", "route": "viewRoutes"},
-          {"title": "View Transports", "route": "viewTransports"},
-          {"title": "Print Booked Seat or Ticket", "route": "printTicket"},
-          {"title": "Cancel Booked Seat", "route": "cancelSeat"},
-          {"title": "View, Rank and Comment on Completed Transports", "route": "rankTransports"},
-          {"title": "Shut Down the System", "route": "shutdown"}
+          {"titleKey": "sign_out", "route": "signOut"},
+          {"titleKey": "manage_favorites", "route": "manageFavorites"},
+          {"titleKey": "route_mode", "route": "routeMode"},
+          {"titleKey": "find_vehicle", "route": "findVehicle"},
+          {"titleKey": "find_way", "route": "findWay"},
+          {"titleKey": "book_seat", "route": "bookSeat"},
+          {"titleKey": "view_routes", "route": "viewRoutes"},
+          {"titleKey": "view_transports", "route": "viewTransports"},
+          {"titleKey": "print_ticket", "route": "printTicket"},
+          {"titleKey": "cancel_seat", "route": "cancelSeat"},
+          {"titleKey": "rank_transports", "route": "rankTransports"},
+          {"titleKey": "shutdown", "route": "shutdown"}
         ]
       }
     ]
@@ -25,14 +25,14 @@
     "inheritsFrom": "PASSENGER",
     "menus": [
       {
-        "title": "Driver Menu",
+        "titleKey": "driver_menu_title",
         "options": [
-          {"title": "Register Vehicle", "route": "registerVehicle"},
-          {"title": "Announce Availability for a specific Transport", "route": "announceAvailability"},
-          {"title": "Find Passengers", "route": "findPassengers"},
-          {"title": "Print Passenger List", "route": "printList"},
-          {"title": "Print Passenger List for Scheduled Transports", "route": "printScheduled"},
-          {"title": "Print Passenger List for Completed Transports", "route": "printCompleted"}
+          {"titleKey": "register_vehicle", "route": "registerVehicle"},
+          {"titleKey": "announce_availability", "route": "announceAvailability"},
+          {"titleKey": "find_passengers", "route": "findPassengers"},
+          {"titleKey": "print_list", "route": "printList"},
+          {"titleKey": "print_scheduled", "route": "printScheduled"},
+          {"titleKey": "print_completed", "route": "printCompleted"}
         ]
       }
     ]
@@ -41,21 +41,21 @@
     "inheritsFrom": "DRIVER",
     "menus": [
       {
-        "title": "Admin Menu",
+        "titleKey": "admin_menu_title",
         "options": [
-          {"title": "Initialize System", "route": "initSystem"},
-          {"title": "Create User Account", "route": "createUser"},
-          {"title": "Promote or Demote User", "route": "editPrivileges"},
-          {"title": "Define Point of Interest", "route": "definePoi"},
-          {"title": "Define Duration of Travel by Foot", "route": "defineDuration"},
-          {"title": "View List of Unassigned Routes", "route": "viewUnassigned"},
-          {"title": "Review Point of Interest Names", "route": "reviewPoi"},
-          {"title": "Show 10 Best and Worst Drivers", "route": "rankDrivers"},
-          {"title": "View 10 Happiest/Least Happy Passengers", "route": "rankPassengers"},
-          {"title": "View Available Vehicles", "route": "viewVehicles"},
-          {"title": "View PoIs", "route": "viewPois"},
-          {"title": "View Users", "route": "viewUsers"},
-          {"title": "Advance Date", "route": "advanceDate"}
+          {"titleKey": "init_system", "route": "initSystem"},
+          {"titleKey": "create_user", "route": "createUser"},
+          {"titleKey": "edit_privileges", "route": "editPrivileges"},
+          {"titleKey": "define_poi", "route": "definePoi"},
+          {"titleKey": "define_duration", "route": "defineDuration"},
+          {"titleKey": "view_unassigned", "route": "viewUnassigned"},
+          {"titleKey": "review_poi", "route": "reviewPoi"},
+          {"titleKey": "rank_drivers", "route": "rankDrivers"},
+          {"titleKey": "rank_passengers", "route": "rankPassengers"},
+          {"titleKey": "view_vehicles", "route": "viewVehicles"},
+          {"titleKey": "view_pois", "route": "viewPois"},
+          {"titleKey": "view_users", "route": "viewUsers"},
+          {"titleKey": "advance_date", "route": "advanceDate"}
         ]
       }
     ]
