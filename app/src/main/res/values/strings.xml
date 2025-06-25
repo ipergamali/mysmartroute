@@ -46,4 +46,41 @@
     <string name="credits">Ευχαριστίες</string>
     <string name="support_email">Email: smartroute@info.gr</string>
     <string name="support_address">Address: Πάροδος Κρήτης 8, Γάζι, ΤΚ 71414</string>
+    <!-- Titles μενού δυναμικών επιλογών -->
+    <string name="passenger_menu_title">Μενού Επιβάτη</string>
+    <string name="driver_menu_title">Μενού Οδηγού</string>
+    <string name="admin_menu_title">Μενού Διαχειριστή</string>
+
+    <!-- Επιλογές μενού -->
+    <string name="sign_out">Αποσύνδεση</string>
+    <string name="manage_favorites">Διαχείριση αγαπημένων μέσων μεταφοράς</string>
+    <string name="route_mode">Τρόπος μεταφοράς για συγκεκριμένη διαδρομή</string>
+    <string name="find_vehicle">Εύρεση οχήματος για συγκεκριμένη μεταφορά</string>
+    <string name="find_way">Εύρεση μέσου μεταφοράς</string>
+    <string name="book_seat">Κράτηση θέσης ή αγορά εισιτηρίου</string>
+    <string name="view_routes">Προβολή ενδιαφερουσών διαδρομών</string>
+    <string name="view_transports">Προβολή μεταφορών</string>
+    <string name="print_ticket">Εκτύπωση κράτησης ή εισιτηρίου</string>
+    <string name="cancel_seat">Ακύρωση κράτησης</string>
+    <string name="rank_transports">Βαθμολόγηση και σχόλια μεταφορών</string>
+    <string name="shutdown">Τερματισμός συστήματος</string>
+    <string name="register_vehicle">Καταχώρηση οχήματος</string>
+    <string name="announce_availability">Δήλωση διαθεσιμότητας για μεταφορά</string>
+    <string name="find_passengers">Εύρεση επιβατών</string>
+    <string name="print_list">Εκτύπωση λίστας επιβατών</string>
+    <string name="print_scheduled">Εκτύπωση λίστας για προγραμματισμένες μεταφορές</string>
+    <string name="print_completed">Εκτύπωση λίστας για ολοκληρωμένες μεταφορές</string>
+    <string name="init_system">Αρχικοποίηση συστήματος</string>
+    <string name="create_user">Δημιουργία λογαριασμού χρήστη</string>
+    <string name="edit_privileges">Αλλαγή δικαιωμάτων χρήστη</string>
+    <string name="define_poi">Ορισμός σημείου ενδιαφέροντος</string>
+    <string name="define_duration">Ορισμός διάρκειας μετακίνησης με τα πόδια</string>
+    <string name="view_unassigned">Προβολή μη εκχωρημένων διαδρομών</string>
+    <string name="review_poi">Έλεγχος ονομάτων σημείων ενδιαφέροντος</string>
+    <string name="rank_drivers">Προβολή 10 καλύτερων και χειρότερων οδηγών</string>
+    <string name="rank_passengers">Προβολή 10 πιο και λιγότερο ικανοποιημένων επιβατών</string>
+    <string name="view_vehicles">Προβολή διαθέσιμων οχημάτων</string>
+    <string name="view_pois">Προβολή σημείων ενδιαφέροντος</string>
+    <string name="view_users">Προβολή χρηστών</string>
+    <string name="advance_date">Μεταφορά ημερομηνίας</string>
 </resources>

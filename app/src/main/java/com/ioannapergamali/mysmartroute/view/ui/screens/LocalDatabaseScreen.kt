@@ -97,7 +97,7 @@ fun LocalDatabaseScreen(navController: NavController, openDrawer: () -> Unit) {
                     item { Text("Ο πίνακας είναι άδειος") }
                 } else {
                     items(data!!.menus) { menu ->
-                        Text("${menu.id} (${menu.roleId}) - ${menu.title}")
+                        Text("${menu.id} (${menu.roleId}) - ${menu.titleResKey}")
                     }
                 }
                 item { Spacer(modifier = Modifier.padding(8.dp)) }
@@ -106,7 +106,7 @@ fun LocalDatabaseScreen(navController: NavController, openDrawer: () -> Unit) {
                     item { Text("Ο πίνακας είναι άδειος") }
                 } else {
                     items(data!!.menuOptions) { opt ->
-                        Text("${opt.id} (${opt.menuId}) -> ${opt.title} -> ${opt.route}")
+                        Text("${opt.id} (${opt.menuId}) -> ${opt.titleResKey} -> ${opt.route}")
                     }
                 }
                 }
