@@ -30,6 +30,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.SettingsViewModel
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.utils.LanguagePreferenceManager
 import com.ioannapergamali.mysmartroute.utils.LocaleUtils
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.launch
 import com.ioannapergamali.mysmartroute.model.interfaces.ThemeOption
 
@@ -44,6 +45,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState : Bundle?)
     {
         super.onCreate(savedInstanceState)
+        // Εφαρμογή αποθηκευμένης γλώσσας πριν δημιουργηθεί το UI
+        val startLang = runBlocking { LanguagePreferenceManager.getLanguage(this) }
+        LocaleUtils.updateLocale(this, startLang)
         if (ContextCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
