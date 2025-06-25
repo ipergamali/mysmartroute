@@ -280,10 +280,15 @@ class AuthenticationViewModel : ViewModel() {
             val uid = auth.currentUser?.uid ?: return@launch
             val dbLocal = MySmartRouteDatabase.getInstance(context)
             val user = dbLocal.userDao().getUser(uid)
-            val roleId = user?.roleId.takeIf { !it.isNullOrEmpty() } ?: run {
+            val roleId = user?.roleId?.takeIf { it.isNotEmpty() } ?: run {
                 val doc = db.collection("users").document(uid).get().await()
-                val ref = doc.getDocumentReference("roleId") ?: return@launch
-                ref.id
+                val remoteRoleId = when (val field = doc.get("roleId")) {
+                    is String -> field
+                    is DocumentReference -> field.id
+                    else -> null
+                } ?: return@launch
+                user?.let { dbLocal.userDao().insert(it.copy(roleId = remoteRoleId)) }
+                remoteRoleId
             }
 
             Log.d(TAG, "Using roleId: $roleId")
