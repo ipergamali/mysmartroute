@@ -138,5 +138,9 @@ private fun resolveString(key: String): String {
     val resId = remember(key) {
         context.resources.getIdentifier(key, "string", context.packageName)
     }
-    return stringResource(id = resId)
+    return if (resId != 0) {
+        stringResource(id = resId)
+    } else {
+        key
+    }
 }
