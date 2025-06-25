@@ -69,7 +69,8 @@ fun FirebaseDatabaseScreen(navController: NavController, openDrawer: () -> Unit)
                 item { Spacer(modifier = Modifier.padding(8.dp)) }
                 item { Text("Roles", style = MaterialTheme.typography.titleMedium) }
                 items(data!!.roles) { role ->
-                    val name = try { UserRole.valueOf(role.name).localizedName() } catch (_: Exception) { role.name }
+                    val roleEnum = UserRole.values().find { it.name == role.name }
+                    val name = roleEnum?.localizedName() ?: role.name
                     Text("${'$'}{role.id} - ${'$'}name")
                 }
                 item { Spacer(modifier = Modifier.padding(8.dp)) }
