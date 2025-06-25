@@ -90,7 +90,12 @@ fun LocalDatabaseScreen(navController: NavController, openDrawer: () -> Unit) {
                     item { Text("Ο πίνακας είναι άδειος") }
                 } else {
                     items(data!!.roles) { role ->
-                        val name = try { UserRole.valueOf(role.name).localizedName() } catch (_: Exception) { role.name }
+                        val roleEnum = try {
+                            UserRole.valueOf(role.name)
+                        } catch (_: Exception) {
+                            null
+                        }
+                        val name = roleEnum?.localizedName() ?: role.name
                         Text("${'$'}{role.id} - ${'$'}name")
                     }
                 }
