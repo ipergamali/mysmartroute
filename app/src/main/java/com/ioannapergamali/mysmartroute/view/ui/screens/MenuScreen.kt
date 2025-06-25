@@ -24,6 +24,8 @@ import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.data.local.MenuWithOptions
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
+import androidx.compose.ui.res.stringResource
+import com.ioannapergamali.mysmartroute.R
 
 @Composable
 fun MenuScreen(navController: NavController, openDrawer: () -> Unit) {
@@ -41,7 +43,7 @@ fun MenuScreen(navController: NavController, openDrawer: () -> Unit) {
     Scaffold(
         topBar = {
             TopBar(
-                title = "Menu",
+                title = stringResource(R.string.menu_title),
                 navController = navController,
                 showMenu = true,
                 onMenuClick = openDrawer,
@@ -76,7 +78,7 @@ private fun RoleMenu(
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
-            text = "Μενού για τον ρόλο: ${role?.name ?: ""}",
+            text = stringResource(R.string.menu_role_prefix, role?.name ?: ""),
             style = MaterialTheme.typography.titleLarge
         )
         Spacer(Modifier.height(8.dp))

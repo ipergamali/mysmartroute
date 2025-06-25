@@ -21,4 +21,29 @@
     <string name="sound">Ήχος</string>
     <string name="apply">Εφαρμογή</string>
     <string name="applying_settings">Εφαρμογή ρυθμίσεων...</string>
+    <!-- Generic UI strings -->
+    <string name="home_title">Αρχική</string>
+    <string name="welcome">Καλώς ήρθατε</string>
+    <string name="login">Σύνδεση</string>
+    <string name="logout">Αποσύνδεση</string>
+    <string name="email">Email</string>
+    <string name="password">Κωδικός</string>
+    <string name="no_account">Αν δεν έχετε λογαριασμό </string>
+    <string name="sign_up">Εγγραφή</string>
+    <string name="menu_title">Μενού</string>
+    <string name="menu_role_prefix">Μενού για τον ρόλο: %1$s</string>
+    <string name="roles_title">Ρόλοι</string>
+    <string name="about_title">Σχετικά</string>
+    <string name="support_title">Υποστήριξη</string>
+    <string name="databases_title">Βάσεις Δεδομένων</string>
+    <string name="local_db">Τοπική ΒΔ</string>
+    <string name="firebase_db">Firestore ΒΔ</string>
+    <string name="sync_db">Συγχρονισμός</string>
+    <string name="admin_option">Επιλογή Διαχειριστή</string>
+    <string name="profile">Προφίλ</string>
+    <string name="guest">Επισκέπτης</string>
+    <string name="exit">Έξοδος</string>
+    <string name="credits">Ευχαριστίες</string>
+    <string name="support_email">Email: smartroute@info.gr</string>
+    <string name="support_address">Address: Πάροδος Κρήτης 8, Γάζι, ΤΚ 71414</string>
 </resources>
