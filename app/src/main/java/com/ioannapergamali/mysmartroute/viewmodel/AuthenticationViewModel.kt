@@ -243,21 +243,27 @@ class AuthenticationViewModel : ViewModel() {
                 val menuId = menuDoc.getString("id") ?: menuDoc.id
                 val optionsSnap = menuDoc.reference.collection("options").get().await()
                 val options = optionsSnap.documents.map { optDoc ->
+                    val titleKey = optDoc.getString("titleKey")
+                        ?: optDoc.getString("titleResKey")
+                        ?: ""
                     MenuOptionEntity(
                         id = optDoc.getString("id") ?: optDoc.id,
                         menuId = menuId,
-                        titleResKey = optDoc.getString("titleKey") ?: "",
+                        titleResKey = titleKey,
                         route = optDoc.getString("route") ?: ""
                     )
                 }
+                val menuTitleKey = menuDoc.getString("titleKey")
+                    ?: menuDoc.getString("titleResKey")
+                    ?: ""
                 insertMenuSafely(
                     menuDao,
                     dbLocal.roleDao(),
-                    MenuEntity(menuId, roleId, menuDoc.getString("titleKey") ?: "")
+                    MenuEntity(menuId, roleId, menuTitleKey)
                 )
                 options.forEach { optionDao.insert(it) }
                 menus += MenuWithOptions(
-                    MenuEntity(menuId, roleId, menuDoc.getString("titleKey") ?: ""),
+                    MenuEntity(menuId, roleId, menuTitleKey),
                     options
                 )
             }
