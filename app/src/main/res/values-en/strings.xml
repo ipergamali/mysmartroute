@@ -26,7 +26,7 @@
     <string name="logout">Logout</string>
     <string name="email">Email</string>
     <string name="password">Password</string>
-    <string name="no_account">If you don't have account </string>
+    <string name="no_account">If you don\'t have an account</string>
     <string name="sign_up">Sign Up</string>
     <string name="menu_title">Menu</string>
     <string name="menu_role_prefix">Menu for role: %1$s</string>
