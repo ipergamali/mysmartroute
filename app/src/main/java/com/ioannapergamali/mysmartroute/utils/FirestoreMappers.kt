@@ -88,11 +88,11 @@ fun RoleEntity.toFirestoreMap(): Map<String, Any> = mapOf(
 
 fun MenuEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     "id" to id,
-    "title" to title
+    "titleKey" to titleResKey
 )
 
 fun MenuOptionEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     "id" to id,
-    "title" to title,
+    "titleKey" to titleResKey,
     "route" to route
 )
