@@ -143,7 +143,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     "CREATE TABLE IF NOT EXISTS `menus` (" +
                         "`id` TEXT NOT NULL, " +
                         "`roleId` TEXT NOT NULL, " +
-                        "`title` TEXT NOT NULL, " +
+                        "`titleResKey` TEXT NOT NULL, " +
                         "`route` TEXT NOT NULL, " +
                         "FOREIGN KEY(`roleId`) REFERENCES `roles`(`id`) ON DELETE CASCADE, " +
                         "PRIMARY KEY(`id`)" +
@@ -158,7 +158,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     "CREATE TABLE IF NOT EXISTS `menu_options` (" +
                         "`id` TEXT NOT NULL, " +
                         "`menuId` TEXT NOT NULL, " +
-                        "`title` TEXT NOT NULL, " +
+                        "`titleResKey` TEXT NOT NULL, " +
                         "`route` TEXT NOT NULL, " +
                         "FOREIGN KEY(`menuId`) REFERENCES `menus`(`id`) ON DELETE CASCADE, " +
                         "PRIMARY KEY(`id`)" +
@@ -167,12 +167,12 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                 database.execSQL("CREATE TABLE IF NOT EXISTS `menus_new` (" +
                         "`id` TEXT NOT NULL, " +
                         "`roleId` TEXT NOT NULL, " +
-                        "`title` TEXT NOT NULL, " +
+                        "`titleResKey` TEXT NOT NULL, " +
                         "PRIMARY KEY(`id`)" +
                         ")")
                 database.execSQL(
-                    "INSERT INTO `menus_new` (`id`, `roleId`, `title`) " +
-                        "SELECT `id`, `roleId`, `title` FROM `menus`"
+                    "INSERT INTO `menus_new` (`id`, `roleId`, `titleResKey`) " +
+                        "SELECT `id`, `roleId`, `titleResKey` FROM `menus`"
                 )
                 database.execSQL("DROP TABLE `menus`")
                 database.execSQL("ALTER TABLE `menus_new` RENAME TO `menus`")
@@ -181,17 +181,17 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
 
         private val MIGRATION_15_16 = object : Migration(15, 16) {
             override fun migrate(database: SupportSQLiteDatabase) {
-                fun insertMenu(id: String, roleId: String, title: String) {
+                fun insertMenu(id: String, roleId: String, titleResKey: String) {
                     database.execSQL(
-                        "INSERT OR IGNORE INTO `menus` (`id`, `roleId`, `title`) VALUES ('" +
-                            id + "', '" + roleId + "', '" + title + "')"
+                        "INSERT OR IGNORE INTO `menus` (`id`, `roleId`, `titleResKey`) VALUES ('" +
+                            id + "', '" + roleId + "', '" + titleResKey + "')"
                     )
                 }
 
-                fun insertOption(id: String, menuId: String, title: String, route: String) {
+                fun insertOption(id: String, menuId: String, titleResKey: String, route: String) {
                     database.execSQL(
-                        "INSERT OR IGNORE INTO `menu_options` (`id`, `menuId`, `title`, `route`) VALUES ('" +
-                            id + "', '" + menuId + "', '" + title + "', '" + route + "')"
+                        "INSERT OR IGNORE INTO `menu_options` (`id`, `menuId`, `titleResKey`, `route`) VALUES ('" +
+                            id + "', '" + menuId + "', '" + titleResKey + "', '" + route + "')"
                     )
                 }
 
@@ -261,17 +261,17 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     "('role_admin', 'ADMIN', 'role_driver')"
             )
 
-            fun insertMenu(id: String, roleId: String, title: String) {
+            fun insertMenu(id: String, roleId: String, titleResKey: String) {
                 db.execSQL(
-                    "INSERT OR IGNORE INTO `menus` (`id`, `roleId`, `title`) VALUES ('" +
-                        id + "', '" + roleId + "', '" + title + "')"
+                    "INSERT OR IGNORE INTO `menus` (`id`, `roleId`, `titleResKey`) VALUES ('" +
+                        id + "', '" + roleId + "', '" + titleResKey + "')"
                 )
             }
 
-            fun insertOption(id: String, menuId: String, title: String, route: String) {
+            fun insertOption(id: String, menuId: String, titleResKey: String, route: String) {
                 db.execSQL(
-                    "INSERT OR IGNORE INTO `menu_options` (`id`, `menuId`, `title`, `route`) VALUES ('" +
-                        id + "', '" + menuId + "', '" + title + "', '" + route + "')"
+                    "INSERT OR IGNORE INTO `menu_options` (`id`, `menuId`, `titleResKey`, `route`) VALUES ('" +
+                        id + "', '" + menuId + "', '" + titleResKey + "', '" + route + "')"
                 )
             }
 
