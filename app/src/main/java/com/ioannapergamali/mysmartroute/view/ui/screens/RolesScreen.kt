@@ -22,6 +22,8 @@ import com.ioannapergamali.mysmartroute.viewmodel.DatabaseViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.SyncState
 import androidx.compose.ui.res.stringResource
 import com.ioannapergamali.mysmartroute.R
+import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
+import com.ioannapergamali.mysmartroute.model.enumerations.localizedName
 
 @Composable
 fun RolesScreen(navController: NavController, openDrawer: () -> Unit) {
@@ -52,7 +54,12 @@ fun RolesScreen(navController: NavController, openDrawer: () -> Unit) {
             } else {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
                     items(roles) { role ->
-                        Text("${'$'}{role.id} - ${'$'}{role.name}")
+                        val displayName = try {
+                            UserRole.valueOf(role.name).localizedName()
+                        } catch (_: Exception) {
+                            role.name
+                        }
+                        Text("${'$'}{role.id} - ${'$'}displayName")
                     }
                 }
             }

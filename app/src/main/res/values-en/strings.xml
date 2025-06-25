@@ -44,6 +44,11 @@
     <string name="credits">Credits</string>
     <string name="support_email">Email: smartroute@info.gr</string>
     <string name="support_address">Address: Πάροδος Κρήτης 8, Γάζι, ΤΚ 71414</string>
+    <!-- Role names -->
+    <string name="role_passenger">Passenger</string>
+    <string name="role_driver">Driver</string>
+    <string name="role_admin">Administrator</string>
+    <string name="select_role">Select Role</string>
     <!-- Dynamic menu titles -->
     <string name="passenger_menu_title">Passenger Menu</string>
     <string name="driver_menu_title">Driver Menu</string>

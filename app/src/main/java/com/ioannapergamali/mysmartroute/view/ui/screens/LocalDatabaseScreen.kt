@@ -21,6 +21,8 @@ import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.viewmodel.DatabaseViewModel
+import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
+import com.ioannapergamali.mysmartroute.model.enumerations.localizedName
 
 @Composable
 fun LocalDatabaseScreen(navController: NavController, openDrawer: () -> Unit) {
@@ -88,7 +90,8 @@ fun LocalDatabaseScreen(navController: NavController, openDrawer: () -> Unit) {
                     item { Text("Ο πίνακας είναι άδειος") }
                 } else {
                     items(data!!.roles) { role ->
-                        Text("${role.id} - ${role.name}")
+                        val name = try { UserRole.valueOf(role.name).localizedName() } catch (_: Exception) { role.name }
+                        Text("${'$'}{role.id} - ${'$'}name")
                     }
                 }
                 item { Spacer(modifier = Modifier.padding(8.dp)) }

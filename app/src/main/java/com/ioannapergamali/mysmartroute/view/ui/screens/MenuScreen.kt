@@ -24,6 +24,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.data.local.MenuWithOptions
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
+import com.ioannapergamali.mysmartroute.model.enumerations.localizedName
 import androidx.compose.ui.res.stringResource
 import com.ioannapergamali.mysmartroute.R
 import androidx.compose.runtime.remember
@@ -79,7 +80,7 @@ private fun RoleMenu(
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
-            text = stringResource(R.string.menu_role_prefix, role?.name ?: ""),
+            text = stringResource(R.string.menu_role_prefix, role?.localizedName() ?: ""),
             style = MaterialTheme.typography.titleLarge
         )
         Spacer(Modifier.height(8.dp))
