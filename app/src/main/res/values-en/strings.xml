@@ -1,0 +1,89 @@
+<resources>
+    <string name="app_name">mysmartroute</string>
+    <string name="invalid_coordinates">Invalid coordinates</string>
+    <string name="no_internet">No internet connection</string>
+    <string name="directions">Get Directions</string>
+    <string name="coordinates_valid">Coordinates are valid</string>
+    <string name="coordinates_missing">Missing coordinates</string>
+    <string name="check_coordinates">Check coordinates</string>
+    <string name="internet_available">Internet connection available</string>
+    <string name="check_internet">Check connection</string>
+    <string name="map_api_key_missing">Maps API key missing</string>
+    <!-- Settings related strings -->
+    <string name="settings">Settings</string>
+    <string name="theme">Theme</string>
+    <string name="dark_theme">Dark Theme</string>
+    <string name="font_label">Font</string>
+    <string name="fonts">Fonts</string>
+    <string name="language">Language</string>
+    <string name="sound">Sound</string>
+    <string name="apply">Apply</string>
+    <string name="applying_settings">Applying settings...</string>
+    <!-- Generic UI strings -->
+    <string name="home_title">Home</string>
+    <string name="welcome">Welcome</string>
+    <string name="login">Login</string>
+    <string name="logout">Logout</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="no_account">If you don\'t have an account</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="menu_title">Menu</string>
+    <string name="menu_role_prefix">Menu for role: %1$s</string>
+    <string name="roles_title">Roles</string>
+    <string name="about_title">About</string>
+    <string name="support_title">Support</string>
+    <string name="databases_title">Databases</string>
+    <string name="local_db">Local DB</string>
+    <string name="firebase_db">Firestore DB</string>
+    <string name="sync_db">Synchronization</string>
+    <string name="admin_option">Admin Option</string>
+    <string name="profile">Profile</string>
+    <string name="guest">Guest</string>
+    <string name="exit">Exit</string>
+    <string name="credits">Credits</string>
+    <string name="support_email">Email: smartroute@info.gr</string>
+    <string name="support_address">Address: Πάροδος Κρήτης 8, Γάζι, ΤΚ 71414</string>
+    <!-- Role names -->
+    <string name="role_passenger">Passenger</string>
+    <string name="role_driver">Driver</string>
+    <string name="role_admin">Administrator</string>
+    <string name="select_role">Select Role</string>
+    <!-- Dynamic menu titles -->
+    <string name="passenger_menu_title">Passenger Menu</string>
+    <string name="driver_menu_title">Driver Menu</string>
+    <string name="admin_menu_title">Admin Menu</string>
+
+    <!-- Menu options -->
+    <string name="sign_out">Sign out</string>
+    <string name="manage_favorites">Manage Favorite Means of Transport</string>
+    <string name="route_mode">Mode Of Transportation For A Specific Route</string>
+    <string name="find_vehicle">Find a Vehicle for a specific Transport</string>
+    <string name="find_way">Find Way of Transport</string>
+    <string name="book_seat">Book a Seat or Buy a Ticket</string>
+    <string name="view_routes">View Interesting Routes</string>
+    <string name="view_transports">View Transports</string>
+    <string name="print_ticket">Print Booked Seat or Ticket</string>
+    <string name="cancel_seat">Cancel Booked Seat</string>
+    <string name="rank_transports">View, Rank and Comment on Completed Transports</string>
+    <string name="shutdown">Shut Down the System</string>
+    <string name="register_vehicle">Register Vehicle</string>
+    <string name="announce_availability">Announce Availability for a specific Transport</string>
+    <string name="find_passengers">Find Passengers</string>
+    <string name="print_list">Print Passenger List</string>
+    <string name="print_scheduled">Print Passenger List for Scheduled Transports</string>
+    <string name="print_completed">Print Passenger List for Completed Transports</string>
+    <string name="init_system">Initialize System</string>
+    <string name="create_user">Create User Account</string>
+    <string name="edit_privileges">Promote or Demote User</string>
+    <string name="define_poi">Define Point of Interest</string>
+    <string name="define_duration">Define Duration of Travel by Foot</string>
+    <string name="view_unassigned">View List of Unassigned Routes</string>
+    <string name="review_poi">Review Point of Interest Names</string>
+    <string name="rank_drivers">Show 10 Best and Worst Drivers</string>
+    <string name="rank_passengers">View 10 Happiest/Least Happy Passengers</string>
+    <string name="view_vehicles">View Available Vehicles</string>
+    <string name="view_pois">View PoIs</string>
+    <string name="view_users">View Users</string>
+    <string name="advance_date">Advance Date</string>
+</resources>

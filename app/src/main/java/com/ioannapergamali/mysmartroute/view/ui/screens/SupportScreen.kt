@@ -9,13 +9,15 @@ import androidx.compose.ui.unit.dp
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
+import androidx.compose.ui.res.stringResource
+import com.ioannapergamali.mysmartroute.R
 
 @Composable
 fun SupportScreen(navController: NavController, openDrawer: () -> Unit) {
     Scaffold(
         topBar = {
             TopBar(
-                title = "Support",
+                title = stringResource(R.string.support_title),
                 navController = navController,
                 showMenu = true,
                 onMenuClick = openDrawer
@@ -23,8 +25,8 @@ fun SupportScreen(navController: NavController, openDrawer: () -> Unit) {
         }
     ) { padding ->
         ScreenContainer(modifier = Modifier.padding(padding)) {
-            Text("Email: smartroute@info.gr")
-            Text("Address: Πάροδος Κρήτης 8, Γάζι, ΤΚ 71414")
+            Text(stringResource(R.string.support_email))
+            Text(stringResource(R.string.support_address))
         }
     }
 }

@@ -2,12 +2,14 @@ package com.ioannapergamali.mysmartroute.model.menus
 
 /** Δομή για το json των μενού ρόλων. */
 data class MenuConfig(
-    val title: String,
+    /** Κλειδί πόρου για τον τίτλο του μενού */
+    val titleKey: String,
     val options: List<OptionConfig>
 )
 
 data class OptionConfig(
-    val title: String,
+    /** Κλειδί πόρου για τον τίτλο της επιλογής */
+    val titleKey: String,
     val route: String
 )
 

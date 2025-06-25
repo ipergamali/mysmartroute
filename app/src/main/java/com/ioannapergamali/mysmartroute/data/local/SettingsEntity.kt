@@ -23,5 +23,6 @@ data class SettingsEntity(
     var darkTheme: Boolean = false,
     var font: String = "",
     var soundEnabled: Boolean = false,
-    var soundVolume: Float = 0f
+    var soundVolume: Float = 0f,
+    var language: String = "el"
 )

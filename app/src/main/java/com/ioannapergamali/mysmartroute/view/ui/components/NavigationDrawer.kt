@@ -30,8 +30,10 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.compose.ui.platform.LocalContext
 import android.app.Activity
+import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.launch
 import com.google.firebase.firestore.FirebaseFirestore
+import com.ioannapergamali.mysmartroute.R
 
 @Composable
 fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
@@ -77,7 +79,7 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
             )
             Spacer(Modifier.size(8.dp))
             Text(
-                text = username.value ?: if (user != null) user.email ?: "" else "Guest",
+                text = username.value ?: if (user != null) user.email ?: "" else stringResource(R.string.guest),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
             )
         }
@@ -86,7 +88,7 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
 
         
         NavigationDrawerItem(
-            label = { Text("About") },
+            label = { Text(stringResource(R.string.about_title)) },
             selected = false,
             onClick = {
                 navController.navigate("about")
@@ -95,7 +97,7 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
             icon = { Icon(Icons.Filled.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
         )
         NavigationDrawerItem(
-            label = { Text("Support") },
+            label = { Text(stringResource(R.string.support_title)) },
             selected = false,
             onClick = {
                 navController.navigate("support")
@@ -104,7 +106,7 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
             icon = { Icon(Icons.Filled.Email, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
         )
         NavigationDrawerItem(
-            label = { Text("Databases") },
+            label = { Text(stringResource(R.string.databases_title)) },
             selected = false,
             onClick = {
                 navController.navigate("databaseMenu")
@@ -113,7 +115,7 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
             icon = { Icon(Icons.Filled.Storage, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
         )
         NavigationDrawerItem(
-            label = { Text("Admin Option") },
+            label = { Text(stringResource(R.string.admin_option)) },
             selected = false,
             onClick = {
                 navController.navigate("adminSignup")
@@ -123,7 +125,7 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
         )
         if (user != null) {
             NavigationDrawerItem(
-                label = { Text("Profile") },
+                label = { Text(stringResource(R.string.profile)) },
                 selected = false,
                 onClick = {
                     navController.navigate("profile")
@@ -132,7 +134,7 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
                 icon = { Icon(Icons.Filled.Person, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
             )
             NavigationDrawerItem(
-                label = { Text("Settings") },
+                label = { Text(stringResource(R.string.settings)) },
                 selected = false,
                 onClick = {
                     navController.navigate("settings")
@@ -141,7 +143,7 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
                 icon = { Icon(Icons.Filled.Settings, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
             )
             NavigationDrawerItem(
-                label = { Text("Μενού") },
+                label = { Text(stringResource(R.string.menu_title)) },
                 selected = false,
                 onClick = {
                     navController.navigate("menu")
@@ -150,7 +152,7 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
                 icon = { Icon(Icons.Filled.Menu, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
             )
             NavigationDrawerItem(
-                label = { Text("Logout") },
+                label = { Text(stringResource(R.string.logout)) },
                 selected = false,
                 onClick = {
                     FirebaseAuth.getInstance().signOut()
@@ -163,7 +165,7 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
             )
         } else {
             NavigationDrawerItem(
-                label = { Text("Login") },
+                label = { Text(stringResource(R.string.login)) },
                 selected = false,
                 onClick = {
                     navController.navigate("home") {
@@ -176,7 +178,7 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
         }
         val activity = (LocalContext.current as? Activity)
         NavigationDrawerItem(
-            label = { Text("Exit") },
+            label = { Text(stringResource(R.string.exit)) },
             selected = false,
             onClick = {
                 activity?.finishAffinity()
