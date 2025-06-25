@@ -54,11 +54,12 @@ fun RolesScreen(navController: NavController, openDrawer: () -> Unit) {
             } else {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
                     items(roles) { role ->
-                        val displayName = try {
-                            UserRole.valueOf(role.name).localizedName()
+                        val roleEnum = try {
+                            UserRole.valueOf(role.name)
                         } catch (_: Exception) {
-                            role.name
+                            null
                         }
+                        val displayName = roleEnum?.localizedName() ?: role.name
                         Text("${'$'}{role.id} - ${'$'}displayName")
                     }
                 }
