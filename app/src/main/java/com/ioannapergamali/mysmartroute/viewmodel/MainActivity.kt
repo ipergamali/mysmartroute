@@ -46,7 +46,7 @@ class MainActivity : ComponentActivity() {
     {
         super.onCreate(savedInstanceState)
         // Εφαρμογή αποθηκευμένης γλώσσας πριν δημιουργηθεί το UI
-        val startLang = runBlocking { LanguagePreferenceManager.getLanguage(this) }
+        val startLang = runBlocking { LanguagePreferenceManager.getLanguage(this@MainActivity) }
         LocaleUtils.updateLocale(this, startLang)
         if (ContextCompat.checkSelfPermission(
                 this,
