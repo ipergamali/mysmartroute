@@ -33,7 +33,12 @@ fun RolesScreen(navController: NavController, openDrawer: () -> Unit) {
 
     LaunchedEffect(Unit) {
         dbViewModel.syncDatabases(context)
-        viewModel.loadRoles(context)
+    }
+
+    LaunchedEffect(syncState) {
+        if (syncState !is SyncState.Loading) {
+            viewModel.loadRoles(context)
+        }
     }
 
     Scaffold(
