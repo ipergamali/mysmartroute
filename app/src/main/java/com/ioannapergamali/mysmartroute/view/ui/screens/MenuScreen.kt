@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import android.util.Log
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -29,6 +30,8 @@ import androidx.compose.ui.res.stringResource
 import com.ioannapergamali.mysmartroute.R
 import androidx.compose.runtime.remember
 
+private const val TAG = "MenuScreen"
+
 @Composable
 fun MenuScreen(navController: NavController, openDrawer: () -> Unit) {
     val viewModel: AuthenticationViewModel = viewModel()
@@ -38,8 +41,13 @@ fun MenuScreen(navController: NavController, openDrawer: () -> Unit) {
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
+        Log.d(TAG, "Loading user role and menus")
         viewModel.loadCurrentUserRole()
         viewModel.loadCurrentUserMenus(context)
+    }
+
+    LaunchedEffect(role, menus) {
+        Log.d(TAG, "Role: ${'$'}role, menus size: ${'$'}{menus.size}")
     }
 
     Scaffold(

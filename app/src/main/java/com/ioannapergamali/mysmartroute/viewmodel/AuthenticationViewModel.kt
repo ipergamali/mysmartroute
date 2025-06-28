@@ -213,13 +213,21 @@ class AuthenticationViewModel : ViewModel() {
     }
 
     fun loadCurrentUserRole() {
-        val uid = auth.currentUser?.uid ?: return
+        val uid = auth.currentUser?.uid ?: run {
+            Log.w(TAG, "No authenticated user")
+            return
+        }
+        Log.d(TAG, "Fetching role for user: $uid")
         db.collection("users")
             .document(uid)
             .get()
             .addOnSuccessListener { document ->
                 val roleName = document.getString("role")
+                Log.d(TAG, "Role from Firestore: $roleName")
                 _currentUserRole.value = roleName?.let { UserRole.valueOf(it) }
+            }
+            .addOnFailureListener { e ->
+                Log.e(TAG, "Failed to fetch role", e)
             }
     }
 
@@ -284,7 +292,10 @@ class AuthenticationViewModel : ViewModel() {
 
     fun loadCurrentUserMenus(context: Context) {
         viewModelScope.launch {
-            val uid = auth.currentUser?.uid ?: return@launch
+            val uid = auth.currentUser?.uid ?: run {
+                Log.w(TAG, "No authenticated user")
+                return@launch
+            }
             val dbLocal = MySmartRouteDatabase.getInstance(context)
             val user = dbLocal.userDao().getUser(uid)
             val roleId = user?.roleId?.takeIf { it.isNotEmpty() } ?: run {
@@ -295,6 +306,7 @@ class AuthenticationViewModel : ViewModel() {
                     else -> null
                 } ?: return@launch
                 user?.let { dbLocal.userDao().insert(it.copy(roleId = remoteRoleId)) }
+                Log.d(TAG, "Fetched roleId from Firestore: $remoteRoleId")
                 remoteRoleId
             }
 
@@ -303,6 +315,7 @@ class AuthenticationViewModel : ViewModel() {
             if (menusLocal.isNotEmpty()) {
                 _currentMenus.value = menusLocal
             } else if (NetworkUtils.isInternetAvailable(context)) {
+                Log.d(TAG, "Loading menus from Firestore")
                 val menusRemote = try {
                     loadMenusWithInheritanceRemote(roleId, dbLocal)
                 } catch (e: Exception) {
