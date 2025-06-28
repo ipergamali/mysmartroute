@@ -24,6 +24,8 @@ import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
@@ -211,6 +213,7 @@ class DatabaseViewModel : ViewModel() {
             val db = MySmartRouteDatabase.getInstance(context)
 
             try {
+                withTimeout(30000L) {
                 if (remoteTs > localTs) {
                     Log.d(TAG, "Remote database is newer, downloading data")
                     Log.d(TAG, "Fetching users from Firestore")
@@ -376,6 +379,9 @@ class DatabaseViewModel : ViewModel() {
                     _lastSyncTime.value = newTs
                 }
                 _syncState.value = SyncState.Success
+            } catch (e: TimeoutCancellationException) {
+                Log.e(TAG, "Sync timeout", e)
+                _syncState.value = SyncState.Error("Sync timeout")
             } catch (e: Exception) {
                 Log.e(TAG, "Sync error", e)
                 _syncState.value = SyncState.Error(e.localizedMessage ?: "Sync failed")
