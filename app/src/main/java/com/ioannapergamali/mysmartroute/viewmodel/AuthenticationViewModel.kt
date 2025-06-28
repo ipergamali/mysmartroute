@@ -229,7 +229,9 @@ class AuthenticationViewModel : ViewModel() {
         val roleDao = db.roleDao()
         var current: String? = roleId
         while (current != null) {
-            result += menuDao.getMenusForRole(current)
+            val menus = menuDao.getMenusForRole(current)
+                .filter { it.menu.id.startsWith("menu_") }
+            result += menus
             current = roleDao.getRole(current)?.parentRoleId
         }
         return result.distinctBy { it.menu.id }
@@ -243,7 +245,9 @@ class AuthenticationViewModel : ViewModel() {
         if (roleDoc.exists()) {
             val menusSnap = roleDoc.reference.collection("menus").get().await()
             for (menuDoc in menusSnap.documents) {
-                val menuId = menuDoc.getString("id") ?: menuDoc.id
+                val menuIdRaw = menuDoc.getString("id") ?: menuDoc.id
+                if (!menuIdRaw.startsWith("menu_")) continue
+                val menuId = menuIdRaw
                 val optionsSnap = menuDoc.reference.collection("options").get().await()
                 val options = optionsSnap.documents.map { optDoc ->
                     val titleKey = optDoc.getString("titleKey")
