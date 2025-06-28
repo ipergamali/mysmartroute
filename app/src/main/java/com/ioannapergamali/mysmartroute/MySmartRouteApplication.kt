@@ -6,11 +6,16 @@ import com.google.firebase.FirebaseApp
 import com.ioannapergamali.mysmartroute.BuildConfig
 import com.ioannapergamali.mysmartroute.utils.ShortcutUtils
 import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
+import com.ioannapergamali.mysmartroute.utils.LanguagePreferenceManager
+import com.ioannapergamali.mysmartroute.utils.LocaleUtils
+import kotlinx.coroutines.runBlocking
 
 
 class MySmartRouteApplication : Application() {
     override fun onCreate() {
         super.onCreate()
+        val lang = runBlocking { LanguagePreferenceManager.getLanguage(this) }
+        LocaleUtils.updateLocale(this, lang)
         FirebaseApp.initializeApp(this)
         AuthenticationViewModel().ensureMenusInitialized(this)
         // Η υπηρεσία Firebase App Check απενεργοποιήθηκε προσωρινά

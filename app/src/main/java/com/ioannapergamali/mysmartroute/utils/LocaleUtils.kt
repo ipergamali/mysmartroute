@@ -3,10 +3,13 @@ package com.ioannapergamali.mysmartroute.utils
 import android.content.Context
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
+import java.util.Locale
 
 object LocaleUtils {
     fun updateLocale(context: Context, language: String) {
-        val locales = LocaleListCompat.forLanguageTags(language)
+        val locale = Locale(language)
+        Locale.setDefault(locale)
+        val locales = LocaleListCompat.create(locale)
         AppCompatDelegate.setApplicationLocales(locales)
     }
 }
