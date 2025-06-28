@@ -378,6 +378,7 @@ class DatabaseViewModel : ViewModel() {
                     prefs.edit().putLong("last_sync", newTs).apply()
                     _lastSyncTime.value = newTs
                 }
+                }
                 _syncState.value = SyncState.Success
             } catch (e: TimeoutCancellationException) {
                 Log.e(TAG, "Sync timeout", e)
