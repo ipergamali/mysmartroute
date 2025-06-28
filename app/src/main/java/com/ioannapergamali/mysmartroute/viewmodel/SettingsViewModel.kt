@@ -116,16 +116,14 @@ class SettingsViewModel : ViewModel() {
         dark: Boolean,
         font: AppFont,
         soundEnabled: Boolean,
-        soundVolume: Float,
-        language: String
+        soundVolume: Float
     ) {
         ThemePreferenceManager.setTheme(context, theme)
         ThemePreferenceManager.setDarkTheme(context, dark)
         FontPreferenceManager.setFont(context, font)
         SoundPreferenceManager.setSoundEnabled(context, soundEnabled)
         SoundPreferenceManager.setSoundVolume(context, soundVolume)
-        LanguagePreferenceManager.setLanguage(context, language)
-        LocaleUtils.updateLocale(context, language)
+        val language = LanguagePreferenceManager.languageFlow(context).first()
         updateSettings(context) {
             it.copy(
                 theme = (theme as? AppTheme)?.name ?: theme.label,
