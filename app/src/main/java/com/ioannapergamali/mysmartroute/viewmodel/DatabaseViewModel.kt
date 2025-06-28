@@ -384,7 +384,9 @@ class DatabaseViewModel : ViewModel() {
                 _syncState.value = SyncState.Error("Sync timeout")
             } catch (e: Exception) {
                 Log.e(TAG, "Sync error", e)
-                _syncState.value = SyncState.Error(e.localizedMessage ?: "Sync failed")
+                _syncState.value = SyncState.Error(
+                    e.localizedMessage ?: "Sync failed"
+                )
             }
         }
     }
