@@ -11,6 +11,8 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.ioannapergamali.mysmartroute.data.local.VehicleEntity
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.data.local.MenuOptionEntity
+import com.ioannapergamali.mysmartroute.data.local.LanguageSettingEntity
+import com.ioannapergamali.mysmartroute.data.local.LanguageSettingDao
 
 @Database(
     entities = [
@@ -20,9 +22,10 @@ import com.ioannapergamali.mysmartroute.data.local.MenuOptionEntity
         SettingsEntity::class,
         RoleEntity::class,
         MenuEntity::class,
-        MenuOptionEntity::class
+        MenuOptionEntity::class,
+        LanguageSettingEntity::class
     ],
-    version = 18
+    version = 19
 )
 abstract class MySmartRouteDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
@@ -32,6 +35,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
     abstract fun roleDao(): RoleDao
     abstract fun menuDao(): MenuDao
     abstract fun menuOptionDao(): MenuOptionDao
+    abstract fun languageSettingDao(): LanguageSettingDao
 
     companion object {
         @Volatile
@@ -252,6 +256,19 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_18_19 = object : Migration(18, 19) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `app_language` (" +
+                        "`id` INTEGER NOT NULL, " +
+                        "`language` TEXT NOT NULL, " +
+                        "PRIMARY KEY(`id`)" +
+                        ")"
+                )
+                database.execSQL("INSERT INTO `app_language` (`id`, `language`) VALUES (1, 'el')")
+            }
+        }
+
         private fun prepopulate(db: SupportSQLiteDatabase) {
             Log.d(TAG, "Prepopulating database")
             db.execSQL(
@@ -316,6 +333,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             insertOption("opt_admin_13", adminMenuId, "advance_date", "advanceDate")
 
             Log.d(TAG, "Prepopulate complete")
+            db.execSQL("INSERT INTO app_language (id, language) VALUES (1, 'el')")
         }
 
         fun getInstance(context: Context): MySmartRouteDatabase {
@@ -334,7 +352,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_14_15,
                     MIGRATION_15_16,
                     MIGRATION_16_17,
-                    MIGRATION_17_18
+                    MIGRATION_17_18,
+                    MIGRATION_18_19
                 )
                     .addCallback(object : RoomDatabase.Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {
