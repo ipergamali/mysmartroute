@@ -66,15 +66,7 @@ class DatabaseViewModel : ViewModel() {
                 db.menuDao().getAllMenus(),
                 db.menuOptionDao().getAllMenuOptions(),
                 db.languageSettingDao().getAll()
-            ) { values ->
-                val users = values[0] as List<UserEntity>
-                val vehicles = values[1] as List<VehicleEntity>
-                val pois = values[2] as List<PoIEntity>
-                val settings = values[3] as List<SettingsEntity>
-                val roles = values[4] as List<RoleEntity>
-                val menus = values[5] as List<MenuEntity>
-                val options = values[6] as List<MenuOptionEntity>
-                val languages = values[7] as List<LanguageSettingEntity>
+            ) { users, vehicles, pois, settings, roles, menus, options, languages ->
                 DatabaseData(users, vehicles, pois, settings, roles, menus, options, languages)
             }.collect { data ->
                 Log.d(
