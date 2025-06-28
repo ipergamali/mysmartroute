@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface LanguageSettingDao {
@@ -14,5 +15,5 @@ interface LanguageSettingDao {
     suspend fun get(): LanguageSettingEntity?
 
     @Query("SELECT * FROM app_language")
-    suspend fun getAll(): List<LanguageSettingEntity>
+    fun getAll(): Flow<List<LanguageSettingEntity>>
 }
