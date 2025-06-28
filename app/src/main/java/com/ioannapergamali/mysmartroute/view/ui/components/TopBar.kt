@@ -6,6 +6,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Home
+import android.util.Log
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -28,6 +29,8 @@ import com.ioannapergamali.mysmartroute.utils.LocaleUtils
 import com.ioannapergamali.mysmartroute.model.AppLanguage
 import kotlinx.coroutines.launch
 import com.google.firebase.auth.FirebaseAuth
+
+private const val TAG = "TopBar"
 
 
 
@@ -105,9 +108,11 @@ fun TopBar(
             if (showLanguageToggle) {
                 IconButton(onClick = {
                     val newLang = if (currentLanguage == AppLanguage.Greek.code) AppLanguage.English.code else AppLanguage.Greek.code
+                    Log.d(TAG, "Language toggle pressed. Current: $currentLanguage, switching to: $newLang")
                     coroutineScope.launch {
                         LanguagePreferenceManager.setLanguage(context, newLang)
                         LocaleUtils.updateLocale(context, newLang)
+                        Log.d(TAG, "Locale updated to $newLang")
                         (context as? android.app.Activity)?.recreate()
                     }
                 }) {
