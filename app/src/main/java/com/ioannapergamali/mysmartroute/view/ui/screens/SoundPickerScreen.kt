@@ -31,6 +31,8 @@ import com.ioannapergamali.mysmartroute.view.ui.MysmartrouteTheme
 import com.ioannapergamali.mysmartroute.view.ui.AppTheme
 import com.ioannapergamali.mysmartroute.view.ui.AppFont
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
+import androidx.compose.ui.res.stringResource
+import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.viewmodel.SettingsViewModel
 import androidx.compose.material3.Slider
 import com.ioannapergamali.mysmartroute.utils.SoundManager
@@ -55,7 +57,7 @@ fun SoundPickerScreen(navController: NavController) {
 
     MysmartrouteTheme(theme = currentTheme, darkTheme = currentDark, font = currentFont.fontFamily) {
         Scaffold(
-            topBar = { TopBar(title = "Sound", navController = navController) },
+            topBar = { TopBar(title = stringResource(R.string.sound), navController = navController) },
             containerColor = MaterialTheme.colorScheme.background
         ) { padding ->
             ScreenContainer(modifier = Modifier.padding(padding)) {

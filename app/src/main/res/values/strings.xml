@@ -86,4 +86,14 @@
     <string name="view_pois">View PoIs</string>
     <string name="view_users">View Users</string>
     <string name="advance_date">Advance Date</string>
+    <string name="announce_transport">Announce Transport</string>
+    <string name="from">From</string>
+    <string name="to">To</string>
+    <string name="vehicle">Vehicle</string>
+    <string name="cost">Cost</string>
+    <string name="duration">Duration</string>
+    <string name="date">Date</string>
+    <string name="announce">Announce</string>
+    <string name="duration_format">Duration: %1$d min</string>
+    <string name="app_language">App Language</string>
 </resources>

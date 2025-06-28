@@ -35,6 +35,8 @@ import com.ioannapergamali.mysmartroute.viewmodel.SettingsViewModel
 import com.ioannapergamali.mysmartroute.utils.ThemePreferenceManager
 import com.ioannapergamali.mysmartroute.utils.FontPreferenceManager
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
+import androidx.compose.ui.res.stringResource
+import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -58,7 +60,7 @@ fun ThemePickerScreen(navController: NavController) {
     MysmartrouteTheme(theme = selectedTheme, darkTheme = dark, font = currentFont.fontFamily) {
         Scaffold(
             topBar = {
-                TopBar(title = "Themes", navController = navController)
+                TopBar(title = stringResource(R.string.theme), navController = navController)
             },
             containerColor = MaterialTheme.colorScheme.background
         ) { padding ->

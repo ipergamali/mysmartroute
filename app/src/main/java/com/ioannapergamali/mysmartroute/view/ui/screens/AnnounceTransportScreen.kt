@@ -19,7 +19,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.res.stringResource
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
@@ -42,11 +41,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.model.classes.routes.Route
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
-import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import com.ioannapergamali.mysmartroute.utils.CoordinateUtils
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
+import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.viewmodel.TransportAnnouncementViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
@@ -197,7 +196,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
 
     ScreenContainer(modifier = Modifier.padding(0.dp)) {
         TopBar(
-            title = "Announce Transport",
+            title = stringResource(R.string.announce_transport),
             navController = navController,
             showMenu = true,
             onMenuClick = openDrawer
@@ -345,7 +344,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         showRoute = false
                     }
                 },
-                label = { Text("From") },
+                label = { Text(stringResource(R.string.from)) },
                 isError = fromError,
                 trailingIcon = {
                     Row {
@@ -467,7 +466,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         showRoute = false
                     }
                 },
-                label = { Text("To") },
+                label = { Text(stringResource(R.string.to)) },
                 isError = toError,
                 trailingIcon = {
                     Row {
@@ -583,7 +582,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 value = selectedVehicleType?.name ?: "",
                 onValueChange = {},
                 readOnly = true,
-                label = { Text("Vehicle") },
+                label = { Text(stringResource(R.string.vehicle)) },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = vehicleMenuExpanded) },
                 modifier = Modifier.menuAnchor().fillMaxWidth(),
                 shape = MaterialTheme.shapes.small,
@@ -613,7 +612,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         OutlinedTextField(
             value = costInput,
             onValueChange = { costInput = it },
-            label = { Text("Cost") },
+            label = { Text(stringResource(R.string.cost)) },
             shape = MaterialTheme.shapes.small,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -621,12 +620,12 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
             )
         )
         Spacer(modifier = Modifier.height(8.dp))
-        Text(text = "Duration: $durationMinutes min")
+        Text(text = stringResource(R.string.duration_format, durationMinutes))
         Spacer(modifier = Modifier.height(8.dp))
         OutlinedTextField(
             value = dateInput,
             onValueChange = { dateInput = it },
-            label = { Text("Date") },
+            label = { Text(stringResource(R.string.date)) },
             shape = MaterialTheme.shapes.small,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -647,7 +646,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 viewModel.announce(route, type, date, cost, durationMinutes)
             }
         }) {
-            Text("Announce")
+            Text(stringResource(R.string.announce))
         }
 
         if (state is TransportAnnouncementViewModel.AnnouncementState.Error) {

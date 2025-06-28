@@ -19,6 +19,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
+import androidx.compose.ui.res.stringResource
+import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.viewmodel.DatabaseViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
@@ -35,7 +37,7 @@ fun LocalDatabaseScreen(navController: NavController, openDrawer: () -> Unit) {
     Scaffold(
         topBar = {
             TopBar(
-                title = "Local DB",
+                title = stringResource(R.string.local_db),
                 navController = navController,
                 showMenu = true,
                 onMenuClick = openDrawer
@@ -115,6 +117,15 @@ fun LocalDatabaseScreen(navController: NavController, openDrawer: () -> Unit) {
                 } else {
                     items(data!!.menuOptions) { opt ->
                         Text("${opt.id} (${opt.menuId}) -> ${opt.titleResKey} -> ${opt.route}")
+                    }
+                }
+                item { Spacer(modifier = Modifier.padding(8.dp)) }
+                item { Text(stringResource(R.string.app_language), style = MaterialTheme.typography.titleMedium) }
+                if (data!!.languages.isEmpty()) {
+                    item { Text("Ο πίνακας είναι άδειος") }
+                } else {
+                    items(data!!.languages) { lang ->
+                        Text("${lang.id} -> ${lang.language}")
                     }
                 }
                 }

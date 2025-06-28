@@ -18,6 +18,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
+import androidx.compose.ui.res.stringResource
+import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.viewmodel.DatabaseViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
@@ -33,7 +35,7 @@ fun FirebaseDatabaseScreen(navController: NavController, openDrawer: () -> Unit)
     Scaffold(
         topBar = {
             TopBar(
-                title = "Firebase DB",
+                title = stringResource(R.string.firebase_db),
                 navController = navController,
                 showMenu = true,
                 onMenuClick = openDrawer
