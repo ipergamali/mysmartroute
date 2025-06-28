@@ -302,9 +302,17 @@ class AuthenticationViewModel : ViewModel() {
             val menusLocal = loadMenusWithInheritanceLocal(dbLocal, roleId)
             if (menusLocal.isNotEmpty()) {
                 _currentMenus.value = menusLocal
-            } else {
-                val menusRemote = loadMenusWithInheritanceRemote(roleId, dbLocal)
+            } else if (NetworkUtils.isInternetAvailable(context)) {
+                val menusRemote = try {
+                    loadMenusWithInheritanceRemote(roleId, dbLocal)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to load menus", e)
+                    emptyList()
+                }
                 _currentMenus.value = menusRemote
+            } else {
+                Log.w(TAG, "No internet connection and no local menus")
+                _currentMenus.value = emptyList()
             }
         }
     }
