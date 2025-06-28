@@ -44,10 +44,10 @@ class MainActivity : ComponentActivity() {
     )
     override fun onCreate(savedInstanceState : Bundle?)
     {
-        super.onCreate(savedInstanceState)
-        // Εφαρμογή αποθηκευμένης γλώσσας πριν δημιουργηθεί το UI
+        // Εφαρμογή αποθηκευμένης γλώσσας πριν αρχίσει το lifecycle
         val startLang = runBlocking { LanguagePreferenceManager.getLanguage(this@MainActivity) }
         LocaleUtils.updateLocale(this, startLang)
+        super.onCreate(savedInstanceState)
         if (ContextCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
