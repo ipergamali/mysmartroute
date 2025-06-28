@@ -224,6 +224,22 @@ class SettingsViewModel : ViewModel() {
             val soundEnabled = SoundPreferenceManager.getSoundEnabled(context)
             val soundVolume = SoundPreferenceManager.getSoundVolume(context)
             val language = LanguagePreferenceManager.languageFlow(context).first()
+
+            // Αν δεν υπάρχει συνδεδεμένος χρήστης, αποθηκεύουμε μόνο τοπικά
+            if (auth.currentUser?.uid == null) {
+                ThemePreferenceManager.setTheme(context, theme)
+                ThemePreferenceManager.setDarkTheme(context, dark)
+                FontPreferenceManager.setFont(context, font)
+                SoundPreferenceManager.setSoundEnabled(context, soundEnabled)
+                SoundPreferenceManager.setSoundVolume(context, soundVolume)
+                LanguagePreferenceManager.setLanguage(context, language)
+                LocaleUtils.updateLocale(context, language)
+                Log.d("SettingsViewModel", "Αποθήκευση μόνο τοπικά καθώς δεν βρέθηκε χρήστης")
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, "Αποθηκεύτηκαν τοπικά", Toast.LENGTH_SHORT).show()
+                }
+                return@launch
+            }
             updateSettings(context) {
                 it.copy(
                     theme = (theme as? AppTheme)?.name ?: theme.label,
