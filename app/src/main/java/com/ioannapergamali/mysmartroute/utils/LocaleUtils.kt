@@ -11,5 +11,10 @@ object LocaleUtils {
         Locale.setDefault(locale)
         val locales = LocaleListCompat.create(locale)
         AppCompatDelegate.setApplicationLocales(locales)
+
+        val resources = context.resources
+        val config = resources.configuration
+        config.setLocale(locale)
+        resources.updateConfiguration(config, resources.displayMetrics)
     }
 }
