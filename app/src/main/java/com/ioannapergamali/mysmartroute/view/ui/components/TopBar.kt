@@ -29,6 +29,8 @@ import com.ioannapergamali.mysmartroute.utils.LocaleUtils
 import com.ioannapergamali.mysmartroute.model.AppLanguage
 import kotlinx.coroutines.launch
 import com.google.firebase.auth.FirebaseAuth
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.ioannapergamali.mysmartroute.viewmodel.SettingsViewModel
 
 private const val TAG = "TopBar"
 
@@ -54,6 +56,7 @@ fun TopBar(
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
+    val settingsViewModel: SettingsViewModel = viewModel()
     val currentLanguage by LanguagePreferenceManager.languageFlow(context).collectAsState(initial = AppLanguage.Greek.code)
 
     Box(modifier = Modifier.statusBarsPadding()) {
@@ -112,6 +115,7 @@ fun TopBar(
                     coroutineScope.launch {
                         LanguagePreferenceManager.setLanguage(context, newLang)
                         LocaleUtils.updateLocale(context, newLang)
+                        settingsViewModel.saveCurrentSettings(context)
                         Log.d(TAG, "Locale updated to $newLang")
                         (context as? android.app.Activity)?.recreate()
                     }
