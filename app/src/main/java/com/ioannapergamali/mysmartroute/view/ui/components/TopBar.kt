@@ -108,6 +108,7 @@ fun TopBar(
                     coroutineScope.launch {
                         LanguagePreferenceManager.setLanguage(context, newLang)
                         LocaleUtils.updateLocale(context, newLang)
+                        (context as? android.app.Activity)?.recreate()
                     }
                 }) {
                     Text(AppLanguage.values().first { it.code == currentLanguage }.flag)
