@@ -232,7 +232,7 @@ class AuthenticationViewModel : ViewModel() {
             result += menuDao.getMenusForRole(current)
             current = roleDao.getRole(current)?.parentRoleId
         }
-        return result
+        return result.distinctBy { it.menu.id }
     }
 
     private suspend fun loadMenusWithInheritanceRemote(roleId: String, dbLocal: MySmartRouteDatabase): List<MenuWithOptions> {
@@ -275,7 +275,7 @@ class AuthenticationViewModel : ViewModel() {
                 menus += loadMenusWithInheritanceRemote(parent, dbLocal)
             }
         }
-        return menus
+        return menus.distinctBy { it.menu.id }
     }
 
     fun loadCurrentUserMenus(context: Context) {
