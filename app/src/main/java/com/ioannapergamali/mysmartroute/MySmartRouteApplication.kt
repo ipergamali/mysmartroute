@@ -14,7 +14,7 @@ import kotlinx.coroutines.runBlocking
 class MySmartRouteApplication : Application() {
     override fun onCreate() {
         super.onCreate()
-        val lang = runBlocking { LanguagePreferenceManager.getLanguage(this) }
+        val lang = runBlocking { LanguagePreferenceManager.getLanguage(this@MySmartRouteApplication) }
         LocaleUtils.updateLocale(this, lang)
         FirebaseApp.initializeApp(this)
         AuthenticationViewModel().ensureMenusInitialized(this)
