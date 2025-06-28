@@ -16,6 +16,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
+import androidx.compose.ui.res.stringResource
+import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 
@@ -28,7 +30,7 @@ fun PoIListScreen(navController: NavController, openDrawer: () -> Unit) {
 
     LaunchedEffect(Unit) { viewModel.loadPois(context) }
 
-    Scaffold(topBar = { TopBar(title = "PoIs", navController = navController, showMenu = true, onMenuClick = openDrawer) }) { padding ->
+    Scaffold(topBar = { TopBar(title = stringResource(R.string.view_pois), navController = navController, showMenu = true, onMenuClick = openDrawer) }) { padding ->
         ScreenContainer(modifier = Modifier.padding(padding), scrollable = false) {
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 items(pois) { poi ->

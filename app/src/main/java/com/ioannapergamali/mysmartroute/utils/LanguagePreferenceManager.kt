@@ -6,6 +6,11 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.ioannapergamali.mysmartroute.data.local.LanguageSettingEntity
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
+import android.widget.Toast
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -26,6 +31,20 @@ object LanguagePreferenceManager {
         }
         val db = MySmartRouteDatabase.getInstance(context)
         db.languageSettingDao().insert(LanguageSettingEntity(language = language))
+        try {
+            FirebaseFirestore.getInstance()
+                .collection("app_language")
+                .document("current")
+                .set(mapOf("language" to language))
+                .await()
+            withContext(Dispatchers.Main) {
+                Toast.makeText(context, "Η γλώσσα αποθηκεύτηκε στο cloud", Toast.LENGTH_SHORT).show()
+            }
+        } catch (_: Exception) {
+            withContext(Dispatchers.Main) {
+                Toast.makeText(context, "Σφάλμα αποθήκευσης γλώσσας στο cloud", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     suspend fun getLanguage(context: Context): String {

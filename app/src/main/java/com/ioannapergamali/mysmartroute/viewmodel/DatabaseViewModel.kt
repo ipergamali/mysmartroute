@@ -19,6 +19,7 @@ import com.ioannapergamali.mysmartroute.data.local.MenuEntity
 import com.ioannapergamali.mysmartroute.data.local.MenuOptionEntity
 import com.ioannapergamali.mysmartroute.data.local.UserEntity
 import com.ioannapergamali.mysmartroute.data.local.VehicleEntity
+import com.ioannapergamali.mysmartroute.data.local.LanguageSettingEntity
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -63,7 +64,8 @@ class DatabaseViewModel : ViewModel() {
                 db.settingsDao().getAllSettings(),
                 db.roleDao().getAllRoles(),
                 db.menuDao().getAllMenus(),
-                db.menuOptionDao().getAllMenuOptions()
+                db.menuOptionDao().getAllMenuOptions(),
+                db.languageSettingDao().getAll()
             ) { values ->
                 val users = values[0] as List<UserEntity>
                 val vehicles = values[1] as List<VehicleEntity>
@@ -72,7 +74,8 @@ class DatabaseViewModel : ViewModel() {
                 val roles = values[4] as List<RoleEntity>
                 val menus = values[5] as List<MenuEntity>
                 val options = values[6] as List<MenuOptionEntity>
-                DatabaseData(users, vehicles, pois, settings, roles, menus, options)
+                val languages = values[7] as List<LanguageSettingEntity>
+                DatabaseData(users, vehicles, pois, settings, roles, menus, options, languages)
             }.collect { data ->
                 Log.d(
                     TAG,
@@ -177,7 +180,7 @@ class DatabaseViewModel : ViewModel() {
             }
 
             Log.d(TAG, "Firebase data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size}")
-            _firebaseData.value = DatabaseData(users, vehicles, pois, settings, roles, menus, menuOptions)
+            _firebaseData.value = DatabaseData(users, vehicles, pois, settings, roles, menus, menuOptions, emptyList())
         }
     }
 
@@ -388,7 +391,8 @@ data class DatabaseData(
     val settings: List<SettingsEntity>,
     val roles: List<RoleEntity>,
     val menus: List<MenuEntity>,
-    val menuOptions: List<MenuOptionEntity>
+    val menuOptions: List<MenuOptionEntity>,
+    val languages: List<LanguageSettingEntity>
 )
 
 sealed class SyncState {

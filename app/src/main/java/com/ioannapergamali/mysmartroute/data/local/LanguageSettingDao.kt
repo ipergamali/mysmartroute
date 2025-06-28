@@ -12,4 +12,7 @@ interface LanguageSettingDao {
 
     @Query("SELECT * FROM app_language LIMIT 1")
     suspend fun get(): LanguageSettingEntity?
+
+    @Query("SELECT * FROM app_language")
+    suspend fun getAll(): List<LanguageSettingEntity>
 }

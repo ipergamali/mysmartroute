@@ -88,4 +88,14 @@
     <string name="view_pois">Προβολή σημείων ενδιαφέροντος</string>
     <string name="view_users">Προβολή χρηστών</string>
     <string name="advance_date">Μεταφορά ημερομηνίας</string>
+    <string name="announce_transport">Δήλωση μεταφοράς</string>
+    <string name="from">Από</string>
+    <string name="to">Προς</string>
+    <string name="vehicle">Όχημα</string>
+    <string name="cost">Κόστος</string>
+    <string name="duration">Διάρκεια</string>
+    <string name="date">Ημερομηνία</string>
+    <string name="announce">Αποστολή</string>
+    <string name="duration_format">Διάρκεια: %1$d λεπτά</string>
+    <string name="app_language">Γλώσσα εφαρμογής</string>
 </resources>

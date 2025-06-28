@@ -32,6 +32,8 @@ import com.ioannapergamali.mysmartroute.viewmodel.SettingsViewModel
 import com.ioannapergamali.mysmartroute.utils.ThemePreferenceManager
 import com.ioannapergamali.mysmartroute.utils.FontPreferenceManager
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
+import androidx.compose.ui.res.stringResource
+import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.model.interfaces.ThemeOption
 
@@ -52,7 +54,7 @@ fun FontPickerScreen(navController: NavController) {
     MysmartrouteTheme(theme = currentTheme, darkTheme = currentDark, font = selectedFont.fontFamily) {
         Scaffold(
             topBar = {
-                TopBar(title = "Fonts", navController = navController)
+                TopBar(title = stringResource(R.string.fonts), navController = navController)
             },
             containerColor = MaterialTheme.colorScheme.background
         ) { padding ->
