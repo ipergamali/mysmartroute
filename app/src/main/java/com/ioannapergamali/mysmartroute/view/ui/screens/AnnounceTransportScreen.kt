@@ -19,6 +19,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
