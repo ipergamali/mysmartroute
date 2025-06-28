@@ -44,8 +44,6 @@ import com.ioannapergamali.mysmartroute.utils.SoundManager
 import com.ioannapergamali.mysmartroute.utils.SoundPreferenceManager
 import com.ioannapergamali.mysmartroute.utils.ThemePreferenceManager
 import com.ioannapergamali.mysmartroute.utils.FontPreferenceManager
-import com.ioannapergamali.mysmartroute.utils.LanguagePreferenceManager
-import com.ioannapergamali.mysmartroute.model.AppLanguage
 import com.ioannapergamali.mysmartroute.view.ui.AppFont
 import com.ioannapergamali.mysmartroute.view.ui.AppTheme
 import com.ioannapergamali.mysmartroute.view.ui.MysmartrouteTheme
@@ -67,8 +65,6 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
     val currentFont by FontPreferenceManager.fontFlow(context).collectAsState(initial = AppFont.SansSerif)
     val soundEnabled by SoundPreferenceManager.soundEnabledFlow(context).collectAsState(initial = true)
     val currentVolume by SoundPreferenceManager.soundVolumeFlow(context).collectAsState(initial = 1f)
-    val currentLanguage by LanguagePreferenceManager.languageFlow(context).collectAsState(initial = AppLanguage.Greek.code)
-
     val expandedTheme = remember { mutableStateOf(false) }
     val selectedTheme = remember { mutableStateOf<ThemeOption>(currentTheme) }
     val customThemes = remember { ThemeLoader.load(context) }
@@ -79,8 +75,6 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
 
     val soundState = remember { mutableStateOf(soundEnabled) }
     val volumeState = remember { mutableFloatStateOf(currentVolume) }
-    val expandedLanguage = remember { mutableStateOf(false) }
-    val selectedLanguage = remember { mutableStateOf(currentLanguage) }
 
     val coroutineScope = rememberCoroutineScope()
 
@@ -90,7 +84,6 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
     LaunchedEffect(currentFont) { selectedFont.value = currentFont }
     LaunchedEffect(soundEnabled) { soundState.value = soundEnabled }
     LaunchedEffect(currentVolume) { volumeState.floatValue = currentVolume }
-    LaunchedEffect(currentLanguage) { selectedLanguage.value = currentLanguage }
 
     MysmartrouteTheme(
         theme = selectedTheme.value,
@@ -168,34 +161,7 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
                 }
             }
 
-            Text(stringResource(R.string.language), modifier = Modifier.padding(top = 16.dp))
-            Divider(
-                modifier = Modifier.padding(vertical = 4.dp),
-                color = MaterialTheme.colorScheme.outline
-            )
-            ExposedDropdownMenuBox(expanded = expandedLanguage.value, onExpandedChange = { expandedLanguage.value = !expandedLanguage.value }) {
-                OutlinedTextField(
-                    readOnly = true,
-                    value = AppLanguage.values().first { it.code == selectedLanguage.value }.let { it.flag + " " + it.label },
-                    onValueChange = {},
-                    label = { Text(stringResource(R.string.language)) },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedLanguage.value) },
-                    modifier = Modifier.menuAnchor(),
-                    shape = MaterialTheme.shapes.small,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.primary
-                    )
-                )
-                DropdownMenu(expanded = expandedLanguage.value, onDismissRequest = { expandedLanguage.value = false }) {
-                    AppLanguage.values().forEach { lang ->
-                        DropdownMenuItem(text = { Text(lang.flag + " " + lang.label) }, onClick = {
-                            selectedLanguage.value = lang.code
-                            expandedLanguage.value = false
-                        })
-                    }
-                }
-            }
+
 
             Text(stringResource(R.string.sound), modifier = Modifier.padding(top = 16.dp))
             Divider(
@@ -236,8 +202,7 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
                             dark.value,
                             selectedFont.value,
                             soundState.value,
-                            volumeState.floatValue,
-                            selectedLanguage.value
+                            volumeState.floatValue
                         )
                         (context as? android.app.Activity)?.recreate()
                     }

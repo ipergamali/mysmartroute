@@ -22,6 +22,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.platform.LocalContext
+import com.ioannapergamali.mysmartroute.utils.LanguagePreferenceManager
+import com.ioannapergamali.mysmartroute.utils.LocaleUtils
+import com.ioannapergamali.mysmartroute.model.AppLanguage
+import kotlinx.coroutines.launch
 import com.google.firebase.auth.FirebaseAuth
 
 
@@ -35,6 +40,7 @@ fun TopBar(
     showLogout: Boolean = false,
     showBack: Boolean = true,
     showHomeIcon: Boolean = true,
+    showLanguageToggle: Boolean = true,
     onMenuClick: () -> Unit = {},
     onLogout: () -> Unit = {
         FirebaseAuth.getInstance().signOut()
@@ -43,7 +49,9 @@ fun TopBar(
         }
     }
 ) {
-
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val currentLanguage by LanguagePreferenceManager.languageFlow(context).collectAsState(initial = AppLanguage.Greek.code)
 
     Box(modifier = Modifier.statusBarsPadding()) {
         TopAppBar(
@@ -94,6 +102,17 @@ fun TopBar(
             }
         },
         actions = {
+            if (showLanguageToggle) {
+                IconButton(onClick = {
+                    val newLang = if (currentLanguage == AppLanguage.Greek.code) AppLanguage.English.code else AppLanguage.Greek.code
+                    coroutineScope.launch {
+                        LanguagePreferenceManager.setLanguage(context, newLang)
+                        LocaleUtils.updateLocale(context, newLang)
+                    }
+                }) {
+                    Text(AppLanguage.values().first { it.code == currentLanguage }.flag)
+                }
+            }
             if (showLogout) {
                 IconButton(onClick = onLogout) {
                     Icon(
