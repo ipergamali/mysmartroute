@@ -52,18 +52,28 @@ fun RolesScreen(navController: NavController, openDrawer: () -> Unit) {
         }
     ) { padding ->
         ScreenContainer(modifier = Modifier.padding(padding), scrollable = false) {
-            if (roles.isEmpty() && syncState is SyncState.Loading) {
-                CircularProgressIndicator()
-            } else {
-                LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    items(roles) { role ->
-                        val roleEnum = try {
-                            UserRole.valueOf(role.name)
-                        } catch (_: Exception) {
-                            null
+            when {
+                roles.isEmpty() && syncState is SyncState.Loading -> {
+                    CircularProgressIndicator()
+                }
+                roles.isEmpty() && syncState is SyncState.Error -> {
+                    val message = (syncState as SyncState.Error).message
+                    Text(stringResource(R.string.roles_load_error, message))
+                }
+                roles.isEmpty() -> {
+                    Text(stringResource(R.string.roles_empty))
+                }
+                else -> {
+                    LazyColumn(modifier = Modifier.fillMaxSize()) {
+                        items(roles) { role ->
+                            val roleEnum = try {
+                                UserRole.valueOf(role.name)
+                            } catch (_: Exception) {
+                                null
+                            }
+                            val displayName = roleEnum?.localizedName() ?: role.name
+                            Text("${'$'}{role.id} - ${'$'}displayName")
                         }
-                        val displayName = roleEnum?.localizedName() ?: role.name
-                        Text("${'$'}{role.id} - ${'$'}displayName")
                     }
                 }
             }

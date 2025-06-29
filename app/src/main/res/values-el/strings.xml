@@ -33,6 +33,8 @@
     <string name="menu_title">Μενού</string>
     <string name="menu_role_prefix">Μενού για τον ρόλο: %1$s</string>
     <string name="roles_title">Ρόλοι</string>
+    <string name="roles_load_error">Αποτυχία φόρτωσης ρόλων: %1$s</string>
+    <string name="roles_empty">Δεν βρέθηκαν ρόλοι</string>
     <string name="about_title">Σχετικά</string>
     <string name="support_title">Υποστήριξη</string>
     <string name="databases_title">Βάσεις Δεδομένων</string>
