@@ -339,8 +339,19 @@ class AuthenticationViewModel : ViewModel() {
             }
 
             Log.i(TAG, "Using roleId: $roleId")
-            val menusLocal = loadMenusWithInheritanceLocal(dbLocal, roleId)
-            val hasOptions = menusLocal.any { it.options.isNotEmpty() }
+            var menusLocal = loadMenusWithInheritanceLocal(dbLocal, roleId)
+            var hasOptions = menusLocal.any { it.options.isNotEmpty() }
+            if (menusLocal.isEmpty() || !hasOptions) {
+                // Βεβαιωνόμαστε ότι η τοπική βάση περιέχει τα προεπιλεγμένα μενού
+                try {
+                    initializeRolesAndMenusIfNeeded(context)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to initialize menus", e)
+                }
+                menusLocal = loadMenusWithInheritanceLocal(dbLocal, roleId)
+                hasOptions = menusLocal.any { it.options.isNotEmpty() }
+            }
+
             if (menusLocal.isNotEmpty() && hasOptions) {
                 _currentMenus.value = menusLocal
             } else if (NetworkUtils.isInternetAvailable(context)) {
