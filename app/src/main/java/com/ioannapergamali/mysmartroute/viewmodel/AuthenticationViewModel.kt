@@ -164,7 +164,7 @@ class AuthenticationViewModel : ViewModel() {
                     batch.commit().await()
                     userDao.insert(userEntity.copy(id = uid, roleId = roleId))
                     _signUpState.value = SignUpState.Success
-                    loadCurrentUserRole()
+                    loadCurrentUserRole(context)
                 } catch (e: Exception) {
                     _signUpState.value = SignUpState.Error(e.localizedMessage ?: "Sign-up failed")
                 }
@@ -177,7 +177,7 @@ class AuthenticationViewModel : ViewModel() {
     }
 
 
-    fun login(email: String, password: String) {
+    fun login(context: Context, email: String, password: String) {
         viewModelScope.launch {
             _loginState.value = LoginState.Loading
 
@@ -187,9 +187,10 @@ class AuthenticationViewModel : ViewModel() {
             }
 
             auth.signInWithEmailAndPassword(email, password)
-                .addOnSuccessListener {
+                .addOnSuccessListener { authResult ->
                     _loginState.value = LoginState.Success
-                    loadCurrentUserRole()
+                    loadCurrentUserRole(context)
+                    loadCurrentUserMenus(context)
                 }
                 .addOnFailureListener { e ->
                     _loginState.value = LoginState.Error(e.localizedMessage ?: "Login failed")
@@ -212,24 +213,38 @@ class AuthenticationViewModel : ViewModel() {
         data class Error(val message: String) : LoginState()
     }
 
-    fun loadCurrentUserRole() {
+    fun loadCurrentUserRole(context: Context) {
         Log.i(TAG, "loadCurrentUserRole invoked")
         val uid = auth.currentUser?.uid ?: run {
             Log.w(TAG, "No authenticated user")
             return
         }
-        Log.i(TAG, "Fetching role for user: $uid")
-        db.collection("users")
-            .document(uid)
-            .get()
-            .addOnSuccessListener { document ->
-                val roleName = document.getString("role")
-                Log.i(TAG, "Role from Firestore: $roleName")
-                _currentUserRole.value = roleName?.let { UserRole.valueOf(it) }
+
+        viewModelScope.launch {
+            val dbLocal = MySmartRouteDatabase.getInstance(context)
+            val localRole = dbLocal.userDao().getUser(uid)?.role
+            if (!localRole.isNullOrEmpty()) {
+                Log.i(TAG, "Role from local DB: $localRole")
+                _currentUserRole.value = runCatching { UserRole.valueOf(localRole) }.getOrNull()
+                if (_currentUserRole.value != null) return@launch
             }
-            .addOnFailureListener { e ->
-                Log.e(TAG, "Failed to fetch role", e)
-            }
+
+            Log.i(TAG, "Fetching role from Firestore for user: $uid")
+            db.collection("users")
+                .document(uid)
+                .get()
+                .addOnSuccessListener { document ->
+                    val roleName = document.getString("role")
+                        ?: document.getString("roleId")
+                    Log.i(TAG, "Role from Firestore: $roleName")
+                    _currentUserRole.value = roleName?.let {
+                        runCatching { UserRole.valueOf(it) }.getOrNull()
+                    }
+                }
+                .addOnFailureListener { e ->
+                    Log.e(TAG, "Failed to fetch role", e)
+                }
+        }
     }
 
     private suspend fun loadMenusWithInheritanceLocal(db: MySmartRouteDatabase, roleId: String): List<MenuWithOptions> {
@@ -243,7 +258,8 @@ class AuthenticationViewModel : ViewModel() {
             result += menus
             current = roleDao.getRole(current)?.parentRoleId
         }
-        return result.distinctBy { it.menu.id }
+        // Επιστρέφουμε όλα τα μενού όπως φορτώθηκαν
+        return result
     }
 
     private suspend fun loadMenusWithInheritanceRemote(roleId: String, dbLocal: MySmartRouteDatabase): List<MenuWithOptions> {
@@ -288,7 +304,8 @@ class AuthenticationViewModel : ViewModel() {
                 menus += loadMenusWithInheritanceRemote(parent, dbLocal)
             }
         }
-        return menus.distinctBy { it.menu.id }
+        // Επιστρέφουμε όλα τα μενού όπως φορτώθηκαν
+        return menus
     }
 
     /**
