@@ -24,6 +24,7 @@ import androidx.compose.ui.res.stringResource
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import com.ioannapergamali.mysmartroute.model.enumerations.localizedName
+import android.widget.Toast
 import kotlinx.coroutines.launch
 
 @Composable
@@ -33,6 +34,16 @@ fun RolesScreen(navController: NavController, openDrawer: () -> Unit) {
     val roles by viewModel.roles.collectAsState()
     val syncState by dbViewModel.syncState.collectAsState()
     val context = LocalContext.current
+
+    LaunchedEffect(syncState) {
+        if (syncState is SyncState.Error) {
+            val message = (syncState as SyncState.Error).message
+            Toast.makeText(context,
+                context.getString(R.string.roles_load_error, message),
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.loadRoles(context)
