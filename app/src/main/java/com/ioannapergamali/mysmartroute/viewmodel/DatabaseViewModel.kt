@@ -189,31 +189,36 @@ class DatabaseViewModel : ViewModel() {
 
     fun syncDatabases(context: Context) {
         viewModelScope.launch {
-            Log.d(TAG, "Starting database synchronization")
-            if (!NetworkUtils.isInternetAvailable(context)) {
-                Log.w(TAG, "No internet connection")
-                _syncState.value = SyncState.Error("No internet connection")
-                return@launch
-            }
-            Log.d(TAG, "Internet connection available")
-            _syncState.value = SyncState.Loading
-            val prefs = context.getSharedPreferences("db_sync", Context.MODE_PRIVATE)
-            val localTs = prefs.getLong("last_sync", 0L)
-            Log.d(TAG, "Local timestamp: $localTs")
-            val remoteTs = try {
-                firestore.collection("metadata").document("sync").get().await()
-                    .getLong("last_sync")?.also { Log.d(TAG, "Remote timestamp: $it") } ?: 0L
-            } catch (e: Exception) {
-                Log.e(TAG, "Error fetching remote timestamp", e)
-                0L
-            }
+            syncDatabasesSuspend(context)
+        }
+    }
 
-            Log.d(TAG, "Start sync: localTs=$localTs remoteTs=$remoteTs")
+    suspend fun syncDatabasesSuspend(context: Context) {
+        Log.d(TAG, "Starting database synchronization")
+        if (!NetworkUtils.isInternetAvailable(context)) {
+            Log.w(TAG, "No internet connection")
+            _syncState.value = SyncState.Error("No internet connection")
+            return
+        }
+        Log.d(TAG, "Internet connection available")
+        _syncState.value = SyncState.Loading
+        val prefs = context.getSharedPreferences("db_sync", Context.MODE_PRIVATE)
+        val localTs = prefs.getLong("last_sync", 0L)
+        Log.d(TAG, "Local timestamp: $localTs")
+        val remoteTs = try {
+            firestore.collection("metadata").document("sync").get().await()
+                .getLong("last_sync")?.also { Log.d(TAG, "Remote timestamp: $it") } ?: 0L
+        } catch (e: Exception) {
+            Log.e(TAG, "Error fetching remote timestamp", e)
+            0L
+        }
 
-            val db = MySmartRouteDatabase.getInstance(context)
+        Log.d(TAG, "Start sync: localTs=$localTs remoteTs=$remoteTs")
 
-            try {
-                withTimeout(30000L) {
+        val db = MySmartRouteDatabase.getInstance(context)
+
+        try {
+            withTimeout(30000L) {
                 if (remoteTs > localTs) {
                     Log.d(TAG, "Remote database is newer, downloading data")
                     Log.d(TAG, "Fetching users from Firestore")

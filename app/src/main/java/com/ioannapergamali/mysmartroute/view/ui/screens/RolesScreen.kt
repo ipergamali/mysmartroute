@@ -25,7 +25,6 @@ import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import com.ioannapergamali.mysmartroute.model.enumerations.localizedName
 import android.widget.Toast
-import kotlinx.coroutines.launch
 
 @Composable
 fun RolesScreen(navController: NavController, openDrawer: () -> Unit) {
@@ -46,10 +45,8 @@ fun RolesScreen(navController: NavController, openDrawer: () -> Unit) {
     }
 
     LaunchedEffect(Unit) {
+        dbViewModel.syncDatabasesSuspend(context)
         viewModel.loadRoles(context)
-        launch {
-            dbViewModel.syncDatabases(context)
-        }
     }
 
     Scaffold(
