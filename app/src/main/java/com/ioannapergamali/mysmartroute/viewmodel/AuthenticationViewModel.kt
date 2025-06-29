@@ -322,7 +322,17 @@ class AuthenticationViewModel : ViewModel() {
                     Log.e(TAG, "Failed to load menus", e)
                     emptyList()
                 }
-                _currentMenus.value = menusRemote
+                if (menusRemote.isEmpty()) {
+                    Log.d(TAG, "No menus found remotely, initializing defaults")
+                    try {
+                        initializeRolesAndMenusIfNeeded(context)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to initialize menus", e)
+                    }
+                    _currentMenus.value = loadMenusWithInheritanceLocal(dbLocal, roleId)
+                } else {
+                    _currentMenus.value = menusRemote
+                }
             } else {
                 Log.w(TAG, "No internet connection and no local menus")
                 _currentMenus.value = emptyList()
