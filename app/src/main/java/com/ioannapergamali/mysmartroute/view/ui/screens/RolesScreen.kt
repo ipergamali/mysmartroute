@@ -24,6 +24,7 @@ import androidx.compose.ui.res.stringResource
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import com.ioannapergamali.mysmartroute.model.enumerations.localizedName
+import kotlinx.coroutines.launch
 
 @Composable
 fun RolesScreen(navController: NavController, openDrawer: () -> Unit) {
@@ -34,8 +35,10 @@ fun RolesScreen(navController: NavController, openDrawer: () -> Unit) {
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
-        dbViewModel.syncDatabases(context)
         viewModel.loadRoles(context)
+        launch {
+            dbViewModel.syncDatabases(context)
+        }
     }
 
     Scaffold(
