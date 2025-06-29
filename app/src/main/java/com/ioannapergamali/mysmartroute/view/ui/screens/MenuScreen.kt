@@ -42,7 +42,7 @@ fun MenuScreen(navController: NavController, openDrawer: () -> Unit) {
 
     LaunchedEffect(Unit) {
         Log.d(TAG, "Loading user role and menus")
-        viewModel.loadCurrentUserRole()
+        viewModel.loadCurrentUserRole(context)
         viewModel.loadCurrentUserMenus(context)
     }
 
