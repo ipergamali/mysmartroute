@@ -164,7 +164,7 @@ class AuthenticationViewModel : ViewModel() {
                     batch.commit().await()
                     userDao.insert(userEntity.copy(id = uid, roleId = roleId))
                     _signUpState.value = SignUpState.Success
-                    loadCurrentUserRole(context)
+                    loadCurrentUserRole(context, loadMenus = true)
                 } catch (e: Exception) {
                     _signUpState.value = SignUpState.Error(e.localizedMessage ?: "Sign-up failed")
                 }
@@ -187,9 +187,9 @@ class AuthenticationViewModel : ViewModel() {
             }
 
             auth.signInWithEmailAndPassword(email, password)
-                .addOnSuccessListener { authResult ->
+                .addOnSuccessListener {
                     _loginState.value = LoginState.Success
-                    loadCurrentUserRole(context)
+                    loadCurrentUserRole(context, loadMenus = true)
                 }
                 .addOnFailureListener { e ->
                     _loginState.value = LoginState.Error(e.localizedMessage ?: "Login failed")
@@ -212,7 +212,7 @@ class AuthenticationViewModel : ViewModel() {
         data class Error(val message: String) : LoginState()
     }
 
-    fun loadCurrentUserRole(context: Context) {
+    fun loadCurrentUserRole(context: Context, loadMenus: Boolean = false) {
         Log.i(TAG, "loadCurrentUserRole invoked")
         val uid = auth.currentUser?.uid ?: run {
             Log.w(TAG, "No authenticated user")
@@ -225,7 +225,10 @@ class AuthenticationViewModel : ViewModel() {
             if (!localRole.isNullOrEmpty()) {
                 Log.i(TAG, "Role from local DB: $localRole")
                 _currentUserRole.value = runCatching { UserRole.valueOf(localRole) }.getOrNull()
-                if (_currentUserRole.value != null) return@launch
+                if (_currentUserRole.value != null) {
+                    if (loadMenus) loadCurrentUserMenus(context)
+                    return@launch
+                }
             }
 
             Log.i(TAG, "Fetching role from Firestore for user: $uid")
@@ -239,6 +242,7 @@ class AuthenticationViewModel : ViewModel() {
                     _currentUserRole.value = roleName?.let {
                         runCatching { UserRole.valueOf(it) }.getOrNull()
                     }
+                    if (loadMenus) loadCurrentUserMenus(context)
                 }
                 .addOnFailureListener { e ->
                     Log.e(TAG, "Failed to fetch role", e)
