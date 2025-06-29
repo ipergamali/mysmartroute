@@ -340,7 +340,8 @@ class AuthenticationViewModel : ViewModel() {
 
             Log.i(TAG, "Using roleId: $roleId")
             val menusLocal = loadMenusWithInheritanceLocal(dbLocal, roleId)
-            if (menusLocal.isNotEmpty()) {
+            val hasOptions = menusLocal.any { it.options.isNotEmpty() }
+            if (menusLocal.isNotEmpty() && hasOptions) {
                 _currentMenus.value = menusLocal
             } else if (NetworkUtils.isInternetAvailable(context)) {
                 Log.i(TAG, "Loading menus from Firestore")
@@ -350,7 +351,8 @@ class AuthenticationViewModel : ViewModel() {
                     Log.e(TAG, "Failed to load menus", e)
                     emptyList()
                 }
-                if (menusRemote.isEmpty()) {
+                val remoteHasOptions = menusRemote.any { it.options.isNotEmpty() }
+                if (menusRemote.isEmpty() || !remoteHasOptions) {
                     Log.i(TAG, "No menus found remotely, initializing defaults")
                     try {
                         initializeRolesAndMenusIfNeeded(context)
