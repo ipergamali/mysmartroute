@@ -41,9 +41,15 @@ fun MenuScreen(navController: NavController, openDrawer: () -> Unit) {
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
-        Log.d(TAG, "Loading user role and menus")
+        Log.d(TAG, "Loading user role")
         viewModel.loadCurrentUserRole(context)
-        viewModel.loadCurrentUserMenus(context)
+    }
+
+    LaunchedEffect(role) {
+        if (role != null) {
+            Log.d(TAG, "Loading menus for role: ${'$'}role")
+            viewModel.loadCurrentUserMenus(context)
+        }
     }
 
     LaunchedEffect(role, menus) {

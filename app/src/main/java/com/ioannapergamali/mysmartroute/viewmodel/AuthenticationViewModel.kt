@@ -190,6 +190,7 @@ class AuthenticationViewModel : ViewModel() {
                 .addOnSuccessListener { authResult ->
                     _loginState.value = LoginState.Success
                     loadCurrentUserRole(context)
+                    loadCurrentUserMenus(context)
                 }
                 .addOnFailureListener { e ->
                     _loginState.value = LoginState.Error(e.localizedMessage ?: "Login failed")
