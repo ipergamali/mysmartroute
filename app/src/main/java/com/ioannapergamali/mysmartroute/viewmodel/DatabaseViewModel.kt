@@ -396,7 +396,6 @@ class DatabaseViewModel : ViewModel() {
             }
         }
     }
-}
 
 /** Δομή για τα δεδομένα κάθε βάσης. */
 data class DatabaseData(
