@@ -312,16 +312,16 @@ class AuthenticationViewModel : ViewModel() {
                     else -> null
                 } ?: return@launch
                 user?.let { dbLocal.userDao().insert(it.copy(roleId = remoteRoleId)) }
-                Log.d(TAG, "Fetched roleId from Firestore: $remoteRoleId")
+                Log.i(TAG, "Fetched roleId from Firestore: $remoteRoleId")
                 remoteRoleId
             }
 
-            Log.d(TAG, "Using roleId: $roleId")
+            Log.i(TAG, "Using roleId: $roleId")
             val menusLocal = loadMenusWithInheritanceLocal(dbLocal, roleId)
             if (menusLocal.isNotEmpty()) {
                 _currentMenus.value = menusLocal
             } else if (NetworkUtils.isInternetAvailable(context)) {
-                Log.d(TAG, "Loading menus from Firestore")
+                Log.i(TAG, "Loading menus from Firestore")
                 val menusRemote = try {
                     loadMenusWithInheritanceRemote(roleId, dbLocal)
                 } catch (e: Exception) {
@@ -329,7 +329,7 @@ class AuthenticationViewModel : ViewModel() {
                     emptyList()
                 }
                 if (menusRemote.isEmpty()) {
-                    Log.d(TAG, "No menus found remotely, initializing defaults")
+                    Log.i(TAG, "No menus found remotely, initializing defaults")
                     try {
                         initializeRolesAndMenusIfNeeded(context)
                     } catch (e: Exception) {
