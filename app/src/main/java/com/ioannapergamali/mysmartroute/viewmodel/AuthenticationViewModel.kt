@@ -290,6 +290,12 @@ class AuthenticationViewModel : ViewModel() {
         return menus.distinctBy { it.menu.id }
     }
 
+    /**
+     * Φορτώνει τα μενού του τρέχοντος χρήστη από την τοπική βάση.
+     * Αν δεν υπάρχουν και υπάρχει σύνδεση στο διαδίκτυο,
+     * τα ανακτά από το Firestore. Σε περίπτωση που και εκεί
+     * δεν βρεθούν, γίνεται αρχικοποίηση από το τοπικό menus.json.
+     */
     fun loadCurrentUserMenus(context: Context) {
         viewModelScope.launch {
             val uid = auth.currentUser?.uid ?: run {
