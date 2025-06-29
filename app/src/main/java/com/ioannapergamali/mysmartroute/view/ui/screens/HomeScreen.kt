@@ -79,7 +79,7 @@ fun HomeScreen(
                         password = password,
                         onPasswordChange = { password = it },
                         uiState = uiState,
-                        onLogin = { viewModel.login(email, password) },
+                        onLogin = { viewModel.login(context, email, password) },
                         onNavigateToSignUp = onNavigateToSignUp,
                         onLogout = { viewModel.signOut() },
                         modifier = Modifier.weight(1f)
@@ -101,7 +101,7 @@ fun HomeScreen(
                         password = password,
                         onPasswordChange = { password = it },
                         uiState = uiState,
-                        onLogin = { viewModel.login(email, password) },
+                        onLogin = { viewModel.login(context, email, password) },
                         onNavigateToSignUp = onNavigateToSignUp,
                         onLogout = { viewModel.signOut() }
                     )
