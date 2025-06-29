@@ -22,3 +22,11 @@ fun UserRole.titleRes(): Int = when (this) {
 /** Επιστρέφει την τοπικοποιημένη ονομασία του ρόλου. */
 @Composable
 fun UserRole.localizedName(): String = stringResource(id = titleRes())
+
+/** Επιστρέφει τον γονικό ρόλο, αν υπάρχει. */
+fun UserRole.parent(): UserRole? = when (this) {
+    UserRole.PASSENGER -> null
+    UserRole.DRIVER -> UserRole.PASSENGER
+    UserRole.ADMIN -> UserRole.DRIVER
+}
+
