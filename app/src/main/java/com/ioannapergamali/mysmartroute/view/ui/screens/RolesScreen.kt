@@ -64,7 +64,7 @@ fun RolesScreen(navController: NavController, openDrawer: () -> Unit) {
     ) { padding ->
         ScreenContainer(modifier = Modifier.padding(padding), scrollable = false) {
             when {
-                roles.isEmpty() && syncState is SyncState.Loading -> {
+                roles.isEmpty() && (syncState is SyncState.Loading || syncState is SyncState.Idle) -> {
                     CircularProgressIndicator()
                 }
                 roles.isEmpty() && syncState is SyncState.Error -> {
