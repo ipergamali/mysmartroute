@@ -71,8 +71,16 @@ fun MenuScreen(navController: NavController, openDrawer: () -> Unit) {
                 CircularProgressIndicator()
             } else {
                 RoleMenu(role, menus) { route ->
-                    if (route.isNotEmpty()) navController.navigate(route)
-                    else Toast.makeText(context, "Η λειτουργία δεν είναι διαθέσιμη", Toast.LENGTH_SHORT).show()
+                    if (route.isNotEmpty() &&
+                        navController.graph.nodes.any { it.route == route }) {
+                        navController.navigate(route)
+                    } else {
+                        Toast.makeText(
+                            context,
+                            stringResource(R.string.not_implemented),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
             }
         }
