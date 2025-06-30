@@ -77,7 +77,7 @@ fun MenuScreen(navController: NavController, openDrawer: () -> Unit) {
                     } else {
                         Toast.makeText(
                             context,
-                            stringResource(R.string.not_implemented),
+                            context.getString(R.string.not_implemented),
                             Toast.LENGTH_SHORT
                         ).show()
                     }
