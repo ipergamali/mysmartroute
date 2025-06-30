@@ -148,11 +148,13 @@ class AuthenticationViewModel : ViewModel() {
                     val snapshot = roleMenusRef.get().await()
                     if (snapshot.isEmpty) {
                         defaultMenus(context, role).forEach { (menuTitle, options) ->
-                            val menuId = "${roleId}_${menuTitle}"
+                            val menuId = "menu_${role.name.lowercase()}_main"
                             val menuDoc = roleMenusRef.document(menuId)
                             batch.set(menuDoc, mapOf("id" to menuId, "titleKey" to menuTitle))
-                            options.forEach { (optTitle, route) ->
-                                val optId = "${menuId}_${optTitle}"
+                            options.forEachIndexed { index, (optTitle, route) ->
+                                val base = role.name.lowercase()
+                                val optIndex = if (role == UserRole.PASSENGER) index else index + 1
+                                val optId = "opt_${'$'}base_${'$'}optIndex"
                                 batch.set(
                                     menuDoc.collection("options").document(optId),
                                     mapOf("id" to optId, "titleKey" to optTitle, "route" to route)
