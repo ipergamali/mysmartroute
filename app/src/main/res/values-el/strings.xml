@@ -100,4 +100,5 @@
     <string name="announce">Αποστολή</string>
     <string name="duration_format">Διάρκεια: %1$d λεπτά</string>
     <string name="app_language">Γλώσσα εφαρμογής</string>
+    <string name="not_implemented">Η λειτουργία δεν είναι διαθέσιμη</string>
 </resources>
