@@ -72,7 +72,7 @@ fun MenuScreen(navController: NavController, openDrawer: () -> Unit) {
             } else {
                 RoleMenu(role, menus) { route ->
                     if (route.isNotEmpty() &&
-                        navController.graph.nodes.any { it.route == route }) {
+                        navController.graph.any { it.route == route }) {
                         navController.navigate(route)
                     } else {
                         Toast.makeText(
