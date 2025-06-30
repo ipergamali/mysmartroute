@@ -23,7 +23,6 @@ import com.ioannapergamali.mysmartroute.model.classes.users.Passenger
 import com.ioannapergamali.mysmartroute.model.classes.users.UserAddress
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
-import com.ioannapergamali.mysmartroute.model.menus.MenuConfig
 import com.ioannapergamali.mysmartroute.model.menus.RoleMenuConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -147,17 +146,16 @@ class AuthenticationViewModel : ViewModel() {
                     val roleMenusRef = roleRef.collection("menus")
                     val snapshot = roleMenusRef.get().await()
                     if (snapshot.isEmpty) {
-                        defaultMenus(context, role).forEach { (menuTitle, options) ->
-                            val menuId = "${roleId}_${menuTitle}"
-                            val menuDoc = roleMenusRef.document(menuId)
-                            batch.set(menuDoc, mapOf("id" to menuId, "titleKey" to menuTitle))
-                            options.forEach { (optTitle, route) ->
-                                val optId = "${menuId}_${optTitle}"
-                                batch.set(
-                                    menuDoc.collection("options").document(optId),
-                                    mapOf("id" to optId, "titleKey" to optTitle, "route" to route)
-                                )
-                            }
+                        val (menuTitle, options) = combinedMenu(context, role)
+                        val menuId = "menu_${role.name.lowercase()}_main"
+                        val menuDoc = roleMenusRef.document(menuId)
+                        batch.set(menuDoc, mapOf("id" to menuId, "titleKey" to menuTitle))
+                        options.forEachIndexed { index, (optTitle, route) ->
+                            val optId = "opt_${role.name.lowercase()}_${index}"
+                            batch.set(
+                                menuDoc.collection("options").document(optId),
+                                mapOf("id" to optId, "titleKey" to optTitle, "route" to route)
+                            )
                         }
                     }
 
@@ -429,22 +427,19 @@ class AuthenticationViewModel : ViewModel() {
 
             val menusSnap = roleRef.collection("menus").get().await()
             if (menusSnap.isEmpty) {
-                cfg.menus.forEach { menu ->
-                    val menuId = "menu_${role.name.lowercase()}_main"
-                    val menuDoc = roleRef.collection("menus").document(menuId)
-                    batch.set(menuDoc, mapOf("id" to menuId, "titleKey" to menu.titleKey))
-                    commitNeeded = true
-                    menuDao.insert(MenuEntity(menuId, roleId, menu.titleKey))
-                    menu.options.forEachIndexed { index, opt ->
-                        val base = role.name.lowercase()
-                        val optIndex = if (role == UserRole.PASSENGER) index else index + 1
-                        val optId = "opt_${'$'}base_${'$'}optIndex"
-                        batch.set(
-                            menuDoc.collection("options").document(optId),
-                            mapOf("id" to optId, "titleKey" to opt.titleKey, "route" to opt.route),
-                        )
-                        optionDao.insert(MenuOptionEntity(optId, menuId, opt.titleKey, opt.route))
-                    }
+                val (menuTitle, options) = combinedMenu(context, role)
+                val menuId = "menu_${role.name.lowercase()}_main"
+                val menuDoc = roleRef.collection("menus").document(menuId)
+                batch.set(menuDoc, mapOf("id" to menuId, "titleKey" to menuTitle))
+                commitNeeded = true
+                menuDao.insert(MenuEntity(menuId, roleId, menuTitle))
+                options.forEachIndexed { index, (titleKey, route) ->
+                    val optId = "opt_${role.name.lowercase()}_${index}"
+                    batch.set(
+                        menuDoc.collection("options").document(optId),
+                        mapOf("id" to optId, "titleKey" to titleKey, "route" to route),
+                    )
+                    optionDao.insert(MenuOptionEntity(optId, menuId, titleKey, route))
                 }
             }
         }
@@ -453,25 +448,27 @@ class AuthenticationViewModel : ViewModel() {
             batch.commit().await()
         }
     }
-    private fun defaultMenus(context: Context, role: UserRole): List<Pair<String, List<Pair<String, String>>>> {
+    private fun combinedMenu(context: Context, role: UserRole): Pair<String, List<Pair<String, String>>> {
         return try {
             val json = context.assets.open("menus.json").bufferedReader().use { it.readText() }
             val type = object : TypeToken<Map<String, RoleMenuConfig>>() {}.type
             val map: Map<String, RoleMenuConfig> = gson.fromJson(json, type)
 
-            fun collect(roleName: String, acc: MutableList<MenuConfig>) {
+            val options = mutableListOf<Pair<String, String>>()
+
+            fun collect(roleName: String) {
                 val cfg = map[roleName] ?: return
-                cfg.inheritsFrom?.let { collect(it, acc) }
-                acc.addAll(cfg.menus)
+                cfg.inheritsFrom?.let { collect(it) }
+                cfg.menus.firstOrNull()?.options?.forEach {
+                    options += it.titleKey to it.route
+                }
             }
 
-            val allMenus = mutableListOf<MenuConfig>()
-            collect(role.name, allMenus)
-            allMenus.map { menu ->
-                menu.titleKey to menu.options.map { it.titleKey to it.route }
-            }
+            collect(role.name)
+            val title = map[role.name]?.menus?.firstOrNull()?.titleKey ?: ""
+            title to options
         } catch (e: Exception) {
-            emptyList()
+            "" to emptyList()
         }
     }
 }
