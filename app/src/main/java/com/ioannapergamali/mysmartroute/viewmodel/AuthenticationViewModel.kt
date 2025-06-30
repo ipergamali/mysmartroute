@@ -147,14 +147,13 @@ class AuthenticationViewModel : ViewModel() {
                     val roleMenusRef = roleRef.collection("menus")
                     val snapshot = roleMenusRef.get().await()
                     if (snapshot.isEmpty) {
-                        defaultMenus(context, role).forEach { (menuTitle, options) ->
-                            val menuId = "menu_${role.name.lowercase()}_main"
+                        defaultMenus(context, role).forEachIndexed { menuIndex, (menuTitle, options) ->
+                            val menuId = "menu_${role.name.lowercase()}_${menuIndex}"
                             val menuDoc = roleMenusRef.document(menuId)
                             batch.set(menuDoc, mapOf("id" to menuId, "titleKey" to menuTitle))
-                            options.forEachIndexed { index, (optTitle, route) ->
+                            options.forEachIndexed { optionIndex, (optTitle, route) ->
                                 val base = role.name.lowercase()
-                                val optIndex = if (role == UserRole.PASSENGER) index else index + 1
-                                val optId = "opt_${'$'}base_${'$'}optIndex"
+                                val optId = "opt_${'$'}base_${menuIndex}_${optionIndex}"
                                 batch.set(
                                     menuDoc.collection("options").document(optId),
                                     mapOf("id" to optId, "titleKey" to optTitle, "route" to route)
@@ -431,16 +430,15 @@ class AuthenticationViewModel : ViewModel() {
 
             val menusSnap = roleRef.collection("menus").get().await()
             if (menusSnap.isEmpty) {
-                cfg.menus.forEach { menu ->
-                    val menuId = "menu_${role.name.lowercase()}_main"
+                cfg.menus.forEachIndexed { menuIndex, menu ->
+                    val menuId = "menu_${role.name.lowercase()}_${menuIndex}"
                     val menuDoc = roleRef.collection("menus").document(menuId)
                     batch.set(menuDoc, mapOf("id" to menuId, "titleKey" to menu.titleKey))
                     commitNeeded = true
                     menuDao.insert(MenuEntity(menuId, roleId, menu.titleKey))
-                    menu.options.forEachIndexed { index, opt ->
+                    menu.options.forEachIndexed { optionIndex, opt ->
                         val base = role.name.lowercase()
-                        val optIndex = if (role == UserRole.PASSENGER) index else index + 1
-                        val optId = "opt_${'$'}base_${'$'}optIndex"
+                        val optId = "opt_${'$'}base_${menuIndex}_${optionIndex}"
                         batch.set(
                             menuDoc.collection("options").document(optId),
                             mapOf("id" to optId, "titleKey" to opt.titleKey, "route" to opt.route),
