@@ -215,7 +215,7 @@ fun DefinePoiScreen(navController: NavController, openDrawer: () -> Unit) {
             Button(onClick = {
                 val latLng = selectedLatLng
                 val streetNum = streetNumInput.toIntOrNull() ?: 0
-                val postalCode = postalCodeInput.toIntOrNull() ?: 0
+                val postalCode = postalCodeInput.filter { it.isDigit() }.toIntOrNull() ?: 0
                 if (name.isNotBlank() && latLng != null) {
                     viewModel.addPoi(
                         context,

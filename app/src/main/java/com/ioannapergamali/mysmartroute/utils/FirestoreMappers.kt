@@ -10,6 +10,7 @@ import com.ioannapergamali.mysmartroute.data.local.MenuEntity
 import com.ioannapergamali.mysmartroute.data.local.MenuOptionEntity
 import com.ioannapergamali.mysmartroute.data.local.TransportAnnouncementEntity
 import com.ioannapergamali.mysmartroute.data.local.RouteEntity
+import com.ioannapergamali.mysmartroute.data.local.PoiTypeEntity
 import com.google.firebase.firestore.DocumentReference
 
 /** Βοηθητικά extensions για μετατροπή οντοτήτων σε δομές κατάλληλες για το Firestore. */
@@ -47,9 +48,16 @@ fun PoIEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     "id" to id,
     "name" to name,
     "address" to address.toFirestoreMap(),
-    "type" to type.name,
+    "type" to FirebaseFirestore.getInstance()
+        .collection("poi_types")
+        .document(type.name),
     "lat" to lat,
     "lng" to lng
+)
+
+fun PoiTypeEntity.toFirestoreMap(): Map<String, Any> = mapOf(
+    "id" to id,
+    "name" to name
 )
 
 /** Μετατροπή [PoiAddress] σε Map για αποθήκευση ως ενιαίο αντικείμενο. */
@@ -165,7 +173,11 @@ fun DocumentSnapshot.toPoIEntity(): PoIEntity? {
         streetNum = (addressMap["streetNum"] as? Long)?.toInt() ?: 0,
         postalCode = (addressMap["postalCode"] as? Long)?.toInt() ?: 0
     )
-    val typeStr = getString("type") ?: com.ioannapergamali.mysmartroute.model.enumerations.PoIType.HISTORICAL.name
+    val typeStr = when (val rawType = get("type")) {
+        is String -> rawType
+        is DocumentReference -> rawType.id
+        else -> getString("type")
+    } ?: com.ioannapergamali.mysmartroute.model.enumerations.PoIType.HISTORICAL.name
     val type = try {
         com.ioannapergamali.mysmartroute.model.enumerations.PoIType.valueOf(typeStr)
     } catch (e: Exception) {
@@ -196,4 +208,10 @@ fun DocumentSnapshot.toTransportAnnouncementEntity(): TransportAnnouncementEntit
         cost = getDouble("cost") ?: 0.0,
         durationMinutes = (getLong("durationMinutes") ?: 0L).toInt()
     )
+}
+
+fun DocumentSnapshot.toPoiTypeEntity(): PoiTypeEntity? {
+    val typeId = getString("id") ?: id
+    val typeName = getString("name") ?: return null
+    return PoiTypeEntity(typeId, typeName)
 }

@@ -10,6 +10,7 @@ import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.utils.toUserEntity
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
+import com.ioannapergamali.mysmartroute.data.local.PoiTypeEntity
 import com.ioannapergamali.mysmartroute.data.local.SettingsEntity
 import com.ioannapergamali.mysmartroute.data.local.insertSettingsSafely
 import com.ioannapergamali.mysmartroute.data.local.insertVehicleSafely
@@ -64,6 +65,7 @@ class DatabaseViewModel : ViewModel() {
                 db.userDao().getAllUsers(),
                 db.vehicleDao().getAllVehicles(),
                 db.poIDao().getAll(),
+                db.poiTypeDao().getAll(),
                 db.settingsDao().getAllSettings(),
                 db.roleDao().getAllRoles(),
                 db.menuDao().getAllMenus(),
@@ -73,18 +75,19 @@ class DatabaseViewModel : ViewModel() {
                 val users = values[0] as List<UserEntity>
                 val vehicles = values[1] as List<VehicleEntity>
                 val pois = values[2] as List<PoIEntity>
-                val settings = values[3] as List<SettingsEntity>
-                val roles = values[4] as List<RoleEntity>
-                val menus = values[5] as List<MenuEntity>
-                val options = values[6] as List<MenuOptionEntity>
-                val languages = values[7] as List<LanguageSettingEntity>
+                val settings = values[4] as List<SettingsEntity>
+                val roles = values[5] as List<RoleEntity>
+                val menus = values[6] as List<MenuEntity>
+                val options = values[7] as List<MenuOptionEntity>
+                val languages = values[8] as List<LanguageSettingEntity>
+                val poiTypes = values[3] as List<PoiTypeEntity>
 
-                DatabaseData(users, vehicles, pois, settings, roles, menus, options, languages)
+                DatabaseData(users, vehicles, pois, poiTypes, settings, roles, menus, options, languages)
             }.collect { data ->
                 Log.d(
                     TAG,
                     "Local data -> users:${'$'}{data.users.size} vehicles:${'$'}{data.vehicles.size} " +
-                        "pois:${'$'}{data.pois.size} settings:${'$'}{data.settings.size} roles:${'$'}{data.roles.size} " +
+                    "pois:${'$'}{data.pois.size} poiTypes:${'$'}{data.poiTypes.size} settings:${'$'}{data.settings.size} roles:${'$'}{data.roles.size} " +
                         "menus:${'$'}{data.menus.size} options:${'$'}{data.menuOptions.size}"
                 )
                 _localData.value = data
@@ -117,6 +120,9 @@ class DatabaseViewModel : ViewModel() {
             val pois = firestore.collection("pois").get().await()
                 .documents.mapNotNull { it.toPoIEntity() }
             Log.d(TAG, "Fetched ${'$'}{pois.size} pois from Firebase")
+            val poiTypes = firestore.collection("poi_types").get().await()
+                .documents.mapNotNull { it.toPoiTypeEntity() }
+            Log.d(TAG, "Fetched ${'$'}{poiTypes.size} poi types from Firebase")
             val settings = firestore.collection("user_settings").get().await()
                 .documents.mapNotNull { doc ->
                     val userId = when (val uid = doc.get("userId")) {
@@ -183,8 +189,8 @@ class DatabaseViewModel : ViewModel() {
                 }
             }
 
-            Log.d(TAG, "Firebase data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size}")
-            _firebaseData.value = DatabaseData(users, vehicles, pois, settings, roles, menus, menuOptions, emptyList())
+            Log.d(TAG, "Firebase data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} types:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size}")
+            _firebaseData.value = DatabaseData(users, vehicles, pois, poiTypes, settings, roles, menus, menuOptions, emptyList())
         }
     }
 
@@ -246,6 +252,10 @@ class DatabaseViewModel : ViewModel() {
                     val pois = firestore.collection("pois").get().await()
                         .documents.mapNotNull { it.toPoIEntity() }
                     Log.d(TAG, "Fetched ${pois.size} pois")
+                    Log.d(TAG, "Fetching PoiTypes from Firestore")
+                    val poiTypes = firestore.collection("poi_types").get().await()
+                        .documents.mapNotNull { it.toPoiTypeEntity() }
+                    Log.d(TAG, "Fetched ${poiTypes.size} poi types")
                     Log.d(TAG, "Fetching settings from Firestore")
                     val settings = firestore.collection("user_settings").get().await()
                         .documents.mapNotNull { doc ->
@@ -309,11 +319,12 @@ class DatabaseViewModel : ViewModel() {
 
                     Log.d(
                         TAG,
-                        "Remote data -> users:${'$'}{users.size} vehicles:${'$'}{vehicles.size} pois:${'$'}{pois.size} settings:${'$'}{settings.size} roles:${'$'}{roles.size} menus:${'$'}{menus.size} options:${'$'}{menuOptions.size}"
+                        "Remote data -> users:${'$'}{users.size} vehicles:${'$'}{vehicles.size} pois:${'$'}{pois.size} poiTypes:${'$'}{poiTypes.size} settings:${'$'}{settings.size} roles:${'$'}{roles.size} menus:${'$'}{menus.size} options:${'$'}{menuOptions.size}"
                     )
                     users.forEach { db.userDao().insert(it) }
                     vehicles.forEach { insertVehicleSafely(db.vehicleDao(), db.userDao(), it) }
                     pois.forEach { db.poIDao().insert(it) }
+                    db.poiTypeDao().insertAll(poiTypes)
                     settings.forEach { insertSettingsSafely(db.settingsDao(), db.userDao(), it) }
                     roles.forEach { db.roleDao().insert(it) }
                     menus.forEach { insertMenuSafely(db.menuDao(), db.roleDao(), it) }
@@ -329,6 +340,8 @@ class DatabaseViewModel : ViewModel() {
                     Log.d(TAG, "Fetched ${vehicles.size} local vehicles")
                     val pois = db.poIDao().getAll().first()
                     Log.d(TAG, "Fetched ${pois.size} local pois")
+                    val poiTypes = db.poiTypeDao().getAll().first()
+                    Log.d(TAG, "Fetched ${poiTypes.size} local poi types")
                     val settings = db.settingsDao().getAllSettings().first()
                     Log.d(TAG, "Fetched ${settings.size} local settings")
                     val roles = db.roleDao().getAllRoles().first()
@@ -340,7 +353,7 @@ class DatabaseViewModel : ViewModel() {
 
                     Log.d(
                         TAG,
-                        "Local data -> users:${'$'}{users.size} vehicles:${'$'}{vehicles.size} pois:${'$'}{pois.size} settings:${'$'}{settings.size} roles:${'$'}{roles.size} menus:${'$'}{menus.size} options:${'$'}{menuOptions.size}"
+                        "Local data -> users:${'$'}{users.size} vehicles:${'$'}{vehicles.size} pois:${'$'}{pois.size} poiTypes:${'$'}{poiTypes.size} settings:${'$'}{settings.size} roles:${'$'}{roles.size} menus:${'$'}{menus.size} options:${'$'}{menuOptions.size}"
                     )
 
                     users.forEach {
@@ -353,7 +366,12 @@ class DatabaseViewModel : ViewModel() {
                             .document(it.id)
                             .set(it.toFirestoreMap()).await()
                     }
-                    pois.forEach { firestore.collection("pois").document(it.id).set(it).await() }
+                    pois.forEach { firestore.collection("pois").document(it.id).set(it.toFirestoreMap()).await() }
+                    poiTypes.forEach {
+                        firestore.collection("poi_types")
+                            .document(it.id)
+                            .set(it.toFirestoreMap()).await()
+                    }
                     settings.forEach {
                         firestore.collection("user_settings")
                             .document(it.userId)
@@ -403,6 +421,7 @@ data class DatabaseData(
     val users: List<UserEntity>,
     val vehicles: List<VehicleEntity>,
     val pois: List<PoIEntity>,
+    val poiTypes: List<PoiTypeEntity>,
     val settings: List<SettingsEntity>,
     val roles: List<RoleEntity>,
     val menus: List<MenuEntity>,
