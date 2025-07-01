@@ -239,9 +239,15 @@ class AuthenticationViewModel : ViewModel() {
                 .addOnSuccessListener { document ->
                     val roleName = document.getString("role")
                         ?: document.getString("roleId")
+                    val roleId = document.getString("roleId") ?: ""
                     Log.i(TAG, "Role from Firestore: $roleName")
                     _currentUserRole.value = roleName?.let {
                         runCatching { UserRole.valueOf(it) }.getOrNull()
+                    }
+                    viewModelScope.launch {
+                        val dao = MySmartRouteDatabase.getInstance(context).userDao()
+                        val current = dao.getUser(uid) ?: UserEntity(id = uid)
+                        dao.insert(current.copy(role = roleName ?: "", roleId = roleId))
                     }
                     if (loadMenus) loadCurrentUserMenus(context)
                 }
