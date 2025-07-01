@@ -20,6 +20,7 @@ import com.ioannapergamali.mysmartroute.data.local.MenuEntity
 import com.ioannapergamali.mysmartroute.data.local.MenuOptionEntity
 import com.ioannapergamali.mysmartroute.data.local.UserEntity
 import com.ioannapergamali.mysmartroute.utils.toPoIEntity
+import com.ioannapergamali.mysmartroute.utils.toPoiTypeEntity
 import com.ioannapergamali.mysmartroute.data.local.VehicleEntity
 import com.ioannapergamali.mysmartroute.data.local.LanguageSettingEntity
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
@@ -121,7 +122,9 @@ class DatabaseViewModel : ViewModel() {
                 .documents.mapNotNull { it.toPoIEntity() }
             Log.d(TAG, "Fetched ${'$'}{pois.size} pois from Firebase")
             val poiTypes = firestore.collection("poi_types").get().await()
-                .documents.mapNotNull { it.toPoiTypeEntity() }
+                .documents.mapNotNull { doc: com.google.firebase.firestore.DocumentSnapshot ->
+                    doc.toPoiTypeEntity()
+                }
             Log.d(TAG, "Fetched ${'$'}{poiTypes.size} poi types from Firebase")
             val settings = firestore.collection("user_settings").get().await()
                 .documents.mapNotNull { doc ->
@@ -254,7 +257,9 @@ class DatabaseViewModel : ViewModel() {
                     Log.d(TAG, "Fetched ${pois.size} pois")
                     Log.d(TAG, "Fetching PoiTypes from Firestore")
                     val poiTypes = firestore.collection("poi_types").get().await()
-                        .documents.mapNotNull { it.toPoiTypeEntity() }
+                        .documents.mapNotNull { doc: com.google.firebase.firestore.DocumentSnapshot ->
+                            doc.toPoiTypeEntity()
+                        }
                     Log.d(TAG, "Fetched ${poiTypes.size} poi types")
                     Log.d(TAG, "Fetching settings from Firestore")
                     val settings = firestore.collection("user_settings").get().await()
