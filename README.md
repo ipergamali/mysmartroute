@@ -102,4 +102,17 @@ val user: User = gson.fromJson(jsonString, type)
 
 Μετά την προσθήκη ή επιβεβαίωση της παραπάνω εξάρτησης, κάνε "Sync Project with Gradle Files" ώστε να κατέβει το library και να λυθούν τα σφάλματα.
 
+### Αν τα κοντινά μέρη επιστρέφουν "null"
+
+Οι λειτουργίες `fetchNearbyPlaceName` και `fetchNearbyPlaceType` χρησιμοποιούν το
+Google Places API. Αν στο logcat βλέπεις μηνύματα όπως
+`Nearby place name request failed: REQUEST_DENIED` ή οι τιμές
+εμφανίζονται `null`, έλεγξε τα εξής:
+
+1. Στη σελίδα Google Cloud Console πρέπει να είναι ενεργό το **Places API**.
+2. Το API key δεν πρέπει να περιορίζεται σε λάθος SHA‑1 ή package name. Για δοκιμές
+μπορείς προσωρινά να αφαιρέσεις όλους τους περιορισμούς.
+
+Μετά τις αλλαγές κάνε επανεκκίνηση της εφαρμογής ώστε να χρησιμοποιήσει το σωστό κλειδί.
+
 

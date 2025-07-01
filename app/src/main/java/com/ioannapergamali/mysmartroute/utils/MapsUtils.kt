@@ -157,6 +157,12 @@ object MapsUtils {
             }
             val actualBody = body ?: return@withContext null
             val jsonObj = JSONObject(actualBody)
+            val status = jsonObj.optString("status")
+            if (status != "OK") {
+                Log.e(TAG, "Nearby place name request failed: $status")
+                jsonObj.optString("error_message")?.let { Log.e(TAG, it) }
+                return@withContext null
+            }
             val results = jsonObj.optJSONArray("results") ?: return@withContext null
             if (results.length() == 0) return@withContext null
             return@withContext results.getJSONObject(0).optString("name")
@@ -181,6 +187,12 @@ object MapsUtils {
             }
             val actualBody = body ?: return@withContext null
             val jsonObj = JSONObject(actualBody)
+            val status = jsonObj.optString("status")
+            if (status != "OK") {
+                Log.e(TAG, "Nearby place type request failed: $status")
+                jsonObj.optString("error_message")?.let { Log.e(TAG, it) }
+                return@withContext null
+            }
             val results = jsonObj.optJSONArray("results") ?: return@withContext null
             if (results.length() == 0) return@withContext null
             val exclude = setOf("POINT_OF_INTEREST", "ESTABLISHMENT", "LOCALITY", "POLITICAL")
