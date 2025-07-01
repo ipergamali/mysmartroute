@@ -8,7 +8,7 @@ import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.model.classes.poi.PoiAddress
-import com.ioannapergamali.mysmartroute.model.enumerations.PoIType
+import com.google.android.libraries.places.api.model.Place
 import com.ioannapergamali.mysmartroute.utils.toPoIEntity
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -47,7 +47,7 @@ class PoIViewModel : ViewModel() {
         context: Context,
         name: String,
         address: PoiAddress,
-        type: PoIType,
+        type: Place.Type,
         lat: Double,
         lng: Double
     ) {

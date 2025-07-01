@@ -19,7 +19,7 @@ class MySmartRouteApplication : Application() {
         LocaleUtils.updateLocale(this, lang)
         FirebaseApp.initializeApp(this)
         AuthenticationViewModel().ensureMenusInitialized(this)
-        populatePoiTypes()
+        populatePoiTypes(this)
         // Η υπηρεσία Firebase App Check απενεργοποιήθηκε προσωρινά
         //val apiKey = BuildConfig.MAPS_API_KEY
 //        Log.d("MySmartRoute Maps API key ", "Maps API key loaded: ${apiKey.isNotBlank()}")

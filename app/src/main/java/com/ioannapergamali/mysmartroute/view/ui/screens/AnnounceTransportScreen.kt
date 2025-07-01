@@ -50,7 +50,7 @@ import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.viewmodel.TransportAnnouncementViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
-import com.ioannapergamali.mysmartroute.model.enumerations.PoIType
+import com.google.android.libraries.places.api.model.Place
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -124,7 +124,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     var toError by remember { mutableStateOf(false) }
     var lastAddFrom by remember { mutableStateOf<Boolean?>(null) }
     var poiTypeExpanded by remember { mutableStateOf(false) }
-    var selectedPoiType by remember { mutableStateOf(PoIType.HISTORICAL) }
+    var selectedPoiType by remember { mutableStateOf(Place.Type.LANDMARK) }
 
     // Αρχικοποίηση του χάρτη στο Ηράκλειο με ζουμ όπως στο ζητούμενο URL
     val cameraPositionState = rememberCameraPositionState {
@@ -594,7 +594,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 )
             )
             DropdownMenu(expanded = poiTypeExpanded, onDismissRequest = { poiTypeExpanded = false }) {
-                PoIType.values().forEach { t ->
+                Place.Type.values().forEach { t ->
                     DropdownMenuItem(text = { Text(t.name) }, onClick = {
                         selectedPoiType = t
                         poiTypeExpanded = false

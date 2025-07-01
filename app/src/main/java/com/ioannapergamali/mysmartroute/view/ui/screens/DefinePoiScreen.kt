@@ -29,7 +29,6 @@ import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.model.classes.poi.PoiAddress
-import com.ioannapergamali.mysmartroute.model.enumerations.PoIType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -224,7 +223,7 @@ fun DefinePoiScreen(navController: NavController, openDrawer: () -> Unit) {
                         context,
                         name,
                         PoiAddress(country, city, streetName, streetNum, postalCode),
-                        PoIType.values().firstOrNull { it.name == selectedPlaceType.name } ?: PoIType.GENERAL,
+                        Place.Type.values().firstOrNull { it.name == selectedPlaceType.name } ?: Place.Type.ESTABLISHMENT,
                         latLng.latitude,
                         latLng.longitude
                     )
