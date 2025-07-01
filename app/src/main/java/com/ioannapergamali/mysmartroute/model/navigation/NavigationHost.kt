@@ -13,7 +13,6 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.AnnounceTransportScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.DirectionsMapScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.PoIListScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.DefinePoiScreen
-import com.ioannapergamali.mysmartroute.view.ui.screens.PlaceTypesScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.SettingsScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.AboutScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.SupportScreen
@@ -81,9 +80,6 @@ fun NavigationHost(navController : NavHostController, openDrawer: () -> Unit) {
             DefinePoiScreen(navController = navController, openDrawer = openDrawer)
         }
 
-        composable("placeTypes") {
-            PlaceTypesScreen(navController = navController, openDrawer = openDrawer)
-        }
 
 
         composable(
