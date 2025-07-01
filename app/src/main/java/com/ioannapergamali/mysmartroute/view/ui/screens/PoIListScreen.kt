@@ -34,7 +34,7 @@ fun PoIListScreen(navController: NavController, openDrawer: () -> Unit) {
         ScreenContainer(modifier = Modifier.padding(padding), scrollable = false) {
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 items(pois) { poi ->
-                    Text(text = "${'$'}{poi.name} (${poi.lat}, ${'$'}{poi.lng})")
+                    Text(text = "${poi.name} (${poi.lat}, ${poi.lng})")
                 }
             }
         }

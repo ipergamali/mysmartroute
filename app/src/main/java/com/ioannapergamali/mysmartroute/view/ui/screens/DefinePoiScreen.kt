@@ -90,7 +90,7 @@ fun DefinePoiScreen(navController: NavController, openDrawer: () -> Unit) {
                     cameraPositionState = cameraPositionState,
                     properties = mapProperties,
                     onMapClick = { latLng ->
-                        Log.d(TAG, "Map clicked at ${'$'}{latLng.latitude}, ${'$'}{latLng.longitude}")
+                        Log.d(TAG, "Map clicked at ${latLng.latitude}, ${latLng.longitude}")
                         selectedLatLng = latLng
                         markerState.position = latLng
                         coroutineScope.launch {
@@ -98,7 +98,7 @@ fun DefinePoiScreen(navController: NavController, openDrawer: () -> Unit) {
                                 latLng,
                                 MapsUtils.getApiKey(context)
                             )
-                            Log.d(TAG, "Nearby place name: ${'$'}place")
+                            Log.d(TAG, "Nearby place name: $place")
                             if (!place.isNullOrBlank()) {
                                 name = place
                             }
@@ -106,10 +106,10 @@ fun DefinePoiScreen(navController: NavController, openDrawer: () -> Unit) {
                                 latLng,
                                 MapsUtils.getApiKey(context)
                             )
-                            Log.d(TAG, "Nearby place type: ${'$'}{type?.name}")
+                            Log.d(TAG, "Nearby place type: ${type?.name}")
                             type?.let { selectedPlaceType = it }
                             val address = reverseGeocodePoi(context, latLng)
-                            Log.d(TAG, "Reverse geocoded address: ${'$'}address")
+                            Log.d(TAG, "Reverse geocoded address: $address")
                             address?.let {
                                 streetName = it.thoroughfare ?: ""
                                 streetNumInput = it.subThoroughfare ?: ""
@@ -117,7 +117,7 @@ fun DefinePoiScreen(navController: NavController, openDrawer: () -> Unit) {
                                 postalCodeInput = it.postalCode ?: ""
                                 country = it.countryName ?: ""
                             }
-                            Log.d(TAG, "Selected type after lookup: ${'$'}{selectedPlaceType.name}")
+                            Log.d(TAG, "Selected type after lookup: ${selectedPlaceType.name}")
                         }
                     }
                 ) {
@@ -159,7 +159,7 @@ fun DefinePoiScreen(navController: NavController, openDrawer: () -> Unit) {
                 DropdownMenu(expanded = typeMenuExpanded, onDismissRequest = { typeMenuExpanded = false }) {
                     placeTypes.forEach { t ->
                         DropdownMenuItem(text = { Text(t.name) }, onClick = {
-                            Log.d(TAG, "User selected type from menu: ${'$'}{t.name}")
+                            Log.d(TAG, "User selected type from menu: ${t.name}")
                             selectedPlaceType = t
                             typeMenuExpanded = false
                         })
@@ -234,7 +234,7 @@ fun DefinePoiScreen(navController: NavController, openDrawer: () -> Unit) {
                 val streetNum = streetNumInput.toIntOrNull() ?: 0
                 val postalCode = postalCodeInput.filter { it.isDigit() }.toIntOrNull() ?: 0
                 if (name.isNotBlank() && latLng != null) {
-                    Log.d(TAG, "Saving PoI with type ${'$'}{selectedPlaceType.name}")
+                    Log.d(TAG, "Saving PoI with type ${selectedPlaceType.name}")
                     viewModel.addPoi(
                         context,
                         name,

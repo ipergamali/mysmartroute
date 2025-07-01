@@ -87,9 +87,9 @@ class DatabaseViewModel : ViewModel() {
             }.collect { data ->
                 Log.d(
                     TAG,
-                    "Local data -> users:${'$'}{data.users.size} vehicles:${'$'}{data.vehicles.size} " +
-                    "pois:${'$'}{data.pois.size} poiTypes:${'$'}{data.poiTypes.size} settings:${'$'}{data.settings.size} roles:${'$'}{data.roles.size} " +
-                        "menus:${'$'}{data.menus.size} options:${'$'}{data.menuOptions.size}"
+                    "Local data -> users:${data.users.size} vehicles:${data.vehicles.size} " +
+                    "pois:${data.pois.size} poiTypes:${data.poiTypes.size} settings:${data.settings.size} roles:${data.roles.size} " +
+                        "menus:${data.menus.size} options:${data.menuOptions.size}"
                 )
                 _localData.value = data
             }
@@ -101,7 +101,7 @@ class DatabaseViewModel : ViewModel() {
             Log.d(TAG, "Loading Firebase data")
             val users = firestore.collection("users").get().await()
                 .documents.mapNotNull { it.toUserEntity() }
-            Log.d(TAG, "Fetched ${'$'}{users.size} users from Firebase")
+            Log.d(TAG, "Fetched ${users.size} users from Firebase")
             val vehicles = firestore.collection("vehicles").get().await()
                 .documents.mapNotNull { doc ->
                     val userId = when (val uid = doc.get("userId")) {
@@ -117,15 +117,15 @@ class DatabaseViewModel : ViewModel() {
                         seat = (doc.getLong("seat") ?: 0L).toInt()
                     )
                 }
-            Log.d(TAG, "Fetched ${'$'}{vehicles.size} vehicles from Firebase")
+            Log.d(TAG, "Fetched ${vehicles.size} vehicles from Firebase")
             val pois = firestore.collection("pois").get().await()
                 .documents.mapNotNull { it.toPoIEntity() }
-            Log.d(TAG, "Fetched ${'$'}{pois.size} pois from Firebase")
+            Log.d(TAG, "Fetched ${pois.size} pois from Firebase")
             val poiTypes = firestore.collection("poi_types").get().await()
                 .documents.mapNotNull { doc: com.google.firebase.firestore.DocumentSnapshot ->
                     doc.toPoiTypeEntity()
                 }
-            Log.d(TAG, "Fetched ${'$'}{poiTypes.size} poi types from Firebase")
+            Log.d(TAG, "Fetched ${poiTypes.size} poi types from Firebase")
             val settings = firestore.collection("user_settings").get().await()
                 .documents.mapNotNull { doc ->
                     val userId = when (val uid = doc.get("userId")) {
@@ -143,7 +143,7 @@ class DatabaseViewModel : ViewModel() {
                         language = doc.getString("language") ?: "el"
                     )
                 }
-            Log.d(TAG, "Fetched ${'$'}{settings.size} settings from Firebase")
+            Log.d(TAG, "Fetched ${settings.size} settings from Firebase")
 
             Log.d(TAG, "Fetching roles from Firestore")
             val rolesSnap = firestore.collection("roles").get().await()
@@ -324,7 +324,7 @@ class DatabaseViewModel : ViewModel() {
 
                     Log.d(
                         TAG,
-                        "Remote data -> users:${'$'}{users.size} vehicles:${'$'}{vehicles.size} pois:${'$'}{pois.size} poiTypes:${'$'}{poiTypes.size} settings:${'$'}{settings.size} roles:${'$'}{roles.size} menus:${'$'}{menus.size} options:${'$'}{menuOptions.size}"
+                        "Remote data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} poiTypes:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size}"
                     )
                     users.forEach { db.userDao().insert(it) }
                     vehicles.forEach { insertVehicleSafely(db.vehicleDao(), db.userDao(), it) }
@@ -358,7 +358,7 @@ class DatabaseViewModel : ViewModel() {
 
                     Log.d(
                         TAG,
-                        "Local data -> users:${'$'}{users.size} vehicles:${'$'}{vehicles.size} pois:${'$'}{pois.size} poiTypes:${'$'}{poiTypes.size} settings:${'$'}{settings.size} roles:${'$'}{roles.size} menus:${'$'}{menus.size} options:${'$'}{menuOptions.size}"
+                        "Local data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} poiTypes:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size}"
                     )
 
                     users.forEach {

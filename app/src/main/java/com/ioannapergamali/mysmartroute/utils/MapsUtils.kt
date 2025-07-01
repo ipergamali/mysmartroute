@@ -132,7 +132,7 @@ object MapsUtils {
         val request = Request.Builder().url(buildDirectionsUrl(origin, destination, apiKey, vehicleType)).build()
         client.newCall(request).execute().use { response ->
             val body = response.body?.string() ?: return@withContext DirectionsData(0, emptyList(), "NO_RESPONSE")
-            if (!response.isSuccessful) return@withContext DirectionsData(0, emptyList(), "HTTP_${'$'}{response.code}")
+            if (!response.isSuccessful) return@withContext DirectionsData(0, emptyList(), "HTTP_${response.code}")
             return@withContext parseDirections(body)
         }
     }
@@ -142,7 +142,7 @@ object MapsUtils {
         apiKey: String
     ): String? = withContext(Dispatchers.IO) {
         val url =
-            "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${'$'}{location.latitude},${'$'}{location.longitude}&radius=50&key=${'$'}apiKey"
+            "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${location.latitude},${location.longitude}&radius=50&key=$apiKey"
         val request = Request.Builder().url(url).build()
         client.newCall(request).execute().use { response ->
             if (!response.isSuccessful) return@withContext null
@@ -159,7 +159,7 @@ object MapsUtils {
         apiKey: String
     ): Place.Type? = withContext(Dispatchers.IO) {
         val url =
-            "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${'$'}{location.latitude},${'$'}{location.longitude}&radius=100&key=${'$'}apiKey"
+            "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${location.latitude},${location.longitude}&radius=100&key=$apiKey"
         val request = Request.Builder().url(url).build()
         client.newCall(request).execute().use { response ->
             if (!response.isSuccessful) return@withContext null

@@ -153,7 +153,7 @@ class AuthenticationViewModel : ViewModel() {
                             batch.set(menuDoc, mapOf("id" to menuId, "titleKey" to menuTitle))
                             options.forEachIndexed { optionIndex, (optTitle, route) ->
                                 val base = role.name.lowercase()
-                                val optId = "opt_${'$'}base_${menuIndex}_${optionIndex}"
+                                val optId = "opt_${base}_${menuIndex}_${optionIndex}"
                                 batch.set(
                                     menuDoc.collection("options").document(optId),
                                     mapOf("id" to optId, "titleKey" to optTitle, "route" to route)
@@ -385,7 +385,7 @@ class AuthenticationViewModel : ViewModel() {
                 Log.w(TAG, "No internet connection and no local menus")
                 _currentMenus.value = emptyList()
             }
-            Log.i(TAG, "Menus loaded: ${'$'}{_currentMenus.value.size}")
+            Log.i(TAG, "Menus loaded: ${_currentMenus.value.size}")
         }
     }
 
@@ -418,10 +418,10 @@ class AuthenticationViewModel : ViewModel() {
 
         map.forEach { (roleName, cfg) ->
             val role = UserRole.valueOf(roleName)
-            val roleId = roleIds[role] ?: "role_${'$'}{role.name.lowercase()}"
+            val roleId = roleIds[role] ?: "role_${role.name.lowercase()}"
             val roleRef = db.collection("roles").document(roleId)
             val parentId = cfg.inheritsFrom?.let { parent ->
-                roleIds[UserRole.valueOf(parent)] ?: "role_${'$'}{parent.lowercase()}"
+                roleIds[UserRole.valueOf(parent)] ?: "role_${parent.lowercase()}"
             }
             val data = mutableMapOf<String, Any>("id" to roleId, "name" to roleName)
             parentId?.let { data["parentRoleId"] = it }
@@ -452,7 +452,7 @@ class AuthenticationViewModel : ViewModel() {
 
                 menu.options.forEachIndexed { optionIndex, opt ->
                     val base = role.name.lowercase()
-                    val optId = "opt_${'$'}base_${menuIndex}_${optionIndex}"
+                    val optId = "opt_${base}_${menuIndex}_${optionIndex}"
                     if (!existingOptions.containsKey(optId)) {
                         batch.set(
                             menuDoc.collection("options").document(optId),
