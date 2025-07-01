@@ -41,6 +41,8 @@ import android.location.Geocoder
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.model.classes.routes.Route
+import com.ioannapergamali.mysmartroute.model.classes.poi.Poi
+import com.ioannapergamali.mysmartroute.model.enumerations.PoIType
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
@@ -642,7 +644,9 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 val date = dateInput.toIntOrNull() ?: 0
                 val start = "${startLatLng!!.latitude},${startLatLng!!.longitude}"
                 val end = "${endLatLng!!.latitude},${endLatLng!!.longitude}"
-                val route = Route(start, end, cost)
+                val startPoi = Poi(id = "", description = start, type = PoIType.HISTORICAL)
+                val endPoi = Poi(id = "", description = end, type = PoIType.HISTORICAL)
+                val route = Route(startPoi, endPoi, cost = cost)
                 val type = selectedVehicleType ?: VehicleType.CAR
                 viewModel.announce(context, route, type, date, cost, durationMinutes)
             }

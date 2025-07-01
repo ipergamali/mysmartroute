@@ -56,8 +56,8 @@ class TransportAnnouncementViewModel : ViewModel() {
                 id = announcementId,
                 driverId = userId,
                 vehicleType = vehicleType.name,
-                start = route.start,
-                end = route.end,
+                start = route.start.description,
+                end = route.end.description,
                 date = date,
                 cost = cost,
                 durationMinutes = durationMinutes
