@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.util.UUID
+import androidx.room.withTransaction
 
 class AuthenticationViewModel : ViewModel() {
 
@@ -435,15 +436,17 @@ class AuthenticationViewModel : ViewModel() {
                     val menuDoc = roleRef.collection("menus").document(menuId)
                     batch.set(menuDoc, mapOf("id" to menuId, "titleKey" to menu.titleKey))
                     commitNeeded = true
-                    menuDao.insert(MenuEntity(menuId, roleId, menu.titleKey))
-                    menu.options.forEachIndexed { optionIndex, opt ->
-                        val base = role.name.lowercase()
-                        val optId = "opt_${'$'}base_${menuIndex}_${optionIndex}"
-                        batch.set(
-                            menuDoc.collection("options").document(optId),
-                            mapOf("id" to optId, "titleKey" to opt.titleKey, "route" to opt.route),
-                        )
-                        optionDao.insert(MenuOptionEntity(optId, menuId, opt.titleKey, opt.route))
+                    dbLocal.withTransaction {
+                        menuDao.insert(MenuEntity(menuId, roleId, menu.titleKey))
+                        menu.options.forEachIndexed { optionIndex, opt ->
+                            val base = role.name.lowercase()
+                            val optId = "opt_${'$'}base_${menuIndex}_${optionIndex}"
+                            batch.set(
+                                menuDoc.collection("options").document(optId),
+                                mapOf("id" to optId, "titleKey" to opt.titleKey, "route" to opt.route),
+                            )
+                            optionDao.insert(MenuOptionEntity(optId, menuId, opt.titleKey, opt.route))
+                        }
                     }
                 }
             }
