@@ -105,4 +105,8 @@
     <string name="poi_saved">PoI saved</string>
     <string name="poi_exists">PoI already exists</string>
     <string name="not_implemented">Functionality not available</string>
+    <!-- Role descriptions -->
+    <string name="role_passenger_desc">You can view routes and make bookings.</string>
+    <string name="role_driver_desc">You can announce transports and manage vehicles.</string>
+    <string name="role_admin_desc">You have access to management functions and defining points of interest.</string>
 </resources>
