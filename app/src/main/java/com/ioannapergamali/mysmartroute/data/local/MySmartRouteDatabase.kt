@@ -13,6 +13,8 @@ import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.data.local.MenuOptionEntity
 import com.ioannapergamali.mysmartroute.data.local.LanguageSettingEntity
 import com.ioannapergamali.mysmartroute.data.local.LanguageSettingDao
+import com.ioannapergamali.mysmartroute.data.local.RouteEntity
+import com.ioannapergamali.mysmartroute.data.local.MovingEntity
 
 @Database(
     entities = [
@@ -23,9 +25,11 @@ import com.ioannapergamali.mysmartroute.data.local.LanguageSettingDao
         RoleEntity::class,
         MenuEntity::class,
         MenuOptionEntity::class,
-        LanguageSettingEntity::class
+        LanguageSettingEntity::class,
+        RouteEntity::class,
+        MovingEntity::class
     ],
-    version = 19
+    version = 20
 )
 abstract class MySmartRouteDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
@@ -36,6 +40,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
     abstract fun menuDao(): MenuDao
     abstract fun menuOptionDao(): MenuOptionDao
     abstract fun languageSettingDao(): LanguageSettingDao
+    abstract fun routeDao(): RouteDao
+    abstract fun movingDao(): MovingDao
 
     companion object {
         @Volatile
@@ -269,6 +275,32 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_19_20 = object : Migration(19, 20) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `routes` (" +
+                        "`id` TEXT NOT NULL, " +
+                        "`startPoiId` TEXT NOT NULL, " +
+                        "`endPoiId` TEXT NOT NULL, " +
+                        "`cost` REAL NOT NULL, " +
+                        "PRIMARY KEY(`id`)" +
+                        ")"
+                )
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `movings` (" +
+                        "`id` TEXT NOT NULL, " +
+                        "`routeId` TEXT NOT NULL, " +
+                        "`userId` TEXT NOT NULL, " +
+                        "`date` INTEGER NOT NULL, " +
+                        "`vehicleId` TEXT NOT NULL, " +
+                        "`cost` REAL NOT NULL, " +
+                        "`durationMinutes` INTEGER NOT NULL, " +
+                        "PRIMARY KEY(`id`)" +
+                        ")"
+                )
+            }
+        }
+
         private fun prepopulate(db: SupportSQLiteDatabase) {
             Log.d(TAG, "Prepopulating database")
             db.execSQL(
@@ -353,7 +385,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_15_16,
                     MIGRATION_16_17,
                     MIGRATION_17_18,
-                    MIGRATION_18_19
+                    MIGRATION_18_19,
+                    MIGRATION_19_20
                 )
                     .addCallback(object : RoomDatabase.Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {
