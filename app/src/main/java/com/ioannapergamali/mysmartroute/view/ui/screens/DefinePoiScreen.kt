@@ -3,6 +3,7 @@ package com.ioannapergamali.mysmartroute.view.ui.screens
 import android.widget.Toast
 import android.location.Geocoder
 import android.content.Context
+import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -29,6 +30,8 @@ import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.model.classes.poi.PoiAddress
+
+private const val TAG = "DefinePoiScreen"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -87,6 +90,7 @@ fun DefinePoiScreen(navController: NavController, openDrawer: () -> Unit) {
                     cameraPositionState = cameraPositionState,
                     properties = mapProperties,
                     onMapClick = { latLng ->
+                        Log.d(TAG, "Map clicked at ${'$'}{latLng.latitude}, ${'$'}{latLng.longitude}")
                         selectedLatLng = latLng
                         markerState.position = latLng
                         coroutineScope.launch {
@@ -94,22 +98,26 @@ fun DefinePoiScreen(navController: NavController, openDrawer: () -> Unit) {
                                 latLng,
                                 MapsUtils.getApiKey(context)
                             )
+                            Log.d(TAG, "Nearby place name: ${'$'}place")
                             if (!place.isNullOrBlank()) {
                                 name = place
                             }
-                            MapsUtils.fetchNearbyPlaceType(
+                            val type = MapsUtils.fetchNearbyPlaceType(
                                 latLng,
                                 MapsUtils.getApiKey(context)
-                            )?.let { type ->
-                                selectedPlaceType = type
+                            )
+                            Log.d(TAG, "Nearby place type: ${'$'}{type?.name}")
+                            type?.let { selectedPlaceType = it }
+                            val address = reverseGeocodePoi(context, latLng)
+                            Log.d(TAG, "Reverse geocoded address: ${'$'}address")
+                            address?.let {
+                                streetName = it.thoroughfare ?: ""
+                                streetNumInput = it.subThoroughfare ?: ""
+                                city = it.locality ?: ""
+                                postalCodeInput = it.postalCode ?: ""
+                                country = it.countryName ?: ""
                             }
-                            reverseGeocodePoi(context, latLng)?.let { address ->
-                                streetName = address.thoroughfare ?: ""
-                                streetNumInput = address.subThoroughfare ?: ""
-                                city = address.locality ?: ""
-                                postalCodeInput = address.postalCode ?: ""
-                                country = address.countryName ?: ""
-                            }
+                            Log.d(TAG, "Selected type after lookup: ${'$'}{selectedPlaceType.name}")
                         }
                     }
                 ) {
@@ -151,6 +159,7 @@ fun DefinePoiScreen(navController: NavController, openDrawer: () -> Unit) {
                 DropdownMenu(expanded = typeMenuExpanded, onDismissRequest = { typeMenuExpanded = false }) {
                     placeTypes.forEach { t ->
                         DropdownMenuItem(text = { Text(t.name) }, onClick = {
+                            Log.d(TAG, "User selected type from menu: ${'$'}{t.name}")
                             selectedPlaceType = t
                             typeMenuExpanded = false
                         })
@@ -225,6 +234,7 @@ fun DefinePoiScreen(navController: NavController, openDrawer: () -> Unit) {
                 val streetNum = streetNumInput.toIntOrNull() ?: 0
                 val postalCode = postalCodeInput.filter { it.isDigit() }.toIntOrNull() ?: 0
                 if (name.isNotBlank() && latLng != null) {
+                    Log.d(TAG, "Saving PoI with type ${'$'}{selectedPlaceType.name}")
                     viewModel.addPoi(
                         context,
                         name,
