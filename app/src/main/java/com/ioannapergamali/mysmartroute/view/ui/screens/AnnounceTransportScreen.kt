@@ -398,7 +398,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                     poiViewModel.addPoi(
                                         context,
                                         fromQuery,
-                                        fromQuery,
+                                        com.ioannapergamali.mysmartroute.model.classes.poi.PoiAddress(city = fromQuery),
                                         "HISTORICAL",
                                         startLatLng!!.latitude,
                                         startLatLng!!.longitude
@@ -520,7 +520,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                     poiViewModel.addPoi(
                                         context,
                                         toQuery,
-                                        toQuery,
+                                        com.ioannapergamali.mysmartroute.model.classes.poi.PoiAddress(city = toQuery),
                                         "HISTORICAL",
                                         endLatLng!!.latitude,
                                         endLatLng!!.longitude

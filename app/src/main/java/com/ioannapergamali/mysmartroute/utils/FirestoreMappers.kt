@@ -4,6 +4,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.SettingsEntity
 import com.ioannapergamali.mysmartroute.data.local.UserEntity
 import com.ioannapergamali.mysmartroute.data.local.VehicleEntity
+import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.data.local.RoleEntity
 import com.ioannapergamali.mysmartroute.data.local.MenuEntity
 import com.ioannapergamali.mysmartroute.data.local.MenuOptionEntity
@@ -40,6 +41,19 @@ fun VehicleEntity.toFirestoreMap(): Map<String, Any> = mapOf(
         .document(userId),
     "type" to type,
     "seat" to seat
+)
+
+fun PoIEntity.toFirestoreMap(): Map<String, Any> = mapOf(
+    "id" to id,
+    "name" to name,
+    "country" to country,
+    "city" to city,
+    "streetName" to streetName,
+    "streetNum" to streetNum,
+    "postalCode" to postalCode,
+    "type" to type,
+    "lat" to lat,
+    "lng" to lng
 )
 
 /** Μετατροπή [SettingsEntity] σε Map. */

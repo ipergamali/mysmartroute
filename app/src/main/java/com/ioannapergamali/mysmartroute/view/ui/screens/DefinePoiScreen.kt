@@ -20,6 +20,7 @@ import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
+import com.ioannapergamali.mysmartroute.model.classes.poi.PoiAddress
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,7 +33,11 @@ fun DefinePoiScreen(navController: NavController, openDrawer: () -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     var selectedPoi by remember { mutableStateOf<PoIEntity?>(null) }
     var name by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
+    var country by remember { mutableStateOf("") }
+    var city by remember { mutableStateOf("") }
+    var streetName by remember { mutableStateOf("") }
+    var streetNumInput by remember { mutableStateOf("") }
+    var postalCodeInput by remember { mutableStateOf("") }
     var selectedLatLng by remember { mutableStateOf<LatLng?>(null) }
     val markerState = rememberMarkerState()
 
@@ -53,7 +58,11 @@ fun DefinePoiScreen(navController: NavController, openDrawer: () -> Unit) {
             markerState.position = latLng
             cameraPositionState.position = CameraPosition.fromLatLngZoom(latLng, 13f)
             name = poi.name
-            description = poi.description
+            country = poi.country
+            city = poi.city
+            streetName = poi.streetName
+            streetNumInput = poi.streetNum.toString()
+            postalCodeInput = poi.postalCode.toString()
         }
     }
 
@@ -132,10 +141,60 @@ fun DefinePoiScreen(navController: NavController, openDrawer: () -> Unit) {
             )
             Spacer(Modifier.height(8.dp))
             OutlinedTextField(
-                value = description,
-                onValueChange = { description = it },
-                label = { Text(stringResource(R.string.poi_description)) },
+                value = country,
+                onValueChange = { country = it },
+                label = { Text("Country") },
                 modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.small,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                )
+            )
+            Spacer(Modifier.height(8.dp))
+            OutlinedTextField(
+                value = city,
+                onValueChange = { city = it },
+                label = { Text("City") },
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.small,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                )
+            )
+            Spacer(Modifier.height(8.dp))
+            OutlinedTextField(
+                value = streetName,
+                onValueChange = { streetName = it },
+                label = { Text("Street Name") },
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.small,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                )
+            )
+            Spacer(Modifier.height(8.dp))
+            OutlinedTextField(
+                value = streetNumInput,
+                onValueChange = { streetNumInput = it },
+                label = { Text("Street Number") },
+                modifier = Modifier.fillMaxWidth(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                shape = MaterialTheme.shapes.small,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                )
+            )
+            Spacer(Modifier.height(8.dp))
+            OutlinedTextField(
+                value = postalCodeInput,
+                onValueChange = { postalCodeInput = it },
+                label = { Text("Postal Code") },
+                modifier = Modifier.fillMaxWidth(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 shape = MaterialTheme.shapes.small,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -145,11 +204,13 @@ fun DefinePoiScreen(navController: NavController, openDrawer: () -> Unit) {
             Spacer(Modifier.height(16.dp))
             Button(onClick = {
                 val latLng = selectedLatLng
+                val streetNum = streetNumInput.toIntOrNull() ?: 0
+                val postalCode = postalCodeInput.toIntOrNull() ?: 0
                 if (name.isNotBlank() && latLng != null) {
                     viewModel.addPoi(
                         context,
                         name,
-                        description,
+                        PoiAddress(country, city, streetName, streetNum, postalCode),
                         "HISTORICAL",
                         latLng.latitude,
                         latLng.longitude
