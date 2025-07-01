@@ -8,6 +8,8 @@ import com.ioannapergamali.mysmartroute.data.local.RoleEntity
 import com.ioannapergamali.mysmartroute.data.local.MenuEntity
 import com.ioannapergamali.mysmartroute.data.local.MenuOptionEntity
 import com.ioannapergamali.mysmartroute.data.local.TransportAnnouncementEntity
+import com.ioannapergamali.mysmartroute.data.local.RouteEntity
+import com.google.firebase.firestore.DocumentReference
 
 /** Βοηθητικά extensions για μετατροπή οντοτήτων σε δομές κατάλληλες για το Firestore. */
 /** Μετατροπή ενός [UserEntity] σε Map. */
@@ -108,6 +110,29 @@ fun TransportAnnouncementEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     "cost" to cost,
     "durationMinutes" to durationMinutes
 )
+
+fun RouteEntity.toFirestoreMap(): Map<String, Any> = mapOf(
+    "id" to id,
+    "start" to FirebaseFirestore.getInstance().collection("pois").document(startPoiId),
+    "end" to FirebaseFirestore.getInstance().collection("pois").document(endPoiId),
+    "cost" to cost
+)
+
+fun DocumentSnapshot.toRouteEntity(): RouteEntity? {
+    val routeId = getString("id") ?: id
+    val start = when (val raw = get("start")) {
+        is DocumentReference -> raw.id
+        is String -> raw
+        else -> getString("start")
+    } ?: return null
+    val end = when (val raw = get("end")) {
+        is DocumentReference -> raw.id
+        is String -> raw
+        else -> getString("end")
+    } ?: return null
+    val costVal = getDouble("cost") ?: 0.0
+    return RouteEntity(routeId, start, end, costVal)
+}
 
 fun DocumentSnapshot.toTransportAnnouncementEntity(): TransportAnnouncementEntity? {
     val announcementId = getString("id") ?: id
