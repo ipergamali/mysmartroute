@@ -74,7 +74,7 @@ fun LocalDatabaseScreen(navController: NavController, openDrawer: () -> Unit) {
                     item { Text("Ο πίνακας είναι άδειος") }
                 } else {
                     items(data!!.pois) { poi ->
-                        Text("${poi.name} (${poi.type}) - ${poi.city}")
+                        Text("${poi.name} (${poi.type}) - ${poi.address.city}")
                     }
                 }
                 item { Spacer(modifier = Modifier.padding(8.dp)) }
