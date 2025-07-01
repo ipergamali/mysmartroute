@@ -95,7 +95,7 @@ dependencies {
 
     // Firebase
     // Χρήση της πιο πρόσφατης έκδοσης BOM
-    implementation(platform("com.google.firebase:firebase-bom:33.15.0"))
+    implementation(platform("com.google.firebase:firebase-bom:33.16.0"))
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
 
