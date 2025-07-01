@@ -41,7 +41,7 @@ object PlacesHelper {
         client.findCurrentPlace(request).addOnSuccessListener { response ->
             for (likelihood in response.placeLikelihoods) {
                 val place = likelihood.place
-                Log.d("PlacesHelper", "Place: ${'$'}{place.name}, Types: ${'$'}{place.types}")
+                Log.d("PlacesHelper", "Place: ${place.name}, Types: ${place.types}")
             }
         }.addOnFailureListener { e ->
             Log.e("PlacesHelper", "Σφάλμα εύρεσης τρεχουσών τοποθεσιών", e)

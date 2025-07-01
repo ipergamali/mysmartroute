@@ -61,7 +61,7 @@ fun FirebaseDatabaseScreen(navController: NavController, openDrawer: () -> Unit)
                 item { Spacer(modifier = Modifier.padding(8.dp)) }
                 item { Text("PoIs", style = MaterialTheme.typography.titleMedium) }
                 items(data!!.pois) { poi ->
-                    Text("${'$'}{poi.name} (${'$'}{poi.type}) - ${'$'}{poi.city}")
+                    Text("${poi.name} (${poi.type}) - ${poi.city}")
                 }
                 item { Spacer(modifier = Modifier.padding(8.dp)) }
                 item { Text("Settings", style = MaterialTheme.typography.titleMedium) }
@@ -73,7 +73,7 @@ fun FirebaseDatabaseScreen(navController: NavController, openDrawer: () -> Unit)
                 items(data!!.roles) { role ->
                     val roleEnum = UserRole.values().find { it.name == role.name }
                     val name = roleEnum?.localizedName() ?: role.name
-                    Text("${'$'}{role.id} - ${'$'}name")
+                    Text("${role.id} - $name")
                 }
                 item { Spacer(modifier = Modifier.padding(8.dp)) }
                 item { Text("Menus", style = MaterialTheme.typography.titleMedium) }

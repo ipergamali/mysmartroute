@@ -74,7 +74,7 @@ fun LocalDatabaseScreen(navController: NavController, openDrawer: () -> Unit) {
                     item { Text("Ο πίνακας είναι άδειος") }
                 } else {
                     items(data!!.pois) { poi ->
-                        Text("${'$'}{poi.name} (${'$'}{poi.type}) - ${'$'}{poi.city}")
+                        Text("${poi.name} (${poi.type}) - ${poi.city}")
                     }
                 }
                 item { Spacer(modifier = Modifier.padding(8.dp)) }
@@ -98,7 +98,7 @@ fun LocalDatabaseScreen(navController: NavController, openDrawer: () -> Unit) {
                             null
                         }
                         val name = roleEnum?.localizedName() ?: role.name
-                        Text("${'$'}{role.id} - ${'$'}name")
+                        Text("${role.id} - $name")
                     }
                 }
                 item { Spacer(modifier = Modifier.padding(8.dp)) }

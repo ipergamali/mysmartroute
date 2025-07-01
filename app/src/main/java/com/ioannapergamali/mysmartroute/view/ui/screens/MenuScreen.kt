@@ -46,7 +46,7 @@ fun MenuScreen(navController: NavController, openDrawer: () -> Unit) {
     }
 
     LaunchedEffect(role, menus) {
-        Log.d(TAG, "Role: ${'$'}role, menus size: ${'$'}{menus.size}")
+        Log.d(TAG, "Role: $role, menus size: ${menus.size}")
     }
 
     Scaffold(
