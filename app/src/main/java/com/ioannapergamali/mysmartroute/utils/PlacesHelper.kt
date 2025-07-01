@@ -5,7 +5,6 @@ import android.util.Log
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.model.PlaceLikelihood
-import com.google.android.libraries.places.api.model.PlaceLikelihoodBufferResponse
 import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.ioannapergamali.mysmartroute.BuildConfig
