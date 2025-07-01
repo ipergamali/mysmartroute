@@ -1,6 +1,11 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
 import android.widget.Toast
+import android.location.Geocoder
+import android.content.Context
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
@@ -31,6 +36,7 @@ fun DefinePoiScreen(navController: NavController, openDrawer: () -> Unit) {
     val pois by viewModel.pois.collectAsState()
     val addState by viewModel.addState.collectAsState()
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
 
     var expanded by remember { mutableStateOf(false) }
     var selectedPoi by remember { mutableStateOf<PoIEntity?>(null) }
@@ -96,6 +102,15 @@ fun DefinePoiScreen(navController: NavController, openDrawer: () -> Unit) {
                     onMapClick = { latLng ->
                         selectedLatLng = latLng
                         markerState.position = latLng
+                        coroutineScope.launch {
+                            reverseGeocodePoi(context, latLng)?.let { address ->
+                                streetName = address.thoroughfare ?: ""
+                                streetNumInput = address.subThoroughfare ?: ""
+                                city = address.locality ?: ""
+                                postalCodeInput = address.postalCode ?: ""
+                                country = address.countryName ?: ""
+                            }
+                        }
                     }
                 ) {
                     selectedLatLng?.let { Marker(state = markerState) }
@@ -224,6 +239,18 @@ fun DefinePoiScreen(navController: NavController, openDrawer: () -> Unit) {
                 Text(stringResource(R.string.save_poi))
             }
         }
+    }
+}
+
+private suspend fun reverseGeocodePoi(
+    context: Context,
+    latLng: LatLng
+): android.location.Address? = withContext(Dispatchers.IO) {
+    try {
+        Geocoder(context).getFromLocation(latLng.latitude, latLng.longitude, 1)
+            ?.firstOrNull()
+    } catch (e: Exception) {
+        null
     }
 }
 
