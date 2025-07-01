@@ -9,7 +9,7 @@ import com.ioannapergamali.mysmartroute.model.classes.poi.PoiAddress
  */
 data class Poi(
     override val id: String,
-    val name: String,
+    override val name: String,
     override val address: PoiAddress,
     override val type: PoIType
 ) : PoI
