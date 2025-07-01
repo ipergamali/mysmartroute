@@ -169,13 +169,16 @@ object MapsUtils {
             if (results.length() == 0) return@withContext null
             val types = results.getJSONObject(0).optJSONArray("types") ?: return@withContext null
             val exclude = setOf("POINT_OF_INTEREST", "ESTABLISHMENT")
+            var fallback: Place.Type? = null
             for (i in 0 until types.length()) {
                 val typeStr = types.getString(i).uppercase().replace('-', '_')
-                if (typeStr in exclude) continue
                 val type = runCatching { enumValueOf<Place.Type>(typeStr) }.getOrNull()
-                if (type != null) return@withContext type
+                if (type != null) {
+                    if (type.name !in exclude) return@withContext type
+                    if (fallback == null) fallback = type
+                }
             }
-            return@withContext null
+            return@withContext fallback
         }
     }
 }
