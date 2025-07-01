@@ -142,7 +142,9 @@ object MapsUtils {
         apiKey: String
     ): String? = withContext(Dispatchers.IO) {
         val url =
-            "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${location.latitude},${location.longitude}&radius=50&key=$apiKey"
+            "https://maps.googleapis.com/maps/api/place/nearbysearch/json?" +
+                "location=${location.latitude},${location.longitude}" +
+                "&rankby=distance&type=establishment&key=$apiKey"
         val request = Request.Builder().url(url).build()
         client.newCall(request).execute().use { response ->
             if (!response.isSuccessful) return@withContext null
@@ -159,7 +161,9 @@ object MapsUtils {
         apiKey: String
     ): Place.Type? = withContext(Dispatchers.IO) {
         val url =
-            "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${location.latitude},${location.longitude}&radius=100&key=$apiKey"
+            "https://maps.googleapis.com/maps/api/place/nearbysearch/json?" +
+                "location=${location.latitude},${location.longitude}" +
+                "&rankby=distance&type=establishment&key=$apiKey"
         val request = Request.Builder().url(url).build()
         client.newCall(request).execute().use { response ->
             if (!response.isSuccessful) return@withContext null
@@ -167,7 +171,7 @@ object MapsUtils {
             val jsonObj = JSONObject(body)
             val results = jsonObj.optJSONArray("results") ?: return@withContext null
             if (results.length() == 0) return@withContext null
-            val exclude = setOf("POINT_OF_INTEREST", "ESTABLISHMENT")
+            val exclude = setOf("POINT_OF_INTEREST", "ESTABLISHMENT", "LOCALITY", "POLITICAL")
             for (r in 0 until results.length()) {
                 val types = results.getJSONObject(r).optJSONArray("types") ?: continue
                 for (i in 0 until types.length()) {
