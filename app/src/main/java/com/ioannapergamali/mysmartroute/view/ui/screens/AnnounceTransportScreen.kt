@@ -124,7 +124,8 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     var toError by remember { mutableStateOf(false) }
     var lastAddFrom by remember { mutableStateOf<Boolean?>(null) }
     var poiTypeExpanded by remember { mutableStateOf(false) }
-    var selectedPoiType by remember { mutableStateOf<Place.Type>(Place.Type.LANDMARK) }
+    // Χρησιμοποιούμε το ESTABLISHMENT ως προεπιλεγμένο είδος σημείου
+    var selectedPoiType by remember { mutableStateOf<Place.Type>(Place.Type.ESTABLISHMENT) }
 
     // Αρχικοποίηση του χάρτη στο Ηράκλειο με ζουμ όπως στο ζητούμενο URL
     val cameraPositionState = rememberCameraPositionState {
