@@ -227,6 +227,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                             }
                             fromError = false
                             mapSelectionMode = null
+                            navController.navigate("definePoi?lat=${latLng.latitude}&lng=${latLng.longitude}")
                         }
                         MapSelectionMode.TO -> {
                             endLatLng = latLng
@@ -237,6 +238,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                             }
                             toError = false
                             mapSelectionMode = null
+                            navController.navigate("definePoi?lat=${latLng.latitude}&lng=${latLng.longitude}")
                         }
                         null -> {}
                     }

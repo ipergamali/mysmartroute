@@ -76,8 +76,21 @@ fun NavigationHost(navController : NavHostController, openDrawer: () -> Unit) {
         composable("poiList") {
             PoIListScreen(navController = navController, openDrawer = openDrawer)
         }
-        composable("definePoi") {
-            DefinePoiScreen(navController = navController, openDrawer = openDrawer)
+        composable(
+            route = "definePoi?lat={lat}&lng={lng}",
+            arguments = listOf(
+                navArgument("lat") { defaultValue = "" },
+                navArgument("lng") { defaultValue = "" }
+            )
+        ) { backStackEntry ->
+            val lat = backStackEntry.arguments?.getString("lat")?.toDoubleOrNull()
+            val lng = backStackEntry.arguments?.getString("lng")?.toDoubleOrNull()
+            DefinePoiScreen(
+                navController = navController,
+                openDrawer = openDrawer,
+                initialLat = lat,
+                initialLng = lng
+            )
         }
 
 

@@ -35,7 +35,12 @@ private const val TAG = "DefinePoiScreen"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DefinePoiScreen(navController: NavController, openDrawer: () -> Unit) {
+fun DefinePoiScreen(
+    navController: NavController,
+    openDrawer: () -> Unit,
+    initialLat: Double? = null,
+    initialLng: Double? = null
+) {
     val viewModel: PoIViewModel = viewModel()
     val addState by viewModel.addState.collectAsState()
     val context = LocalContext.current
@@ -50,11 +55,17 @@ fun DefinePoiScreen(navController: NavController, openDrawer: () -> Unit) {
     var streetName by remember { mutableStateOf("") }
     var streetNumInput by remember { mutableStateOf("") }
     var postalCodeInput by remember { mutableStateOf("") }
-    var selectedLatLng by remember { mutableStateOf<LatLng?>(null) }
-    val markerState = rememberMarkerState()
+    val initialLatLng = remember(initialLat, initialLng) {
+        if (initialLat != null && initialLng != null) LatLng(initialLat, initialLng) else null
+    }
+    var selectedLatLng by remember { mutableStateOf<LatLng?>(initialLatLng) }
+    val markerState = rememberMarkerState(position = selectedLatLng ?: LatLng(0.0, 0.0))
 
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(LatLng(35.3325932, 25.073835), 13.79f)
+        position = CameraPosition.fromLatLngZoom(
+            selectedLatLng ?: LatLng(35.3325932, 25.073835),
+            13.79f
+        )
     }
     val heraklionBounds = remember {
         LatLngBounds(LatLng(34.9, 24.8), LatLng(35.5, 25.9))
@@ -99,6 +110,7 @@ fun DefinePoiScreen(navController: NavController, openDrawer: () -> Unit) {
                 }
                 LaunchedEffect(selectedLatLng) {
                     selectedLatLng?.let { latLng ->
+                        cameraPositionState.position = CameraPosition.fromLatLngZoom(latLng, 13.79f)
                         val place = MapsUtils.fetchNearbyPlaceName(
                             latLng,
                             MapsUtils.getApiKey(context)
