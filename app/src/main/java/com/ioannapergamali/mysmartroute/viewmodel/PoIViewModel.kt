@@ -8,6 +8,8 @@ import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.model.classes.poi.PoiAddress
+import com.ioannapergamali.mysmartroute.model.enumerations.PoIType
+import com.ioannapergamali.mysmartroute.utils.toPoIEntity
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -33,7 +35,7 @@ class PoIViewModel : ViewModel() {
             db.collection("pois").get()
                 .addOnSuccessListener { snapshot ->
                     val list = snapshot.documents.mapNotNull { doc ->
-                        doc.toObject(PoIEntity::class.java)
+                        doc.toPoIEntity()
                     }
                     _pois.value = list
                     viewModelScope.launch { dao.insertAll(list) }
@@ -45,7 +47,7 @@ class PoIViewModel : ViewModel() {
         context: Context,
         name: String,
         address: PoiAddress,
-        type: String,
+        type: PoIType,
         lat: Double,
         lng: Double
     ) {
@@ -61,11 +63,7 @@ class PoIViewModel : ViewModel() {
             val poi = PoIEntity(
                 id = id,
                 name = name,
-                country = address.country,
-                city = address.city,
-                streetName = address.streetName,
-                streetNum = address.streetNum,
-                postalCode = address.postalCode,
+                address = address,
                 type = type,
                 lat = lat,
                 lng = lng

@@ -15,6 +15,8 @@ import com.ioannapergamali.mysmartroute.data.local.LanguageSettingEntity
 import com.ioannapergamali.mysmartroute.data.local.LanguageSettingDao
 import com.ioannapergamali.mysmartroute.data.local.RouteEntity
 import com.ioannapergamali.mysmartroute.data.local.MovingEntity
+import androidx.room.TypeConverters
+import com.ioannapergamali.mysmartroute.data.local.Converters
 
 @Database(
     entities = [
@@ -30,8 +32,9 @@ import com.ioannapergamali.mysmartroute.data.local.MovingEntity
         MovingEntity::class,
         TransportAnnouncementEntity::class
     ],
-    version = 22
+    version = 23
 )
+@TypeConverters(Converters::class)
 abstract class MySmartRouteDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun vehicleDao(): VehicleDao
