@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
+import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
+import com.ioannapergamali.mysmartroute.model.classes.poi.PoiAddress
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -42,7 +44,7 @@ class PoIViewModel : ViewModel() {
     fun addPoi(
         context: Context,
         name: String,
-        description: String,
+        address: PoiAddress,
         type: String,
         lat: Double,
         lng: Double
@@ -56,17 +58,22 @@ class PoIViewModel : ViewModel() {
             }
 
             val id = UUID.randomUUID().toString()
-            val poi = PoIEntity(id, name, description, type, lat, lng)
-            dao.insert(poi)
-            val data = hashMapOf(
-                "id" to id,
-                "name" to name,
-                "description" to description,
-                "type" to type,
-                "lat" to lat,
-                "lng" to lng
+            val poi = PoIEntity(
+                id = id,
+                name = name,
+                country = address.country,
+                city = address.city,
+                streetName = address.streetName,
+                streetNum = address.streetNum,
+                postalCode = address.postalCode,
+                type = type,
+                lat = lat,
+                lng = lng
             )
-            db.collection("pois").document(id).set(data)
+            dao.insert(poi)
+            db.collection("pois")
+                .document(id)
+                .set(poi.toFirestoreMap())
             _addState.value = AddPoiState.Success
         }
     }

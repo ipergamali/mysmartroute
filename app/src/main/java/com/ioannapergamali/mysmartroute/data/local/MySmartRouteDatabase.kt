@@ -30,7 +30,7 @@ import com.ioannapergamali.mysmartroute.data.local.MovingEntity
         MovingEntity::class,
         TransportAnnouncementEntity::class
     ],
-    version = 21
+    version = 22
 )
 abstract class MySmartRouteDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
@@ -321,6 +321,16 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_21_22 = object : Migration(21, 22) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE `pois` ADD COLUMN `country` TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE `pois` ADD COLUMN `city` TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE `pois` ADD COLUMN `streetName` TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE `pois` ADD COLUMN `streetNum` INTEGER NOT NULL DEFAULT 0")
+                database.execSQL("ALTER TABLE `pois` ADD COLUMN `postalCode` INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
         private fun prepopulate(db: SupportSQLiteDatabase) {
             Log.d(TAG, "Prepopulating database")
             db.execSQL(
@@ -407,7 +417,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_17_18,
                     MIGRATION_18_19,
                     MIGRATION_19_20,
-                    MIGRATION_20_21
+                    MIGRATION_20_21,
+                    MIGRATION_21_22
                 )
                     .addCallback(object : RoomDatabase.Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {

@@ -7,7 +7,11 @@ import androidx.room.PrimaryKey
 data class PoIEntity(
     @PrimaryKey val id: String = "",
     val name: String = "",
-    val description: String = "",
+    val country: String = "",
+    val city: String = "",
+    val streetName: String = "",
+    val streetNum: Int = 0,
+    val postalCode: Int = 0,
     val type: String = "",
     val lat: Double = 0.0,
     val lng: Double = 0.0
