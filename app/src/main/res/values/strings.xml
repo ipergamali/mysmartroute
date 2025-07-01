@@ -98,5 +98,11 @@
     <string name="announce">Announce</string>
     <string name="duration_format">Duration: %1$d min</string>
     <string name="app_language">App Language</string>
+    <string name="poi_name">PoI Name</string>
+    <string name="poi_description">Description</string>
+    <string name="select_poi">Select PoI</string>
+    <string name="save_poi">Save PoI</string>
+    <string name="poi_saved">PoI saved</string>
+    <string name="poi_exists">PoI already exists</string>
     <string name="not_implemented">Functionality not available</string>
 </resources>

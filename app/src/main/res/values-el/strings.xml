@@ -100,5 +100,11 @@
     <string name="announce">Αποστολή</string>
     <string name="duration_format">Διάρκεια: %1$d λεπτά</string>
     <string name="app_language">Γλώσσα εφαρμογής</string>
+    <string name="poi_name">Όνομα POI</string>
+    <string name="poi_description">Περιγραφή</string>
+    <string name="select_poi">Επιλογή POI</string>
+    <string name="save_poi">Αποθήκευση POI</string>
+    <string name="poi_saved">Το POI αποθηκεύτηκε</string>
+    <string name="poi_exists">Το POI υπάρχει ήδη</string>
     <string name="not_implemented">Η λειτουργία δεν είναι διαθέσιμη</string>
 </resources>
