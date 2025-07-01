@@ -50,6 +50,7 @@ import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.viewmodel.TransportAnnouncementViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
+import com.ioannapergamali.mysmartroute.model.enumerations.PoIType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -399,7 +400,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                         context,
                                         fromQuery,
                                         com.ioannapergamali.mysmartroute.model.classes.poi.PoiAddress(city = fromQuery),
-                                        "HISTORICAL",
+                                        PoIType.HISTORICAL,
                                         startLatLng!!.latitude,
                                         startLatLng!!.longitude
                                     )
@@ -521,7 +522,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                         context,
                                         toQuery,
                                         com.ioannapergamali.mysmartroute.model.classes.poi.PoiAddress(city = toQuery),
-                                        "HISTORICAL",
+                                        PoIType.HISTORICAL,
                                         endLatLng!!.latitude,
                                         endLatLng!!.longitude
                                     )

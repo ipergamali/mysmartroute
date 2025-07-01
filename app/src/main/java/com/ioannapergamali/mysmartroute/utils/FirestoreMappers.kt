@@ -46,23 +46,10 @@ fun VehicleEntity.toFirestoreMap(): Map<String, Any> = mapOf(
 fun PoIEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     "id" to id,
     "name" to name,
-    // Τα επιμέρους στοιχεία διεύθυνσης εξακολουθούν να αποθηκεύονται ξεχωριστά
-    "country" to country,
-    "city" to city,
-    "streetName" to streetName,
-    "streetNum" to streetNum,
-    "postalCode" to postalCode,
-    "type" to type,
+    "address" to address.toFirestoreMap(),
+    "type" to type.name,
     "lat" to lat,
-    "lng" to lng,
-    // Επιπλέον αποτυπώνουμε ολόκληρη τη διεύθυνση ως υπο-αντικείμενο
-    "address" to mapOf(
-        "country" to country,
-        "city" to city,
-        "streetName" to streetName,
-        "streetNum" to streetNum,
-        "postalCode" to postalCode
-    )
+    "lng" to lng
 )
 
 /** Μετατροπή [PoiAddress] σε Map για αποθήκευση ως ενιαίο αντικείμενο. */
@@ -165,6 +152,28 @@ fun DocumentSnapshot.toRouteEntity(): RouteEntity? {
     } ?: return null
     val costVal = getDouble("cost") ?: 0.0
     return RouteEntity(routeId, start, end, costVal)
+}
+
+fun DocumentSnapshot.toPoIEntity(): PoIEntity? {
+    val poiId = getString("id") ?: id
+    val poiName = getString("name") ?: return null
+    val addressMap = get("address") as? Map<*, *> ?: return null
+    val address = com.ioannapergamali.mysmartroute.model.classes.poi.PoiAddress(
+        country = addressMap["country"] as? String ?: "",
+        city = addressMap["city"] as? String ?: "",
+        streetName = addressMap["streetName"] as? String ?: "",
+        streetNum = (addressMap["streetNum"] as? Long)?.toInt() ?: 0,
+        postalCode = (addressMap["postalCode"] as? Long)?.toInt() ?: 0
+    )
+    val typeStr = getString("type") ?: com.ioannapergamali.mysmartroute.model.enumerations.PoIType.HISTORICAL.name
+    val type = try {
+        com.ioannapergamali.mysmartroute.model.enumerations.PoIType.valueOf(typeStr)
+    } catch (e: Exception) {
+        com.ioannapergamali.mysmartroute.model.enumerations.PoIType.HISTORICAL
+    }
+    val latVal = getDouble("lat") ?: 0.0
+    val lngVal = getDouble("lng") ?: 0.0
+    return PoIEntity(poiId, poiName, address, type, latVal, lngVal)
 }
 
 fun DocumentSnapshot.toTransportAnnouncementEntity(): TransportAnnouncementEntity? {
