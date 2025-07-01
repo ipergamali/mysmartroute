@@ -167,13 +167,15 @@ object MapsUtils {
             val jsonObj = JSONObject(body)
             val results = jsonObj.optJSONArray("results") ?: return@withContext null
             if (results.length() == 0) return@withContext null
-            val types = results.getJSONObject(0).optJSONArray("types") ?: return@withContext null
             val exclude = setOf("POINT_OF_INTEREST", "ESTABLISHMENT")
-            for (i in 0 until types.length()) {
-                val typeStr = types.getString(i).uppercase().replace('-', '_')
-                if (typeStr in exclude) continue
-                val type = runCatching { enumValueOf<Place.Type>(typeStr) }.getOrNull()
-                if (type != null) return@withContext type
+            for (r in 0 until results.length()) {
+                val types = results.getJSONObject(r).optJSONArray("types") ?: continue
+                for (i in 0 until types.length()) {
+                    val typeStr = types.getString(i).uppercase().replace('-', '_')
+                    if (typeStr in exclude) continue
+                    val type = runCatching { enumValueOf<Place.Type>(typeStr) }.getOrNull()
+                    if (type != null) return@withContext type
+                }
             }
             return@withContext null
         }
