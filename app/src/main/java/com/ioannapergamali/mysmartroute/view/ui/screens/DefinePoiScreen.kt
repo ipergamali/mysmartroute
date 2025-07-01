@@ -42,6 +42,8 @@ fun DefinePoiScreen(navController: NavController, openDrawer: () -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     var selectedPoi by remember { mutableStateOf<PoIEntity?>(null) }
     var name by remember { mutableStateOf("") }
+    var typeMenuExpanded by remember { mutableStateOf(false) }
+    var selectedType by remember { mutableStateOf(PoIType.HISTORICAL) }
     var country by remember { mutableStateOf("") }
     var city by remember { mutableStateOf("") }
     var streetName by remember { mutableStateOf("") }
@@ -158,6 +160,30 @@ fun DefinePoiScreen(navController: NavController, openDrawer: () -> Unit) {
                 )
             )
             Spacer(Modifier.height(8.dp))
+            ExposedDropdownMenuBox(expanded = typeMenuExpanded, onExpandedChange = { typeMenuExpanded = !typeMenuExpanded }) {
+                OutlinedTextField(
+                    value = selectedType.name,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text(stringResource(R.string.poi_type)) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = typeMenuExpanded) },
+                    modifier = Modifier.menuAnchor().fillMaxWidth(),
+                    shape = MaterialTheme.shapes.small,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                    )
+                )
+                DropdownMenu(expanded = typeMenuExpanded, onDismissRequest = { typeMenuExpanded = false }) {
+                    PoIType.values().forEach { t ->
+                        DropdownMenuItem(text = { Text(t.name) }, onClick = {
+                            selectedType = t
+                            typeMenuExpanded = false
+                        })
+                    }
+                }
+            }
+            Spacer(Modifier.height(8.dp))
             OutlinedTextField(
                 value = country,
                 onValueChange = { country = it },
@@ -229,7 +255,7 @@ fun DefinePoiScreen(navController: NavController, openDrawer: () -> Unit) {
                         context,
                         name,
                         PoiAddress(country, city, streetName, streetNum, postalCode),
-                        PoIType.HISTORICAL,
+                        selectedType,
                         latLng.latitude,
                         latLng.longitude
                     )

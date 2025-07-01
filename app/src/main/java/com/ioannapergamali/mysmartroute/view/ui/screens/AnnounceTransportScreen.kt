@@ -123,6 +123,8 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     var fromError by remember { mutableStateOf(false) }
     var toError by remember { mutableStateOf(false) }
     var lastAddFrom by remember { mutableStateOf<Boolean?>(null) }
+    var poiTypeExpanded by remember { mutableStateOf(false) }
+    var selectedPoiType by remember { mutableStateOf(PoIType.HISTORICAL) }
 
     // Αρχικοποίηση του χάρτη στο Ηράκλειο με ζουμ όπως στο ζητούμενο URL
     val cameraPositionState = rememberCameraPositionState {
@@ -400,7 +402,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                         context,
                                         fromQuery,
                                         com.ioannapergamali.mysmartroute.model.classes.poi.PoiAddress(city = fromQuery),
-                                        PoIType.HISTORICAL,
+                                        selectedPoiType,
                                         startLatLng!!.latitude,
                                         startLatLng!!.longitude
                                     )
@@ -522,7 +524,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                         context,
                                         toQuery,
                                         com.ioannapergamali.mysmartroute.model.classes.poi.PoiAddress(city = toQuery),
-                                        PoIType.HISTORICAL,
+                                        selectedPoiType,
                                         endLatLng!!.latitude,
                                         endLatLng!!.longitude
                                     )
@@ -571,6 +573,32 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                             toExpanded = false
                         }
                     )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        ExposedDropdownMenuBox(expanded = poiTypeExpanded, onExpandedChange = { poiTypeExpanded = !poiTypeExpanded }) {
+            OutlinedTextField(
+                value = selectedPoiType.name,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text(stringResource(R.string.poi_type)) },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = poiTypeExpanded) },
+                modifier = Modifier.menuAnchor().fillMaxWidth(),
+                shape = MaterialTheme.shapes.small,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                )
+            )
+            DropdownMenu(expanded = poiTypeExpanded, onDismissRequest = { poiTypeExpanded = false }) {
+                PoIType.values().forEach { t ->
+                    DropdownMenuItem(text = { Text(t.name) }, onClick = {
+                        selectedPoiType = t
+                        poiTypeExpanded = false
+                    })
                 }
             }
         }

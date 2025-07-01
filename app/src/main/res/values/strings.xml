@@ -104,6 +104,7 @@
     <string name="save_poi">Save PoI</string>
     <string name="poi_saved">PoI saved</string>
     <string name="poi_exists">PoI already exists</string>
+    <string name="poi_type">PoI Type</string>
     <string name="not_implemented">Functionality not available</string>
     <!-- Role descriptions -->
     <string name="role_passenger_desc">You can view routes and make bookings.</string>
