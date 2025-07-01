@@ -10,6 +10,8 @@ import com.google.android.libraries.places.api.net.PlacesClient
 import com.ioannapergamali.mysmartroute.BuildConfig
 
 object PlacesHelper {
+    /** Επιστρέφει όλους τους διαθέσιμους τύπους από το Google Places SDK. */
+    fun allPlaceTypes(): List<Place.Type> = Place.Type.values().toList()
     /** Επιστρέφει μερικούς ενδεικτικούς τύπους σημείων ενδιαφέροντος. */
     fun samplePlaceTypes(): List<Place.Type> = listOf(
         Place.Type.RESTAURANT,

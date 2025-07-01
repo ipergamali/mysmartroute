@@ -23,6 +23,8 @@ import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.compose.*
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
+import com.google.android.libraries.places.api.model.Place
+import com.ioannapergamali.mysmartroute.utils.PlacesHelper
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
@@ -39,7 +41,8 @@ fun DefinePoiScreen(navController: NavController, openDrawer: () -> Unit) {
 
     var name by remember { mutableStateOf("") }
     var typeMenuExpanded by remember { mutableStateOf(false) }
-    var selectedType by remember { mutableStateOf(PoIType.HISTORICAL) }
+    var selectedPlaceType by remember { mutableStateOf(Place.Type.RESTAURANT) }
+    val placeTypes = remember { PlacesHelper.allPlaceTypes().sortedBy { it.name } }
     var country by remember { mutableStateOf("") }
     var city by remember { mutableStateOf("") }
     var streetName by remember { mutableStateOf("") }
@@ -128,7 +131,7 @@ fun DefinePoiScreen(navController: NavController, openDrawer: () -> Unit) {
             Spacer(Modifier.height(8.dp))
             ExposedDropdownMenuBox(expanded = typeMenuExpanded, onExpandedChange = { typeMenuExpanded = !typeMenuExpanded }) {
                 OutlinedTextField(
-                    value = selectedType.name,
+                    value = selectedPlaceType.name,
                     onValueChange = {},
                     readOnly = true,
                     label = { Text(stringResource(R.string.poi_type)) },
@@ -141,9 +144,9 @@ fun DefinePoiScreen(navController: NavController, openDrawer: () -> Unit) {
                     )
                 )
                 DropdownMenu(expanded = typeMenuExpanded, onDismissRequest = { typeMenuExpanded = false }) {
-                    PoIType.values().forEach { t ->
+                    placeTypes.forEach { t ->
                         DropdownMenuItem(text = { Text(t.name) }, onClick = {
-                            selectedType = t
+                            selectedPlaceType = t
                             typeMenuExpanded = false
                         })
                     }
@@ -221,7 +224,7 @@ fun DefinePoiScreen(navController: NavController, openDrawer: () -> Unit) {
                         context,
                         name,
                         PoiAddress(country, city, streetName, streetNum, postalCode),
-                        selectedType,
+                        PoIType.values().firstOrNull { it.name == selectedPlaceType.name } ?: PoIType.GENERAL,
                         latLng.latitude,
                         latLng.longitude
                     )
