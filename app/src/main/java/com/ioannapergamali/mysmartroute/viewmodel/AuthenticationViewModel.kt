@@ -429,22 +429,32 @@ class AuthenticationViewModel : ViewModel() {
             roleDao.insert(RoleEntity(id = roleId, name = roleName, parentRoleId = parentId))
 
             val menusSnap = roleRef.collection("menus").get().await()
-            if (menusSnap.isEmpty) {
-                cfg.menus.forEachIndexed { menuIndex, menu ->
-                    val menuId = "menu_${role.name.lowercase()}_${menuIndex}"
-                    val menuDoc = roleRef.collection("menus").document(menuId)
+            val existingMenus = menusSnap.documents.associateBy { it.getString("id") ?: it.id }
+            cfg.menus.forEachIndexed { menuIndex, menu ->
+                val menuId = "menu_${role.name.lowercase()}_${menuIndex}"
+                val menuDoc = roleRef.collection("menus").document(menuId)
+
+                if (!existingMenus.containsKey(menuId)) {
                     batch.set(menuDoc, mapOf("id" to menuId, "titleKey" to menu.titleKey))
                     commitNeeded = true
-                    menuDao.insert(MenuEntity(menuId, roleId, menu.titleKey))
-                    menu.options.forEachIndexed { optionIndex, opt ->
-                        val base = role.name.lowercase()
-                        val optId = "opt_${'$'}base_${menuIndex}_${optionIndex}"
+                }
+
+                menuDao.insert(MenuEntity(menuId, roleId, menu.titleKey))
+
+                val optionsSnap = existingMenus[menuId]?.reference?.collection("options")?.get()?.await()
+                val existingOptions = optionsSnap?.documents?.associateBy { it.getString("id") ?: it.id } ?: emptyMap()
+
+                menu.options.forEachIndexed { optionIndex, opt ->
+                    val base = role.name.lowercase()
+                    val optId = "opt_${'$'}base_${menuIndex}_${optionIndex}"
+                    if (!existingOptions.containsKey(optId)) {
                         batch.set(
                             menuDoc.collection("options").document(optId),
                             mapOf("id" to optId, "titleKey" to opt.titleKey, "route" to opt.route),
                         )
-                        optionDao.insert(MenuOptionEntity(optId, menuId, opt.titleKey, opt.route))
+                        commitNeeded = true
                     }
+                    optionDao.insert(MenuOptionEntity(optId, menuId, opt.titleKey, opt.route))
                 }
             }
         }
