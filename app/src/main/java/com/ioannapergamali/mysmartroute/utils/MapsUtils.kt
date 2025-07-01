@@ -13,6 +13,7 @@ import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 
 object MapsUtils {
     private val client = OkHttpClient()
+    private const val TAG = "MapsUtils"
 
     fun getApiKey(context: Context): String {
         return try {
@@ -147,9 +148,14 @@ object MapsUtils {
                 "&rankby=distance&type=establishment&key=$apiKey"
         val request = Request.Builder().url(url).build()
         client.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) return@withContext null
-            val body = response.body?.string() ?: return@withContext null
-            val jsonObj = JSONObject(body)
+            val body = response.body?.string()
+            if (!response.isSuccessful) {
+                Log.e(TAG, "fetchNearbyPlaceName failed: ${response.code} - ${response.message}")
+                if (body != null) Log.e(TAG, body)
+                return@withContext null
+            }
+            val actualBody = body ?: return@withContext null
+            val jsonObj = JSONObject(actualBody)
             val results = jsonObj.optJSONArray("results") ?: return@withContext null
             if (results.length() == 0) return@withContext null
             return@withContext results.getJSONObject(0).optString("name")
@@ -166,9 +172,14 @@ object MapsUtils {
                 "&rankby=distance&type=establishment&key=$apiKey"
         val request = Request.Builder().url(url).build()
         client.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) return@withContext null
-            val body = response.body?.string() ?: return@withContext null
-            val jsonObj = JSONObject(body)
+            val body = response.body?.string()
+            if (!response.isSuccessful) {
+                Log.e(TAG, "fetchNearbyPlaceType failed: ${response.code} - ${response.message}")
+                if (body != null) Log.e(TAG, body)
+                return@withContext null
+            }
+            val actualBody = body ?: return@withContext null
+            val jsonObj = JSONObject(actualBody)
             val results = jsonObj.optJSONArray("results") ?: return@withContext null
             if (results.length() == 0) return@withContext null
             val exclude = setOf("POINT_OF_INTEREST", "ESTABLISHMENT", "LOCALITY", "POLITICAL")
