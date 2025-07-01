@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.libraries.places.api.model.Place
+import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
