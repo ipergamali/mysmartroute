@@ -135,4 +135,21 @@ object MapsUtils {
             return@withContext parseDirections(body)
         }
     }
+
+    suspend fun fetchNearbyPlaceName(
+        location: LatLng,
+        apiKey: String
+    ): String? = withContext(Dispatchers.IO) {
+        val url =
+            "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${'$'}{location.latitude},${'$'}{location.longitude}&radius=50&key=${'$'}apiKey"
+        val request = Request.Builder().url(url).build()
+        client.newCall(request).execute().use { response ->
+            if (!response.isSuccessful) return@withContext null
+            val body = response.body?.string() ?: return@withContext null
+            val jsonObj = JSONObject(body)
+            val results = jsonObj.optJSONArray("results") ?: return@withContext null
+            if (results.length() == 0) return@withContext null
+            return@withContext results.getJSONObject(0).optString("name")
+        }
+    }
 }

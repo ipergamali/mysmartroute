@@ -22,7 +22,6 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.compose.*
 import com.ioannapergamali.mysmartroute.R
-import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
@@ -34,13 +33,10 @@ import com.ioannapergamali.mysmartroute.model.enumerations.PoIType
 @Composable
 fun DefinePoiScreen(navController: NavController, openDrawer: () -> Unit) {
     val viewModel: PoIViewModel = viewModel()
-    val pois by viewModel.pois.collectAsState()
     val addState by viewModel.addState.collectAsState()
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
-    var expanded by remember { mutableStateOf(false) }
-    var selectedPoi by remember { mutableStateOf<PoIEntity?>(null) }
     var name by remember { mutableStateOf("") }
     var typeMenuExpanded by remember { mutableStateOf(false) }
     var selectedType by remember { mutableStateOf(PoIType.HISTORICAL) }
@@ -62,20 +58,6 @@ fun DefinePoiScreen(navController: NavController, openDrawer: () -> Unit) {
 
     LaunchedEffect(Unit) { viewModel.loadPois(context) }
 
-    LaunchedEffect(selectedPoi) {
-        selectedPoi?.let { poi ->
-            val latLng = LatLng(poi.lat, poi.lng)
-            selectedLatLng = latLng
-            markerState.position = latLng
-            cameraPositionState.position = CameraPosition.fromLatLngZoom(latLng, 13f)
-            name = poi.name
-            country = poi.address.country
-            city = poi.address.city
-            streetName = poi.address.streetName
-            streetNumInput = poi.address.streetNum.toString()
-            postalCodeInput = poi.address.postalCode.toString()
-        }
-    }
 
     LaunchedEffect(addState) {
         when (addState) {
@@ -106,6 +88,13 @@ fun DefinePoiScreen(navController: NavController, openDrawer: () -> Unit) {
                         selectedLatLng = latLng
                         markerState.position = latLng
                         coroutineScope.launch {
+                            val place = MapsUtils.fetchNearbyPlaceName(
+                                latLng,
+                                MapsUtils.getApiKey(context)
+                            )
+                            if (!place.isNullOrBlank()) {
+                                name = place
+                            }
                             reverseGeocodePoi(context, latLng)?.let { address ->
                                 streetName = address.thoroughfare ?: ""
                                 streetNumInput = address.subThoroughfare ?: ""
@@ -122,30 +111,7 @@ fun DefinePoiScreen(navController: NavController, openDrawer: () -> Unit) {
                 Text(stringResource(R.string.map_api_key_missing))
             }
 
-            Spacer(Modifier.height(8.dp))
-            ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
-                OutlinedTextField(
-                    value = selectedPoi?.name ?: "",
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text(stringResource(R.string.select_poi)) },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
-                    modifier = Modifier.menuAnchor().fillMaxWidth(),
-                    shape = MaterialTheme.shapes.small,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.primary
-                    )
-                )
-                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                    pois.forEach { poi ->
-                        DropdownMenuItem(text = { Text(poi.name) }, onClick = {
-                            selectedPoi = poi
-                            expanded = false
-                        })
-                    }
-                }
-            }
+
 
             Spacer(Modifier.height(8.dp))
             OutlinedTextField(
