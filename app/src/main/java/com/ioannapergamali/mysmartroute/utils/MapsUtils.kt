@@ -3,6 +3,7 @@ package com.ioannapergamali.mysmartroute.utils
 import android.content.Context
 import android.content.pm.PackageManager
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.libraries.places.api.model.Place
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -150,6 +151,29 @@ object MapsUtils {
             val results = jsonObj.optJSONArray("results") ?: return@withContext null
             if (results.length() == 0) return@withContext null
             return@withContext results.getJSONObject(0).optString("name")
+        }
+    }
+
+    suspend fun fetchNearbyPlaceType(
+        location: LatLng,
+        apiKey: String
+    ): Place.Type? = withContext(Dispatchers.IO) {
+        val url =
+            "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${'$'}{location.latitude},${'$'}{location.longitude}&radius=50&key=${'$'}apiKey"
+        val request = Request.Builder().url(url).build()
+        client.newCall(request).execute().use { response ->
+            if (!response.isSuccessful) return@withContext null
+            val body = response.body?.string() ?: return@withContext null
+            val jsonObj = JSONObject(body)
+            val results = jsonObj.optJSONArray("results") ?: return@withContext null
+            if (results.length() == 0) return@withContext null
+            val types = results.getJSONObject(0).optJSONArray("types") ?: return@withContext null
+            for (i in 0 until types.length()) {
+                val typeStr = types.getString(i).uppercase().replace('-', '_')
+                val type = runCatching { enumValueOf<Place.Type>(typeStr) }.getOrNull()
+                if (type != null) return@withContext type
+            }
+            return@withContext null
         }
     }
 }

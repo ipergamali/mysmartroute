@@ -97,6 +97,12 @@ fun DefinePoiScreen(navController: NavController, openDrawer: () -> Unit) {
                             if (!place.isNullOrBlank()) {
                                 name = place
                             }
+                            MapsUtils.fetchNearbyPlaceType(
+                                latLng,
+                                MapsUtils.getApiKey(context)
+                            )?.let { type ->
+                                selectedPlaceType = type
+                            }
                             reverseGeocodePoi(context, latLng)?.let { address ->
                                 streetName = address.thoroughfare ?: ""
                                 streetNumInput = address.subThoroughfare ?: ""
