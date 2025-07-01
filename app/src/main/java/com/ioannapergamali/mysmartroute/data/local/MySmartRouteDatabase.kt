@@ -22,6 +22,7 @@ import com.ioannapergamali.mysmartroute.data.local.Converters
     entities = [
         UserEntity::class,
         VehicleEntity::class,
+        PoiTypeEntity::class,
         PoIEntity::class,
         SettingsEntity::class,
         RoleEntity::class,
@@ -32,12 +33,13 @@ import com.ioannapergamali.mysmartroute.data.local.Converters
         MovingEntity::class,
         TransportAnnouncementEntity::class
     ],
-    version = 23
+    version = 24
 )
 @TypeConverters(Converters::class)
 abstract class MySmartRouteDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun vehicleDao(): VehicleDao
+    abstract fun poiTypeDao(): PoiTypeDao
     abstract fun poIDao(): PoIDao
     abstract fun settingsDao(): SettingsDao
     abstract fun roleDao(): RoleDao
@@ -334,6 +336,49 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_23_24 = object : Migration(23, 24) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `poi_types` (" +
+                        "`id` TEXT NOT NULL, " +
+                        "`name` TEXT NOT NULL, " +
+                        "PRIMARY KEY(`id`)" +
+                        ")"
+                )
+                database.execSQL(
+                    "INSERT INTO `poi_types` (`id`, `name`) VALUES " +
+                        "('HISTORICAL','HISTORICAL')," +
+                        "('BUS_STOP','BUS_STOP')," +
+                        "('RESTAURANT','RESTAURANT')," +
+                        "('PARKING','PARKING')," +
+                        "('SHOPPING','SHOPPING')," +
+                        "('GENERAL','GENERAL')"
+                )
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `pois_new` (" +
+                        "`id` TEXT NOT NULL, " +
+                        "`name` TEXT NOT NULL, " +
+                        "`country` TEXT NOT NULL, " +
+                        "`city` TEXT NOT NULL, " +
+                        "`streetName` TEXT NOT NULL, " +
+                        "`streetNum` INTEGER NOT NULL, " +
+                        "`postalCode` INTEGER NOT NULL, " +
+                        "`typeId` TEXT NOT NULL, " +
+                        "`lat` REAL NOT NULL, " +
+                        "`lng` REAL NOT NULL, " +
+                        "FOREIGN KEY(`typeId`) REFERENCES `poi_types`(`id`) ON DELETE RESTRICT, " +
+                        "PRIMARY KEY(`id`)" +
+                        ")"
+                )
+                database.execSQL(
+                    "INSERT INTO `pois_new` (`id`, `name`, `country`, `city`, `streetName`, `streetNum`, `postalCode`, `typeId`, `lat`, `lng`) " +
+                        "SELECT `id`, `name`, `country`, `city`, `streetName`, `streetNum`, `postalCode`, `type`, `lat`, `lng` FROM `pois`"
+                )
+                database.execSQL("DROP TABLE `pois`")
+                database.execSQL("ALTER TABLE `pois_new` RENAME TO `pois`")
+            }
+        }
+
         private fun prepopulate(db: SupportSQLiteDatabase) {
             Log.d(TAG, "Prepopulating database")
             db.execSQL(
@@ -341,6 +386,16 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     "('role_passenger', 'PASSENGER', NULL)," +
                     "('role_driver', 'DRIVER', 'role_passenger')," +
                     "('role_admin', 'ADMIN', 'role_driver')"
+            )
+
+            db.execSQL(
+                "INSERT INTO poi_types (id, name) VALUES " +
+                    "('HISTORICAL','HISTORICAL')," +
+                    "('BUS_STOP','BUS_STOP')," +
+                    "('RESTAURANT','RESTAURANT')," +
+                    "('PARKING','PARKING')," +
+                    "('SHOPPING','SHOPPING')," +
+                    "('GENERAL','GENERAL')"
             )
 
             fun insertMenu(id: String, roleId: String, titleResKey: String) {
@@ -421,7 +476,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_18_19,
                     MIGRATION_19_20,
                     MIGRATION_20_21,
-                    MIGRATION_21_22
+                    MIGRATION_21_22,
+                    MIGRATION_23_24
                 )
                     .addCallback(object : RoomDatabase.Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {
