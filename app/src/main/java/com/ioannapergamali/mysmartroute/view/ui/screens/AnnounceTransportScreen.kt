@@ -644,7 +644,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 val end = "${endLatLng!!.latitude},${endLatLng!!.longitude}"
                 val route = Route(start, end, cost)
                 val type = selectedVehicleType ?: VehicleType.CAR
-                viewModel.announce(route, type, date, cost, durationMinutes)
+                viewModel.announce(context, route, type, date, cost, durationMinutes)
             }
         }) {
             Text(stringResource(R.string.announce))
