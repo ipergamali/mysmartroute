@@ -109,6 +109,7 @@ dependencies {
     implementation("com.google.maps.android:maps-compose:6.6.0")
     implementation("com.google.maps.android:maps-ktx:5.2.0")
     implementation("com.google.android.gms:play-services-location:21.3.0")
+    implementation("com.google.android.libraries.places:places:3.4.0")
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3") // ✅ downgrade
