@@ -177,12 +177,10 @@ fun DocumentSnapshot.toPoIEntity(): PoIEntity? {
         is String -> rawType
         is DocumentReference -> rawType.id
         else -> getString("type")
-    } ?: com.ioannapergamali.mysmartroute.model.enumerations.PoIType.HISTORICAL.name
-    val type = try {
-        com.ioannapergamali.mysmartroute.model.enumerations.PoIType.valueOf(typeStr)
-    } catch (e: Exception) {
-        com.ioannapergamali.mysmartroute.model.enumerations.PoIType.HISTORICAL
-    }
+    } ?: com.google.android.libraries.places.api.model.Place.Type.ESTABLISHMENT.name
+    val type = runCatching {
+        enumValueOf<com.google.android.libraries.places.api.model.Place.Type>(typeStr)
+    }.getOrElse { com.google.android.libraries.places.api.model.Place.Type.ESTABLISHMENT }
     val latVal = getDouble("lat") ?: 0.0
     val lngVal = getDouble("lng") ?: 0.0
     return PoIEntity(poiId, poiName, address, type, latVal, lngVal)
