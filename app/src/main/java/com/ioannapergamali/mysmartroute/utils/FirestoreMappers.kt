@@ -46,6 +46,7 @@ fun VehicleEntity.toFirestoreMap(): Map<String, Any> = mapOf(
 fun PoIEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     "id" to id,
     "name" to name,
+    // Τα επιμέρους στοιχεία διεύθυνσης εξακολουθούν να αποθηκεύονται ξεχωριστά
     "country" to country,
     "city" to city,
     "streetName" to streetName,
@@ -53,8 +54,26 @@ fun PoIEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     "postalCode" to postalCode,
     "type" to type,
     "lat" to lat,
-    "lng" to lng
+    "lng" to lng,
+    // Επιπλέον αποτυπώνουμε ολόκληρη τη διεύθυνση ως υπο-αντικείμενο
+    "address" to mapOf(
+        "country" to country,
+        "city" to city,
+        "streetName" to streetName,
+        "streetNum" to streetNum,
+        "postalCode" to postalCode
+    )
 )
+
+/** Μετατροπή [PoiAddress] σε Map για αποθήκευση ως ενιαίο αντικείμενο. */
+fun com.ioannapergamali.mysmartroute.model.classes.poi.PoiAddress.toFirestoreMap(): Map<String, Any> =
+    mapOf(
+        "country" to country,
+        "city" to city,
+        "streetName" to streetName,
+        "streetNum" to streetNum,
+        "postalCode" to postalCode
+    )
 
 /** Μετατροπή [SettingsEntity] σε Map. */
 fun SettingsEntity.toFirestoreMap(): Map<String, Any> = mapOf(
