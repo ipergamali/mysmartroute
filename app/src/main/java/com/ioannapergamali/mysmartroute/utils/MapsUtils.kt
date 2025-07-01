@@ -159,7 +159,7 @@ object MapsUtils {
         apiKey: String
     ): Place.Type? = withContext(Dispatchers.IO) {
         val url =
-            "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${'$'}{location.latitude},${'$'}{location.longitude}&radius=50&key=${'$'}apiKey"
+            "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${'$'}{location.latitude},${'$'}{location.longitude}&radius=100&key=${'$'}apiKey"
         val request = Request.Builder().url(url).build()
         client.newCall(request).execute().use { response ->
             if (!response.isSuccessful) return@withContext null
@@ -168,12 +168,17 @@ object MapsUtils {
             val results = jsonObj.optJSONArray("results") ?: return@withContext null
             if (results.length() == 0) return@withContext null
             val types = results.getJSONObject(0).optJSONArray("types") ?: return@withContext null
+            val exclude = setOf("POINT_OF_INTEREST", "ESTABLISHMENT")
+            var fallback: Place.Type? = null
             for (i in 0 until types.length()) {
                 val typeStr = types.getString(i).uppercase().replace('-', '_')
                 val type = runCatching { enumValueOf<Place.Type>(typeStr) }.getOrNull()
-                if (type != null) return@withContext type
+                if (type != null) {
+                    if (type.name !in exclude) return@withContext type
+                    if (fallback == null) fallback = type
+                }
             }
-            return@withContext null
+            return@withContext fallback
         }
     }
 }
