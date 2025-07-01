@@ -69,11 +69,11 @@ fun DefinePoiScreen(navController: NavController, openDrawer: () -> Unit) {
             markerState.position = latLng
             cameraPositionState.position = CameraPosition.fromLatLngZoom(latLng, 13f)
             name = poi.name
-            country = poi.country
-            city = poi.city
-            streetName = poi.streetName
-            streetNumInput = poi.streetNum.toString()
-            postalCodeInput = poi.postalCode.toString()
+            country = poi.address.country
+            city = poi.address.city
+            streetName = poi.address.streetName
+            streetNumInput = poi.address.streetNum.toString()
+            postalCodeInput = poi.address.postalCode.toString()
         }
     }
 
