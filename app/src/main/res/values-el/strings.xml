@@ -106,6 +106,7 @@
     <string name="save_poi">Αποθήκευση POI</string>
     <string name="poi_saved">Το POI αποθηκεύτηκε</string>
     <string name="poi_exists">Το POI υπάρχει ήδη</string>
+    <string name="poi_type">Τύπος POI</string>
     <string name="not_implemented">Η λειτουργία δεν είναι διαθέσιμη</string>
     <!-- Περιγραφές ρόλων -->
     <string name="role_passenger_desc">Μπορείτε να δείτε διαδρομές και να κάνετε κρατήσεις.</string>
