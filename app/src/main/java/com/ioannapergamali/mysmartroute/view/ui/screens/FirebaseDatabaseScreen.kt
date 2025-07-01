@@ -61,7 +61,7 @@ fun FirebaseDatabaseScreen(navController: NavController, openDrawer: () -> Unit)
                 item { Spacer(modifier = Modifier.padding(8.dp)) }
                 item { Text("PoIs", style = MaterialTheme.typography.titleMedium) }
                 items(data!!.pois) { poi ->
-                    Text("${poi.name} (${poi.type}) - ${poi.city}")
+                    Text("${poi.name} (${poi.type}) - ${poi.address.city}")
                 }
                 item { Spacer(modifier = Modifier.padding(8.dp)) }
                 item { Text("Settings", style = MaterialTheme.typography.titleMedium) }
