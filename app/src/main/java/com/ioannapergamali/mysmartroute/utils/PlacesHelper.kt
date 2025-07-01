@@ -13,7 +13,9 @@ object PlacesHelper {
     /** Επιστρέφει μερικούς ενδεικτικούς τύπους σημείων ενδιαφέροντος. */
     fun samplePlaceTypes(): List<Place.Type> = listOf(
         Place.Type.RESTAURANT,
-        Place.Type.HOTEL,
+        // "HOTEL" δεν υπάρχει πλέον στο Places SDK· χρησιμοποιούμε το LODGING
+        // που αντιπροσωπεύει ξενοδοχεία και καταλύματα
+        Place.Type.LODGING,
         Place.Type.PHARMACY,
         Place.Type.BUS_STATION
     )
