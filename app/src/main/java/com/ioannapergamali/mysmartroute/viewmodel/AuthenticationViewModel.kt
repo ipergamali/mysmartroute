@@ -341,7 +341,7 @@ class AuthenticationViewModel : ViewModel() {
 
             Log.i(TAG, "Using roleId: $roleId")
             var menusLocal = loadMenusWithInheritanceLocal(dbLocal, roleId)
-            var hasOptions = menusLocal.any { it.options.isNotEmpty() }
+            var hasOptions = menusLocal.all { it.options.isNotEmpty() }
             if (menusLocal.isEmpty() || !hasOptions) {
                 // Βεβαιωνόμαστε ότι η τοπική βάση περιέχει τα προεπιλεγμένα μενού
                 try {
@@ -350,7 +350,7 @@ class AuthenticationViewModel : ViewModel() {
                     Log.e(TAG, "Failed to initialize menus", e)
                 }
                 menusLocal = loadMenusWithInheritanceLocal(dbLocal, roleId)
-                hasOptions = menusLocal.any { it.options.isNotEmpty() }
+                hasOptions = menusLocal.all { it.options.isNotEmpty() }
             }
 
             if (menusLocal.isNotEmpty() && hasOptions) {
@@ -363,7 +363,7 @@ class AuthenticationViewModel : ViewModel() {
                     Log.e(TAG, "Failed to load menus", e)
                     emptyList()
                 }
-                val remoteHasOptions = menusRemote.any { it.options.isNotEmpty() }
+                val remoteHasOptions = menusRemote.all { it.options.isNotEmpty() }
                 if (menusRemote.isEmpty() || !remoteHasOptions) {
                     Log.i(TAG, "No menus found remotely, initializing defaults")
                     try {
