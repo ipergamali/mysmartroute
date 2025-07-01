@@ -5,5 +5,6 @@ enum class PoIType {
     BUS_STOP,
     RESTAURANT,
     PARKING,
-    SHOPPING
+    SHOPPING,
+    GENERAL
 }
