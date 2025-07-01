@@ -93,35 +93,37 @@ fun DefinePoiScreen(navController: NavController, openDrawer: () -> Unit) {
                         Log.d(TAG, "Map clicked at ${latLng.latitude}, ${latLng.longitude}")
                         selectedLatLng = latLng
                         markerState.position = latLng
-                        coroutineScope.launch {
-                            val place = MapsUtils.fetchNearbyPlaceName(
-                                latLng,
-                                MapsUtils.getApiKey(context)
-                            )
-                            Log.d(TAG, "Nearby place name: $place")
-                            if (!place.isNullOrBlank()) {
-                                name = place
-                            }
-                            val type = MapsUtils.fetchNearbyPlaceType(
-                                latLng,
-                                MapsUtils.getApiKey(context)
-                            )
-                            Log.d(TAG, "Nearby place type: ${type?.name}")
-                            type?.let { selectedPlaceType = it }
-                            val address = reverseGeocodePoi(context, latLng)
-                            Log.d(TAG, "Reverse geocoded address: $address")
-                            address?.let {
-                                streetName = it.thoroughfare ?: ""
-                                streetNumInput = it.subThoroughfare ?: ""
-                                city = it.locality ?: ""
-                                postalCodeInput = it.postalCode ?: ""
-                                country = it.countryName ?: ""
-                            }
-                            Log.d(TAG, "Selected type after lookup: ${selectedPlaceType.name}")
-                        }
                     }
                 ) {
                     selectedLatLng?.let { Marker(state = markerState) }
+                }
+                LaunchedEffect(selectedLatLng) {
+                    selectedLatLng?.let { latLng ->
+                        val place = MapsUtils.fetchNearbyPlaceName(
+                            latLng,
+                            MapsUtils.getApiKey(context)
+                        )
+                        Log.d(TAG, "Nearby place name: $place")
+                        if (!place.isNullOrBlank()) {
+                            name = place
+                        }
+                        val type = MapsUtils.fetchNearbyPlaceType(
+                            latLng,
+                            MapsUtils.getApiKey(context)
+                        )
+                        Log.d(TAG, "Nearby place type: ${type?.name}")
+                        type?.let { selectedPlaceType = it }
+                        val address = reverseGeocodePoi(context, latLng)
+                        Log.d(TAG, "Reverse geocoded address: $address")
+                        address?.let {
+                            streetName = it.thoroughfare ?: ""
+                            streetNumInput = it.subThoroughfare ?: ""
+                            city = it.locality ?: ""
+                            postalCodeInput = it.postalCode ?: ""
+                            country = it.countryName ?: ""
+                        }
+                        Log.d(TAG, "Selected type after lookup: ${selectedPlaceType.name}")
+                    }
                 }
             } else {
                 Text(stringResource(R.string.map_api_key_missing))
