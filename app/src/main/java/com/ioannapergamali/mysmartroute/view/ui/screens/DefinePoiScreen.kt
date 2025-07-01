@@ -1,0 +1,166 @@
+package com.ioannapergamali.mysmartroute.view.ui.screens
+
+import android.widget.Toast
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
+import com.google.maps.android.compose.*
+import com.ioannapergamali.mysmartroute.R
+import com.ioannapergamali.mysmartroute.data.local.PoIEntity
+import com.ioannapergamali.mysmartroute.utils.MapsUtils
+import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
+import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
+import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DefinePoiScreen(navController: NavController, openDrawer: () -> Unit) {
+    val viewModel: PoIViewModel = viewModel()
+    val pois by viewModel.pois.collectAsState()
+    val addState by viewModel.addState.collectAsState()
+    val context = LocalContext.current
+
+    var expanded by remember { mutableStateOf(false) }
+    var selectedPoi by remember { mutableStateOf<PoIEntity?>(null) }
+    var name by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
+    var selectedLatLng by remember { mutableStateOf<LatLng?>(null) }
+    val markerState = rememberMarkerState()
+
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(LatLng(35.3325932, 25.073835), 13.79f)
+    }
+    val heraklionBounds = remember {
+        LatLngBounds(LatLng(34.9, 24.8), LatLng(35.5, 25.9))
+    }
+    val mapProperties = remember { MapProperties(latLngBoundsForCameraTarget = heraklionBounds) }
+
+    LaunchedEffect(Unit) { viewModel.loadPois(context) }
+
+    LaunchedEffect(selectedPoi) {
+        selectedPoi?.let { poi ->
+            val latLng = LatLng(poi.lat, poi.lng)
+            selectedLatLng = latLng
+            markerState.position = latLng
+            cameraPositionState.position = CameraPosition.fromLatLngZoom(latLng, 13f)
+            name = poi.name
+            description = poi.description
+        }
+    }
+
+    LaunchedEffect(addState) {
+        when (addState) {
+            PoIViewModel.AddPoiState.Success -> {
+                Toast.makeText(context, context.getString(R.string.poi_saved), Toast.LENGTH_SHORT).show()
+                viewModel.resetAddState()
+            }
+            PoIViewModel.AddPoiState.Exists -> {
+                Toast.makeText(context, context.getString(R.string.poi_exists), Toast.LENGTH_SHORT).show()
+                viewModel.resetAddState()
+            }
+            else -> {}
+        }
+    }
+
+    Scaffold(topBar = {
+        TopBar(title = stringResource(R.string.define_poi), navController = navController, showMenu = true, onMenuClick = openDrawer)
+    }) { padding ->
+        ScreenContainer(modifier = Modifier.padding(padding)) {
+            if (MapsUtils.getApiKey(context).isNotBlank()) {
+                GoogleMap(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(300.dp),
+                    cameraPositionState = cameraPositionState,
+                    properties = mapProperties,
+                    onMapClick = { latLng ->
+                        selectedLatLng = latLng
+                        markerState.position = latLng
+                    }
+                ) {
+                    selectedLatLng?.let { Marker(state = markerState) }
+                }
+            } else {
+                Text(stringResource(R.string.map_api_key_missing))
+            }
+
+            Spacer(Modifier.height(8.dp))
+            ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
+                OutlinedTextField(
+                    value = selectedPoi?.name ?: "",
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text(stringResource(R.string.select_poi)) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
+                    modifier = Modifier.menuAnchor().fillMaxWidth(),
+                    shape = MaterialTheme.shapes.small,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                    )
+                )
+                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                    pois.forEach { poi ->
+                        DropdownMenuItem(text = { Text(poi.name) }, onClick = {
+                            selectedPoi = poi
+                            expanded = false
+                        })
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(8.dp))
+            OutlinedTextField(
+                value = name,
+                onValueChange = { name = it },
+                label = { Text(stringResource(R.string.poi_name)) },
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.small,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                )
+            )
+            Spacer(Modifier.height(8.dp))
+            OutlinedTextField(
+                value = description,
+                onValueChange = { description = it },
+                label = { Text(stringResource(R.string.poi_description)) },
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.small,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                )
+            )
+            Spacer(Modifier.height(16.dp))
+            Button(onClick = {
+                val latLng = selectedLatLng
+                if (name.isNotBlank() && latLng != null) {
+                    viewModel.addPoi(
+                        context,
+                        name,
+                        description,
+                        "HISTORICAL",
+                        latLng.latitude,
+                        latLng.longitude
+                    )
+                } else {
+                    Toast.makeText(context, context.getString(R.string.invalid_coordinates), Toast.LENGTH_SHORT).show()
+                }
+            }) {
+                Text(stringResource(R.string.save_poi))
+            }
+        }
+    }
+}
+
