@@ -5,6 +5,7 @@ import android.util.Log
 import com.google.firebase.FirebaseApp
 import com.ioannapergamali.mysmartroute.BuildConfig
 import com.ioannapergamali.mysmartroute.utils.ShortcutUtils
+import com.ioannapergamali.mysmartroute.utils.populatePoiTypes
 import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 import com.ioannapergamali.mysmartroute.utils.LanguagePreferenceManager
 import com.ioannapergamali.mysmartroute.utils.LocaleUtils
@@ -18,6 +19,7 @@ class MySmartRouteApplication : Application() {
         LocaleUtils.updateLocale(this, lang)
         FirebaseApp.initializeApp(this)
         AuthenticationViewModel().ensureMenusInitialized(this)
+        populatePoiTypes()
         // Η υπηρεσία Firebase App Check απενεργοποιήθηκε προσωρινά
         //val apiKey = BuildConfig.MAPS_API_KEY
 //        Log.d("MySmartRoute Maps API key ", "Maps API key loaded: ${apiKey.isNotBlank()}")
