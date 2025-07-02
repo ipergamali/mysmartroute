@@ -47,6 +47,7 @@
           {"titleKey": "create_user", "route": "createUser"},
           {"titleKey": "edit_privileges", "route": "editPrivileges"},
           {"titleKey": "define_poi", "route": "definePoi"},
+          {"titleKey": "edit_route", "route": "editRoute"},
           {"titleKey": "define_duration", "route": "defineDuration"},
           {"titleKey": "view_unassigned", "route": "viewUnassigned"},
           {"titleKey": "review_poi", "route": "reviewPoi"},
