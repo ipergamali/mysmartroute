@@ -17,6 +17,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.mapSaver
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
@@ -65,6 +67,17 @@ private enum class MapSelectionMode { FROM, TO }
 
 private const val TAG = "AnnounceTransport"
 
+private val LatLngSaver = run {
+    mapSaver(
+        save = { mapOf("lat" to it.latitude, "lng" to it.longitude) },
+        restore = { map ->
+            val lat = map["lat"] as? Double
+            val lng = map["lng"] as? Double
+            if (lat != null && lng != null) LatLng(lat, lng) else null
+        }
+    )
+}
+
 private suspend fun reverseGeocode(context: Context, latLng: LatLng): String? =
     withContext(Dispatchers.IO) {
         try {
@@ -97,11 +110,11 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     val coroutineScope = rememberCoroutineScope()
 
     var mapSelectionMode by remember { mutableStateOf<MapSelectionMode?>(null) }
-    var routePoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
-    var showRoute by remember { mutableStateOf(false) }
+    var routePoints by rememberSaveable { mutableStateOf<List<LatLng>>(emptyList()) }
+    var showRoute by rememberSaveable { mutableStateOf(false) }
 
-    var fromQuery by remember { mutableStateOf("") }
-    var selectedFromDescription by remember { mutableStateOf<String?>(null) }
+    var fromQuery by rememberSaveable { mutableStateOf("") }
+    var selectedFromDescription by rememberSaveable { mutableStateOf<String?>(null) }
     var fromExpanded by remember { mutableStateOf(false) }
     var fromSuggestions by remember { mutableStateOf<List<Address>>(emptyList()) }
     val fromFocusRequester = remember { FocusRequester() }
@@ -110,8 +123,8 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
             .sortedBy { it.name }
     }
 
-    var toQuery by remember { mutableStateOf("") }
-    var selectedToDescription by remember { mutableStateOf<String?>(null) }
+    var toQuery by rememberSaveable { mutableStateOf("") }
+    var selectedToDescription by rememberSaveable { mutableStateOf<String?>(null) }
     var toExpanded by remember { mutableStateOf(false) }
     var toSuggestions by remember { mutableStateOf<List<Address>>(emptyList()) }
     val toFocusRequester = remember { FocusRequester() }
@@ -122,10 +135,12 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
 
     var selectedVehicleType by remember { mutableStateOf<VehicleType?>(null) }
 
-    var startLatLng by remember { mutableStateOf<LatLng?>(null) }
-    var endLatLng by remember { mutableStateOf<LatLng?>(null) }
-    var fromSelectedIsPoi by remember { mutableStateOf(false) }
-    var toSelectedIsPoi by remember { mutableStateOf(false) }
+    var startLatLng by rememberSaveable(stateSaver = LatLngSaver) { mutableStateOf<LatLng?>(null) }
+    var endLatLng by rememberSaveable(stateSaver = LatLngSaver) { mutableStateOf<LatLng?>(null) }
+    var fromSelectedIsPoi by rememberSaveable { mutableStateOf(false) }
+    var toSelectedIsPoi by rememberSaveable { mutableStateOf(false) }
+    var fromConfirmed by rememberSaveable { mutableStateOf(false) }
+    var toConfirmed by rememberSaveable { mutableStateOf(false) }
     val fromMarkerState = rememberMarkerState()
     val toMarkerState = rememberMarkerState()
     var costInput by remember { mutableStateOf("") }
@@ -189,6 +204,52 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     val apiKey = MapsUtils.getApiKey(context)
     val isKeyMissing = apiKey.isBlank()
     Log.d(TAG, "API key loaded? ${!isKeyMissing}")
+
+    val fetchRoute: () -> Unit = {
+        coroutineScope.launch {
+            Log.d(TAG, "Fetching directions from $startLatLng to $endLatLng")
+            Toast.makeText(context, "Αναζήτηση διαδρομής...", Toast.LENGTH_SHORT).show()
+            if (!isKeyMissing &&
+                CoordinateUtils.isValid(startLatLng) &&
+                CoordinateUtils.isValid(endLatLng)
+            ) {
+                if (NetworkUtils.isInternetAvailable(context)) {
+                    val type = selectedVehicleType ?: VehicleType.CAR
+                    val result = MapsUtils.fetchDurationAndPath(startLatLng!!, endLatLng!!, apiKey, type)
+                    Log.d(TAG, "Directions API status: ${result.status}")
+                    val factor = when (selectedVehicleType) {
+                        VehicleType.BICYCLE -> 1.5
+                        VehicleType.MOTORBIKE -> 0.8
+                        VehicleType.BIGBUS -> 1.2
+                        VehicleType.SMALLBUS -> 1.1
+                        else -> 1.0
+                    }
+                    durationMinutes = (result.duration * factor).toInt()
+                    routePoints = result.points
+                    when {
+                        result.status == "OK" && routePoints.isNotEmpty() -> {
+                            Log.d(TAG, "Route received with ${routePoints.size} points, duration $durationMinutes")
+                            Toast.makeText(context, "Διαδρομή βρέθηκε", Toast.LENGTH_SHORT).show()
+                        }
+                        result.status == "NOT_FOUND" || result.status == "INVALID_REQUEST" -> {
+                            Log.w(TAG, "Invalid coordinates provided")
+                            Toast.makeText(context, context.getString(R.string.invalid_coordinates), Toast.LENGTH_SHORT).show()
+                        }
+                        else -> {
+                            Log.w(TAG, "Route not found or API error: ${result.status}")
+                            Toast.makeText(context, "Δεν βρέθηκε διαδρομή", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                } else {
+                    Toast.makeText(context, context.getString(R.string.no_internet), Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                Toast.makeText(context, context.getString(R.string.invalid_coordinates), Toast.LENGTH_SHORT).show()
+            }
+            showRoute = true
+            Log.d(TAG, "Displaying route on map")
+        }
+    }
 
     LaunchedEffect(Unit) {
         vehicleViewModel.loadRegisteredVehicles(context)
@@ -317,49 +378,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         if (startLatLng != null && endLatLng != null) {
             Spacer(modifier = Modifier.height(8.dp))
             Button(onClick = {
-                coroutineScope.launch {
-                    Log.d(TAG, "Fetching directions from $startLatLng to $endLatLng")
-                    Toast.makeText(context, "Αναζήτηση διαδρομής...", Toast.LENGTH_SHORT).show()
-                    if (!isKeyMissing &&
-                        CoordinateUtils.isValid(startLatLng) &&
-                        CoordinateUtils.isValid(endLatLng)
-                    ) {
-                        if (NetworkUtils.isInternetAvailable(context)) {
-                            val type = selectedVehicleType ?: VehicleType.CAR
-                            val result = MapsUtils.fetchDurationAndPath(startLatLng!!, endLatLng!!, apiKey, type)
-                            Log.d(TAG, "Directions API status: ${result.status}")
-                            val factor = when (selectedVehicleType) {
-                                VehicleType.BICYCLE -> 1.5
-                                VehicleType.MOTORBIKE -> 0.8
-                                VehicleType.BIGBUS -> 1.2
-                                VehicleType.SMALLBUS -> 1.1
-                                else -> 1.0
-                            }
-                            durationMinutes = (result.duration * factor).toInt()
-                            routePoints = result.points
-                            when {
-                                result.status == "OK" && routePoints.isNotEmpty() -> {
-                                    Log.d(TAG, "Route received with ${routePoints.size} points, duration $durationMinutes")
-                                    Toast.makeText(context, "Διαδρομή βρέθηκε", Toast.LENGTH_SHORT).show()
-                                }
-                                result.status == "NOT_FOUND" || result.status == "INVALID_REQUEST" -> {
-                                    Log.w(TAG, "Invalid coordinates provided")
-                                    Toast.makeText(context, context.getString(R.string.invalid_coordinates), Toast.LENGTH_SHORT).show()
-                                }
-                                else -> {
-                                    Log.w(TAG, "Route not found or API error: ${result.status}")
-                                    Toast.makeText(context, "Δεν βρέθηκε διαδρομή", Toast.LENGTH_SHORT).show()
-                                }
-                            }
-                        } else {
-                            Toast.makeText(context, context.getString(R.string.no_internet), Toast.LENGTH_SHORT).show()
-                        }
-                    } else {
-                        Toast.makeText(context, context.getString(R.string.invalid_coordinates), Toast.LENGTH_SHORT).show()
-                    }
-                    showRoute = true
-                    Log.d(TAG, "Displaying route on map")
-                }
+                fetchRoute()
             }) {
                 Text(stringResource(R.string.directions))
             }
@@ -392,7 +411,10 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         Row(verticalAlignment = Alignment.CenterVertically) {
             ExposedDropdownMenuBox(
                 expanded = fromExpanded,
-                onExpandedChange = { fromExpanded = !fromExpanded },
+                onExpandedChange = {
+                    fromExpanded = !fromExpanded
+                    if (fromExpanded) fromFocusRequester.requestFocus()
+                },
                 modifier = Modifier.weight(1f)
             ) {
             OutlinedTextField(
@@ -401,6 +423,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     fromQuery = it
                     fromExpanded = true
                     fromError = false
+                    fromConfirmed = false
                     if (selectedFromDescription != null && fromQuery != selectedFromDescription) {
                         startLatLng = null
                         selectedFromDescription = null
@@ -417,24 +440,6 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.error
                             )
-                        }
-                        if (startLatLng != null && selectedFromDescription != null) {
-                            Icon(
-                                Icons.Default.Check,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                        if (startLatLng != null && fromSelectedIsPoi) {
-                            IconButton(onClick = {
-                                navController.navigate("definePoi?lat=${startLatLng!!.latitude}&lng=${startLatLng!!.longitude}&source=from&view=true")
-                            }) {
-                                Icon(
-                                    Icons.Default.Info,
-                                    contentDescription = stringResource(R.string.poi_details),
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                            }
                         }
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = fromExpanded)
                     }
@@ -486,6 +491,29 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 }
             }
         }
+        if (startLatLng != null && selectedFromDescription != null) {
+            IconButton(onClick = {
+                fromConfirmed = true
+                if (fromConfirmed && toConfirmed) fetchRoute()
+            }, modifier = Modifier.padding(start = 8.dp)) {
+                Icon(
+                    Icons.Default.Check,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+        if (startLatLng != null && fromSelectedIsPoi) {
+            IconButton(onClick = {
+                navController.navigate("definePoi?lat=${startLatLng!!.latitude}&lng=${startLatLng!!.longitude}&source=from&view=true")
+            }, modifier = Modifier.padding(start = 8.dp)) {
+                Icon(
+                    Icons.Default.Info,
+                    contentDescription = stringResource(R.string.poi_details),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
         IconButton(
             onClick = {
                 startLatLng = null
@@ -494,7 +522,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 routePoints = emptyList()
                 showRoute = false
                 mapSelectionMode = MapSelectionMode.FROM
-            },
+                },
             modifier = Modifier.padding(start = 8.dp)
         ) {
             Icon(
@@ -510,7 +538,10 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         Row(verticalAlignment = Alignment.CenterVertically) {
             ExposedDropdownMenuBox(
                 expanded = toExpanded,
-                onExpandedChange = { toExpanded = !toExpanded },
+                onExpandedChange = {
+                    toExpanded = !toExpanded
+                    if (toExpanded) toFocusRequester.requestFocus()
+                },
                 modifier = Modifier.weight(1f)
             ) {
             OutlinedTextField(
@@ -519,6 +550,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     toQuery = it
                     toExpanded = true
                     toError = false
+                    toConfirmed = false
                     if (selectedToDescription != null && toQuery != selectedToDescription) {
                         endLatLng = null
                         selectedToDescription = null
@@ -535,24 +567,6 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.error
                             )
-                        }
-                        if (endLatLng != null && selectedToDescription != null) {
-                            Icon(
-                                Icons.Default.Check,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                        if (endLatLng != null && toSelectedIsPoi) {
-                            IconButton(onClick = {
-                                navController.navigate("definePoi?lat=${endLatLng!!.latitude}&lng=${endLatLng!!.longitude}&source=to&view=true")
-                            }) {
-                                Icon(
-                                    Icons.Default.Info,
-                                    contentDescription = stringResource(R.string.poi_details),
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                            }
                         }
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = toExpanded)
                     }
@@ -602,6 +616,29 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         }
                     )
                 }
+            }
+        }
+        if (endLatLng != null && selectedToDescription != null) {
+            IconButton(onClick = {
+                toConfirmed = true
+                if (fromConfirmed && toConfirmed) fetchRoute()
+            }, modifier = Modifier.padding(start = 8.dp)) {
+                Icon(
+                    Icons.Default.Check,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+        if (endLatLng != null && toSelectedIsPoi) {
+            IconButton(onClick = {
+                navController.navigate("definePoi?lat=${endLatLng!!.latitude}&lng=${endLatLng!!.longitude}&source=to&view=true")
+            }, modifier = Modifier.padding(start = 8.dp)) {
+                Icon(
+                    Icons.Default.Info,
+                    contentDescription = stringResource(R.string.poi_details),
+                    tint = MaterialTheme.colorScheme.primary
+                )
             }
         }
         IconButton(
