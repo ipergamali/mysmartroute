@@ -376,60 +376,6 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
             )
         }
 
-        if (startLatLng != null && endLatLng != null) {
-            Spacer(modifier = Modifier.height(8.dp))
-            Button(onClick = {
-                fetchRoute()
-            }) {
-                Text(stringResource(R.string.directions))
-            }
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-        Box {
-            Button(onClick = { stopMenuExpanded = true }) {
-                Icon(Icons.Default.Add, contentDescription = null)
-                Spacer(Modifier.width(8.dp))
-                Text(stringResource(R.string.add_stop))
-            }
-            DropdownMenu(expanded = stopMenuExpanded, onDismissRequest = { stopMenuExpanded = false }) {
-                pois.forEach { poi ->
-                    DropdownMenuItem(
-                        text = { Text(poi.name) },
-                        onClick = {
-                            routePois.add(poi)
-                            stopMenuExpanded = false
-                        }
-                    )
-                }
-            }
-        }
-        routePois.forEachIndexed { index, poi ->
-            Text(text = "${index + 1}. ${poi.name}")
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-        Button(onClick = {
-            if (CoordinateUtils.isValid(startLatLng) && CoordinateUtils.isValid(endLatLng)) {
-                Toast.makeText(context, context.getString(R.string.coordinates_valid), Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(context, context.getString(R.string.coordinates_missing), Toast.LENGTH_SHORT).show()
-            }
-        }) {
-            Text(stringResource(R.string.check_coordinates))
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-        Button(onClick = {
-            if (NetworkUtils.isInternetAvailable(context)) {
-                Toast.makeText(context, context.getString(R.string.internet_available), Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(context, context.getString(R.string.no_internet), Toast.LENGTH_SHORT).show()
-            }
-        }) {
-            Text(stringResource(R.string.check_internet))
-        }
-
         Spacer(modifier = Modifier.height(8.dp))
 
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -454,7 +400,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         showRoute = false
                     }
                 },
-                label = { Text(stringResource(R.string.from)) },
+                label = { Text(stringResource(R.string.start_point)) },
                 isError = fromError,
                 trailingIcon = {
                     Row {
@@ -555,9 +501,63 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 tint = MaterialTheme.colorScheme.primary
             )
         }
-    }
 
         Spacer(modifier = Modifier.height(8.dp))
+
+        if (startLatLng != null && endLatLng != null) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Button(onClick = {
+                fetchRoute()
+            }) {
+                Text(stringResource(R.string.directions))
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+        Box {
+            Button(onClick = { stopMenuExpanded = true }) {
+                Icon(Icons.Default.Add, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.add_stop))
+            }
+            DropdownMenu(expanded = stopMenuExpanded, onDismissRequest = { stopMenuExpanded = false }) {
+                pois.forEach { poi ->
+                    DropdownMenuItem(
+                        text = { Text(poi.name) },
+                        onClick = {
+                            routePois.add(poi)
+                            stopMenuExpanded = false
+                        }
+                    )
+                }
+            }
+        }
+        routePois.forEachIndexed { index, poi ->
+            Text(text = "${index + 1}. ${poi.name}")
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(onClick = {
+            if (CoordinateUtils.isValid(startLatLng) && CoordinateUtils.isValid(endLatLng)) {
+                Toast.makeText(context, context.getString(R.string.coordinates_valid), Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(context, context.getString(R.string.coordinates_missing), Toast.LENGTH_SHORT).show()
+            }
+        }) {
+            Text(stringResource(R.string.check_coordinates))
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(onClick = {
+            if (NetworkUtils.isInternetAvailable(context)) {
+                Toast.makeText(context, context.getString(R.string.internet_available), Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(context, context.getString(R.string.no_internet), Toast.LENGTH_SHORT).show()
+            }
+        }) {
+            Text(stringResource(R.string.check_internet))
+        }
+
 
         Row(verticalAlignment = Alignment.CenterVertically) {
             ExposedDropdownMenuBox(
