@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.Info
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
@@ -125,6 +126,8 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
 
     var startLatLng by remember { mutableStateOf<LatLng?>(null) }
     var endLatLng by remember { mutableStateOf<LatLng?>(null) }
+    var fromSelectedIsPoi by remember { mutableStateOf(false) }
+    var toSelectedIsPoi by remember { mutableStateOf(false) }
     val fromMarkerState = rememberMarkerState()
     val toMarkerState = rememberMarkerState()
     var costInput by remember { mutableStateOf("") }
@@ -145,10 +148,12 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 startLatLng = latLng
                 fromQuery = resultPoiName!!
                 selectedFromDescription = resultPoiName
+                fromSelectedIsPoi = true
             } else {
                 endLatLng = latLng
                 toQuery = resultPoiName!!
                 selectedToDescription = resultPoiName
+                toSelectedIsPoi = true
             }
             savedHandle?.remove<String>("poiName")
             savedHandle?.remove<Double>("poiLat")
@@ -422,6 +427,17 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         }
+                        if (startLatLng != null && fromSelectedIsPoi) {
+                            IconButton(onClick = {
+                                navController.navigate("definePoi?lat=${startLatLng!!.latitude}&lng=${startLatLng!!.longitude}&source=from&view=true")
+                            }) {
+                                Icon(
+                                    Icons.Default.Info,
+                                    contentDescription = stringResource(R.string.poi_details),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = fromExpanded)
                     }
                 },
@@ -449,6 +465,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                             fromError = false
                             cameraPositionState.position = CameraPosition.fromLatLngZoom(startLatLng!!, 10f)
                             fromExpanded = false
+                            fromSelectedIsPoi = false
                             navController.navigate("definePoi?lat=${startLatLng!!.latitude}&lng=${startLatLng!!.longitude}&source=from&view=false")
                         }
                     )
@@ -465,7 +482,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                             fromError = false
                             cameraPositionState.position = CameraPosition.fromLatLngZoom(startLatLng!!, 10f)
                             fromExpanded = false
-                            navController.navigate("definePoi?lat=${startLatLng!!.latitude}&lng=${startLatLng!!.longitude}&source=from&view=true")
+                            fromSelectedIsPoi = true
                         }
                     )
                 }
@@ -528,6 +545,17 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         }
+                        if (endLatLng != null && toSelectedIsPoi) {
+                            IconButton(onClick = {
+                                navController.navigate("definePoi?lat=${endLatLng!!.latitude}&lng=${endLatLng!!.longitude}&source=to&view=true")
+                            }) {
+                                Icon(
+                                    Icons.Default.Info,
+                                    contentDescription = stringResource(R.string.poi_details),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = toExpanded)
                     }
                 },
@@ -555,6 +583,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                             toError = false
                             cameraPositionState.position = CameraPosition.fromLatLngZoom(endLatLng!!, 10f)
                             toExpanded = false
+                            toSelectedIsPoi = false
                             navController.navigate("definePoi?lat=${endLatLng!!.latitude}&lng=${endLatLng!!.longitude}&source=to&view=false")
                         }
                     )
@@ -571,7 +600,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                             toError = false
                             cameraPositionState.position = CameraPosition.fromLatLngZoom(endLatLng!!, 10f)
                             toExpanded = false
-                            navController.navigate("definePoi?lat=${endLatLng!!.latitude}&lng=${endLatLng!!.longitude}&source=to&view=true")
+                            toSelectedIsPoi = true
                         }
                     )
                 }
