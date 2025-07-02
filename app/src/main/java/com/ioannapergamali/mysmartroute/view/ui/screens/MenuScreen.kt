@@ -71,9 +71,10 @@ fun MenuScreen(navController: NavController, openDrawer: () -> Unit) {
                 CircularProgressIndicator()
             } else {
                 RoleMenu(role, menus) { route ->
-                    if (route.isNotEmpty() &&
-                        navController.graph.any { it.route == route }) {
-                        navController.navigate(route)
+                    val targetRoute = if (route == "definePoi") "definePoi?lat=&lng=" else route
+                    if (targetRoute.isNotEmpty() &&
+                        navController.graph.any { it.route == "definePoi?lat={lat}&lng={lng}" || it.route == targetRoute }) {
+                        navController.navigate(targetRoute)
                     } else {
                         Toast.makeText(
                             context,
