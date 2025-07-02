@@ -390,8 +390,12 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 expanded = fromExpanded,
                 onExpandedChange = {
                     if (fromQuery.isNotBlank()) {
-                        fromExpanded = !fromExpanded
-                        if (fromExpanded) fromFocusRequester.requestFocus()
+                        val expand = !fromExpanded
+                        fromExpanded = expand
+                        if (expand) {
+                            fromFocusRequester.requestFocus()
+                            keyboardController?.show()
+                        }
                     }
                 },
                 modifier = Modifier.weight(1f)
@@ -578,8 +582,12 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 expanded = toExpanded,
                 onExpandedChange = {
                     if (toQuery.isNotBlank()) {
-                        toExpanded = !toExpanded
-                        if (toExpanded) toFocusRequester.requestFocus()
+                        val expand = !toExpanded
+                        toExpanded = expand
+                        if (expand) {
+                            toFocusRequester.requestFocus()
+                            keyboardController?.show()
+                        }
                     }
                 },
                 modifier = Modifier.weight(1f)
