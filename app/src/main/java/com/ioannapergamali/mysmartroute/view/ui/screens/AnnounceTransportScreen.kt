@@ -24,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
@@ -113,6 +114,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     var fromExpanded by remember { mutableStateOf(false) }
     var fromSuggestions by remember { mutableStateOf<List<Address>>(emptyList()) }
     val fromFocusRequester = remember { FocusRequester() }
+    val keyboardController = LocalSoftwareKeyboardController.current
     val fromPoiSuggestions = remember(fromQuery, pois) {
         pois.filter { it.name.contains(fromQuery, ignoreCase = true) }
             .sortedBy { it.name }
@@ -269,6 +271,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     LaunchedEffect(fromExpanded) {
         if (fromExpanded) {
             fromFocusRequester.requestFocus()
+            keyboardController?.show()
         }
     }
 
@@ -296,6 +299,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     LaunchedEffect(toExpanded) {
         if (toExpanded) {
             toFocusRequester.requestFocus()
+            keyboardController?.show()
         }
     }
 
