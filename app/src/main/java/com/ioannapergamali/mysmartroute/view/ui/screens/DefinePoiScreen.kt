@@ -39,7 +39,9 @@ fun DefinePoiScreen(
     navController: NavController,
     openDrawer: () -> Unit,
     initialLat: Double? = null,
-    initialLng: Double? = null
+    initialLng: Double? = null,
+    source: String? = null,
+    viewOnly: Boolean = false
 ) {
     val viewModel: PoIViewModel = viewModel()
     val addState by viewModel.addState.collectAsState()
@@ -79,7 +81,16 @@ fun DefinePoiScreen(
         when (addState) {
             PoIViewModel.AddPoiState.Success -> {
                 Toast.makeText(context, context.getString(R.string.poi_saved), Toast.LENGTH_SHORT).show()
+                selectedLatLng?.let { latLng ->
+                    navController.previousBackStackEntry?.savedStateHandle?.let { handle ->
+                        handle["poiName"] = name
+                        handle["poiLat"] = latLng.latitude
+                        handle["poiLng"] = latLng.longitude
+                        handle["poiFrom"] = source == "from"
+                    }
+                }
                 viewModel.resetAddState()
+                navController.popBackStack()
             }
             PoIViewModel.AddPoiState.Exists -> {
                 Toast.makeText(context, context.getString(R.string.poi_exists), Toast.LENGTH_SHORT).show()
@@ -242,26 +253,28 @@ fun DefinePoiScreen(
                     unfocusedBorderColor = MaterialTheme.colorScheme.primary
                 )
             )
-            Spacer(Modifier.height(16.dp))
-            Button(onClick = {
-                val latLng = selectedLatLng
-                val streetNum = streetNumInput.toIntOrNull() ?: 0
-                val postalCode = postalCodeInput.filter { it.isDigit() }.toIntOrNull() ?: 0
-                if (name.isNotBlank() && latLng != null) {
-                    Log.d(TAG, "Saving PoI with type ${selectedPlaceType.name}")
-                    viewModel.addPoi(
-                        context,
-                        name,
-                        PoiAddress(country, city, streetName, streetNum, postalCode),
-                        Place.Type.values().firstOrNull { it.name == selectedPlaceType.name } ?: Place.Type.ESTABLISHMENT,
-                        latLng.latitude,
-                        latLng.longitude
-                    )
-                } else {
-                    Toast.makeText(context, context.getString(R.string.invalid_coordinates), Toast.LENGTH_SHORT).show()
+            if (!viewOnly) {
+                Spacer(Modifier.height(16.dp))
+                Button(onClick = {
+                    val latLng = selectedLatLng
+                    val streetNum = streetNumInput.toIntOrNull() ?: 0
+                    val postalCode = postalCodeInput.filter { it.isDigit() }.toIntOrNull() ?: 0
+                    if (name.isNotBlank() && latLng != null) {
+                        Log.d(TAG, "Saving PoI with type ${selectedPlaceType.name}")
+                        viewModel.addPoi(
+                            context,
+                            name,
+                            PoiAddress(country, city, streetName, streetNum, postalCode),
+                            Place.Type.values().firstOrNull { it.name == selectedPlaceType.name } ?: Place.Type.ESTABLISHMENT,
+                            latLng.latitude,
+                            latLng.longitude
+                        )
+                    } else {
+                        Toast.makeText(context, context.getString(R.string.invalid_coordinates), Toast.LENGTH_SHORT).show()
+                    }
+                }) {
+                    Text(stringResource(R.string.save_poi))
                 }
-            }) {
-                Text(stringResource(R.string.save_poi))
             }
         }
     }
