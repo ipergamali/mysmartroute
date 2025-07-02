@@ -437,7 +437,8 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
             DropdownMenu(
                 expanded = fromExpanded,
                 onDismissRequest = { fromExpanded = false },
-                modifier = Modifier.heightIn(max = 200.dp)
+                modifier = Modifier.heightIn(max = 200.dp),
+                properties = PopupProperties(focusable = false)
             ) {
                 fromSuggestions.forEach { address ->
                     DropdownMenuItem(
@@ -624,7 +625,8 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
             DropdownMenu(
                 expanded = toExpanded,
                 onDismissRequest = { toExpanded = false },
-                modifier = Modifier.heightIn(max = 200.dp)
+                modifier = Modifier.heightIn(max = 200.dp),
+                properties = PopupProperties(focusable = false)
             ) {
                 toSuggestions.forEach { address ->
                     DropdownMenuItem(
