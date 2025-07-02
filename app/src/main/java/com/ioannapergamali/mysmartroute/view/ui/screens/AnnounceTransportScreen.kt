@@ -17,6 +17,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
@@ -364,7 +365,12 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        ExposedDropdownMenuBox(expanded = fromExpanded, onExpandedChange = { fromExpanded = !fromExpanded }) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            ExposedDropdownMenuBox(
+                expanded = fromExpanded,
+                onExpandedChange = { fromExpanded = !fromExpanded },
+                modifier = Modifier.weight(1f)
+            ) {
             OutlinedTextField(
                 value = fromQuery,
                 onValueChange = {
@@ -395,17 +401,6 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         }
-                        IconButton(onClick = {
-                            startLatLng = null
-                            fromQuery = ""
-                            selectedFromDescription = null
-                            routePoints = emptyList()
-                            showRoute = false
-                            mapSelectionMode = MapSelectionMode.FROM
-                        }) {
-                            Icon(Icons.Default.Place, contentDescription = "Pick From on Map", tint = MaterialTheme.colorScheme.primary)
-                        }
-                        /* Removed add icon functionality */
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = fromExpanded)
                     }
                 },
@@ -451,10 +446,33 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 }
             }
         }
+        IconButton(
+            onClick = {
+                startLatLng = null
+                fromQuery = ""
+                selectedFromDescription = null
+                routePoints = emptyList()
+                showRoute = false
+                mapSelectionMode = MapSelectionMode.FROM
+            },
+            modifier = Modifier.padding(start = 8.dp)
+        ) {
+            Icon(
+                Icons.Default.Place,
+                contentDescription = "Pick From on Map",
+                tint = MaterialTheme.colorScheme.primary
+            )
+        }
+    }
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        ExposedDropdownMenuBox(expanded = toExpanded, onExpandedChange = { toExpanded = !toExpanded }) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            ExposedDropdownMenuBox(
+                expanded = toExpanded,
+                onExpandedChange = { toExpanded = !toExpanded },
+                modifier = Modifier.weight(1f)
+            ) {
             OutlinedTextField(
                 value = toQuery,
                 onValueChange = {
@@ -485,17 +503,6 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         }
-                        IconButton(onClick = {
-                            endLatLng = null
-                            toQuery = ""
-                            selectedToDescription = null
-                            routePoints = emptyList()
-                            showRoute = false
-                            mapSelectionMode = MapSelectionMode.TO
-                        }) {
-                            Icon(Icons.Default.Place, contentDescription = "Pick To on Map", tint = MaterialTheme.colorScheme.primary)
-                        }
-                        /* Removed add icon functionality */
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = toExpanded)
                     }
                 },
@@ -541,6 +548,24 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 }
             }
         }
+        IconButton(
+            onClick = {
+                endLatLng = null
+                toQuery = ""
+                selectedToDescription = null
+                routePoints = emptyList()
+                showRoute = false
+                mapSelectionMode = MapSelectionMode.TO
+            },
+            modifier = Modifier.padding(start = 8.dp)
+        ) {
+            Icon(
+                Icons.Default.Place,
+                contentDescription = "Pick To on Map",
+                tint = MaterialTheme.colorScheme.primary
+            )
+        }
+    }
 
         Spacer(modifier = Modifier.height(8.dp))
 
