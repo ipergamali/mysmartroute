@@ -390,6 +390,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
             ExposedDropdownMenuBox(
                 expanded = fromExpanded,
                 onExpandedChange = {
+                    fromExpanded = false
                     fromFocusRequester.requestFocus()
                     keyboardController?.show()
                 },
@@ -576,6 +577,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
             ExposedDropdownMenuBox(
                 expanded = toExpanded,
                 onExpandedChange = {
+                    toExpanded = false
                     toFocusRequester.requestFocus()
                     keyboardController?.show()
                 },
