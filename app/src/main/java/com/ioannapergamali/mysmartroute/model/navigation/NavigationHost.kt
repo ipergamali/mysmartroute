@@ -26,6 +26,7 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.AdminSignUpScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.DatabaseSyncScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.RolesScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.ProfileScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.RouteEditorScreen
 
 
 
@@ -75,6 +76,9 @@ fun NavigationHost(navController : NavHostController, openDrawer: () -> Unit) {
 
         composable("poiList") {
             PoIListScreen(navController = navController, openDrawer = openDrawer)
+        }
+        composable("editRoute") {
+            RouteEditorScreen(navController = navController, openDrawer = openDrawer)
         }
         composable(
             route = "definePoi?lat={lat}&lng={lng}&source={source}&view={view}",
