@@ -117,6 +117,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     val fromFocusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
     val fromPoiSuggestions = remember(fromQuery, pois) {
+        if (fromQuery.isBlank()) emptyList() else
         pois.filter { it.name.contains(fromQuery, ignoreCase = true) }
             .sortedBy { it.name }
     }
@@ -127,6 +128,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     var toSuggestions by remember { mutableStateOf<List<Address>>(emptyList()) }
     val toFocusRequester = remember { FocusRequester() }
     val toPoiSuggestions = remember(toQuery, pois) {
+        if (toQuery.isBlank()) emptyList() else
         pois.filter { it.name.contains(toQuery, ignoreCase = true) }
             .sortedBy { it.name }
     }
@@ -387,8 +389,10 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
             ExposedDropdownMenuBox(
                 expanded = fromExpanded,
                 onExpandedChange = {
-                    fromExpanded = !fromExpanded
-                    if (fromExpanded) fromFocusRequester.requestFocus()
+                    if (fromQuery.isNotBlank()) {
+                        fromExpanded = !fromExpanded
+                        if (fromExpanded) fromFocusRequester.requestFocus()
+                    }
                 },
                 modifier = Modifier.weight(1f)
             ) {
@@ -396,7 +400,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 value = fromQuery,
                 onValueChange = {
                     fromQuery = it
-                    fromExpanded = true
+                    fromExpanded = it.isNotBlank()
                     fromError = false
                     fromConfirmed = false
                     if (selectedFromDescription != null && fromQuery != selectedFromDescription) {
@@ -572,8 +576,10 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
             ExposedDropdownMenuBox(
                 expanded = toExpanded,
                 onExpandedChange = {
-                    toExpanded = !toExpanded
-                    if (toExpanded) toFocusRequester.requestFocus()
+                    if (toQuery.isNotBlank()) {
+                        toExpanded = !toExpanded
+                        if (toExpanded) toFocusRequester.requestFocus()
+                    }
                 },
                 modifier = Modifier.weight(1f)
             ) {
@@ -581,7 +587,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 value = toQuery,
                 onValueChange = {
                     toQuery = it
-                    toExpanded = true
+                    toExpanded = it.isNotBlank()
                     toError = false
                     toConfirmed = false
                     if (selectedToDescription != null && toQuery != selectedToDescription) {
