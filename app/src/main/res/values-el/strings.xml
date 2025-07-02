@@ -92,7 +92,7 @@
     <string name="advance_date">Μεταφορά ημερομηνίας</string>
     <string name="announce_transport">Δήλωση μεταφοράς</string>
     <string name="from">Από</string>
-    <string name="start_point">Σημείο έναρξης διαδρομής</string>
+    <string name="start_point">Σημείο Εκκίνησης</string>
     <string name="to">Προς</string>
     <string name="vehicle">Όχημα</string>
     <string name="cost">Κόστος</string>

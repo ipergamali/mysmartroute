@@ -118,7 +118,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     val keyboardController = LocalSoftwareKeyboardController.current
     val fromPoiSuggestions = remember(fromQuery, pois) {
         if (fromQuery.isBlank()) emptyList() else
-        pois.filter { it.name.contains(fromQuery, ignoreCase = true) }
+        pois.filter { it.name.startsWith(fromQuery, ignoreCase = true) }
             .sortedBy { it.name }
     }
 
@@ -129,7 +129,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     val toFocusRequester = remember { FocusRequester() }
     val toPoiSuggestions = remember(toQuery, pois) {
         if (toQuery.isBlank()) emptyList() else
-        pois.filter { it.name.contains(toQuery, ignoreCase = true) }
+        pois.filter { it.name.startsWith(toQuery, ignoreCase = true) }
             .sortedBy { it.name }
     }
 
