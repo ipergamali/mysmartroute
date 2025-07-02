@@ -17,6 +17,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
@@ -27,6 +28,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Place
@@ -49,6 +52,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.ioannapergamali.mysmartroute.model.classes.routes.Route
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
+import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import com.ioannapergamali.mysmartroute.utils.CoordinateUtils
@@ -101,6 +105,8 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     var mapSelectionMode by remember { mutableStateOf<MapSelectionMode?>(null) }
     var routePoints by rememberSaveable { mutableStateOf<List<LatLng>>(emptyList()) }
     var showRoute by rememberSaveable { mutableStateOf(false) }
+    val routePois = remember { mutableStateListOf<PoIEntity>() }
+    var stopMenuExpanded by remember { mutableStateOf(false) }
 
     var fromQuery by rememberSaveable { mutableStateOf("") }
     var selectedFromDescription by rememberSaveable { mutableStateOf<String?>(null) }
@@ -351,6 +357,12 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 endLatLng?.let {
                     Marker(state = toMarkerState, title = "To")
                 }
+                routePois.forEachIndexed { index, poi ->
+                    Marker(
+                        state = rememberMarkerState(position = LatLng(poi.lat, poi.lng)),
+                        title = "${index + 1}. ${poi.name}"
+                    )
+                }
                 if (showRoute && routePoints.isNotEmpty()) {
                     Polyline(points = routePoints)
                 }
@@ -371,6 +383,29 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
             }) {
                 Text(stringResource(R.string.directions))
             }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+        Box {
+            Button(onClick = { stopMenuExpanded = true }) {
+                Icon(Icons.Default.Add, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.add_stop))
+            }
+            DropdownMenu(expanded = stopMenuExpanded, onDismissRequest = { stopMenuExpanded = false }) {
+                pois.forEach { poi ->
+                    DropdownMenuItem(
+                        text = { Text(poi.name) },
+                        onClick = {
+                            routePois.add(poi)
+                            stopMenuExpanded = false
+                        }
+                    )
+                }
+            }
+        }
+        routePois.forEachIndexed { index, poi ->
+            Text(text = "${index + 1}. ${poi.name}")
         }
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -743,7 +778,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 val date = dateInput.toIntOrNull() ?: 0
                 val start = "${startLatLng!!.latitude},${startLatLng!!.longitude}"
                 val end = "${endLatLng!!.latitude},${endLatLng!!.longitude}"
-                val route = Route(start, end, cost)
+                val route = Route(start, end, cost, routePois.toMutableList())
                 val type = selectedVehicleType ?: VehicleType.CAR
                 viewModel.announce(context, route, type, date, cost, durationMinutes)
             }
