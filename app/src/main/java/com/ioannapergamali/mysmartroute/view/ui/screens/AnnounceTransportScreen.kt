@@ -38,6 +38,7 @@ import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.ui.window.PopupProperties
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
