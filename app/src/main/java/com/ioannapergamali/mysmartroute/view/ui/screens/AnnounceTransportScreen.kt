@@ -390,14 +390,8 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
             ExposedDropdownMenuBox(
                 expanded = fromExpanded,
                 onExpandedChange = {
-                    if (fromQuery.isNotBlank()) {
-                        val expand = !fromExpanded
-                        fromExpanded = expand
-                        if (expand) {
-                            fromFocusRequester.requestFocus()
-                            keyboardController?.show()
-                        }
-                    }
+                    fromFocusRequester.requestFocus()
+                    keyboardController?.show()
                 },
                 modifier = Modifier.weight(1f)
             ) {
@@ -582,14 +576,8 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
             ExposedDropdownMenuBox(
                 expanded = toExpanded,
                 onExpandedChange = {
-                    if (toQuery.isNotBlank()) {
-                        val expand = !toExpanded
-                        toExpanded = expand
-                        if (expand) {
-                            toFocusRequester.requestFocus()
-                            keyboardController?.show()
-                        }
-                    }
+                    toFocusRequester.requestFocus()
+                    keyboardController?.show()
                 },
                 modifier = Modifier.weight(1f)
             ) {
