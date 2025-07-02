@@ -362,23 +362,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                 tint = MaterialTheme.colorScheme.error
                             )
                         }
-                        IconButton(onClick = {
-                            coroutineScope.launch {
-                                val result = geocode(context, fromQuery)
-                                if (result != null) {
-                                    startLatLng = result.first
-                                    showRoute = false
-                                    routePoints = emptyList()
-                                    fromQuery = result.second
-                                    selectedFromDescription = fromQuery
-                                    cameraPositionState.position = CameraPosition.fromLatLngZoom(startLatLng!!, 10f)
-                                } else {
-                                    Toast.makeText(context, context.getString(R.string.invalid_coordinates), Toast.LENGTH_SHORT).show()
-                                }
-                            }
-                        }) {
-                            Icon(Icons.Default.Check, contentDescription = "Set From", tint = MaterialTheme.colorScheme.primary)
-                        }
+                        /* Removed check icon functionality */
                         IconButton(onClick = {
                             startLatLng = null
                             fromQuery = ""
@@ -389,31 +373,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         }) {
                             Icon(Icons.Default.Place, contentDescription = "Pick From on Map", tint = MaterialTheme.colorScheme.primary)
                         }
-                        IconButton(onClick = {
-                            lastAddFrom = true
-                            when {
-                                startLatLng == null -> {
-                                    Toast.makeText(context, "Επιλέξτε σημείο στον χάρτη", Toast.LENGTH_SHORT).show()
-                                    fromError = true
-                                }
-                                fromQuery.isBlank() -> {
-                                    Toast.makeText(context, "Η περιγραφή είναι κενή", Toast.LENGTH_SHORT).show()
-                                    fromError = true
-                                }
-                                else -> {
-                                    poiViewModel.addPoi(
-                                        context,
-                                        fromQuery,
-                                        com.ioannapergamali.mysmartroute.model.classes.poi.PoiAddress(city = fromQuery),
-                                        selectedPoiType,
-                                        startLatLng!!.latitude,
-                                        startLatLng!!.longitude
-                                    )
-                                }
-                            }
-                        }) {
-                            Icon(Icons.Default.Add, contentDescription = "Save From POI", tint = MaterialTheme.colorScheme.primary)
-                        }
+                        /* Removed add icon functionality */
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = fromExpanded)
                     }
                 },
@@ -484,23 +444,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                 tint = MaterialTheme.colorScheme.error
                             )
                         }
-                        IconButton(onClick = {
-                            coroutineScope.launch {
-                                val result = geocode(context, toQuery)
-                                if (result != null) {
-                                    endLatLng = result.first
-                                    showRoute = false
-                                    routePoints = emptyList()
-                                    toQuery = result.second
-                                    selectedToDescription = toQuery
-                                    cameraPositionState.position = CameraPosition.fromLatLngZoom(endLatLng!!, 10f)
-                                } else {
-                                    Toast.makeText(context, context.getString(R.string.invalid_coordinates), Toast.LENGTH_SHORT).show()
-                                }
-                            }
-                        }) {
-                            Icon(Icons.Default.Check, contentDescription = "Set To", tint = MaterialTheme.colorScheme.primary)
-                        }
+                        /* Removed check icon functionality */
                         IconButton(onClick = {
                             endLatLng = null
                             toQuery = ""
@@ -511,31 +455,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         }) {
                             Icon(Icons.Default.Place, contentDescription = "Pick To on Map", tint = MaterialTheme.colorScheme.primary)
                         }
-                        IconButton(onClick = {
-                            lastAddFrom = false
-                            when {
-                                endLatLng == null -> {
-                                    Toast.makeText(context, "Επιλέξτε σημείο στον χάρτη", Toast.LENGTH_SHORT).show()
-                                    toError = true
-                                }
-                                toQuery.isBlank() -> {
-                                    Toast.makeText(context, "Η περιγραφή είναι κενή", Toast.LENGTH_SHORT).show()
-                                    toError = true
-                                }
-                                else -> {
-                                    poiViewModel.addPoi(
-                                        context,
-                                        toQuery,
-                                        com.ioannapergamali.mysmartroute.model.classes.poi.PoiAddress(city = toQuery),
-                                        selectedPoiType,
-                                        endLatLng!!.latitude,
-                                        endLatLng!!.longitude
-                                    )
-                                }
-                            }
-                        }) {
-                            Icon(Icons.Default.Add, contentDescription = "Save To POI", tint = MaterialTheme.colorScheme.primary)
-                        }
+                        /* Removed add icon functionality */
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = toExpanded)
                     }
                 },
@@ -559,6 +479,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                             toError = false
                             cameraPositionState.position = CameraPosition.fromLatLngZoom(endLatLng!!, 10f)
                             toExpanded = false
+                            navController.navigate("definePoi?lat=${endLatLng!!.latitude}&lng=${endLatLng!!.longitude}")
                         }
                     )
                 }
@@ -574,6 +495,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                             toError = false
                             cameraPositionState.position = CameraPosition.fromLatLngZoom(endLatLng!!, 10f)
                             toExpanded = false
+                            navController.navigate("definePoi?lat=${endLatLng!!.latitude}&lng=${endLatLng!!.longitude}")
                         }
                     )
                 }
