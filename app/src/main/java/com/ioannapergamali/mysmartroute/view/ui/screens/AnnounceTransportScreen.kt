@@ -40,6 +40,7 @@ import android.location.Address
 import android.location.Geocoder
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.ioannapergamali.mysmartroute.model.classes.routes.Route
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
@@ -120,9 +121,34 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     var durationMinutes by remember { mutableStateOf(0) }
     var dateInput by remember { mutableStateOf("") }
 
+    val backStackEntry by navController.currentBackStackEntryAsState()
+    val savedHandle = backStackEntry?.savedStateHandle
+    val resultPoiName by savedHandle?.getStateFlow<String?>("poiName", null)?.collectAsState(initial = null) ?: remember { mutableStateOf<String?>(null) }
+    val resultLat by savedHandle?.getStateFlow<Double?>("poiLat", null)?.collectAsState(initial = null) ?: remember { mutableStateOf<Double?>(null) }
+    val resultLng by savedHandle?.getStateFlow<Double?>("poiLng", null)?.collectAsState(initial = null) ?: remember { mutableStateOf<Double?>(null) }
+    val resultFrom by savedHandle?.getStateFlow<Boolean?>("poiFrom", null)?.collectAsState(initial = null) ?: remember { mutableStateOf<Boolean?>(null) }
+
+    LaunchedEffect(resultPoiName, resultLat, resultLng, resultFrom) {
+        if (resultPoiName != null && resultLat != null && resultLng != null && resultFrom != null) {
+            val latLng = LatLng(resultLat!!, resultLng!!)
+            if (resultFrom == true) {
+                startLatLng = latLng
+                fromQuery = resultPoiName!!
+                selectedFromDescription = resultPoiName
+            } else {
+                endLatLng = latLng
+                toQuery = resultPoiName!!
+                selectedToDescription = resultPoiName
+            }
+            savedHandle?.remove<String>("poiName")
+            savedHandle?.remove<Double>("poiLat")
+            savedHandle?.remove<Double>("poiLng")
+            savedHandle?.remove<Boolean>("poiFrom")
+        }
+    }
+
     var fromError by remember { mutableStateOf(false) }
     var toError by remember { mutableStateOf(false) }
-    var lastAddFrom by remember { mutableStateOf<Boolean?>(null) }
     var poiTypeExpanded by remember { mutableStateOf(false) }
     // Χρησιμοποιούμε το ESTABLISHMENT ως προεπιλεγμένο είδος σημείου
     var selectedPoiType by remember { mutableStateOf<Place.Type>(Place.Type.ESTABLISHMENT) }
@@ -227,7 +253,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                             }
                             fromError = false
                             mapSelectionMode = null
-                            navController.navigate("definePoi?lat=${latLng.latitude}&lng=${latLng.longitude}")
+                            navController.navigate("definePoi?lat=${latLng.latitude}&lng=${latLng.longitude}&source=from&view=false")
                         }
                         MapSelectionMode.TO -> {
                             endLatLng = latLng
@@ -238,7 +264,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                             }
                             toError = false
                             mapSelectionMode = null
-                            navController.navigate("definePoi?lat=${latLng.latitude}&lng=${latLng.longitude}")
+                            navController.navigate("definePoi?lat=${latLng.latitude}&lng=${latLng.longitude}&source=to&view=false")
                         }
                         null -> {}
                     }
@@ -362,7 +388,13 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                 tint = MaterialTheme.colorScheme.error
                             )
                         }
-                        /* Removed check icon functionality */
+                        if (startLatLng != null && selectedFromDescription != null) {
+                            Icon(
+                                Icons.Default.Check,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
                         IconButton(onClick = {
                             startLatLng = null
                             fromQuery = ""
@@ -397,7 +429,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                             fromError = false
                             cameraPositionState.position = CameraPosition.fromLatLngZoom(startLatLng!!, 10f)
                             fromExpanded = false
-                            navController.navigate("definePoi?lat=${startLatLng!!.latitude}&lng=${startLatLng!!.longitude}")
+                            navController.navigate("definePoi?lat=${startLatLng!!.latitude}&lng=${startLatLng!!.longitude}&source=from&view=false")
                         }
                     )
                 }
@@ -413,7 +445,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                             fromError = false
                             cameraPositionState.position = CameraPosition.fromLatLngZoom(startLatLng!!, 10f)
                             fromExpanded = false
-                            navController.navigate("definePoi?lat=${startLatLng!!.latitude}&lng=${startLatLng!!.longitude}")
+                            navController.navigate("definePoi?lat=${startLatLng!!.latitude}&lng=${startLatLng!!.longitude}&source=from&view=true")
                         }
                     )
                 }
@@ -446,7 +478,13 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                 tint = MaterialTheme.colorScheme.error
                             )
                         }
-                        /* Removed check icon functionality */
+                        if (endLatLng != null && selectedToDescription != null) {
+                            Icon(
+                                Icons.Default.Check,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
                         IconButton(onClick = {
                             endLatLng = null
                             toQuery = ""
@@ -481,7 +519,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                             toError = false
                             cameraPositionState.position = CameraPosition.fromLatLngZoom(endLatLng!!, 10f)
                             toExpanded = false
-                            navController.navigate("definePoi?lat=${endLatLng!!.latitude}&lng=${endLatLng!!.longitude}")
+                            navController.navigate("definePoi?lat=${endLatLng!!.latitude}&lng=${endLatLng!!.longitude}&source=to&view=false")
                         }
                     )
                 }
@@ -497,7 +535,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                             toError = false
                             cameraPositionState.position = CameraPosition.fromLatLngZoom(endLatLng!!, 10f)
                             toExpanded = false
-                            navController.navigate("definePoi?lat=${endLatLng!!.latitude}&lng=${endLatLng!!.longitude}")
+                            navController.navigate("definePoi?lat=${endLatLng!!.latitude}&lng=${endLatLng!!.longitude}&source=to&view=true")
                         }
                     )
                 }
@@ -627,11 +665,6 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
             }
             PoIViewModel.AddPoiState.Exists -> {
                 Toast.makeText(context, "Το POI είναι ήδη καταχωρημένο", Toast.LENGTH_SHORT).show()
-                if (lastAddFrom == true) {
-                    fromError = true
-                } else if (lastAddFrom == false) {
-                    toError = true
-                }
                 poiViewModel.resetAddState()
             }
             else -> {}
