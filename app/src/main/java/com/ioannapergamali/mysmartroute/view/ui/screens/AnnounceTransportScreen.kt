@@ -19,6 +19,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
@@ -56,6 +58,8 @@ import com.google.android.libraries.places.api.model.Place
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
 
 private enum class MapSelectionMode { FROM, TO }
 
@@ -100,16 +104,20 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     var selectedFromDescription by remember { mutableStateOf<String?>(null) }
     var fromExpanded by remember { mutableStateOf(false) }
     var fromSuggestions by remember { mutableStateOf<List<Address>>(emptyList()) }
+    val fromFocusRequester = remember { FocusRequester() }
     val fromPoiSuggestions = remember(fromQuery, pois) {
         pois.filter { it.name.contains(fromQuery, ignoreCase = true) }
+            .sortedBy { it.name }
     }
 
     var toQuery by remember { mutableStateOf("") }
     var selectedToDescription by remember { mutableStateOf<String?>(null) }
     var toExpanded by remember { mutableStateOf(false) }
     var toSuggestions by remember { mutableStateOf<List<Address>>(emptyList()) }
+    val toFocusRequester = remember { FocusRequester() }
     val toPoiSuggestions = remember(toQuery, pois) {
         pois.filter { it.name.contains(toQuery, ignoreCase = true) }
+            .sortedBy { it.name }
     }
 
     var selectedVehicleType by remember { mutableStateOf<VehicleType?>(null) }
@@ -192,9 +200,15 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 } catch (e: Exception) {
                     emptyList()
                 }
-            }
+            }.sortedBy { it.getAddressLine(0) ?: "" }
         } else {
             fromSuggestions = emptyList()
+        }
+    }
+
+    LaunchedEffect(fromExpanded) {
+        if (fromExpanded) {
+            fromFocusRequester.requestFocus()
         }
     }
 
@@ -213,9 +227,15 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         if (toQuery.length > 3) {
             toSuggestions = withContext(Dispatchers.IO) {
                 try { Geocoder(context).getFromLocationName(toQuery, 5) ?: emptyList() } catch (e: Exception) { emptyList() }
-            }
+            }.sortedBy { it.getAddressLine(0) ?: "" }
         } else {
             toSuggestions = emptyList()
+        }
+    }
+
+    LaunchedEffect(toExpanded) {
+        if (toExpanded) {
+            toFocusRequester.requestFocus()
         }
     }
 
@@ -404,14 +424,18 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = fromExpanded)
                     }
                 },
-                modifier = Modifier.menuAnchor().fillMaxWidth(),
+                modifier = Modifier.menuAnchor().fillMaxWidth().focusRequester(fromFocusRequester),
                 shape = MaterialTheme.shapes.small,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                     unfocusedBorderColor = MaterialTheme.colorScheme.primary
                 )
             )
-            DropdownMenu(expanded = fromExpanded, onDismissRequest = { fromExpanded = false }) {
+            DropdownMenu(
+                expanded = fromExpanded,
+                onDismissRequest = { fromExpanded = false },
+                modifier = Modifier.heightIn(max = 200.dp).verticalScroll(rememberScrollState())
+            ) {
                 fromSuggestions.forEach { address ->
                     DropdownMenuItem(
                         text = { Text(address.getAddressLine(0) ?: "") },
@@ -506,14 +530,18 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = toExpanded)
                     }
                 },
-                modifier = Modifier.menuAnchor().fillMaxWidth(),
+                modifier = Modifier.menuAnchor().fillMaxWidth().focusRequester(toFocusRequester),
                 shape = MaterialTheme.shapes.small,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                     unfocusedBorderColor = MaterialTheme.colorScheme.primary
                 )
             )
-            DropdownMenu(expanded = toExpanded, onDismissRequest = { toExpanded = false }) {
+            DropdownMenu(
+                expanded = toExpanded,
+                onDismissRequest = { toExpanded = false },
+                modifier = Modifier.heightIn(max = 200.dp).verticalScroll(rememberScrollState())
+            ) {
                 toSuggestions.forEach { address ->
                     DropdownMenuItem(
                         text = { Text(address.getAddressLine(0) ?: "") },
