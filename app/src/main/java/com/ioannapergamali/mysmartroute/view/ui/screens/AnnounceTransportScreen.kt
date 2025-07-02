@@ -18,7 +18,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.saveable.mapSaver
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
@@ -67,16 +66,6 @@ private enum class MapSelectionMode { FROM, TO }
 
 private const val TAG = "AnnounceTransport"
 
-private val LatLngSaver = run {
-    mapSaver(
-        save = { mapOf("lat" to it.latitude, "lng" to it.longitude) },
-        restore = { map ->
-            val lat = map["lat"] as? Double
-            val lng = map["lng"] as? Double
-            if (lat != null && lng != null) LatLng(lat, lng) else null
-        }
-    )
-}
 
 private suspend fun reverseGeocode(context: Context, latLng: LatLng): String? =
     withContext(Dispatchers.IO) {
@@ -135,8 +124,8 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
 
     var selectedVehicleType by remember { mutableStateOf<VehicleType?>(null) }
 
-    var startLatLng by rememberSaveable(stateSaver = LatLngSaver) { mutableStateOf<LatLng?>(null) }
-    var endLatLng by rememberSaveable(stateSaver = LatLngSaver) { mutableStateOf<LatLng?>(null) }
+    var startLatLng by rememberSaveable { mutableStateOf<LatLng?>(null) }
+    var endLatLng by rememberSaveable { mutableStateOf<LatLng?>(null) }
     var fromSelectedIsPoi by rememberSaveable { mutableStateOf(false) }
     var toSelectedIsPoi by rememberSaveable { mutableStateOf(false) }
     var fromConfirmed by rememberSaveable { mutableStateOf(false) }
