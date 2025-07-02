@@ -60,8 +60,6 @@ import com.google.android.libraries.places.api.model.Place
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.rememberScrollState
 
 private enum class MapSelectionMode { FROM, TO }
 
@@ -451,7 +449,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
             DropdownMenu(
                 expanded = fromExpanded,
                 onDismissRequest = { fromExpanded = false },
-                modifier = Modifier.heightIn(max = 200.dp).verticalScroll(rememberScrollState())
+                modifier = Modifier.heightIn(max = 200.dp)
             ) {
                 fromSuggestions.forEach { address ->
                     DropdownMenuItem(
@@ -569,7 +567,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
             DropdownMenu(
                 expanded = toExpanded,
                 onDismissRequest = { toExpanded = false },
-                modifier = Modifier.heightIn(max = 200.dp).verticalScroll(rememberScrollState())
+                modifier = Modifier.heightIn(max = 200.dp)
             ) {
                 toSuggestions.forEach { address ->
                     DropdownMenuItem(
