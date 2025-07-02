@@ -397,6 +397,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                             fromError = false
                             cameraPositionState.position = CameraPosition.fromLatLngZoom(startLatLng!!, 10f)
                             fromExpanded = false
+                            navController.navigate("definePoi?lat=${startLatLng!!.latitude}&lng=${startLatLng!!.longitude}")
                         }
                     )
                 }
@@ -412,6 +413,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                             fromError = false
                             cameraPositionState.position = CameraPosition.fromLatLngZoom(startLatLng!!, 10f)
                             fromExpanded = false
+                            navController.navigate("definePoi?lat=${startLatLng!!.latitude}&lng=${startLatLng!!.longitude}")
                         }
                     )
                 }
