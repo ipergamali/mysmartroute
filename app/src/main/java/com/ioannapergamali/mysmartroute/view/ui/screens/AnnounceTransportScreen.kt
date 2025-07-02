@@ -24,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
@@ -418,7 +419,11 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = fromExpanded)
                     }
                 },
-                modifier = Modifier.menuAnchor().fillMaxWidth().focusRequester(fromFocusRequester),
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth()
+                    .onFocusChanged { if (it.isFocused) keyboardController?.show() }
+                    .focusRequester(fromFocusRequester),
                 shape = MaterialTheme.shapes.small,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -599,7 +604,11 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = toExpanded)
                     }
                 },
-                modifier = Modifier.menuAnchor().fillMaxWidth().focusRequester(toFocusRequester),
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth()
+                    .onFocusChanged { if (it.isFocused) keyboardController?.show() }
+                    .focusRequester(toFocusRequester),
                 shape = MaterialTheme.shapes.small,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
