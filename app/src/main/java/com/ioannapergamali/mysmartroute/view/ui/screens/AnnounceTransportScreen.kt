@@ -114,7 +114,6 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     var fromQuery by rememberSaveable { mutableStateOf("") }
     var selectedFromDescription by rememberSaveable { mutableStateOf<String?>(null) }
     var fromExpanded by remember { mutableStateOf(false) }
-    var fromSuggestions by remember { mutableStateOf<List<Address>>(emptyList()) }
     val fromFocusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
     val fromPoiSuggestions = remember(fromQuery, pois) {
@@ -258,19 +257,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     }
 
 
-    LaunchedEffect(fromQuery) {
-        if (fromQuery.length > 3) {
-            fromSuggestions = withContext(Dispatchers.IO) {
-                try {
-                    Geocoder(context).getFromLocationName(fromQuery, 5) ?: emptyList()
-                } catch (e: Exception) {
-                    emptyList()
-                }
-            }.sortedBy { it.getAddressLine(0) ?: "" }
-        } else {
-            fromSuggestions = emptyList()
-        }
-    }
+
 
     LaunchedEffect(fromExpanded) {
         if (fromExpanded) {
@@ -440,23 +427,6 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 modifier = Modifier.heightIn(max = 200.dp),
                 properties = PopupProperties(focusable = false)
             ) {
-                fromSuggestions.forEach { address ->
-                    DropdownMenuItem(
-                        text = { Text(address.getAddressLine(0) ?: "") },
-                        onClick = {
-                            fromQuery = address.getAddressLine(0) ?: ""
-                            startLatLng = LatLng(address.latitude, address.longitude)
-                            selectedFromDescription = fromQuery
-                            showRoute = false
-                            routePoints = emptyList()
-                            fromError = false
-                            cameraPositionState.position = CameraPosition.fromLatLngZoom(startLatLng!!, 10f)
-                            fromExpanded = false
-                            fromSelectedIsPoi = false
-                            navController.navigate("definePoi?lat=${startLatLng!!.latitude}&lng=${startLatLng!!.longitude}&source=from&view=false")
-                        }
-                    )
-                }
                 fromPoiSuggestions.forEach { poi ->
                     DropdownMenuItem(
                         text = { Text(poi.name) },
