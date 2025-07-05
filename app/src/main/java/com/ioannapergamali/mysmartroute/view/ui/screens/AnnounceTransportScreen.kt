@@ -64,7 +64,6 @@ import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.viewmodel.TransportAnnouncementViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
-import com.google.android.libraries.places.api.model.Place
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -177,9 +176,6 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
 
     var fromError by remember { mutableStateOf(false) }
     var toError by remember { mutableStateOf(false) }
-    var poiTypeExpanded by remember { mutableStateOf(false) }
-    // Χρησιμοποιούμε το ESTABLISHMENT ως προεπιλεγμένο είδος σημείου
-    var selectedPoiType by remember { mutableStateOf<Place.Type>(Place.Type.ESTABLISHMENT) }
 
     // Αρχικοποίηση του χάρτη στο Ηράκλειο με ζουμ όπως στο ζητούμενο URL
     val cameraPositionState = rememberCameraPositionState {
@@ -489,16 +485,6 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        if (startLatLng != null && endLatLng != null) {
-            Spacer(modifier = Modifier.height(8.dp))
-            Button(onClick = {
-                fetchRoute()
-            }) {
-                Text(stringResource(R.string.directions))
-            }
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
         Box {
             Button(onClick = { stopMenuExpanded = true }) {
                 Icon(Icons.Default.Add, contentDescription = null)
@@ -519,6 +505,16 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         }
         routePois.forEachIndexed { index, poi ->
             Text(text = "${index + 1}. ${poi.name}")
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+
+        if (startLatLng != null && endLatLng != null) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Button(onClick = {
+                fetchRoute()
+            }) {
+                Text(stringResource(R.string.directions))
+            }
         }
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -567,7 +563,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         showRoute = false
                     }
                 },
-                label = { Text(stringResource(R.string.to)) },
+                label = { Text(stringResource(R.string.destination)) },
                 isError = toError,
                 trailingIcon = {
                     Row {
@@ -674,32 +670,6 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
             )
         }
     }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        ExposedDropdownMenuBox(expanded = poiTypeExpanded, onExpandedChange = { poiTypeExpanded = !poiTypeExpanded }) {
-            OutlinedTextField(
-                value = selectedPoiType.name,
-                onValueChange = {},
-                readOnly = true,
-                label = { Text(stringResource(R.string.poi_type)) },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = poiTypeExpanded) },
-                modifier = Modifier.menuAnchor().fillMaxWidth(),
-                shape = MaterialTheme.shapes.small,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.primary
-                )
-            )
-            DropdownMenu(expanded = poiTypeExpanded, onDismissRequest = { poiTypeExpanded = false }) {
-                Place.Type.values().forEach { t ->
-                    DropdownMenuItem(text = { Text(t.name) }, onClick = {
-                        selectedPoiType = t
-                        poiTypeExpanded = false
-                    })
-                }
-            }
-        }
 
         Spacer(modifier = Modifier.height(8.dp))
 
