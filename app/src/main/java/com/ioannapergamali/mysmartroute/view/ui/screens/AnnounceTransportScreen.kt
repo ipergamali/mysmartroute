@@ -313,14 +313,16 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         endLatLng?.let { toMarkerState.position = it }
     }
 
-    ScreenContainer(modifier = Modifier.padding(0.dp)) {
-        TopBar(
-            title = stringResource(R.string.announce_transport),
-            navController = navController,
-            showMenu = true,
-            onMenuClick = openDrawer
-        )
-        Spacer(modifier = Modifier.height(16.dp))
+    ScreenContainer(modifier = Modifier.padding(0.dp), scrollable = false) {
+        LazyColumn {
+            item {
+                TopBar(
+                    title = stringResource(R.string.announce_transport),
+                    navController = navController,
+                    showMenu = true,
+                    onMenuClick = openDrawer
+                )
+                Spacer(modifier = Modifier.height(16.dp))
 
         if (!isKeyMissing) {
             GoogleMap(
