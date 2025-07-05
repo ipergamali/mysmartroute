@@ -32,6 +32,7 @@ import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.background
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Place
@@ -311,182 +312,190 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         Spacer(modifier = Modifier.height(16.dp))
 
         if (!isKeyMissing) {
-            GoogleMap(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(300.dp),
-                cameraPositionState = cameraPositionState,
-                properties = mapProperties,
-                onMapLoaded = { Log.d(TAG, "Map loaded") },
-                onMapClick = { latLng ->
-                    when (mapSelectionMode) {
-                        MapSelectionMode.FROM -> {
-                            startLatLng = latLng
-                            showRoute = false
-                            coroutineScope.launch {
-                                fromQuery = reverseGeocode(context, latLng) ?: "${latLng.latitude},${latLng.longitude}"
-                                selectedFromDescription = fromQuery
+                    .height(300.dp)
+            ) {
+                GoogleMap(
+                    modifier = Modifier.matchParentSize(),
+                    cameraPositionState = cameraPositionState,
+                    properties = mapProperties,
+                    onMapLoaded = { Log.d(TAG, "Map loaded") },
+                    onMapClick = { latLng ->
+                        when (mapSelectionMode) {
+                            MapSelectionMode.FROM -> {
+                                startLatLng = latLng
+                                showRoute = false
+                                coroutineScope.launch {
+                                    fromQuery = reverseGeocode(context, latLng) ?: "${latLng.latitude},${latLng.longitude}"
+                                    selectedFromDescription = fromQuery
+                                }
+                                fromError = false
+                                mapSelectionMode = null
+                                navController.navigate("definePoi?lat=${latLng.latitude}&lng=${latLng.longitude}&source=from&view=false")
                             }
-                            fromError = false
-                            mapSelectionMode = null
-                            navController.navigate("definePoi?lat=${latLng.latitude}&lng=${latLng.longitude}&source=from&view=false")
-                        }
-                        MapSelectionMode.TO -> {
-                            endLatLng = latLng
-                            showRoute = false
-                            coroutineScope.launch {
-                                toQuery = reverseGeocode(context, latLng) ?: "${latLng.latitude},${latLng.longitude}"
-                                selectedToDescription = toQuery
+                            MapSelectionMode.TO -> {
+                                endLatLng = latLng
+                                showRoute = false
+                                coroutineScope.launch {
+                                    toQuery = reverseGeocode(context, latLng) ?: "${latLng.latitude},${latLng.longitude}"
+                                    selectedToDescription = toQuery
+                                }
+                                toError = false
+                                mapSelectionMode = null
+                                navController.navigate("definePoi?lat=${latLng.latitude}&lng=${latLng.longitude}&source=to&view=false")
                             }
-                            toError = false
-                            mapSelectionMode = null
-                            navController.navigate("definePoi?lat=${latLng.latitude}&lng=${latLng.longitude}&source=to&view=false")
+                            null -> {}
                         }
-                        null -> {}
+                    }
+                ) {
+                    startLatLng?.let {
+                        Marker(state = fromMarkerState, title = "From")
+                    }
+                    endLatLng?.let {
+                        Marker(state = toMarkerState, title = "To")
+                    }
+                    routePois.forEachIndexed { index, poi ->
+                        Marker(
+                            state = rememberMarkerState(position = LatLng(poi.lat, poi.lng)),
+                            title = "${index + 1}. ${poi.name}"
+                        )
+                    }
+                    if (showRoute && routePoints.isNotEmpty()) {
+                        Polyline(points = routePoints)
                     }
                 }
-            ) {
-                startLatLng?.let {
-                    Marker(state = fromMarkerState, title = "From")
-                }
-                endLatLng?.let {
-                    Marker(state = toMarkerState, title = "To")
-                }
-                routePois.forEachIndexed { index, poi ->
-                    Marker(
-                        state = rememberMarkerState(position = LatLng(poi.lat, poi.lng)),
-                        title = "${index + 1}. ${poi.name}"
-                    )
-                }
-                if (showRoute && routePoints.isNotEmpty()) {
-                    Polyline(points = routePoints)
+
+                Column(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.background.copy(alpha = 0.9f))
+                        .padding(8.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        ExposedDropdownMenuBox(
+                            expanded = fromExpanded,
+                            onExpandedChange = {
+                                fromExpanded = false
+                                fromFocusRequester.requestFocus()
+                                keyboardController?.show()
+                            },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            OutlinedTextField(
+                                value = fromQuery,
+                                onValueChange = {
+                                    fromQuery = it
+                                    fromExpanded = it.isNotBlank()
+                                    fromError = false
+                                    fromConfirmed = false
+                                    if (selectedFromDescription != null && fromQuery != selectedFromDescription) {
+                                        startLatLng = null
+                                        selectedFromDescription = null
+                                        showRoute = false
+                                    }
+                                },
+                                label = { Text(stringResource(R.string.start_point)) },
+                                isError = fromError,
+                                trailingIcon = {
+                                    Row {
+                                        if (fromError) {
+                                            Icon(
+                                                Icons.Default.Warning,
+                                                contentDescription = null,
+                                                tint = MaterialTheme.colorScheme.error
+                                            )
+                                        }
+                                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = fromExpanded)
+                                    }
+                                },
+                                modifier = Modifier
+                                    .menuAnchor()
+                                    .fillMaxWidth()
+                                    .onFocusChanged { if (it.isFocused) keyboardController?.show() }
+                                    .focusRequester(fromFocusRequester),
+                                shape = MaterialTheme.shapes.small,
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                    unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                                )
+                            )
+                            DropdownMenu(
+                                expanded = fromExpanded,
+                                onDismissRequest = { fromExpanded = false },
+                                modifier = Modifier.heightIn(max = 200.dp),
+                                properties = PopupProperties(focusable = false)
+                            ) {
+                                fromPoiSuggestions.forEach { poi ->
+                                    DropdownMenuItem(
+                                        text = { Text(poi.name) },
+                                        onClick = {
+                                            fromQuery = poi.name
+                                            startLatLng = LatLng(poi.lat, poi.lng)
+                                            selectedFromDescription = fromQuery
+                                            showRoute = false
+                                            routePoints = emptyList()
+                                            fromError = false
+                                            cameraPositionState.position = CameraPosition.fromLatLngZoom(startLatLng!!, 10f)
+                                            fromExpanded = false
+                                            fromSelectedIsPoi = true
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                        if (startLatLng != null && selectedFromDescription != null) {
+                            IconButton(onClick = {
+                                fromConfirmed = true
+                                if (fromConfirmed && toConfirmed) fetchRoute()
+                            }, modifier = Modifier.padding(start = 8.dp)) {
+                                Icon(
+                                    Icons.Default.Check,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                        if (startLatLng != null && fromSelectedIsPoi) {
+                            IconButton(onClick = {
+                                navController.navigate("definePoi?lat=${startLatLng!!.latitude}&lng=${startLatLng!!.longitude}&source=from&view=true")
+                            }, modifier = Modifier.padding(start = 8.dp)) {
+                                Icon(
+                                    Icons.Default.Info,
+                                    contentDescription = stringResource(R.string.poi_details),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                        IconButton(
+                            onClick = {
+                                startLatLng = null
+                                fromQuery = ""
+                                selectedFromDescription = null
+                                routePoints = emptyList()
+                                showRoute = false
+                                mapSelectionMode = MapSelectionMode.FROM
+                            },
+                            modifier = Modifier.padding(start = 8.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Place,
+                                contentDescription = "Pick From on Map",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
                 }
             }
-
-            // Removed external maps button; map is shown directly on screen
+            Spacer(modifier = Modifier.height(8.dp))
         } else {
             Text(
                 stringResource(R.string.map_api_key_missing),
                 color = MaterialTheme.colorScheme.primary
             )
         }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            ExposedDropdownMenuBox(
-                expanded = fromExpanded,
-                onExpandedChange = {
-                    fromExpanded = false
-                    fromFocusRequester.requestFocus()
-                    keyboardController?.show()
-                },
-                modifier = Modifier.weight(1f)
-            ) {
-            OutlinedTextField(
-                value = fromQuery,
-                onValueChange = {
-                    fromQuery = it
-                    fromExpanded = it.isNotBlank()
-                    fromError = false
-                    fromConfirmed = false
-                    if (selectedFromDescription != null && fromQuery != selectedFromDescription) {
-                        startLatLng = null
-                        selectedFromDescription = null
-                        showRoute = false
-                    }
-                },
-                label = { Text(stringResource(R.string.start_point)) },
-                isError = fromError,
-                trailingIcon = {
-                    Row {
-                        if (fromError) {
-                            Icon(
-                                Icons.Default.Warning,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.error
-                            )
-                        }
-                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = fromExpanded)
-                    }
-                },
-                modifier = Modifier
-                    .menuAnchor()
-                    .fillMaxWidth()
-                    .onFocusChanged { if (it.isFocused) keyboardController?.show() }
-                    .focusRequester(fromFocusRequester),
-                shape = MaterialTheme.shapes.small,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.primary
-                )
-            )
-            DropdownMenu(
-                expanded = fromExpanded,
-                onDismissRequest = { fromExpanded = false },
-                modifier = Modifier.heightIn(max = 200.dp),
-                properties = PopupProperties(focusable = false)
-            ) {
-                fromPoiSuggestions.forEach { poi ->
-                    DropdownMenuItem(
-                        text = { Text(poi.name) },
-                        onClick = {
-                            fromQuery = poi.name
-                            startLatLng = LatLng(poi.lat, poi.lng)
-                            selectedFromDescription = fromQuery
-                            showRoute = false
-                            routePoints = emptyList()
-                            fromError = false
-                            cameraPositionState.position = CameraPosition.fromLatLngZoom(startLatLng!!, 10f)
-                            fromExpanded = false
-                            fromSelectedIsPoi = true
-                        }
-                    )
-                }
-            }
-        }
-        if (startLatLng != null && selectedFromDescription != null) {
-            IconButton(onClick = {
-                fromConfirmed = true
-                if (fromConfirmed && toConfirmed) fetchRoute()
-            }, modifier = Modifier.padding(start = 8.dp)) {
-                Icon(
-                    Icons.Default.Check,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
-        }
-        if (startLatLng != null && fromSelectedIsPoi) {
-            IconButton(onClick = {
-                navController.navigate("definePoi?lat=${startLatLng!!.latitude}&lng=${startLatLng!!.longitude}&source=from&view=true")
-            }, modifier = Modifier.padding(start = 8.dp)) {
-                Icon(
-                    Icons.Default.Info,
-                    contentDescription = stringResource(R.string.poi_details),
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
-        }
-        IconButton(
-            onClick = {
-                startLatLng = null
-                fromQuery = ""
-                selectedFromDescription = null
-                routePoints = emptyList()
-                showRoute = false
-                mapSelectionMode = MapSelectionMode.FROM
-                },
-            modifier = Modifier.padding(start = 8.dp)
-        ) {
-            Icon(
-                Icons.Default.Place,
-                contentDescription = "Pick From on Map",
-                tint = MaterialTheme.colorScheme.primary
-            )
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
 
         if (startLatLng != null && endLatLng != null) {
             Spacer(modifier = Modifier.height(8.dp))
