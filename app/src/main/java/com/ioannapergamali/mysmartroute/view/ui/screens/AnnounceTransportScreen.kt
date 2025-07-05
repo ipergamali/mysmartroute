@@ -371,7 +371,8 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
             )
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        // Παρέχουμε μεγαλύτερο κενό για να φαίνεται καθαρά το πεδίο εκκίνησης κάτω από τον χάρτη
+        Spacer(modifier = Modifier.height(16.dp))
 
         Row(verticalAlignment = Alignment.CenterVertically) {
             ExposedDropdownMenuBox(
