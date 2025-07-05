@@ -132,6 +132,15 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
             .sortedBy { it.name }
     }
 
+    var stopQuery by rememberSaveable { mutableStateOf("") }
+    var selectedStop by rememberSaveable { mutableStateOf<PoIEntity?>(null) }
+    var stopExpanded by remember { mutableStateOf(false) }
+    val stopPoiSuggestions = remember(stopQuery, pois) {
+        if (stopQuery.isBlank()) emptyList() else
+        pois.filter { it.name.startsWith(stopQuery, ignoreCase = true) }
+            .sortedBy { it.name }
+    }
+
     var selectedVehicleType by remember { mutableStateOf<VehicleType?>(null) }
 
     var startLatLng by rememberSaveable { mutableStateOf<LatLng?>(null) }
@@ -211,7 +220,13 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
             ) {
                 if (NetworkUtils.isInternetAvailable(context)) {
                     val type = selectedVehicleType ?: VehicleType.CAR
-                    val result = MapsUtils.fetchDurationAndPath(startLatLng!!, endLatLng!!, apiKey, type)
+                    val result = MapsUtils.fetchDurationAndPath(
+                        startLatLng!!,
+                        endLatLng!!,
+                        apiKey,
+                        type,
+                        routePois.map { LatLng(it.lat, it.lng) }
+                    )
                     Log.d(TAG, "Directions API status: ${result.status}")
                     val factor = when (selectedVehicleType) {
                         VehicleType.BICYCLE -> 1.5
@@ -262,13 +277,14 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         }
     }
 
-    LaunchedEffect(startLatLng, endLatLng) {
+    LaunchedEffect(startLatLng, endLatLng, routePois) {
         if (!isKeyMissing && startLatLng != null && endLatLng != null) {
             durationMinutes = MapsUtils.fetchDuration(
                 startLatLng!!,
                 endLatLng!!,
                 apiKey,
-                selectedVehicleType ?: VehicleType.CAR
+                selectedVehicleType ?: VehicleType.CAR,
+                routePois.map { LatLng(it.lat, it.lng) }
             )
         }
     }
@@ -485,22 +501,72 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Box {
-            Button(onClick = { stopMenuExpanded = true }) {
-                Icon(Icons.Default.Add, contentDescription = null)
-                Spacer(Modifier.width(8.dp))
-                Text(stringResource(R.string.add_stop))
-            }
-            DropdownMenu(expanded = stopMenuExpanded, onDismissRequest = { stopMenuExpanded = false }) {
-                pois.forEach { poi ->
-                    DropdownMenuItem(
-                        text = { Text(poi.name) },
-                        onClick = {
-                            routePois.add(poi)
-                            stopMenuExpanded = false
-                        }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            ExposedDropdownMenuBox(
+                expanded = stopExpanded,
+                onExpandedChange = {
+                    stopExpanded = false
+                },
+                modifier = Modifier.weight(1f)
+            ) {
+                OutlinedTextField(
+                    value = stopQuery,
+                    onValueChange = {
+                        stopQuery = it
+                        stopExpanded = it.isNotBlank()
+                    },
+                    label = { Text(stringResource(R.string.stop_point)) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = stopExpanded) },
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth(),
+                    shape = MaterialTheme.shapes.small,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.primary
                     )
+                )
+                DropdownMenu(
+                    expanded = stopExpanded,
+                    onDismissRequest = { stopExpanded = false },
+                    modifier = Modifier.heightIn(max = 200.dp),
+                    properties = PopupProperties(focusable = false)
+                ) {
+                    stopPoiSuggestions.forEach { poi ->
+                        DropdownMenuItem(
+                            text = { Text(poi.name) },
+                            onClick = {
+                                stopQuery = poi.name
+                                selectedStop = poi
+                                stopExpanded = false
+                            }
+                        )
+                    }
                 }
+            }
+            if (selectedStop != null) {
+                IconButton(onClick = {
+                    selectedStop?.let { poi ->
+                        routePois.add(poi)
+                        selectedStop = null
+                        stopQuery = ""
+                        if (fromConfirmed && toConfirmed) fetchRoute()
+                    }
+                }, modifier = Modifier.padding(start = 8.dp)) {
+                    Icon(Icons.Default.Check, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                }
+                IconButton(onClick = {
+                    selectedStop?.let { poi ->
+                        navController.navigate("definePoi?lat=${poi.lat}&lng=${poi.lng}&source=from&view=true")
+                    }
+                }, modifier = Modifier.padding(start = 8.dp)) {
+                    Icon(Icons.Default.Info, contentDescription = stringResource(R.string.poi_details), tint = MaterialTheme.colorScheme.primary)
+                }
+            }
+            IconButton(onClick = {
+                navController.navigate("definePoi?source=from&view=false")
+            }, modifier = Modifier.padding(start = 8.dp)) {
+                Icon(Icons.Default.Place, contentDescription = "Add PoI on Map", tint = MaterialTheme.colorScheme.primary)
             }
         }
         routePois.forEachIndexed { index, poi ->

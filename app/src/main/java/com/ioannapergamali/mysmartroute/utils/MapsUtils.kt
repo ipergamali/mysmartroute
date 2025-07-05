@@ -77,12 +77,16 @@ object MapsUtils {
         origin: LatLng,
         destination: LatLng,
         apiKey: String,
-        vehicleType: VehicleType
+        vehicleType: VehicleType,
+        waypoints: List<LatLng> = emptyList()
     ): String {
         val originParam = "${origin.latitude},${origin.longitude}"
         val destParam = "${destination.latitude},${destination.longitude}"
         val modeParam = vehicleToMode(vehicleType)
-        return "https://maps.googleapis.com/maps/api/directions/json?origin=$originParam&destination=$destParam&mode=$modeParam&key=$apiKey"
+        val waypointParam = if (waypoints.isNotEmpty()) {
+            "&waypoints=" + waypoints.joinToString("|") { "${it.latitude},${it.longitude}" }
+        } else ""
+        return "https://maps.googleapis.com/maps/api/directions/json?origin=$originParam&destination=$destParam&mode=$modeParam$waypointParam&key=$apiKey"
     }
 
     private fun parseDuration(json: String): Int {
@@ -115,9 +119,12 @@ object MapsUtils {
         origin: LatLng,
         destination: LatLng,
         apiKey: String,
-        vehicleType: VehicleType
+        vehicleType: VehicleType,
+        waypoints: List<LatLng> = emptyList()
     ): Int = withContext(Dispatchers.IO) {
-        val request = Request.Builder().url(buildDirectionsUrl(origin, destination, apiKey, vehicleType)).build()
+        val request = Request.Builder().url(
+            buildDirectionsUrl(origin, destination, apiKey, vehicleType, waypoints)
+        ).build()
         client.newCall(request).execute().use { response ->
             if (!response.isSuccessful) return@withContext 0
             val body = response.body?.string() ?: return@withContext 0
@@ -129,9 +136,12 @@ object MapsUtils {
         origin: LatLng,
         destination: LatLng,
         apiKey: String,
-        vehicleType: VehicleType
+        vehicleType: VehicleType,
+        waypoints: List<LatLng> = emptyList()
     ): DirectionsData = withContext(Dispatchers.IO) {
-        val request = Request.Builder().url(buildDirectionsUrl(origin, destination, apiKey, vehicleType)).build()
+        val request = Request.Builder().url(
+            buildDirectionsUrl(origin, destination, apiKey, vehicleType, waypoints)
+        ).build()
         client.newCall(request).execute().use { response ->
             val body = response.body?.string() ?: return@withContext DirectionsData(0, emptyList(), "NO_RESPONSE")
             if (!response.isSuccessful) return@withContext DirectionsData(0, emptyList(), "HTTP_${response.code}")
