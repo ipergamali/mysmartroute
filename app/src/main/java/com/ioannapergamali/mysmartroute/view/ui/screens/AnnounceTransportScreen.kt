@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
 import android.util.Log
 import android.widget.Toast
@@ -315,14 +314,13 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         endLatLng?.let { toMarkerState.position = it }
     }
 
-    ScreenContainer(modifier = Modifier.padding(0.dp), scrollable = false) {
-        LazyColumn {
-            item {
-                TopBar(
-                    title = stringResource(R.string.announce_transport),
-                    navController = navController,
-                    showMenu = true,
-                    onMenuClick = openDrawer
+    ScreenContainer(modifier = Modifier.padding(0.dp)) {
+        Column {
+            TopBar(
+                title = stringResource(R.string.announce_transport),
+                navController = navController,
+                showMenu = true,
+                onMenuClick = openDrawer
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -844,7 +842,5 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         }
     }
     }
-}
-}
 }
 }
