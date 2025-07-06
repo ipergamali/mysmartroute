@@ -35,8 +35,8 @@ fun ScreenContainer(
             ) {
                 Column(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .then(if (scrollable) Modifier.verticalScroll(scrollState) else Modifier),
+                        .then(if (scrollable) Modifier.verticalScroll(scrollState) else Modifier)
+                        .fillMaxWidth(),
                     content = content
                 )
             }
