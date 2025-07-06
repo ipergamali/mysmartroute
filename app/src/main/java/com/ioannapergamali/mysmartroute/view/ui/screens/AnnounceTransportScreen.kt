@@ -315,8 +315,9 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         endLatLng?.let { toMarkerState.position = it }
     }
 
-    ScreenContainer(modifier = Modifier.padding(0.dp)) {
-        Column {
+    ScreenContainer(modifier = Modifier.padding(0.dp), scrollable = false) {
+        LazyColumn {
+            item {
                 TopBar(
                     title = stringResource(R.string.announce_transport),
                     navController = navController,
@@ -843,6 +844,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         }
     }
     }
+}
 }
 }
 }
