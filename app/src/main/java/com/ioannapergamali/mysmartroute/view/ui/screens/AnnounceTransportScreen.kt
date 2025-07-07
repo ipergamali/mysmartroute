@@ -23,6 +23,7 @@ import androidx.compose.foundation.clickable
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.rememberCameraPositionState
@@ -117,8 +118,17 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         }
                     }
                 ) {
-                    routePois.forEach { poi ->
-                        Marker(state = MarkerState(LatLng(poi.lat, poi.lng)), title = poi.name)
+                    routePois.forEachIndexed { index, poi ->
+                        val hue = when (index) {
+                            0 -> BitmapDescriptorFactory.HUE_GREEN
+                            routePois.lastIndex -> BitmapDescriptorFactory.HUE_RED
+                            else -> BitmapDescriptorFactory.HUE_AZURE
+                        }
+                        Marker(
+                            state = MarkerState(LatLng(poi.lat, poi.lng)),
+                            title = poi.name,
+                            icon = BitmapDescriptorFactory.defaultMarker(hue)
+                        )
                     }
                     if (pathPoints.isNotEmpty()) {
                         Polyline(points = pathPoints)
