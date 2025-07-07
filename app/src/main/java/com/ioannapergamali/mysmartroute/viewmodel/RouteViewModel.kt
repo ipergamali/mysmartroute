@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.RouteEntity
+import com.ioannapergamali.mysmartroute.data.local.RoutePointEntity
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.utils.toRouteEntity
@@ -37,16 +38,26 @@ class RouteViewModel : ViewModel() {
         }
     }
 
-    fun addRoute(context: Context, startPoiId: String, endPoiId: String, cost: Double) {
+    fun addRoute(context: Context, poiIds: List<String>, cost: Double = 0.0) {
+        if (poiIds.size < 2) return
         viewModelScope.launch {
-            val dao = MySmartRouteDatabase.getInstance(context).routeDao()
+            val db = MySmartRouteDatabase.getInstance(context)
+            val routeDao = db.routeDao()
+            val pointDao = db.routePointDao()
             val id = UUID.randomUUID().toString()
-            val entity = RouteEntity(id, startPoiId, endPoiId, cost)
+            val entity = RouteEntity(id, poiIds.first(), poiIds.last(), cost)
+            val points = poiIds.mapIndexed { index, p -> RoutePointEntity(id, index, p) }
             if (NetworkUtils.isInternetAvailable(context)) {
-                firestore.collection("routes").document(id).set(entity.toFirestoreMap())
-                    .addOnSuccessListener { viewModelScope.launch { dao.insert(entity) } }
+                firestore.collection("routes").document(id).set(entity.toFirestoreMap(points))
+                    .addOnSuccessListener {
+                        viewModelScope.launch {
+                            routeDao.insert(entity)
+                            points.forEach { pointDao.insert(it) }
+                        }
+                    }
             } else {
-                dao.insert(entity)
+                routeDao.insert(entity)
+                points.forEach { pointDao.insert(it) }
             }
         }
     }
