@@ -112,7 +112,7 @@
     <string name="not_implemented">Η λειτουργία δεν είναι διαθέσιμη</string>
     <string name="route_editor">Επεξεργασία διαδρομής</string>
     <string name="add_stop">Προσθήκη στάσης</string>
-    <string name="add_point">Προσθήκη σημείου</string>
+    <string name="add_point">Προσθήκη σημείου:</string>
     <string name="edit_route">Επεξεργασία διαδρομής</string>
     <!-- Περιγραφές ρόλων -->
     <string name="role_passenger_desc">Μπορείτε να δείτε διαδρομές και να κάνετε κρατήσεις.</string>
