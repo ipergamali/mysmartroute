@@ -8,7 +8,6 @@ import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.data.local.RoleEntity
 import com.ioannapergamali.mysmartroute.data.local.MenuEntity
 import com.ioannapergamali.mysmartroute.data.local.MenuOptionEntity
-import com.ioannapergamali.mysmartroute.data.local.TransportAnnouncementEntity
 import com.ioannapergamali.mysmartroute.data.local.RouteEntity
 import com.ioannapergamali.mysmartroute.data.local.PoiTypeEntity
 import com.google.firebase.firestore.DocumentReference
@@ -128,16 +127,6 @@ fun MenuOptionEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     "route" to route
 )
 
-fun TransportAnnouncementEntity.toFirestoreMap(): Map<String, Any> = mapOf(
-    "id" to id,
-    "driverId" to FirebaseFirestore.getInstance().collection("users").document(driverId),
-    "vehicleType" to vehicleType,
-    "start" to start,
-    "end" to end,
-    "date" to date,
-    "cost" to cost,
-    "durationMinutes" to durationMinutes
-)
 
 fun RouteEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     "id" to id,
@@ -186,27 +175,6 @@ fun DocumentSnapshot.toPoIEntity(): PoIEntity? {
     return PoIEntity(poiId, poiName, address, type, latVal, lngVal)
 }
 
-fun DocumentSnapshot.toTransportAnnouncementEntity(): TransportAnnouncementEntity? {
-    val announcementId = getString("id") ?: id
-    val driver = when (val raw = get("driverId")) {
-        is String -> raw
-        is com.google.firebase.firestore.DocumentReference -> raw.id
-        else -> null
-    } ?: return null
-    val routeStart = getString("start") ?: return null
-    val routeEnd = getString("end") ?: return null
-    val routeId = "" // not stored separately
-    return TransportAnnouncementEntity(
-        id = announcementId,
-        driverId = driver,
-        vehicleType = getString("vehicleType") ?: "",
-        start = routeStart,
-        end = routeEnd,
-        date = (getLong("date") ?: 0L).toInt(),
-        cost = getDouble("cost") ?: 0.0,
-        durationMinutes = (getLong("durationMinutes") ?: 0L).toInt()
-    )
-}
 
 fun DocumentSnapshot.toPoiTypeEntity(): PoiTypeEntity? {
     val typeId = getString("id") ?: id
