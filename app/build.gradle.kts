@@ -30,8 +30,8 @@ android {
         applicationId = "com.ioannapergamali.mysmartroute"
         minSdk = 33
         targetSdk = 35
-        versionCode = 12
-        versionName = "2.2"
+        versionCode = 13
+        versionName = "2.4"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "MAPS_API_KEY", "\"$MAPS_API_KEY\"")
         manifestPlaceholders["MAPS_API_KEY"] = MAPS_API_KEY
