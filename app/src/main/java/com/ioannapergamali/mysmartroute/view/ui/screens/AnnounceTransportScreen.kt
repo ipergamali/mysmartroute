@@ -38,6 +38,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.ui.window.PopupProperties
 import com.google.maps.android.compose.GoogleMap
@@ -314,8 +315,10 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         endLatLng?.let { toMarkerState.position = it }
     }
 
-    ScreenContainer(modifier = Modifier.padding(0.dp)) {
-        Column {
+    ScreenContainer(modifier = Modifier.padding(0.dp), scrollable = false) {
+        LazyColumn {
+            item {
+                Column {
             TopBar(
                 title = stringResource(R.string.announce_transport),
                 navController = navController,
@@ -841,7 +844,9 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
             else -> {}
         }
     }
+                }
+            }
+        }
     }
-}
 }
 }
