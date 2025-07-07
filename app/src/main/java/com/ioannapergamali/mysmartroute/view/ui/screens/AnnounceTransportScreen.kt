@@ -39,6 +39,8 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
@@ -152,28 +154,40 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     value = query,
                     onValueChange = {
                         query = it
-                        menuExpanded = it.isNotBlank()
+                        selectedPoi = selectedPoi?.copy(name = it)
                     },
                     label = { Text(stringResource(R.string.add_point)) },
                     trailingIcon = {
                         Icon(
                             imageVector = Icons.Default.ArrowDropDown,
                             contentDescription = null,
-                            modifier = Modifier.clickable { menuExpanded = !menuExpanded }
+                            modifier = Modifier.clickable {
+                                if (query.isNotBlank()) {
+                                    menuExpanded = !menuExpanded
+                                }
+                            }
                         )
                     },
                     modifier = Modifier
                         .menuAnchor()
                         .fillMaxWidth()
                 )
-                val filtered = pois.filter { it.name.contains(query, true) }.sortedBy { it.name }
-                DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
-                    filtered.take(4).forEach { poi ->
-                        DropdownMenuItem(text = { Text(poi.name) }, onClick = {
-                            selectedPoi = poi
-                            query = poi.name
-                            menuExpanded = false
-                        })
+                val filtered = if (query.isNotBlank()) {
+                    pois.filter { it.name.contains(query, true) }.sortedBy { it.name }
+                } else emptyList()
+                DropdownMenu(
+                    expanded = menuExpanded,
+                    onDismissRequest = { menuExpanded = false },
+                    modifier = Modifier.heightIn(max = 200.dp)
+                ) {
+                    LazyColumn {
+                        items(filtered) { poi ->
+                            DropdownMenuItem(text = { Text(poi.name) }, onClick = {
+                                selectedPoi = poi
+                                query = poi.name
+                                menuExpanded = false
+                            })
+                        }
                     }
                 }
             }
