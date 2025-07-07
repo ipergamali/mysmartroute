@@ -69,6 +69,7 @@ class PoIViewModel : ViewModel() {
                 lng = lng
             )
             dao.insert(poi)
+            _pois.value = _pois.value + poi
             db.collection("pois")
                 .document(id)
                 .set(poi.toFirestoreMap())
