@@ -71,6 +71,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     var menuExpanded by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
     var selectedPoi by remember { mutableStateOf<PoIEntity?>(null) }
+    var selectingPoint by remember { mutableStateOf(false) }
 
     val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
     LaunchedEffect(pois) {
@@ -101,6 +102,12 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         .height(300.dp),
                     cameraPositionState = cameraPositionState,
                     properties = mapProperties,
+                    onMapClick = { latLng ->
+                        if (selectingPoint) {
+                            selectingPoint = false
+                            navController.navigate("definePoi?lat=${latLng.latitude}&lng=${latLng.longitude}&source=announce&view=false")
+                        }
+                    }
                 ) {
                     routePois.forEach { poi ->
                         Marker(state = MarkerState(LatLng(poi.lat, poi.lng)), title = poi.name)
@@ -115,17 +122,23 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
 
             Spacer(Modifier.height(16.dp))
 
-            ExposedDropdownMenuBox(expanded = menuExpanded, onExpandedChange = { menuExpanded = it }) {
+            ExposedDropdownMenuBox(
+                expanded = menuExpanded,
+                onExpandedChange = { menuExpanded = it },
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 OutlinedTextField(
                     value = query,
                     onValueChange = { query = it; menuExpanded = true },
                     label = { Text(stringResource(R.string.add_point)) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = menuExpanded) },
-                    modifier = Modifier.menuAnchor()
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth()
                 )
                 val filtered = pois.filter { it.name.contains(query, true) }.sortedBy { it.name }
                 DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
-                    filtered.forEach { poi ->
+                    filtered.take(4).forEach { poi ->
                         DropdownMenuItem(text = { Text(poi.name) }, onClick = {
                             selectedPoi = poi
                             query = poi.name
@@ -137,7 +150,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                 IconButton(onClick = {
-                    navController.navigate("definePoi?lat=&lng=&source=announce&view=false")
+                    selectingPoint = true
                 }) { Icon(Icons.Default.Place, contentDescription = null) }
                 IconButton(onClick = { selectedPoi?.let { routePois.add(it) } }) {
                     Icon(Icons.Default.Check, contentDescription = null)
