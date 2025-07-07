@@ -43,6 +43,7 @@ import com.google.maps.android.compose.MarkerState
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
+import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 
 private const val TAG = "AnnounceTransport"
 
@@ -76,6 +77,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     var query by remember { mutableStateOf("") }
     var selectedPoi by remember { mutableStateOf<PoIEntity?>(null) }
     var selectingPoint by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
 
     val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
     LaunchedEffect(pois) {
@@ -90,20 +92,6 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         }
     }
 
-    LaunchedEffect(routePois.toList()) {
-        if (routePois.size >= 2 && !isKeyMissing) {
-            val start = LatLng(routePois.first().lat, routePois.first().lng)
-            val end = LatLng(routePois.last().lat, routePois.last().lng)
-            val waypoints = routePois.drop(1).dropLast(1).map { LatLng(it.lat, it.lng) }
-            val data = MapsUtils.fetchDurationAndPath(start, end, apiKey, com.ioannapergamali.mysmartroute.model.enumerations.VehicleType.CAR, waypoints)
-            if (data.status == "OK") {
-                pathPoints.clear()
-                pathPoints.addAll(data.points)
-            }
-        } else {
-            pathPoints.clear()
-        }
-    }
 
     Scaffold(topBar = {
         TopBar(
@@ -193,7 +181,22 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     val ids = routePois.map { it.id }
                     if (ids.size >= 2) {
                         routeViewModel.addRoute(context, ids)
-                        navController.navigate("directionsMap/${ids.first()}/${ids.last()}")
+                        scope.launch {
+                            val start = LatLng(routePois.first().lat, routePois.first().lng)
+                            val end = LatLng(routePois.last().lat, routePois.last().lng)
+                            val waypoints = routePois.drop(1).dropLast(1).map { LatLng(it.lat, it.lng) }
+                            val data = MapsUtils.fetchDurationAndPath(
+                                start,
+                                end,
+                                apiKey,
+                                com.ioannapergamali.mysmartroute.model.enumerations.VehicleType.CAR,
+                                waypoints
+                            )
+                            if (data.status == "OK") {
+                                pathPoints.clear()
+                                pathPoints.addAll(data.points)
+                            }
+                        }
                     }
                 }) { Icon(Icons.Default.Directions, contentDescription = null) }
             }
