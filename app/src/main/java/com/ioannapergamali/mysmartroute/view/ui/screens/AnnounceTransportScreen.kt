@@ -44,6 +44,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
+import kotlinx.coroutines.launch
 
 private const val TAG = "AnnounceTransport"
 
