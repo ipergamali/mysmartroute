@@ -146,12 +146,15 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
 
             ExposedDropdownMenuBox(
                 expanded = menuExpanded,
-                onExpandedChange = {},
+                onExpandedChange = { menuExpanded = !menuExpanded },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 OutlinedTextField(
                     value = query,
-                    onValueChange = { query = it; menuExpanded = true },
+                    onValueChange = {
+                        query = it
+                        menuExpanded = it.isNotBlank()
+                    },
                     label = { Text(stringResource(R.string.add_point)) },
                     trailingIcon = {
                         Icon(
