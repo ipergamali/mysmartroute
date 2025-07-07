@@ -15,6 +15,8 @@ import com.ioannapergamali.mysmartroute.data.local.LanguageSettingEntity
 import com.ioannapergamali.mysmartroute.data.local.LanguageSettingDao
 import com.ioannapergamali.mysmartroute.data.local.RouteEntity
 import com.ioannapergamali.mysmartroute.data.local.MovingEntity
+import com.ioannapergamali.mysmartroute.data.local.RoutePointEntity
+import com.ioannapergamali.mysmartroute.data.local.RoutePointDao
 import androidx.room.TypeConverters
 import com.ioannapergamali.mysmartroute.data.local.Converters
 
@@ -30,9 +32,10 @@ import com.ioannapergamali.mysmartroute.data.local.Converters
         MenuOptionEntity::class,
         LanguageSettingEntity::class,
         RouteEntity::class,
-        MovingEntity::class
+        MovingEntity::class,
+        RoutePointEntity::class
     ],
-    version = 24
+    version = 25
 )
 @TypeConverters(Converters::class)
 abstract class MySmartRouteDatabase : RoomDatabase() {
@@ -47,6 +50,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
     abstract fun languageSettingDao(): LanguageSettingDao
     abstract fun routeDao(): RouteDao
     abstract fun movingDao(): MovingDao
+    abstract fun routePointDao(): RoutePointDao
 
     companion object {
         @Volatile
@@ -359,6 +363,19 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_24_25 = object : Migration(24, 25) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `route_points` (" +
+                        "`routeId` TEXT NOT NULL, " +
+                        "`position` INTEGER NOT NULL, " +
+                        "`poiId` TEXT NOT NULL, " +
+                        "PRIMARY KEY(`routeId`, `position`)" +
+                        ")"
+                )
+            }
+        }
+
         private fun prepopulate(db: SupportSQLiteDatabase) {
             Log.d(TAG, "Prepopulating database")
             db.execSQL(
@@ -456,7 +473,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_18_19,
                     MIGRATION_19_20,
                     MIGRATION_21_22,
-                    MIGRATION_23_24
+                    MIGRATION_23_24,
+                    MIGRATION_24_25
                 )
                     .addCallback(object : RoomDatabase.Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {

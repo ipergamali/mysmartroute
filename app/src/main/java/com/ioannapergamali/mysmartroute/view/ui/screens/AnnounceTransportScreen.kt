@@ -1,14 +1,19 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
 import android.util.Log
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Directions
+import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -24,6 +29,17 @@ import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import androidx.navigation.NavController
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
+import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
+import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 
 private const val TAG = "AnnounceTransport"
 
@@ -31,6 +47,11 @@ private const val TAG = "AnnounceTransport"
 @Composable
 fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit) {
     val context = LocalContext.current
+    val poiViewModel: PoIViewModel = viewModel()
+    val routeViewModel: RouteViewModel = viewModel()
+    val pois by poiViewModel.pois.collectAsState()
+
+    LaunchedEffect(Unit) { poiViewModel.loadPois(context) }
 
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(
@@ -45,6 +66,24 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     val apiKey = MapsUtils.getApiKey(context)
     val isKeyMissing = apiKey.isBlank()
     Log.d(TAG, "API key loaded? ${!isKeyMissing}")
+
+    val routePois = remember { mutableStateListOf<PoIEntity>() }
+    var menuExpanded by remember { mutableStateOf(false) }
+    var query by remember { mutableStateOf("") }
+    var selectedPoi by remember { mutableStateOf<PoIEntity?>(null) }
+
+    val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
+    LaunchedEffect(pois) {
+        val newName = savedStateHandle?.remove<String>("poiName")
+        val lat = savedStateHandle?.remove<Double>("poiLat")
+        val lng = savedStateHandle?.remove<Double>("poiLng")
+        if (newName != null && lat != null && lng != null) {
+            pois.find { it.name == newName && it.lat == lat && it.lng == lng }?.let { poi ->
+                selectedPoi = poi
+                query = poi.name
+            }
+        }
+    }
 
     Scaffold(topBar = {
         TopBar(
@@ -62,13 +101,57 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         .height(300.dp),
                     cameraPositionState = cameraPositionState,
                     properties = mapProperties,
-                    onMapLoaded = { Log.d(TAG, "Map loaded") }
-                )
+                ) {
+                    routePois.forEach { poi ->
+                        Marker(state = MarkerState(LatLng(poi.lat, poi.lng)), title = poi.name)
+                    }
+                }
             } else {
                 Text(
                     stringResource(R.string.map_api_key_missing),
                     color = MaterialTheme.colorScheme.primary
                 )
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            ExposedDropdownMenuBox(expanded = menuExpanded, onExpandedChange = { menuExpanded = it }) {
+                OutlinedTextField(
+                    value = query,
+                    onValueChange = { query = it; menuExpanded = true },
+                    label = { Text(stringResource(R.string.add_point)) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = menuExpanded) },
+                    modifier = Modifier.menuAnchor()
+                )
+                val filtered = pois.filter { it.name.contains(query, true) }.sortedBy { it.name }
+                DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
+                    filtered.forEach { poi ->
+                        DropdownMenuItem(text = { Text(poi.name) }, onClick = {
+                            selectedPoi = poi
+                            query = poi.name
+                            menuExpanded = false
+                        })
+                    }
+                }
+            }
+
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                IconButton(onClick = {
+                    navController.navigate("definePoi?lat=&lng=&source=announce&view=false")
+                }) { Icon(Icons.Default.Place, contentDescription = null) }
+                IconButton(onClick = { selectedPoi?.let { routePois.add(it) } }) {
+                    Icon(Icons.Default.Check, contentDescription = null)
+                }
+                IconButton(onClick = {
+                    selectedPoi?.let { navController.navigate("definePoi?lat=${it.lat}&lng=${it.lng}&source=announce&view=true") }
+                }) { Icon(Icons.Default.Search, contentDescription = null) }
+                IconButton(onClick = {
+                    val ids = routePois.map { it.id }
+                    if (ids.size >= 2) {
+                        routeViewModel.addRoute(context, ids)
+                        navController.navigate("directionsMap/${ids.first()}/${ids.last()}")
+                    }
+                }) { Icon(Icons.Default.Directions, contentDescription = null) }
             }
         }
     }

@@ -9,6 +9,7 @@ import com.ioannapergamali.mysmartroute.data.local.RoleEntity
 import com.ioannapergamali.mysmartroute.data.local.MenuEntity
 import com.ioannapergamali.mysmartroute.data.local.MenuOptionEntity
 import com.ioannapergamali.mysmartroute.data.local.RouteEntity
+import com.ioannapergamali.mysmartroute.data.local.RoutePointEntity
 import com.ioannapergamali.mysmartroute.data.local.PoiTypeEntity
 import com.google.firebase.firestore.DocumentReference
 
@@ -128,11 +129,14 @@ fun MenuOptionEntity.toFirestoreMap(): Map<String, Any> = mapOf(
 )
 
 
-fun RouteEntity.toFirestoreMap(): Map<String, Any> = mapOf(
+fun RouteEntity.toFirestoreMap(points: List<RoutePointEntity> = emptyList()): Map<String, Any> = mapOf(
     "id" to id,
     "start" to FirebaseFirestore.getInstance().collection("pois").document(startPoiId),
     "end" to FirebaseFirestore.getInstance().collection("pois").document(endPoiId),
-    "cost" to cost
+    "cost" to cost,
+    "points" to points.sortedBy { it.position }.map {
+        FirebaseFirestore.getInstance().collection("pois").document(it.poiId)
+    }
 )
 
 fun DocumentSnapshot.toRouteEntity(): RouteEntity? {
@@ -149,6 +153,20 @@ fun DocumentSnapshot.toRouteEntity(): RouteEntity? {
     } ?: return null
     val costVal = getDouble("cost") ?: 0.0
     return RouteEntity(routeId, start, end, costVal)
+}
+
+fun DocumentSnapshot.toRouteWithPoints(): Pair<RouteEntity, List<RoutePointEntity>>? {
+    val route = toRouteEntity() ?: return null
+    val rawPoints = get("points") as? List<*> ?: emptyList<Any>()
+    val points = rawPoints.mapIndexedNotNull { idx, p ->
+        val id = when (p) {
+            is DocumentReference -> p.id
+            is String -> p
+            else -> null
+        }
+        id?.let { RoutePointEntity(route.id, idx, it) }
+    }
+    return route to points
 }
 
 fun DocumentSnapshot.toPoIEntity(): PoIEntity? {
