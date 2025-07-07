@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Directions
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -18,12 +19,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.clickable
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.rememberCameraPositionState
+import com.google.maps.android.compose.Polyline
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
@@ -68,6 +71,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     Log.d(TAG, "API key loaded? ${!isKeyMissing}")
 
     val routePois = remember { mutableStateListOf<PoIEntity>() }
+    val pathPoints = remember { mutableStateListOf<LatLng>() }
     var menuExpanded by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
     var selectedPoi by remember { mutableStateOf<PoIEntity?>(null) }
@@ -83,6 +87,21 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 selectedPoi = poi
                 query = poi.name
             }
+        }
+    }
+
+    LaunchedEffect(routePois.toList()) {
+        if (routePois.size >= 2 && !isKeyMissing) {
+            val start = LatLng(routePois.first().lat, routePois.first().lng)
+            val end = LatLng(routePois.last().lat, routePois.last().lng)
+            val waypoints = routePois.drop(1).dropLast(1).map { LatLng(it.lat, it.lng) }
+            val data = MapsUtils.fetchDurationAndPath(start, end, apiKey, com.ioannapergamali.mysmartroute.model.enumerations.VehicleType.CAR, waypoints)
+            if (data.status == "OK") {
+                pathPoints.clear()
+                pathPoints.addAll(data.points)
+            }
+        } else {
+            pathPoints.clear()
         }
     }
 
@@ -112,6 +131,9 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     routePois.forEach { poi ->
                         Marker(state = MarkerState(LatLng(poi.lat, poi.lng)), title = poi.name)
                     }
+                    if (pathPoints.isNotEmpty()) {
+                        Polyline(points = pathPoints)
+                    }
                 }
             } else {
                 Text(
@@ -124,14 +146,20 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
 
             ExposedDropdownMenuBox(
                 expanded = menuExpanded,
-                onExpandedChange = { menuExpanded = it },
+                onExpandedChange = {},
                 modifier = Modifier.fillMaxWidth()
             ) {
                 OutlinedTextField(
                     value = query,
                     onValueChange = { query = it; menuExpanded = true },
                     label = { Text(stringResource(R.string.add_point)) },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = menuExpanded) },
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.ArrowDropDown,
+                            contentDescription = null,
+                            modifier = Modifier.clickable { menuExpanded = !menuExpanded }
+                        )
+                    },
                     modifier = Modifier
                         .menuAnchor()
                         .fillMaxWidth()
