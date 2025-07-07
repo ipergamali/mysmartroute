@@ -30,8 +30,7 @@ import com.ioannapergamali.mysmartroute.data.local.Converters
         MenuOptionEntity::class,
         LanguageSettingEntity::class,
         RouteEntity::class,
-        MovingEntity::class,
-        TransportAnnouncementEntity::class
+        MovingEntity::class
     ],
     version = 24
 )
@@ -48,7 +47,6 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
     abstract fun languageSettingDao(): LanguageSettingDao
     abstract fun routeDao(): RouteDao
     abstract fun movingDao(): MovingDao
-    abstract fun transportAnnouncementDao(): TransportAnnouncementDao
 
     companion object {
         @Volatile
@@ -308,25 +306,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
-        private val MIGRATION_20_21 = object : Migration(20, 21) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL(
-                    "CREATE TABLE IF NOT EXISTS `transport_announcements` (" +
-                        "`id` TEXT NOT NULL, " +
-                        "`driverId` TEXT NOT NULL, " +
-                        "`vehicleType` TEXT NOT NULL, " +
-                        "`start` TEXT NOT NULL, " +
-                        "`end` TEXT NOT NULL, " +
-                        "`date` INTEGER NOT NULL, " +
-                        "`cost` REAL NOT NULL, " +
-                        "`durationMinutes` INTEGER NOT NULL, " +
-                        "PRIMARY KEY(`id`)" +
-                        ")"
-                )
-            }
-        }
-
-        private val MIGRATION_21_22 = object : Migration(21, 22) {
+        private val MIGRATION_21_22 = object : Migration(20, 21) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE `pois` ADD COLUMN `country` TEXT NOT NULL DEFAULT ''")
                 database.execSQL("ALTER TABLE `pois` ADD COLUMN `city` TEXT NOT NULL DEFAULT ''")
@@ -475,7 +455,6 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_17_18,
                     MIGRATION_18_19,
                     MIGRATION_19_20,
-                    MIGRATION_20_21,
                     MIGRATION_21_22,
                     MIGRATION_23_24
                 )
