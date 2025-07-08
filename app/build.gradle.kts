@@ -43,7 +43,8 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.15"
+        // Χρησιμοποιούμε την πιο πρόσφατη έκδοση του compiler
+        kotlinCompilerExtensionVersion = "1.6.10"
     }
 
     compileOptions {
