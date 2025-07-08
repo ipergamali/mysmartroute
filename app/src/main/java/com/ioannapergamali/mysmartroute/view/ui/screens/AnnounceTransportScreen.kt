@@ -42,6 +42,10 @@ import androidx.compose.material3.menuAnchor
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
@@ -83,17 +87,37 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     var selectedPoi by remember { mutableStateOf<PoIEntity?>(null) }
     var selectingPoint by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+    var pendingPoi by remember { mutableStateOf<Triple<String, Double, Double>?>(null) }
 
     val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
-    LaunchedEffect(pois) {
-        val newName = savedStateHandle?.remove<String>("poiName")
-        val lat = savedStateHandle?.remove<Double>("poiLat")
-        val lng = savedStateHandle?.remove<Double>("poiLng")
-        if (newName != null && lat != null && lng != null) {
-            pois.find { it.name == newName && it.lat == lat && it.lng == lng }?.let { poi ->
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                val newName = savedStateHandle?.get<String>("poiName")
+                val lat = savedStateHandle?.get<Double>("poiLat")
+                val lng = savedStateHandle?.get<Double>("poiLng")
+                if (newName != null && lat != null && lng != null) {
+                    pendingPoi = Triple(newName, lat, lng)
+                    poiViewModel.loadPois(context)
+                }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
+    LaunchedEffect(pois, pendingPoi) {
+        pendingPoi?.let { (name, lat, lng) ->
+            savedStateHandle?.remove<String>("poiName")
+            savedStateHandle?.remove<Double>("poiLat")
+            savedStateHandle?.remove<Double>("poiLng")
+            pois.find { it.name == name && it.lat == lat && it.lng == lng }?.let { poi ->
                 selectedPoi = poi
                 query = poi.name
+                routePois.add(poi)
             }
+            pendingPoi = null
         }
     }
 
@@ -183,15 +207,17 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         .fillMaxWidth()
                         .heightIn(max = 300.dp)
                 ) {
-                    filtered.forEach { poi ->
-                        DropdownMenuItem(
-                            text = { Text(poi.name) },
-                            onClick = {
-                                selectedPoi = poi
-                                query = poi.name
-                                menuExpanded = false
-                            }
-                        )
+                    LazyColumn {
+                        items(filtered) { poi ->
+                            DropdownMenuItem(
+                                text = { Text(poi.name) },
+                                onClick = {
+                                    selectedPoi = poi
+                                    query = poi.name
+                                    menuExpanded = false
+                                }
+                            )
+                        }
                     }
                 }
             }
