@@ -30,6 +30,7 @@ import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.model.classes.poi.PoiAddress
+import androidx.compose.material3.menuAnchor
 
 private const val TAG = "DefinePoiScreen"
 
