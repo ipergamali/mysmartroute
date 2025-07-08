@@ -57,7 +57,9 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
                 DropdownMenu(
                     expanded = expanded,
                     onDismissRequest = { expanded = false },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 300.dp)
                 ) {
                     VehicleType.values().forEach { option ->
                         DropdownMenuItem(

@@ -51,7 +51,9 @@ fun RouteEditorScreen(navController: NavController, openDrawer: () -> Unit) {
                 DropdownMenu(
                     expanded = menuExpanded,
                     onDismissRequest = { menuExpanded = false },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 300.dp)
                 ) {
                     availablePois.forEach { poi ->
                         DropdownMenuItem(

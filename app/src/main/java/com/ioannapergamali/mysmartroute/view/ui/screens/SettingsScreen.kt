@@ -3,6 +3,7 @@ package com.ioannapergamali.mysmartroute.view.ui.screens
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
@@ -125,7 +126,9 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
                 DropdownMenu(
                     expanded = expandedTheme.value,
                     onDismissRequest = { expandedTheme.value = false },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 300.dp)
                 ) {
                     (AppTheme.values().toList() + customThemes).forEach { theme ->
                         DropdownMenuItem(text = { Text(theme.label) }, onClick = {
@@ -160,7 +163,9 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
                 DropdownMenu(
                     expanded = expandedFont.value,
                     onDismissRequest = { expandedFont.value = false },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 300.dp)
                 ) {
                     AppFont.values().forEach { font ->
                         DropdownMenuItem(text = { Text(font.label) }, onClick = {
