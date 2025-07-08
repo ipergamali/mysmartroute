@@ -39,6 +39,7 @@ import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import androidx.compose.ui.res.stringResource
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
+import androidx.compose.material3.menuAnchor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
