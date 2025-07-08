@@ -48,7 +48,11 @@ fun RouteEditorScreen(navController: NavController, openDrawer: () -> Unit) {
                     Spacer(Modifier.width(8.dp))
                     Text(stringResource(R.string.add_stop))
                 }
-                DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
+                DropdownMenu(
+                    expanded = menuExpanded,
+                    onDismissRequest = { menuExpanded = false },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     availablePois.forEach { poi ->
                         DropdownMenuItem(
                             text = { Text(poi.name) },

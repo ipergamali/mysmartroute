@@ -181,7 +181,11 @@ fun DefinePoiScreen(
                         unfocusedBorderColor = MaterialTheme.colorScheme.primary
                     )
                 )
-                DropdownMenu(expanded = typeMenuExpanded, onDismissRequest = { typeMenuExpanded = false }) {
+                DropdownMenu(
+                    expanded = typeMenuExpanded,
+                    onDismissRequest = { typeMenuExpanded = false },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     placeTypes.forEach { t ->
                         DropdownMenuItem(text = { Text(t.name) }, onClick = {
                             Log.d(TAG, "User selected type from menu: ${t.name}")
