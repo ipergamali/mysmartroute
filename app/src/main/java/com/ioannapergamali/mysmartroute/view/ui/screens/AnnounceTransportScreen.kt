@@ -183,14 +183,15 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         .fillMaxWidth()
                         .heightIn(max = 300.dp)
                 ) {
-                    LazyColumn {
-                        items(filtered) { poi ->
-                            DropdownMenuItem(text = { Text(poi.name) }, onClick = {
+                    filtered.forEach { poi ->
+                        DropdownMenuItem(
+                            text = { Text(poi.name) },
+                            onClick = {
                                 selectedPoi = poi
                                 query = poi.name
                                 menuExpanded = false
-                            })
-                        }
+                            }
+                        )
                     }
                 }
             }
