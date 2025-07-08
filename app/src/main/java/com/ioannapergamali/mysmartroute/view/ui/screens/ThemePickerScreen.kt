@@ -80,7 +80,11 @@ fun ThemePickerScreen(navController: NavController) {
                             unfocusedBorderColor = MaterialTheme.colorScheme.primary
                         )
                     )
-                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
                         (AppTheme.values().toList() + customThemes).forEach { theme ->
                             DropdownMenuItem(text = { Text(theme.label) }, onClick = {
                                 selectedTheme = theme

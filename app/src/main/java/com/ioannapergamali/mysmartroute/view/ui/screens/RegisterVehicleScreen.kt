@@ -53,7 +53,11 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
                         unfocusedBorderColor = MaterialTheme.colorScheme.primary
                     )
                 )
-                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     VehicleType.values().forEach { option ->
                         DropdownMenuItem(
                             text = { Text(option.name) },

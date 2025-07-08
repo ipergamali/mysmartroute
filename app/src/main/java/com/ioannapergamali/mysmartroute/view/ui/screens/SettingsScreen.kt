@@ -120,7 +120,11 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
                         unfocusedBorderColor = MaterialTheme.colorScheme.primary
                     )
                 )
-                DropdownMenu(expanded = expandedTheme.value, onDismissRequest = { expandedTheme.value = false }) {
+                DropdownMenu(
+                    expanded = expandedTheme.value,
+                    onDismissRequest = { expandedTheme.value = false },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     (AppTheme.values().toList() + customThemes).forEach { theme ->
                         DropdownMenuItem(text = { Text(theme.label) }, onClick = {
                             selectedTheme.value = theme
@@ -151,7 +155,11 @@ fun SettingsScreen(navController: NavController, openDrawer: () -> Unit) {
                         unfocusedBorderColor = MaterialTheme.colorScheme.primary
                     )
                 )
-                DropdownMenu(expanded = expandedFont.value, onDismissRequest = { expandedFont.value = false }) {
+                DropdownMenu(
+                    expanded = expandedFont.value,
+                    onDismissRequest = { expandedFont.value = false },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     AppFont.values().forEach { font ->
                         DropdownMenuItem(text = { Text(font.label) }, onClick = {
                             selectedFont.value = font

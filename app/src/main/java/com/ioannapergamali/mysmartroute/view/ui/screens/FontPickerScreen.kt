@@ -74,7 +74,11 @@ fun FontPickerScreen(navController: NavController) {
                             unfocusedBorderColor = MaterialTheme.colorScheme.primary
                         )
                     )
-                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
                         AppFont.values().forEach { font ->
                             DropdownMenuItem(text = { Text(font.label) }, onClick = {
                                 selectedFont = font
