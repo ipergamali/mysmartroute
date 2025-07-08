@@ -2,6 +2,8 @@ package com.ioannapergamali.mysmartroute.view.ui.screens
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.weight
 import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
@@ -40,6 +42,7 @@ import androidx.navigation.NavController
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.VolumeOff
 import androidx.compose.material.icons.filled.VolumeUp
+import androidx.compose.material3.menuAnchor
 import com.ioannapergamali.mysmartroute.utils.SoundManager
 import com.ioannapergamali.mysmartroute.utils.SoundPreferenceManager
 import com.ioannapergamali.mysmartroute.utils.ThemePreferenceManager
