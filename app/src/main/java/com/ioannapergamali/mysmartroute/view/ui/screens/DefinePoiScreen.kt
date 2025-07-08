@@ -185,7 +185,9 @@ fun DefinePoiScreen(
                 DropdownMenu(
                     expanded = typeMenuExpanded,
                     onDismissRequest = { typeMenuExpanded = false },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 300.dp)
                 ) {
                     placeTypes.forEach { t ->
                         DropdownMenuItem(text = { Text(t.name) }, onClick = {

@@ -180,8 +180,8 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     expanded = menuExpanded,
                     onDismissRequest = { menuExpanded = false },
                     modifier = Modifier
-                        .height(200.dp)
                         .fillMaxWidth()
+                        .heightIn(max = 300.dp)
                 ) {
                     LazyColumn {
                         items(filtered) { poi ->
