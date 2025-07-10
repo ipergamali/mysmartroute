@@ -211,14 +211,13 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 DropdownMenu(
                     expanded = menuExpanded,
                     onDismissRequest = { menuExpanded = false },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(max = 300.dp)
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     val scrollState = rememberScrollState()
                     Column(
                         modifier = Modifier
                             .verticalScroll(scrollState)
+                            .heightIn(max = 300.dp)
                             .fillMaxWidth()
                     ) {
                         filtered.forEach { poi ->
