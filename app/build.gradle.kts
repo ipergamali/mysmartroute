@@ -123,6 +123,9 @@ dependencies {
     // JSON parsing
     implementation("com.google.code.gson:gson:2.13.1")
 
+    // Crash reporting με ACRA
+    implementation("ch.acra:acra-mail:5.12.0")
+
     // Testing
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

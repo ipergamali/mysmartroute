@@ -1,7 +1,6 @@
 package com.ioannapergamali.mysmartroute
 
 import android.app.Application
-import android.util.Log
 import com.google.firebase.FirebaseApp
 import com.ioannapergamali.mysmartroute.BuildConfig
 import com.ioannapergamali.mysmartroute.utils.ShortcutUtils
@@ -10,11 +9,18 @@ import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 import com.ioannapergamali.mysmartroute.utils.LanguagePreferenceManager
 import com.ioannapergamali.mysmartroute.utils.LocaleUtils
 import kotlinx.coroutines.runBlocking
+import org.acra.ACRA
+import org.acra.annotation.AcraCore
+import org.acra.annotation.AcraMail
+import org.acra.data.StringFormat
 
 
+@AcraCore(buildConfigClass = BuildConfig::class, reportFormat = StringFormat.JSON)
+@AcraMail(mailTo = "ioannapergamali@gmail.com", reportAsFile = false)
 class MySmartRouteApplication : Application() {
     override fun onCreate() {
         super.onCreate()
+        ACRA.init(this)
         val lang = runBlocking { LanguagePreferenceManager.getLanguage(this@MySmartRouteApplication) }
         LocaleUtils.updateLocale(this, lang)
         FirebaseApp.initializeApp(this)
