@@ -233,7 +233,8 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                 onClick = {
                                     selectedPoi = poi
                                     query = poi.name
-                                    menuExpanded = false
+                                    menuExpanded = true
+                                    focusRequester.requestFocus()
                                 }
                             )
                         }
