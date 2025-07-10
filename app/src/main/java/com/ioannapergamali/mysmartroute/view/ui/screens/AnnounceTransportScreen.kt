@@ -215,7 +215,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         .fillMaxWidth()
                         .heightIn(max = 300.dp)
                 ) {
-                    LazyColumn {
+                    LazyColumn(modifier = Modifier.fillMaxWidth()) {
                         items(filtered) { poi ->
                             DropdownMenuItem(
                                 text = { Text(poi.name) },
