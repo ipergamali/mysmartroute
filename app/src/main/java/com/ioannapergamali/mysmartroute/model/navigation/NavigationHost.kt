@@ -27,6 +27,7 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.DatabaseSyncScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.RolesScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.ProfileScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.RouteEditorScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.ManageFavoritesScreen
 
 
 
@@ -135,6 +136,10 @@ fun NavigationHost(navController : NavHostController, openDrawer: () -> Unit) {
 
         composable("profile") {
             ProfileScreen(navController = navController, openDrawer = openDrawer)
+        }
+
+        composable("manageFavorites") {
+            ManageFavoritesScreen(navController = navController, openDrawer = openDrawer)
         }
 
         composable("soundPicker") {
