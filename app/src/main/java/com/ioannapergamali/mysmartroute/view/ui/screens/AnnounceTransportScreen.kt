@@ -173,12 +173,18 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
 
             Spacer(Modifier.height(16.dp))
 
+            val focusRequester = remember { FocusRequester() }
             ExposedDropdownMenuBox(
                 expanded = menuExpanded,
-                onExpandedChange = { menuExpanded = !menuExpanded },
+                onExpandedChange = {
+                    if (query.isNotBlank()) {
+                        menuExpanded = !menuExpanded
+                    } else {
+                        focusRequester.requestFocus()
+                    }
+                },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                val focusRequester = remember { FocusRequester() }
                 LaunchedEffect(Unit) { focusRequester.requestFocus() }
                 OutlinedTextField(
                     value = query,
