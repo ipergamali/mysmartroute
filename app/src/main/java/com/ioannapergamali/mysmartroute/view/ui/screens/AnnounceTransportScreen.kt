@@ -40,8 +40,8 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.menuAnchor
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.foundation.text.KeyboardOptions
@@ -215,8 +215,13 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         .fillMaxWidth()
                         .heightIn(max = 300.dp)
                 ) {
-                    LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                        items(filtered) { poi ->
+                    val scrollState = rememberScrollState()
+                    Column(
+                        modifier = Modifier
+                            .verticalScroll(scrollState)
+                            .fillMaxWidth()
+                    ) {
+                        filtered.forEach { poi ->
                             DropdownMenuItem(
                                 text = { Text(poi.name) },
                                 onClick = {
