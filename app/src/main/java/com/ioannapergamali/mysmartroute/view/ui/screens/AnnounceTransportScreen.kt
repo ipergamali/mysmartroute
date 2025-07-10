@@ -217,8 +217,8 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     val scrollState = rememberScrollState()
                     Column(
                         modifier = Modifier
-                            .verticalScroll(scrollState)
                             .heightIn(max = 300.dp)
+                            .verticalScroll(scrollState)
                             .fillMaxWidth()
                     ) {
                         filtered.forEach { poi ->
