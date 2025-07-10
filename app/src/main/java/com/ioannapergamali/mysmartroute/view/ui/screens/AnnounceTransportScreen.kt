@@ -213,7 +213,15 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         .focusRequester(focusRequester)
                 )
                 val filtered = if (query.isNotBlank()) {
-                    pois.filter { it.name.contains(query, true) }.sortedBy { it.name }
+                    val q = query.lowercase()
+                    pois.filter { poi ->
+                        poi.name.contains(q, true) ||
+                            poi.address.country.contains(q, true) ||
+                            poi.address.city.contains(q, true) ||
+                            poi.address.streetName.contains(q, true) ||
+                            poi.address.streetNum.toString().contains(q) ||
+                            poi.address.postalCode.toString().contains(q)
+                    }.sortedBy { it.name }
                 } else emptyList()
                 DropdownMenu(
                     expanded = menuExpanded,
@@ -229,7 +237,23 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     ) {
                         filtered.forEach { poi ->
                             DropdownMenuItem(
-                                text = { Text(poi.name) },
+                                text = {
+                                    Column {
+                                        Text(poi.name)
+                                        val a = poi.address
+                                        val addressLine = buildString {
+                                            if (a.streetName.isNotBlank()) append(a.streetName)
+                                            if (a.streetNum != 0) append(" ${a.streetNum}")
+                                            if (a.postalCode != 0 || a.city.isNotBlank()) {
+                                                if (isNotEmpty()) append(", ")
+                                                append("${a.postalCode} ${a.city}".trim())
+                                            }
+                                        }
+                                        if (addressLine.isNotBlank()) {
+                                            Text(addressLine, style = MaterialTheme.typography.bodySmall)
+                                        }
+                                    }
+                                },
                                 onClick = {
                                     selectedPoi = poi
                                     query = poi.name
