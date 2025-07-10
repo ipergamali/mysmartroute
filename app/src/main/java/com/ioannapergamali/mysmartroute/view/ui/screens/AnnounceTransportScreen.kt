@@ -196,6 +196,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                             modifier = Modifier.clickable {
                                 if (query.isNotBlank()) {
                                     menuExpanded = !menuExpanded
+                                    focusRequester.requestFocus()
                                 }
                             }
                         )
