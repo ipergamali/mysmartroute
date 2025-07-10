@@ -9,26 +9,22 @@ import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 import com.ioannapergamali.mysmartroute.utils.LanguagePreferenceManager
 import com.ioannapergamali.mysmartroute.utils.LocaleUtils
 import kotlinx.coroutines.runBlocking
-import org.acra.ACRA
 import org.acra.data.StringFormat
-import org.acra.config.CoreConfigurationBuilder
-import org.acra.config.MailSenderConfigurationBuilder
+import org.acra.ktx.initAcra
+import org.acra.config.mailSender
 
 
 class MySmartRouteApplication : Application() {
     override fun onCreate() {
         super.onCreate()
-        val config = CoreConfigurationBuilder().apply {
-            setBuildConfigClass(BuildConfig::class.java)
-            setReportFormat(StringFormat.JSON)
-            withPluginConfigurations(
-                MailSenderConfigurationBuilder().apply {
-                    setMailTo("ioannapergamali@gmail.com")
-                    setReportAsFile(false)
-                }.build()
-            )
-        }.build()
-        ACRA.init(this, config)
+        initAcra {
+            buildConfigClass = BuildConfig::class.java
+            reportFormat = StringFormat.JSON
+            mailSender {
+                mailTo = "ioannapergamali@gmail.com"
+                reportAsFile = false
+            }
+        }
         val lang = runBlocking { LanguagePreferenceManager.getLanguage(this@MySmartRouteApplication) }
         LocaleUtils.updateLocale(this, lang)
         FirebaseApp.initializeApp(this)
