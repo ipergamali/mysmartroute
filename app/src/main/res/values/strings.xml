@@ -111,7 +111,7 @@
     <string name="not_implemented">Functionality not available</string>
     <string name="route_editor">Route Editor</string>
     <string name="add_stop">Add stop</string>
-    <string name="add_point">Add point</string>
+    <string name="add_point">Add point:</string>
     <string name="edit_route">Edit Route</string>
     <!-- Role descriptions -->
     <string name="role_passenger_desc">You can view routes and make bookings.</string>
