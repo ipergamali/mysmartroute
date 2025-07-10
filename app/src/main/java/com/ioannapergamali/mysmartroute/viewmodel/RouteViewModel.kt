@@ -7,6 +7,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.RouteEntity
 import com.ioannapergamali.mysmartroute.data.local.RoutePointEntity
+import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.utils.toRouteEntity
@@ -24,6 +25,18 @@ class RouteViewModel : ViewModel() {
 
     private val _routes = MutableStateFlow<List<RouteEntity>>(emptyList())
     val routes: StateFlow<List<RouteEntity>> = _routes
+
+    // Διατηρούμε προσωρινά τα επιλεγμένα σημεία μιας διαδρομής
+    private val _currentRoute = MutableStateFlow<List<PoIEntity>>(emptyList())
+    val currentRoute: StateFlow<List<PoIEntity>> = _currentRoute
+
+    fun addPoiToCurrentRoute(poi: PoIEntity) {
+        _currentRoute.value = _currentRoute.value + poi
+    }
+
+    fun clearCurrentRoute() {
+        _currentRoute.value = emptyList()
+    }
 
     fun loadRoutes(context: Context) {
         viewModelScope.launch {

@@ -42,6 +42,9 @@ import androidx.compose.material3.menuAnchor
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.text.input.KeyboardOptions
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
@@ -80,7 +83,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     val isKeyMissing = apiKey.isBlank()
     Log.d(TAG, "API key loaded? ${!isKeyMissing}")
 
-    val routePois = remember { mutableStateListOf<PoIEntity>() }
+    val routePois by routeViewModel.currentRoute.collectAsState()
     val pathPoints = remember { mutableStateListOf<LatLng>() }
     var menuExpanded by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
@@ -115,7 +118,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
             pois.find { it.name == name && it.lat == lat && it.lng == lng }?.let { poi ->
                 selectedPoi = poi
                 query = poi.name
-                routePois.add(poi)
+                routeViewModel.addPoiToCurrentRoute(poi)
             }
             pendingPoi = null
         }
@@ -175,6 +178,8 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 onExpandedChange = { menuExpanded = !menuExpanded },
                 modifier = Modifier.fillMaxWidth()
             ) {
+                val focusRequester = remember { FocusRequester() }
+                LaunchedEffect(Unit) { focusRequester.requestFocus() }
                 OutlinedTextField(
                     value = query,
                     onValueChange = {
@@ -182,6 +187,8 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         selectedPoi = selectedPoi?.copy(name = it)
                     },
                     label = { Text(stringResource(R.string.add_point)) },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions.Default,
                     trailingIcon = {
                         Icon(
                             imageVector = Icons.Default.ArrowDropDown,
@@ -196,6 +203,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     modifier = Modifier
                         .menuAnchor()
                         .fillMaxWidth()
+                        .focusRequester(focusRequester)
                 )
                 val filtered = if (query.isNotBlank()) {
                     pois.filter { it.name.contains(query, true) }.sortedBy { it.name }
@@ -207,15 +215,17 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         .fillMaxWidth()
                         .heightIn(max = 300.dp)
                 ) {
-                    filtered.forEach { poi ->
-                        DropdownMenuItem(
-                            text = { Text(poi.name) },
-                            onClick = {
-                                selectedPoi = poi
-                                query = poi.name
-                                menuExpanded = false
-                            }
-                        )
+                    LazyColumn {
+                        items(filtered) { poi ->
+                            DropdownMenuItem(
+                                text = { Text(poi.name) },
+                                onClick = {
+                                    selectedPoi = poi
+                                    query = poi.name
+                                    menuExpanded = false
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -224,7 +234,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 IconButton(onClick = {
                     selectingPoint = true
                 }) { Icon(Icons.Default.Place, contentDescription = null) }
-                IconButton(onClick = { selectedPoi?.let { routePois.add(it) } }) {
+                IconButton(onClick = { selectedPoi?.let { routeViewModel.addPoiToCurrentRoute(it) } }) {
                     Icon(Icons.Default.Check, contentDescription = null)
                 }
                 IconButton(onClick = {
