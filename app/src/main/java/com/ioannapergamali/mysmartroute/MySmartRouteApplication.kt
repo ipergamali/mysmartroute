@@ -18,7 +18,7 @@ import org.acra.config.MailSenderConfigurationBuilder
 class MySmartRouteApplication : Application() {
     override fun onCreate() {
         super.onCreate()
-        val config = CoreConfigurationBuilder(this).apply {
+        val config = CoreConfigurationBuilder().apply {
             setBuildConfigClass(BuildConfig::class.java)
             setReportFormat(StringFormat.JSON)
             withPluginConfigurations(
