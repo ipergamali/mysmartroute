@@ -5,9 +5,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Directions
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -49,6 +49,11 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.core.app.ActivityCompat
+import android.Manifest
+import android.content.pm.PackageManager
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
@@ -91,6 +96,27 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     var selectingPoint by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     var pendingPoi by remember { mutableStateOf<Triple<String, Double, Double>?>(null) }
+    val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
+
+    fun goToCurrentLocation() {
+        if (ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
+        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+            location?.let {
+                val target = LatLng(it.latitude, it.longitude)
+                cameraPositionState.move(CameraUpdateFactory.newLatLngZoom(target, 15f))
+            }
+        }
+    }
 
     val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -174,14 +200,12 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
             Spacer(Modifier.height(16.dp))
 
             val focusRequester = remember { FocusRequester() }
+            LaunchedEffect(query) { menuExpanded = query.isNotBlank() }
             ExposedDropdownMenuBox(
                 expanded = menuExpanded,
                 onExpandedChange = {
-                    if (query.isNotBlank()) {
-                        menuExpanded = !menuExpanded
-                    } else {
-                        focusRequester.requestFocus()
-                    }
+                    focusRequester.requestFocus()
+                    menuExpanded = if (menuExpanded) false else query.isNotBlank()
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -197,14 +221,9 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     keyboardOptions = KeyboardOptions.Default,
                     trailingIcon = {
                         Icon(
-                            imageVector = Icons.Default.ArrowDropDown,
+                            imageVector = Icons.Default.MyLocation,
                             contentDescription = null,
-                            modifier = Modifier.clickable {
-                                if (query.isNotBlank()) {
-                                    menuExpanded = !menuExpanded
-                                    focusRequester.requestFocus()
-                                }
-                            }
+                            modifier = Modifier.clickable { goToCurrentLocation() }
                         )
                     },
                     modifier = Modifier
@@ -231,7 +250,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     val scrollState = rememberScrollState()
                     Column(
                         modifier = Modifier
-                            .heightIn(max = 300.dp)
+                            .heightIn(max = 56.dp * 3f)
                             .verticalScroll(scrollState)
                             .fillMaxWidth()
                     ) {
