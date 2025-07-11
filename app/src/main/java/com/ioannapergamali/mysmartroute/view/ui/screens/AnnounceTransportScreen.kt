@@ -190,7 +190,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                     val address = reverseGeocodePoint(context, latLng)
                                     unsavedPoint = latLng
                                     unsavedAddress = address ?: "${latLng.latitude}, ${latLng.longitude}"
-                                    query = unsavedAddress ?: ""
+                                    query = ""
                                     Toast.makeText(context, context.getString(R.string.point_not_saved_toast), Toast.LENGTH_SHORT).show()
                                 }
                             }
@@ -258,10 +258,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         .fillMaxWidth()
                         .focusRequester(focusRequester)
                 )
-                unsavedPoint?.let {
-                    Spacer(Modifier.height(4.dp))
-                    Text(stringResource(R.string.poi_details) + ": " + (unsavedAddress ?: "${it.latitude}, ${it.longitude}"))
-                }
+
                 val filtered = if (query.isNotBlank()) {
                     val q = query.lowercase()
                     pois.filter { poi ->
