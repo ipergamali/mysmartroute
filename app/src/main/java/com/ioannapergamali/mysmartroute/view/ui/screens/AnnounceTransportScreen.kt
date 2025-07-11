@@ -398,10 +398,19 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 }
                 if (removeIndex != null) {
                     IconButton(onClick = {
-                        removeIndex?.let { routeViewModel.removePoiAt(it) }
+                        removeIndex?.let { index ->
+                            val removed = routePois.getOrNull(index)
+                            routeViewModel.removePoiAt(index)
+                            if (removed?.id == selectedPoiId) {
+                                selectedPoiId = null
+                            }
+                        }
                         removeIndex = null
                     }) {
-                        Icon(Icons.Default.Close, contentDescription = stringResource(R.string.remove_point))
+                        Icon(
+                            Icons.Default.Close,
+                            contentDescription = stringResource(R.string.remove_point)
+                        )
                     }
                 }
                 IconButton(onClick = {
