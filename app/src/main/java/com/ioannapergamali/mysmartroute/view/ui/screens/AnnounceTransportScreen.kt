@@ -11,7 +11,7 @@ import androidx.compose.material.icons.filled.Directions
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.MyLocation
-import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -297,7 +297,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     trailingIcon = {
                         Row {
                             Icon(
-                                imageVector = Icons.Default.Clear,
+                                imageVector = Icons.Default.Refresh,
                                 contentDescription = stringResource(R.string.reset_field),
                                 modifier = Modifier.clickable {
                                     query = ""
