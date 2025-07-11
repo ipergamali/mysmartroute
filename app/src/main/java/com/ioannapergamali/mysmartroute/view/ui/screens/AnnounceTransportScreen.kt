@@ -22,6 +22,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Button
+import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
@@ -56,6 +57,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -78,6 +81,9 @@ import kotlinx.coroutines.withContext
 import kotlin.math.abs
 
 private const val TAG = "AnnounceTransport"
+private const val MARKER_RED = BitmapDescriptorFactory.HUE_RED
+private const val MARKER_GREEN = BitmapDescriptorFactory.HUE_GREEN
+private const val MARKER_BLUE = BitmapDescriptorFactory.HUE_BLUE
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -105,6 +111,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
 
     val routePois by routeViewModel.currentRoute.collectAsState()
     val pathPoints = remember { mutableStateListOf<LatLng>() }
+    var routeSaved by remember { mutableStateOf(false) }
     var calculating by remember { mutableStateOf(false) }
     var menuExpanded by rememberSaveable { mutableStateOf(false) }
     var query by rememberSaveable { mutableStateOf("") }
@@ -173,6 +180,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 selectedPoiId = poi.id
                 query = poi.name
                 routeViewModel.addPoiToCurrentRoute(poi)
+                routeSaved = false
                 unsavedPoint = null
                 unsavedAddress = null
                 focusRequester.requestFocus()
@@ -217,6 +225,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                 scope.launch {
                                     val address = reverseGeocodePoint(context, latLng)
                                     unsavedPoint = latLng
+                                    routeSaved = false
                                     unsavedAddress = address ?: "${latLng.latitude}, ${latLng.longitude}"
                                     query = unsavedAddress ?: ""
                                     Toast.makeText(context, context.getString(R.string.point_not_saved_toast), Toast.LENGTH_SHORT).show()
@@ -228,11 +237,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     }
                 ) {
                     routePois.forEachIndexed { index, poi ->
-                        val hue = when (index) {
-                            0 -> BitmapDescriptorFactory.HUE_GREEN
-                            routePois.lastIndex -> BitmapDescriptorFactory.HUE_RED
-                            else -> BitmapDescriptorFactory.HUE_AZURE
-                        }
+                        val hue = MARKER_BLUE
                         Marker(
                             state = MarkerState(LatLng(poi.lat, poi.lng)),
                             title = poi.name,
@@ -248,7 +253,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                             Marker(
                                 state = MarkerState(LatLng(poi.lat, poi.lng)),
                                 title = poi.name,
-                                icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)
+                                icon = BitmapDescriptorFactory.defaultMarker(MARKER_GREEN)
                             )
                         }
                     }
@@ -256,11 +261,14 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         Marker(
                             state = MarkerState(latLng),
                             title = unsavedAddress,
-                            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)
+                            icon = BitmapDescriptorFactory.defaultMarker(MARKER_RED)
                         )
                     }
                     if (pathPoints.isNotEmpty()) {
-                        Polyline(points = pathPoints)
+                        Polyline(
+                            points = pathPoints,
+                            color = if (routeSaved) Color.Green else Color.Red
+                        )
                     }
                 }
             } else {
@@ -268,6 +276,28 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     stringResource(R.string.map_api_key_missing),
                     color = MaterialTheme.colorScheme.primary
                 )
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                MarkerLegendItem(Color.Red, stringResource(R.string.legend_unsaved_point))
+                MarkerLegendItem(Color.Green, stringResource(R.string.legend_saved_poi))
+                MarkerLegendItem(Color.Blue, stringResource(R.string.legend_route_point))
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                LineLegendItem(Color.Red, stringResource(R.string.legend_unsaved_route))
+                LineLegendItem(Color.Green, stringResource(R.string.legend_saved_route))
             }
 
             Spacer(Modifier.height(16.dp))
@@ -386,7 +416,10 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 IconButton(
                     onClick = {
                         when {
-                            selectedPoi != null && unsavedPoint == null -> routeViewModel.addPoiToCurrentRoute(selectedPoi!!)
+                            selectedPoi != null && unsavedPoint == null -> {
+                                routeViewModel.addPoiToCurrentRoute(selectedPoi!!)
+                                routeSaved = false
+                            }
                             unsavedPoint != null -> Toast.makeText(context, context.getString(R.string.point_not_saved_toast), Toast.LENGTH_SHORT).show()
                         }
                         focusRequester.requestFocus()
@@ -401,6 +434,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         removeIndex?.let { index ->
                             val removed = routePois.getOrNull(index)
                             routeViewModel.removePoiAt(index)
+                            routeSaved = false
                             if (removed?.id == selectedPoiId) {
                                 selectedPoiId = null
                             }
@@ -440,6 +474,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                             if (data.status == "OK") {
                                 pathPoints.clear()
                                 pathPoints.addAll(data.points)
+                                routeSaved = false
                             }
                             calculating = false
                         }
@@ -452,7 +487,10 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     val ids = routePois.map { it.id }
                     if (ids.size >= 2) {
                         routeViewModel.addRoute(context, ids)
-                        routeViewModel.clearCurrentRoute()
+                        routeSaved = true
+                        selectedPoiId = null
+                        unsavedPoint = null
+                        unsavedAddress = null
                     }
                 },
                 enabled = routePois.size >= 2
@@ -472,6 +510,26 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun MarkerLegendItem(color: Color, text: String) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(Icons.Default.Place, contentDescription = null, tint = color)
+        Spacer(Modifier.width(4.dp))
+        Text(text, style = MaterialTheme.typography.bodySmall)
+    }
+}
+
+@Composable
+private fun LineLegendItem(color: Color, text: String) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Canvas(Modifier.size(width = 24.dp, height = 4.dp)) {
+            drawRect(color = color)
+        }
+        Spacer(Modifier.width(4.dp))
+        Text(text, style = MaterialTheme.typography.bodySmall)
     }
 }
 

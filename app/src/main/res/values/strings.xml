@@ -119,6 +119,12 @@
     <string name="edit_route">Edit Route</string>
     <string name="calculating_route">Calculating route…</string>
     <string name="save_route">Save route</string>
+    <!-- Legend texts -->
+    <string name="legend_unsaved_point">Μη αποθηκευμένο εκτός διαδρομής</string>
+    <string name="legend_saved_poi">Αποθηκευμένο POI εκτός διαδρομής</string>
+    <string name="legend_route_point">Σημεία διαδρομής</string>
+    <string name="legend_unsaved_route">Μη αποθηκευμένη διαδρομή</string>
+    <string name="legend_saved_route">Αποθηκευμένη διαδρομή</string>
     <!-- Role descriptions -->
     <string name="role_passenger_desc">You can view routes and make bookings.</string>
     <string name="role_driver_desc">You can announce transports and manage vehicles.</string>
