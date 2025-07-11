@@ -180,8 +180,6 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
             }?.let { poi ->
                 selectedPoiId = poi.id
                 query = poi.name
-                routeViewModel.addPoiToCurrentRoute(poi)
-                routeSaved = false
                 unsavedPoint = null
                 unsavedAddress = null
                 focusRequester.requestFocus()
