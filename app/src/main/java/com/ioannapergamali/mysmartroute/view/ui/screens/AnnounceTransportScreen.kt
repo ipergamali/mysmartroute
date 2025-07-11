@@ -71,6 +71,7 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.rememberMarkerState
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
@@ -238,30 +239,34 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 ) {
                     routePois.forEachIndexed { index, poi ->
                         val hue = MARKER_BLUE
+                        val state = rememberMarkerState(LatLng(poi.lat, poi.lng))
                         Marker(
-                            state = MarkerState(LatLng(poi.lat, poi.lng)),
+                            state = state,
                             title = poi.name,
+                            snippet = "Σημείο διαδρομής ${index + 1}",
                             icon = BitmapDescriptorFactory.defaultMarker(hue),
                             onClick = {
                                 removeIndex = index
-                                true
+                                false
                             }
                         )
                     }
                     selectedPoi?.let { poi ->
                         if (!routePois.contains(poi)) {
                             Marker(
-                                state = MarkerState(LatLng(poi.lat, poi.lng)),
+                                state = rememberMarkerState(LatLng(poi.lat, poi.lng)),
                                 title = poi.name,
-                                icon = BitmapDescriptorFactory.defaultMarker(MARKER_GREEN)
+                                icon = BitmapDescriptorFactory.defaultMarker(MARKER_GREEN),
+                                onClick = { false }
                             )
                         }
                     }
                     unsavedPoint?.let { latLng ->
                         Marker(
-                            state = MarkerState(latLng),
+                            state = rememberMarkerState(latLng),
                             title = unsavedAddress,
-                            icon = BitmapDescriptorFactory.defaultMarker(MARKER_RED)
+                            icon = BitmapDescriptorFactory.defaultMarker(MARKER_RED),
+                            onClick = { false }
                         )
                     }
                     if (pathPoints.isNotEmpty()) {
