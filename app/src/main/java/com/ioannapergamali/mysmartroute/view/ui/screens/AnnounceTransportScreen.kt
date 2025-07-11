@@ -278,27 +278,11 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 )
             }
 
-            Row(
+            LegendTable(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                MarkerLegendItem(Color.Red, stringResource(R.string.legend_unsaved_point))
-                MarkerLegendItem(Color.Green, stringResource(R.string.legend_saved_poi))
-                MarkerLegendItem(Color.Blue, stringResource(R.string.legend_route_point))
-            }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 8.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                LineLegendItem(Color.Red, stringResource(R.string.legend_unsaved_route))
-                LineLegendItem(Color.Green, stringResource(R.string.legend_saved_route))
-            }
+                    .padding(vertical = 8.dp)
+            )
 
             Spacer(Modifier.height(16.dp))
 
@@ -516,8 +500,10 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
 @Composable
 private fun MarkerLegendItem(color: Color, text: String) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(Icons.Default.Place, contentDescription = null, tint = color)
-        Spacer(Modifier.width(4.dp))
+        Canvas(Modifier.size(12.dp)) {
+            drawCircle(color = color)
+        }
+        Spacer(Modifier.width(8.dp))
         Text(text, style = MaterialTheme.typography.bodySmall)
     }
 }
@@ -525,11 +511,27 @@ private fun MarkerLegendItem(color: Color, text: String) {
 @Composable
 private fun LineLegendItem(color: Color, text: String) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Canvas(Modifier.size(width = 24.dp, height = 4.dp)) {
+        Canvas(Modifier.size(width = 24.dp, height = 2.dp)) {
             drawRect(color = color)
         }
-        Spacer(Modifier.width(4.dp))
+        Spacer(Modifier.width(8.dp))
         Text(text, style = MaterialTheme.typography.bodySmall)
+    }
+}
+
+@Composable
+private fun LegendTable(modifier: Modifier = Modifier) {
+    Column(modifier) {
+        Text(
+            text = stringResource(R.string.legend_header),
+            style = MaterialTheme.typography.titleSmall
+        )
+        Spacer(Modifier.height(4.dp))
+        MarkerLegendItem(Color.Red, stringResource(R.string.legend_unsaved_point))
+        MarkerLegendItem(Color.Green, stringResource(R.string.legend_saved_poi))
+        MarkerLegendItem(Color.Blue, stringResource(R.string.legend_route_point))
+        LineLegendItem(Color.Red, stringResource(R.string.legend_unsaved_route))
+        LineLegendItem(Color.Green, stringResource(R.string.legend_saved_route))
     }
 }
 
