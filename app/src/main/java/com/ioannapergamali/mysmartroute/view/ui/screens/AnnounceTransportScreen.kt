@@ -190,7 +190,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                     val address = reverseGeocodePoint(context, latLng)
                                     unsavedPoint = latLng
                                     unsavedAddress = address ?: "${latLng.latitude}, ${latLng.longitude}"
-                                    query = ""
+                                    query = unsavedAddress ?: ""
                                     Toast.makeText(context, context.getString(R.string.point_not_saved_toast), Toast.LENGTH_SHORT).show()
                                 }
                             }
