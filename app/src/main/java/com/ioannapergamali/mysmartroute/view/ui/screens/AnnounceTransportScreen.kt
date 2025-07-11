@@ -239,7 +239,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 ) {
                     routePois.forEachIndexed { index, poi ->
                         val hue = MARKER_BLUE
-                        val state = rememberMarkerState(LatLng(poi.lat, poi.lng))
+                        val state = rememberMarkerState(position = LatLng(poi.lat, poi.lng))
                         Marker(
                             state = state,
                             title = poi.name,
@@ -254,7 +254,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     selectedPoi?.let { poi ->
                         if (!routePois.contains(poi)) {
                             Marker(
-                                state = rememberMarkerState(LatLng(poi.lat, poi.lng)),
+                                state = rememberMarkerState(position = LatLng(poi.lat, poi.lng)),
                                 title = poi.name,
                                 icon = BitmapDescriptorFactory.defaultMarker(MARKER_GREEN),
                                 onClick = { false }
@@ -263,7 +263,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     }
                     unsavedPoint?.let { latLng ->
                         Marker(
-                            state = rememberMarkerState(latLng),
+                            state = rememberMarkerState(position = latLng),
                             title = unsavedAddress,
                             icon = BitmapDescriptorFactory.defaultMarker(MARKER_RED),
                             onClick = { false }
