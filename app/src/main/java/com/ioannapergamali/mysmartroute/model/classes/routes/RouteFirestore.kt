@@ -7,6 +7,7 @@ import com.google.firebase.firestore.DocumentReference
  */
 data class RouteFirestore(
     val id: String = "",
+    val name: String = "",
     val start: DocumentReference? = null,
     val end: DocumentReference? = null
 )

@@ -112,6 +112,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
 
     val routePois by routeViewModel.currentRoute.collectAsState()
     val pathPoints = remember { mutableStateListOf<LatLng>() }
+    var routeName by rememberSaveable { mutableStateOf("") }
     var routeSaved by remember { mutableStateOf(false) }
     var calculating by remember { mutableStateOf(false) }
     var menuExpanded by rememberSaveable { mutableStateOf(false) }
@@ -469,11 +470,24 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 }) { Icon(Icons.Default.Directions, contentDescription = null) }
             }
 
+            Spacer(Modifier.height(8.dp))
+            OutlinedTextField(
+                value = routeName,
+                onValueChange = { routeName = it },
+                label = { Text(stringResource(R.string.route_name)) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                )
+            )
+
             Button(
                 onClick = {
                     val ids = routePois.map { it.id }
                     if (ids.size >= 2) {
-                        routeViewModel.addRoute(context, ids)
+                        routeViewModel.addRoute(context, ids, routeName)
                         routeSaved = true
                         selectedPoiId = null
                         unsavedPoint = null
