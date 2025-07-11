@@ -51,6 +51,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -111,6 +112,8 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     val scope = rememberCoroutineScope()
     var pendingPoi by remember { mutableStateOf<Triple<String, Double, Double>?>(null) }
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
+    val focusRequester = remember { FocusRequester() }
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     fun goToCurrentLocation() {
         if (ActivityCompat.checkSelfPermission(
@@ -159,6 +162,8 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 selectedPoiId = poi.id
                 query = poi.name
                 routeViewModel.addPoiToCurrentRoute(poi)
+                focusRequester.requestFocus()
+                keyboardController?.show()
             }
             pendingPoi = null
         }
@@ -190,6 +195,8 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                 unsavedPoint = null
                                 unsavedAddress = null
                                 query = existing.name
+                                focusRequester.requestFocus()
+                                keyboardController?.show()
                             } else {
                                 scope.launch {
                                     val address = reverseGeocodePoint(context, latLng)
@@ -197,6 +204,8 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                     unsavedAddress = address ?: "${latLng.latitude}, ${latLng.longitude}"
                                     query = unsavedAddress ?: ""
                                     Toast.makeText(context, context.getString(R.string.point_not_saved_toast), Toast.LENGTH_SHORT).show()
+                                    focusRequester.requestFocus()
+                                    keyboardController?.show()
                                 }
                             }
                         }
@@ -227,17 +236,20 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
 
             Spacer(Modifier.height(16.dp))
 
-            val focusRequester = remember { FocusRequester() }
             LaunchedEffect(query) { menuExpanded = query.isNotBlank() }
             ExposedDropdownMenuBox(
                 expanded = menuExpanded,
                 onExpandedChange = {
                     focusRequester.requestFocus()
+                    keyboardController?.show()
                     menuExpanded = if (menuExpanded) false else query.isNotBlank()
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                LaunchedEffect(Unit) { focusRequester.requestFocus() }
+                LaunchedEffect(Unit) {
+                    focusRequester.requestFocus()
+                    keyboardController?.show()
+                }
                 OutlinedTextField(
                     value = query,
                     onValueChange = {
@@ -309,6 +321,8 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                     selectedPoiId = poi.id
                                     query = poi.name
                                     menuExpanded = false
+                                    focusRequester.requestFocus()
+                                    keyboardController?.show()
                                 }
                             )
                         }
@@ -326,6 +340,8 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                             selectedPoi != null && unsavedPoint == null -> routeViewModel.addPoiToCurrentRoute(selectedPoi!!)
                             unsavedPoint != null -> Toast.makeText(context, context.getString(R.string.point_not_saved_toast), Toast.LENGTH_SHORT).show()
                         }
+                        focusRequester.requestFocus()
+                        keyboardController?.show()
                     },
                     enabled = selectedPoi != null || unsavedPoint != null
                 ) {
