@@ -117,6 +117,7 @@
     <string name="remove_point">Remove point</string>
     <string name="edit_route">Edit Route</string>
     <string name="calculating_route">Calculating route…</string>
+    <string name="save_route">Save route</string>
     <!-- Role descriptions -->
     <string name="role_passenger_desc">You can view routes and make bookings.</string>
     <string name="role_driver_desc">You can announce transports and manage vehicles.</string>
