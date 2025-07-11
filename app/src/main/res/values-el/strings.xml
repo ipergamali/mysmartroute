@@ -115,6 +115,7 @@
     <string name="route_editor">Επεξεργασία διαδρομής</string>
     <string name="add_stop">Προσθήκη στάσης</string>
     <string name="add_point">Προσθήκη σημείου</string>
+    <string name="remove_point">Αφαίρεση σημείου</string>
     <string name="edit_route">Επεξεργασία διαδρομής</string>
     <string name="calculating_route">Υπολογισμός διαδρομής…</string>
     <!-- Περιγραφές ρόλων -->

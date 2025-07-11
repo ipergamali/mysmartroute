@@ -34,6 +34,14 @@ class RouteViewModel : ViewModel() {
         _currentRoute.value = _currentRoute.value + poi
     }
 
+    fun removePoiAt(index: Int) {
+        val list = _currentRoute.value.toMutableList()
+        if (index in list.indices) {
+            list.removeAt(index)
+            _currentRoute.value = list
+        }
+    }
+
     fun clearCurrentRoute() {
         _currentRoute.value = emptyList()
     }
