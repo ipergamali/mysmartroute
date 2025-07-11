@@ -11,3 +11,11 @@ fun latLngSaver(): Saver<LatLng, List<Double>> = listSaver(
     save = { listOf(it.latitude, it.longitude) },
     restore = { LatLng(it[0], it[1]) }
 )
+
+/**
+ * A [Saver] that also supports `null` values for [LatLng].
+ */
+fun nullableLatLngSaver(): Saver<LatLng?, List<Double>?> = Saver(
+    save = { it?.let { listOf(it.latitude, it.longitude) } },
+    restore = { it?.let { LatLng(it[0], it[1]) } }
+)
