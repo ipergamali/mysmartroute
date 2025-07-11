@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 /** Προσπέλαση τύπων σημείων ενδιαφέροντος. */
 @Dao
 interface PoiTypeDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertAll(types: List<PoiTypeEntity>)
 
     @Query("SELECT * FROM poi_types")
