@@ -33,7 +33,7 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.Polyline
-import com.google.maps.android.compose.latLngSaver
+import com.ioannapergamali.mysmartroute.utils.latLngSaver
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
@@ -104,7 +104,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     var selectedPoiId by rememberSaveable { mutableStateOf<String?>(null) }
     val selectedPoi = selectedPoiId?.let { id -> pois.find { it.id == id } }
     var selectingPoint by rememberSaveable { mutableStateOf(false) }
-    var unsavedPoint by rememberSaveable(stateSaver = com.google.maps.android.compose.latLngSaver()) { mutableStateOf<LatLng?>(null) }
+    var unsavedPoint by rememberSaveable(stateSaver = latLngSaver()) { mutableStateOf<LatLng?>(null) }
     var unsavedAddress by rememberSaveable { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
     var pendingPoi by remember { mutableStateOf<Triple<String, Double, Double>?>(null) }
