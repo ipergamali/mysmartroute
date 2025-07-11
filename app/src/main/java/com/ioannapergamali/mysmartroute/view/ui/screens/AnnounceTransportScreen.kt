@@ -104,7 +104,9 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     var selectedPoiId by rememberSaveable { mutableStateOf<String?>(null) }
     val selectedPoi = selectedPoiId?.let { id -> pois.find { it.id == id } }
     var selectingPoint by rememberSaveable { mutableStateOf(false) }
-    var unsavedPoint by rememberSaveable(stateSaver = nullableLatLngSaver()) { mutableStateOf<LatLng?>(null) }
+    var unsavedPoint: LatLng? by rememberSaveable(stateSaver = nullableLatLngSaver()) {
+        mutableStateOf<LatLng?>(null)
+    }
     var unsavedAddress by rememberSaveable { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
     var pendingPoi by remember { mutableStateOf<Triple<String, Double, Double>?>(null) }
