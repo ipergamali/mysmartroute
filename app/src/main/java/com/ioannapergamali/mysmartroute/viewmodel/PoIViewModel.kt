@@ -53,7 +53,8 @@ class PoIViewModel : ViewModel() {
     ) {
         viewModelScope.launch {
             val dao = MySmartRouteDatabase.getInstance(context).poIDao()
-            val exists = dao.findByLocation(lat, lng) != null || dao.findByName(name) != null
+            // Επιτρέπουμε αποθήκευση ίδιου σημείου αν έχει διαφορετικό όνομα.
+            val exists = dao.findByName(name) != null
             if (exists) {
                 _addState.value = AddPoiState.Exists
                 return@launch
