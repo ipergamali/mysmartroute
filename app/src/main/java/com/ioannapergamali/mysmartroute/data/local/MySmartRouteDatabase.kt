@@ -35,7 +35,7 @@ import com.ioannapergamali.mysmartroute.data.local.Converters
         MovingEntity::class,
         RoutePointEntity::class
     ],
-    version = 26
+    version = 27
 )
 @TypeConverters(Converters::class)
 abstract class MySmartRouteDatabase : RoomDatabase() {
@@ -395,6 +395,26 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_26_27 = object : Migration(26, 27) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `routes_new` (" +
+                        "`id` TEXT NOT NULL, " +
+                        "`name` TEXT NOT NULL DEFAULT '', " +
+                        "`startPoiId` TEXT NOT NULL, " +
+                        "`endPoiId` TEXT NOT NULL, " +
+                        "PRIMARY KEY(`id`)" +
+                        ")"
+                )
+                database.execSQL(
+                    "INSERT INTO `routes_new` (`id`, `name`, `startPoiId`, `endPoiId`) " +
+                        "SELECT `id`, '' as `name`, `startPoiId`, `endPoiId` FROM `routes`"
+                )
+                database.execSQL("DROP TABLE `routes`")
+                database.execSQL("ALTER TABLE `routes_new` RENAME TO `routes`")
+            }
+        }
+
         private fun prepopulate(db: SupportSQLiteDatabase) {
             Log.d(TAG, "Prepopulating database")
             db.execSQL(
@@ -494,7 +514,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_21_22,
                     MIGRATION_23_24,
                     MIGRATION_24_25,
-                    MIGRATION_25_26
+                    MIGRATION_25_26,
+                    MIGRATION_26_27
                 )
                     .addCallback(object : RoomDatabase.Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {

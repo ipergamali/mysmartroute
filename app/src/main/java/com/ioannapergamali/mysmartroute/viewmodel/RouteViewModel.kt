@@ -59,14 +59,14 @@ class RouteViewModel : ViewModel() {
         }
     }
 
-    fun addRoute(context: Context, poiIds: List<String>) {
+    fun addRoute(context: Context, poiIds: List<String>, name: String) {
         if (poiIds.size < 2) return
         viewModelScope.launch {
             val db = MySmartRouteDatabase.getInstance(context)
             val routeDao = db.routeDao()
             val pointDao = db.routePointDao()
             val id = UUID.randomUUID().toString()
-            val entity = RouteEntity(id, poiIds.first(), poiIds.last())
+            val entity = RouteEntity(id, name, poiIds.first(), poiIds.last())
             val points = poiIds.mapIndexed { index, p -> RoutePointEntity(id, index, p) }
             if (NetworkUtils.isInternetAvailable(context)) {
                 firestore.collection("routes").document(id).set(entity.toFirestoreMap(points))

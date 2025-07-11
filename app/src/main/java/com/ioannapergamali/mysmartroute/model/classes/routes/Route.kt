@@ -6,6 +6,7 @@ package com.ioannapergamali.mysmartroute.model.classes.routes
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 
 data class Route(
+    val name: String = "",
     val start: String,
     val end: String,
     val pois: MutableList<PoIEntity> = mutableListOf()
