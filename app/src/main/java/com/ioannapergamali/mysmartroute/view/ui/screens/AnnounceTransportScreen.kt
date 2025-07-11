@@ -20,6 +20,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Button
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
@@ -391,7 +392,6 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 IconButton(onClick = {
                     val ids = routePois.map { it.id }
                     if (ids.size >= 2) {
-                        routeViewModel.addRoute(context, ids)
                         calculating = true
                         scope.launch {
                             val start = LatLng(routePois.first().lat, routePois.first().lng)
@@ -412,6 +412,19 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         }
                     }
                 }) { Icon(Icons.Default.Directions, contentDescription = null) }
+            }
+
+            Button(
+                onClick = {
+                    val ids = routePois.map { it.id }
+                    if (ids.size >= 2) {
+                        routeViewModel.addRoute(context, ids)
+                        routeViewModel.clearCurrentRoute()
+                    }
+                },
+                enabled = routePois.size >= 2
+            ) {
+                Text(stringResource(R.string.save_route))
             }
 
             if (calculating) {

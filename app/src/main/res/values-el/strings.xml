@@ -118,6 +118,7 @@
     <string name="remove_point">Αφαίρεση σημείου</string>
     <string name="edit_route">Επεξεργασία διαδρομής</string>
     <string name="calculating_route">Υπολογισμός διαδρομής…</string>
+    <string name="save_route">Αποθήκευση διαδρομής</string>
     <!-- Περιγραφές ρόλων -->
     <string name="role_passenger_desc">Μπορείτε να δείτε διαδρομές και να κάνετε κρατήσεις.</string>
     <string name="role_driver_desc">Μπορείτε να δηλώνετε διαθέσιμες μεταφορές και να διαχειρίζεστε οχήματα.</string>

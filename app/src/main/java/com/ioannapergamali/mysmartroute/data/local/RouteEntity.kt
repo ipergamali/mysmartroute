@@ -7,6 +7,5 @@ import androidx.room.PrimaryKey
 data class RouteEntity(
     @PrimaryKey val id: String = "",
     val startPoiId: String = "",
-    val endPoiId: String = "",
-    val cost: Double = 0.0
+    val endPoiId: String = ""
 )
