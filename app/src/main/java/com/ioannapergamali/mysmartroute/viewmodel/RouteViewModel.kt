@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import java.util.UUID
 
 /**
@@ -59,27 +60,25 @@ class RouteViewModel : ViewModel() {
         }
     }
 
-    fun addRoute(context: Context, poiIds: List<String>, name: String) {
-        if (poiIds.size < 2) return
-        viewModelScope.launch {
-            val db = MySmartRouteDatabase.getInstance(context)
-            val routeDao = db.routeDao()
-            val pointDao = db.routePointDao()
-            val id = UUID.randomUUID().toString()
-            val entity = RouteEntity(id, name, poiIds.first(), poiIds.last())
-            val points = poiIds.mapIndexed { index, p -> RoutePointEntity(id, index, p) }
-            if (NetworkUtils.isInternetAvailable(context)) {
-                firestore.collection("routes").document(id).set(entity.toFirestoreMap(points))
-                    .addOnSuccessListener {
-                        viewModelScope.launch {
-                            routeDao.insert(entity)
-                            points.forEach { pointDao.insert(it) }
-                        }
-                    }
-            } else {
-                routeDao.insert(entity)
-                points.forEach { pointDao.insert(it) }
-            }
+    suspend fun addRoute(context: Context, poiIds: List<String>, name: String): Boolean {
+        if (poiIds.size < 2) return false
+        val db = MySmartRouteDatabase.getInstance(context)
+        val routeDao = db.routeDao()
+        val pointDao = db.routePointDao()
+
+        if (routeDao.findByName(name) != null) return false
+
+        val id = UUID.randomUUID().toString()
+        val entity = RouteEntity(id, name, poiIds.first(), poiIds.last())
+        val points = poiIds.mapIndexed { index, p -> RoutePointEntity(id, index, p) }
+
+        if (NetworkUtils.isInternetAvailable(context)) {
+            firestore.collection("routes").document(id).set(entity.toFirestoreMap(points)).await()
         }
+
+        routeDao.insert(entity)
+        points.forEach { pointDao.insert(it) }
+
+        return true
     }
 }
