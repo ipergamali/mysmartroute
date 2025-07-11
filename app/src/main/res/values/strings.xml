@@ -115,6 +115,7 @@
     <string name="add_stop">Add stop</string>
     <string name="add_point">Add point</string>
     <string name="remove_point">Remove point</string>
+    <string name="reset_field">Clear field</string>
     <string name="edit_route">Edit Route</string>
     <string name="calculating_route">Calculating route…</string>
     <string name="save_route">Save route</string>

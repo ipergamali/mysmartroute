@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Directions
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.MyLocation
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -74,6 +75,7 @@ import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlin.math.abs
 
 private const val TAG = "AnnounceTransport"
 
@@ -163,10 +165,16 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
             savedStateHandle?.remove<String>("poiName")
             savedStateHandle?.remove<Double>("poiLat")
             savedStateHandle?.remove<Double>("poiLng")
-            pois.find { it.name == name && it.lat == lat && it.lng == lng }?.let { poi ->
+            pois.find {
+                it.name == name &&
+                    abs(it.lat - lat) < 0.00001 &&
+                    abs(it.lng - lng) < 0.00001
+            }?.let { poi ->
                 selectedPoiId = poi.id
                 query = poi.name
                 routeViewModel.addPoiToCurrentRoute(poi)
+                unsavedPoint = null
+                unsavedAddress = null
                 focusRequester.requestFocus()
                 keyboardController?.show()
             }
@@ -194,7 +202,10 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     onMapClick = { latLng ->
                         if (selectingPoint) {
                             selectingPoint = false
-                            val existing = pois.find { it.lat == latLng.latitude && it.lng == latLng.longitude }
+                            val existing = pois.find {
+                                abs(it.lat - latLng.latitude) < 0.00001 &&
+                                    abs(it.lng - latLng.longitude) < 0.00001
+                            }
                             if (existing != null) {
                                 selectedPoiId = existing.id
                                 unsavedPoint = null
@@ -284,11 +295,24 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     singleLine = true,
                     keyboardOptions = KeyboardOptions.Default,
                     trailingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.MyLocation,
-                            contentDescription = null,
-                            modifier = Modifier.clickable { goToCurrentLocation() }
-                        )
+                        Row {
+                            Icon(
+                                imageVector = Icons.Default.Clear,
+                                contentDescription = stringResource(R.string.reset_field),
+                                modifier = Modifier.clickable {
+                                    query = ""
+                                    selectedPoiId = null
+                                    unsavedPoint = null
+                                    unsavedAddress = null
+                                }
+                            )
+                            Spacer(Modifier.width(4.dp))
+                            Icon(
+                                imageVector = Icons.Default.MyLocation,
+                                contentDescription = null,
+                                modifier = Modifier.clickable { goToCurrentLocation() }
+                            )
+                        }
                     },
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = if (unsavedPoint != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
