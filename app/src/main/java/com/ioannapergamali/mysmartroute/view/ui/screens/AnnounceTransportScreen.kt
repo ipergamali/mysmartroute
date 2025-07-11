@@ -486,12 +486,19 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
             Button(
                 onClick = {
                     val ids = routePois.map { it.id }
-                    if (ids.size >= 2) {
-                        routeViewModel.addRoute(context, ids, routeName)
-                        routeSaved = true
-                        selectedPoiId = null
-                        unsavedPoint = null
-                        unsavedAddress = null
+                    scope.launch {
+                        if (ids.size >= 2) {
+                            val inserted = routeViewModel.addRoute(context, ids, routeName)
+                            if (inserted) {
+                                routeSaved = true
+                                selectedPoiId = null
+                                unsavedPoint = null
+                                unsavedAddress = null
+                                Toast.makeText(context, context.getString(R.string.route_saved_success), Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(context, context.getString(R.string.route_exists), Toast.LENGTH_SHORT).show()
+                            }
+                        }
                     }
                 },
                 enabled = routePois.size >= 2
