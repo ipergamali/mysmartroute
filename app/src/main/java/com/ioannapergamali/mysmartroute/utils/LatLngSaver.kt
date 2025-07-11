@@ -15,7 +15,17 @@ fun latLngSaver(): Saver<LatLng, List<Double>> = Saver(
 /**
  * A [Saver] that also supports `null` values for [LatLng].
  */
-fun nullableLatLngSaver(): Saver<LatLng?, List<Double>?> = Saver(
-    save = { it?.let { listOf(it.latitude, it.longitude) } },
-    restore = { it?.let { LatLng(it[0], it[1]) } }
+/**
+ * Δημιουργεί ένα [Saver] που μπορεί να χειριστεί και `null` τιμές.
+ *
+ * Το Compose δεν επιτρέπει nullable τύπο για το Saveable, οπότε όταν το
+ * [LatLng] είναι `null` αποθηκεύουμε απλώς ένα κενό [List].
+ */
+fun nullableLatLngSaver(): Saver<LatLng?, List<Double>> = Saver(
+    save = { value ->
+        value?.let { listOf(it.latitude, it.longitude) } ?: emptyList()
+    },
+    restore = { list ->
+        if (list.isEmpty()) null else LatLng(list[0], list[1])
+    }
 )
