@@ -18,6 +18,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
@@ -99,6 +100,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
 
     val routePois by routeViewModel.currentRoute.collectAsState()
     val pathPoints = remember { mutableStateListOf<LatLng>() }
+    var calculating by remember { mutableStateOf(false) }
     var menuExpanded by rememberSaveable { mutableStateOf(false) }
     var query by rememberSaveable { mutableStateOf("") }
     var selectedPoiId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -344,6 +346,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     val ids = routePois.map { it.id }
                     if (ids.size >= 2) {
                         routeViewModel.addRoute(context, ids)
+                        calculating = true
                         scope.launch {
                             val start = LatLng(routePois.first().lat, routePois.first().lng)
                             val end = LatLng(routePois.last().lat, routePois.last().lng)
@@ -359,9 +362,22 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                 pathPoints.clear()
                                 pathPoints.addAll(data.points)
                             }
+                            calculating = false
                         }
                     }
                 }) { Icon(Icons.Default.Directions, contentDescription = null) }
+            }
+
+            if (calculating) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    CircularProgressIndicator()
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(R.string.calculating_route))
+                }
             }
         }
     }
