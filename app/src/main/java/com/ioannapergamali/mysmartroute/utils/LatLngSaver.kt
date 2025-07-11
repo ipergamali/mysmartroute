@@ -7,7 +7,7 @@ import com.google.android.gms.maps.model.LatLng
 /**
  * A simple [Saver] for [LatLng] objects used with Compose's [rememberSaveable].
  */
-fun latLngSaver(): Saver<LatLng, List<Double>> = listSaver(
+fun latLngSaver(): Saver<LatLng, List<Double>> = Saver(
     save = { listOf(it.latitude, it.longitude) },
     restore = { LatLng(it[0], it[1]) }
 )
