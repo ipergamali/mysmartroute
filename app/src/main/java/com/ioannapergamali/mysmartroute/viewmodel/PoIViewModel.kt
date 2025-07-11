@@ -88,4 +88,13 @@ class PoIViewModel : ViewModel() {
     fun resetAddState() {
         _addState.value = AddPoiState.Idle
     }
+
+    fun deletePoi(context: Context, id: String) {
+        viewModelScope.launch {
+            val dao = MySmartRouteDatabase.getInstance(context).poIDao()
+            dao.deleteById(id)
+            _pois.value = _pois.value.filterNot { it.id == id }
+            db.collection("pois").document(id).delete()
+        }
+    }
 }
