@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -113,6 +114,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     var unsavedAddress by rememberSaveable { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
     var pendingPoi by remember { mutableStateOf<Triple<String, Double, Double>?>(null) }
+    var removeIndex by remember { mutableStateOf<Int?>(null) }
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -222,7 +224,27 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         Marker(
                             state = MarkerState(LatLng(poi.lat, poi.lng)),
                             title = poi.name,
-                            icon = BitmapDescriptorFactory.defaultMarker(hue)
+                            icon = BitmapDescriptorFactory.defaultMarker(hue),
+                            onClick = {
+                                removeIndex = index
+                                true
+                            }
+                        )
+                    }
+                    selectedPoi?.let { poi ->
+                        if (!routePois.contains(poi)) {
+                            Marker(
+                                state = MarkerState(LatLng(poi.lat, poi.lng)),
+                                title = poi.name,
+                                icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)
+                            )
+                        }
+                    }
+                    unsavedPoint?.let { latLng ->
+                        Marker(
+                            state = MarkerState(latLng),
+                            title = unsavedAddress,
+                            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)
                         )
                     }
                     if (pathPoints.isNotEmpty()) {
@@ -348,6 +370,14 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     enabled = selectedPoi != null || unsavedPoint != null
                 ) {
                     Icon(Icons.Default.Check, contentDescription = null)
+                }
+                if (removeIndex != null) {
+                    IconButton(onClick = {
+                        removeIndex?.let { routeViewModel.removePoiAt(it) }
+                        removeIndex = null
+                    }) {
+                        Icon(Icons.Default.Close, contentDescription = stringResource(R.string.remove_point))
+                    }
                 }
                 IconButton(onClick = {
                     selectedPoi?.let { navController.navigate("definePoi?lat=${it.lat}&lng=${it.lng}&source=announce&view=true") }

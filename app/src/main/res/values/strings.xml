@@ -114,6 +114,7 @@
     <string name="route_editor">Route Editor</string>
     <string name="add_stop">Add stop</string>
     <string name="add_point">Add point</string>
+    <string name="remove_point">Remove point</string>
     <string name="edit_route">Edit Route</string>
     <string name="calculating_route">Calculating route…</string>
     <!-- Role descriptions -->
