@@ -19,6 +19,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -32,6 +33,7 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.Polyline
+import com.google.maps.android.compose.latLngSaver
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
@@ -97,12 +99,13 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
 
     val routePois by routeViewModel.currentRoute.collectAsState()
     val pathPoints = remember { mutableStateListOf<LatLng>() }
-    var menuExpanded by remember { mutableStateOf(false) }
-    var query by remember { mutableStateOf("") }
-    var selectedPoi by remember { mutableStateOf<PoIEntity?>(null) }
-    var selectingPoint by remember { mutableStateOf(false) }
-    var unsavedPoint by remember { mutableStateOf<LatLng?>(null) }
-    var unsavedAddress by remember { mutableStateOf<String?>(null) }
+    var menuExpanded by rememberSaveable { mutableStateOf(false) }
+    var query by rememberSaveable { mutableStateOf("") }
+    var selectedPoiId by rememberSaveable { mutableStateOf<String?>(null) }
+    val selectedPoi = selectedPoiId?.let { id -> pois.find { it.id == id } }
+    var selectingPoint by rememberSaveable { mutableStateOf(false) }
+    var unsavedPoint by rememberSaveable(stateSaver = com.google.maps.android.compose.latLngSaver()) { mutableStateOf<LatLng?>(null) }
+    var unsavedAddress by rememberSaveable { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
     var pendingPoi by remember { mutableStateOf<Triple<String, Double, Double>?>(null) }
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
@@ -151,7 +154,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
             savedStateHandle?.remove<Double>("poiLat")
             savedStateHandle?.remove<Double>("poiLng")
             pois.find { it.name == name && it.lat == lat && it.lng == lng }?.let { poi ->
-                selectedPoi = poi
+                selectedPoiId = poi.id
                 query = poi.name
                 routeViewModel.addPoiToCurrentRoute(poi)
             }
@@ -181,7 +184,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                             selectingPoint = false
                             val existing = pois.find { it.lat == latLng.latitude && it.lng == latLng.longitude }
                             if (existing != null) {
-                                selectedPoi = existing
+                                selectedPoiId = existing.id
                                 unsavedPoint = null
                                 unsavedAddress = null
                                 query = existing.name
@@ -237,7 +240,6 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     value = query,
                     onValueChange = {
                         query = it
-                        selectedPoi = selectedPoi?.copy(name = it)
                     },
                     label = { Text(stringResource(R.string.add_point)) },
                     singleLine = true,
@@ -302,7 +304,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                     }
                                 },
                                 onClick = {
-                                    selectedPoi = poi
+                                    selectedPoiId = poi.id
                                     query = poi.name
                                     menuExpanded = false
                                 }
@@ -316,7 +318,15 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 IconButton(onClick = {
                     selectingPoint = true
                 }) { Icon(Icons.Default.Place, contentDescription = null) }
-                IconButton(onClick = { selectedPoi?.let { routeViewModel.addPoiToCurrentRoute(it) } }, enabled = selectedPoi != null && unsavedPoint == null) {
+                IconButton(
+                    onClick = {
+                        when {
+                            selectedPoi != null && unsavedPoint == null -> routeViewModel.addPoiToCurrentRoute(selectedPoi!!)
+                            unsavedPoint != null -> Toast.makeText(context, context.getString(R.string.point_not_saved_toast), Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    enabled = selectedPoi != null || unsavedPoint != null
+                ) {
                     Icon(Icons.Default.Check, contentDescription = null)
                 }
                 IconButton(onClick = {
