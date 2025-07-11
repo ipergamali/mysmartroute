@@ -108,6 +108,8 @@
     <string name="poi_exists">PoI already exists</string>
     <string name="poi_type">PoI Type</string>
     <string name="poi_details">PoI details</string>
+    <string name="save_point">Save point</string>
+    <string name="point_not_saved_toast">Please save the point before adding it</string>
     <string name="not_implemented">Functionality not available</string>
     <string name="route_editor">Route Editor</string>
     <string name="add_stop">Add stop</string>

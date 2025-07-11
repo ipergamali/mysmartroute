@@ -109,6 +109,8 @@
     <string name="poi_exists">Το POI υπάρχει ήδη</string>
     <string name="poi_type">Τύπος POI</string>
     <string name="poi_details">Λεπτομέρειες POI</string>
+    <string name="save_point">Αποθήκευση σημείου</string>
+    <string name="point_not_saved_toast">Πρέπει να αποθηκεύσετε το σημείο πρώτα</string>
     <string name="not_implemented">Η λειτουργία δεν είναι διαθέσιμη</string>
     <string name="route_editor">Επεξεργασία διαδρομής</string>
     <string name="add_stop">Προσθήκη στάσης</string>
