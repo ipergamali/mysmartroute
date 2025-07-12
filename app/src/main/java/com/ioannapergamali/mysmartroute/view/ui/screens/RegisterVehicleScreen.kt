@@ -56,7 +56,7 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
             )
         }
     ) { paddingValues ->
-        ScreenContainer(modifier = Modifier.padding(paddingValues)) {
+        ScreenContainer(modifier = Modifier.padding(paddingValues), scrollable = false) {
             if (available.isNotEmpty()) {
                 Text("Google Vehicles for Heraklion:", style = MaterialTheme.typography.titleMedium)
                 LazyColumn(modifier = Modifier.fillMaxWidth().heightIn(max = 200.dp)) {
