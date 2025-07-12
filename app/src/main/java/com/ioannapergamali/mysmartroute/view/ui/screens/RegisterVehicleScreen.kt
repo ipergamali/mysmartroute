@@ -62,7 +62,7 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
             if (available.isNotEmpty()) {
                 LazyColumn(modifier = Modifier.fillMaxWidth().heightIn(max = 200.dp)) {
                     items(available) { vehicle ->
-                        Text("${'$'}{vehicle.name} - ${'$'}{vehicle.address ?: ""}")
+                        Text("${vehicle.name} - ${vehicle.address ?: ""}")
                     }
                 }
                 Spacer(Modifier.height(8.dp))
