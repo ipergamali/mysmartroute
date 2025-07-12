@@ -59,14 +59,6 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
         }
     ) { paddingValues ->
         ScreenContainer(modifier = Modifier.padding(paddingValues), scrollable = false) {
-            if (available.isNotEmpty()) {
-                LazyColumn(modifier = Modifier.fillMaxWidth().heightIn(max = 200.dp)) {
-                    items(available) { vehicle ->
-                        Text("${vehicle.name} - ${vehicle.address ?: ""}")
-                    }
-                }
-                Spacer(Modifier.height(8.dp))
-            }
             LazyVerticalGrid(
                 columns = GridCells.Fixed(3),
                 modifier = Modifier.fillMaxWidth(),
