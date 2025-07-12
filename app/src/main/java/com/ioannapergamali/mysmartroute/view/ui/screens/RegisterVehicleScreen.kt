@@ -2,7 +2,13 @@ package com.ioannapergamali.mysmartroute.view.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
-import androidx.compose.material3.menuAnchor
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AirportShuttle
+import androidx.compose.material.icons.filled.DirectionsBike
+import androidx.compose.material.icons.filled.DirectionsBus
+import androidx.compose.material.icons.filled.DirectionsCar
+import androidx.compose.material.icons.filled.LocalTaxi
+import androidx.compose.material.icons.filled.TwoWheeler
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -30,7 +36,6 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
 
     var description by remember { mutableStateOf("") }
     var seatInput by remember { mutableStateOf("") }
-    var expanded by remember { mutableStateOf(false) }
     var type by remember { mutableStateOf(VehicleType.CAR) }
 
     LaunchedEffect(Unit) { viewModel.loadAvailableVehicles(context) }
@@ -55,34 +60,30 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
                 }
                 Spacer(Modifier.height(8.dp))
             }
-            ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
-                OutlinedTextField(
-                    value = type.name,
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("Type") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                    modifier = Modifier.menuAnchor().fillMaxWidth(),
-                    shape = MaterialTheme.shapes.small,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.primary
-                    )
-                )
-                DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(max = 300.dp)
-                ) {
-                    VehicleType.values().forEach { option ->
-                        DropdownMenuItem(
-                            text = { Text(option.name) },
-                            onClick = {
-                                type = option
-                                expanded = false
-                            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                VehicleType.values().forEach { option ->
+                    val selected = option == type
+                    IconButton(
+                        onClick = { type = option },
+                        colors = IconButtonDefaults.iconButtonColors(
+                            containerColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+                            contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary
+                        ),
+                        modifier = Modifier.size(48.dp)
+                    ) {
+                        Icon(
+                            imageVector = when (option) {
+                                VehicleType.CAR -> Icons.Filled.DirectionsCar
+                                VehicleType.TAXI -> Icons.Filled.LocalTaxi
+                                VehicleType.BIGBUS -> Icons.Filled.DirectionsBus
+                                VehicleType.SMALLBUS -> Icons.Filled.AirportShuttle
+                                VehicleType.BICYCLE -> Icons.Filled.DirectionsBike
+                                VehicleType.MOTORBIKE -> Icons.Filled.TwoWheeler
+                            },
+                            contentDescription = option.name
                         )
                     }
                 }
