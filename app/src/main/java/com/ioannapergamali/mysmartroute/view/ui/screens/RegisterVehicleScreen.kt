@@ -31,6 +31,8 @@ import com.ioannapergamali.mysmartroute.model.classes.vehicles.RemoteVehicle
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleViewModel
+import androidx.compose.ui.res.stringResource
+import com.ioannapergamali.mysmartroute.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,7 +51,7 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
     Scaffold(
         topBar = {
             TopBar(
-                title = "Register Vehicle",
+                title = stringResource(R.string.register_vehicle),
                 navController = navController,
                 showMenu = true,
                 onMenuClick = openDrawer
@@ -58,10 +60,9 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
     ) { paddingValues ->
         ScreenContainer(modifier = Modifier.padding(paddingValues), scrollable = false) {
             if (available.isNotEmpty()) {
-                Text("Google Vehicles for Heraklion:", style = MaterialTheme.typography.titleMedium)
                 LazyColumn(modifier = Modifier.fillMaxWidth().heightIn(max = 200.dp)) {
                     items(available) { vehicle ->
-                        Text("${vehicle.name} - ${vehicle.address ?: ""}")
+                        Text("${'$'}{vehicle.name} - ${'$'}{vehicle.address ?: ""}")
                     }
                 }
                 Spacer(Modifier.height(8.dp))
