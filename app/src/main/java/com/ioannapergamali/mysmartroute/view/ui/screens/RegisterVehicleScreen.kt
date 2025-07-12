@@ -12,7 +12,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
+import com.ioannapergamali.mysmartroute.model.classes.vehicles.RemoteVehicle
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleViewModel
@@ -22,12 +25,15 @@ import com.ioannapergamali.mysmartroute.viewmodel.VehicleViewModel
 fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
     val viewModel: VehicleViewModel = viewModel()
     val state by viewModel.registerState.collectAsState()
+    val available by viewModel.availableVehicles.collectAsState()
     val context = LocalContext.current
 
     var description by remember { mutableStateOf("") }
     var seatInput by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
     var type by remember { mutableStateOf(VehicleType.CAR) }
+
+    LaunchedEffect(Unit) { viewModel.loadAvailableVehicles(context) }
 
     Scaffold(
         topBar = {
@@ -40,6 +46,15 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
         }
     ) { paddingValues ->
         ScreenContainer(modifier = Modifier.padding(paddingValues)) {
+            if (available.isNotEmpty()) {
+                Text("Google Vehicles for Heraklion:", style = MaterialTheme.typography.titleMedium)
+                LazyColumn(modifier = Modifier.fillMaxWidth().heightIn(max = 200.dp)) {
+                    items(available) { vehicle ->
+                        Text("${vehicle.name} - ${vehicle.address ?: ""}")
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
+            }
             ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
                 OutlinedTextField(
                     value = type.name,
