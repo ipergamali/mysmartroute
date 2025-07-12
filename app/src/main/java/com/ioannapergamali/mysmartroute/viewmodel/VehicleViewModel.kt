@@ -11,6 +11,9 @@ import com.ioannapergamali.mysmartroute.data.local.VehicleEntity
 import com.ioannapergamali.mysmartroute.data.local.insertVehicleSafely
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
+import com.ioannapergamali.mysmartroute.utils.MapsUtils
+import com.ioannapergamali.mysmartroute.utils.VehiclePlacesUtils
+import com.ioannapergamali.mysmartroute.model.classes.vehicles.RemoteVehicle
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -22,6 +25,9 @@ class VehicleViewModel : ViewModel() {
 
     private val _vehicles = MutableStateFlow<List<VehicleEntity>>(emptyList())
     val vehicles: StateFlow<List<VehicleEntity>> = _vehicles
+
+    private val _availableVehicles = MutableStateFlow<List<RemoteVehicle>>(emptyList())
+    val availableVehicles: StateFlow<List<RemoteVehicle>> = _availableVehicles
 
     private val _registerState = MutableStateFlow<RegisterState>(RegisterState.Idle)
     val registerState: StateFlow<RegisterState> = _registerState
@@ -77,6 +83,13 @@ class VehicleViewModel : ViewModel() {
             val userId = auth.currentUser?.uid ?: return@launch
             val dao = MySmartRouteDatabase.getInstance(context).vehicleDao()
             _vehicles.value = dao.getVehiclesForUser(userId)
+        }
+    }
+
+    fun loadAvailableVehicles(context: Context) {
+        viewModelScope.launch {
+            val apiKey = MapsUtils.getApiKey(context)
+            _availableVehicles.value = VehiclePlacesUtils.fetchVehicles(apiKey)
         }
     }
 
