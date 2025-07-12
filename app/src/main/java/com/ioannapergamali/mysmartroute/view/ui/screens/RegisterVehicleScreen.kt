@@ -16,6 +16,12 @@ import android.widget.Toast
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.compose.foundation.lazy.LazyColumn
@@ -60,30 +66,46 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
                 }
                 Spacer(Modifier.height(8.dp))
             }
-            Row(
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(3),
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                VehicleType.values().forEach { option ->
+                items(VehicleType.values()) { option ->
                     val selected = option == type
-                    IconButton(
-                        onClick = { type = option },
-                        colors = IconButtonDefaults.iconButtonColors(
-                            containerColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
-                            contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary
-                        ),
-                        modifier = Modifier.size(48.dp)
-                    ) {
-                        Icon(
-                            imageVector = when (option) {
-                                VehicleType.CAR -> Icons.Filled.DirectionsCar
-                                VehicleType.TAXI -> Icons.Filled.LocalTaxi
-                                VehicleType.BIGBUS -> Icons.Filled.DirectionsBus
-                                VehicleType.SMALLBUS -> Icons.Filled.AirportShuttle
-                                VehicleType.BICYCLE -> Icons.Filled.DirectionsBike
-                                VehicleType.MOTORBIKE -> Icons.Filled.TwoWheeler
-                            },
-                            contentDescription = option.name
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        IconButton(
+                            onClick = { type = option },
+                            colors = IconButtonDefaults.iconButtonColors(
+                                containerColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+                                contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary
+                            ),
+                            modifier = Modifier
+                                .size(56.dp)
+                                .clip(CircleShape)
+                        ) {
+                            Icon(
+                                imageVector = when (option) {
+                                    VehicleType.CAR -> Icons.Filled.DirectionsCar
+                                    VehicleType.TAXI -> Icons.Filled.LocalTaxi
+                                    VehicleType.BIGBUS -> Icons.Filled.DirectionsBus
+                                    VehicleType.SMALLBUS -> Icons.Filled.AirportShuttle
+                                    VehicleType.BICYCLE -> Icons.Filled.DirectionsBike
+                                    VehicleType.MOTORBIKE -> Icons.Filled.TwoWheeler
+                                },
+                                contentDescription = option.name
+                            )
+                        }
+                        Text(
+                            text = when (option) {
+                                VehicleType.CAR -> "Car"
+                                VehicleType.TAXI -> "Taxi"
+                                VehicleType.BIGBUS -> "Bus"
+                                VehicleType.SMALLBUS -> "Small Bus"
+                                VehicleType.BICYCLE -> "Bicycle"
+                                VehicleType.MOTORBIKE -> "Motorbike"
+                            }
                         )
                     }
                 }
