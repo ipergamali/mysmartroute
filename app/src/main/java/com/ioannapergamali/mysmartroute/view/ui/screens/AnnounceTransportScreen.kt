@@ -214,28 +214,36 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     onMapClick = { latLng ->
                         if (selectingPoint) {
                             selectingPoint = false
-                            val existing = pois.find {
-                                abs(it.lat - latLng.latitude) < 0.00001 &&
-                                    abs(it.lng - latLng.longitude) < 0.00001
-                            }
-                            if (existing != null) {
-                                selectedPoiId = existing.id
-                                unsavedPoint = null
-                                unsavedAddress = null
-                                query = existing.name
-                                focusRequester.requestFocus()
-                                keyboardController?.show()
-                            } else {
-                                scope.launch {
-                                    val address = reverseGeocodePoint(context, latLng)
-                                    unsavedPoint = latLng
-                                    routeSaved = false
-                                    unsavedAddress = address ?: "${latLng.latitude}, ${latLng.longitude}"
-                                    query = unsavedAddress ?: ""
-                                    Toast.makeText(context, context.getString(R.string.point_not_saved_toast), Toast.LENGTH_SHORT).show()
+                            if (heraklionBounds.contains(latLng)) {
+                                val existing = pois.find {
+                                    abs(it.lat - latLng.latitude) < 0.00001 &&
+                                        abs(it.lng - latLng.longitude) < 0.00001
+                                }
+                                if (existing != null) {
+                                    selectedPoiId = existing.id
+                                    unsavedPoint = null
+                                    unsavedAddress = null
+                                    query = existing.name
                                     focusRequester.requestFocus()
                                     keyboardController?.show()
+                                } else {
+                                    scope.launch {
+                                        val address = reverseGeocodePoint(context, latLng)
+                                        unsavedPoint = latLng
+                                        routeSaved = false
+                                        unsavedAddress = address ?: "${latLng.latitude}, ${latLng.longitude}"
+                                        query = unsavedAddress ?: ""
+                                        Toast.makeText(context, context.getString(R.string.point_not_saved_toast), Toast.LENGTH_SHORT).show()
+                                        focusRequester.requestFocus()
+                                        keyboardController?.show()
+                                    }
                                 }
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    context.getString(R.string.poi_outside_heraklion),
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
                         }
                     }
