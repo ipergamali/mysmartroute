@@ -18,16 +18,12 @@ import android.widget.Toast
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleColor
 import androidx.compose.material3.menuAnchor
@@ -68,14 +64,12 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
         ScreenContainer(
             modifier = Modifier.padding(paddingValues)
         ) {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(3),
-                modifier = Modifier
-                    .fillMaxWidth(),
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(VehicleType.values()) { option ->
+                VehicleType.values().forEach { option ->
                     val selected = option == type
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         IconButton(
