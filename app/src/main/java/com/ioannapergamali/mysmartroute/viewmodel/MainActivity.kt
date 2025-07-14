@@ -33,6 +33,7 @@ import com.ioannapergamali.mysmartroute.utils.LocaleUtils
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.launch
 import com.ioannapergamali.mysmartroute.model.interfaces.ThemeOption
+import android.view.WindowManager
 
 
 
@@ -48,6 +49,7 @@ class MainActivity : ComponentActivity() {
         val startLang = runBlocking { LanguagePreferenceManager.getLanguage(this@MainActivity) }
         LocaleUtils.updateLocale(this, startLang)
         super.onCreate(savedInstanceState)
+        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         if (ContextCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
