@@ -103,7 +103,11 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         )
     }
 
-    val heraklionBounds = LatLngBounds(LatLng(34.9, 24.8), LatLng(35.5, 25.9))
+    // Όρια κάμερας ώστε ο χάρτης να περιορίζεται στην πόλη του Ηρακλείου
+    val heraklionBounds = LatLngBounds(
+        LatLng(35.28, 25.05), // νοτιοδυτικό όριο
+        LatLng(35.40, 25.20)  // βορειοανατολικό όριο
+    )
     val mapProperties = MapProperties(latLngBoundsForCameraTarget = heraklionBounds)
 
     val apiKey = MapsUtils.getApiKey(context)
