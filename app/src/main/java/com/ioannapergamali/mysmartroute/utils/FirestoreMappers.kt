@@ -41,8 +41,27 @@ fun VehicleEntity.toFirestoreMap(): Map<String, Any> = mapOf(
         .collection("users")
         .document(userId),
     "type" to type,
-    "seat" to seat
+    "seat" to seat,
+    "color" to color,
+    "plate" to plate
 )
+
+fun com.google.firebase.firestore.DocumentSnapshot.toVehicleEntity(): VehicleEntity? {
+    val userId = when (val uid = get("userId")) {
+        is String -> uid
+        is com.google.firebase.firestore.DocumentReference -> uid.id
+        else -> return null
+    }
+    return VehicleEntity(
+        id = getString("id") ?: id,
+        description = getString("description") ?: "",
+        userId = userId,
+        type = getString("type") ?: "",
+        seat = (getLong("seat") ?: 0L).toInt(),
+        color = getString("color") ?: "",
+        plate = getString("plate") ?: ""
+    )
+}
 
 fun PoIEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     "id" to id,

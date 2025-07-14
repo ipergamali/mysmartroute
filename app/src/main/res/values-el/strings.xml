@@ -72,6 +72,9 @@
     <string name="rank_transports">Βαθμολόγηση και σχόλια μεταφορών</string>
     <string name="shutdown">Τερματισμός συστήματος</string>
     <string name="register_vehicle">Καταχώρηση οχήματος</string>
+    <string name="vehicle_color">Χρώμα</string>
+    <string name="license_plate">Πινακίδα</string>
+    <string name="seats_label">Θέσεις</string>
     <string name="announce_availability">Δήλωση διαθεσιμότητας για μεταφορά</string>
     <string name="find_passengers">Εύρεση επιβατών</string>
     <string name="print_list">Εκτύπωση λίστας επιβατών</string>

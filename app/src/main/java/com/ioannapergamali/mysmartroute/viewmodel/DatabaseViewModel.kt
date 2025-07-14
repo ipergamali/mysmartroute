@@ -22,6 +22,7 @@ import com.ioannapergamali.mysmartroute.data.local.UserEntity
 import com.ioannapergamali.mysmartroute.utils.toPoIEntity
 import com.ioannapergamali.mysmartroute.utils.toPoiTypeEntity
 import com.ioannapergamali.mysmartroute.data.local.VehicleEntity
+import com.ioannapergamali.mysmartroute.utils.toVehicleEntity
 import com.ioannapergamali.mysmartroute.data.local.LanguageSettingEntity
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -103,20 +104,7 @@ class DatabaseViewModel : ViewModel() {
                 .documents.mapNotNull { it.toUserEntity() }
             Log.d(TAG, "Fetched ${users.size} users from Firebase")
             val vehicles = firestore.collection("vehicles").get().await()
-                .documents.mapNotNull { doc ->
-                    val userId = when (val uid = doc.get("userId")) {
-                        is String -> uid
-                        is DocumentReference -> uid.id
-                        else -> null
-                    } ?: return@mapNotNull null
-                    VehicleEntity(
-                        id = doc.getString("id") ?: "",
-                        description = doc.getString("description") ?: "",
-                        userId = userId,
-                        type = doc.getString("type") ?: "",
-                        seat = (doc.getLong("seat") ?: 0L).toInt()
-                    )
-                }
+                .documents.mapNotNull { doc -> doc.toVehicleEntity() }
             Log.d(TAG, "Fetched ${vehicles.size} vehicles from Firebase")
             val pois = firestore.collection("pois").get().await()
                 .documents.mapNotNull { it.toPoIEntity() }
@@ -237,20 +225,7 @@ class DatabaseViewModel : ViewModel() {
                     Log.d(TAG, "Fetched ${users.size} users")
                     Log.d(TAG, "Fetching vehicles from Firestore")
                     val vehicles = firestore.collection("vehicles").get().await()
-                        .documents.mapNotNull { doc ->
-                            val userId = when (val uid = doc.get("userId")) {
-                                is String -> uid
-                                is DocumentReference -> uid.id
-                                else -> null
-                            } ?: return@mapNotNull null
-                            VehicleEntity(
-                                id = doc.getString("id") ?: "",
-                                description = doc.getString("description") ?: "",
-                                userId = userId,
-                                type = doc.getString("type") ?: "",
-                                seat = (doc.getLong("seat") ?: 0L).toInt()
-                            )
-                        }
+                        .documents.mapNotNull { doc -> doc.toVehicleEntity() }
                     Log.d(TAG, "Fetching PoIs from Firestore")
                     val pois = firestore.collection("pois").get().await()
                         .documents.mapNotNull { it.toPoIEntity() }

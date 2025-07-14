@@ -9,6 +9,8 @@ import androidx.compose.material.icons.filled.DirectionsBus
 import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.LocalTaxi
 import androidx.compose.material.icons.filled.TwoWheeler
+import androidx.compose.material.icons.filled.ArrowDropUp
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -27,6 +29,8 @@ import androidx.navigation.NavController
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
+import com.ioannapergamali.mysmartroute.model.enumerations.VehicleColor
+import androidx.compose.material3.menuAnchor
 import com.ioannapergamali.mysmartroute.model.classes.vehicles.RemoteVehicle
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
@@ -43,8 +47,11 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
     val context = LocalContext.current
 
     var description by remember { mutableStateOf("") }
-    var seatInput by remember { mutableStateOf("") }
+    var seat by remember { mutableStateOf(0) }
     var type by remember { mutableStateOf(VehicleType.CAR) }
+    var color by remember { mutableStateOf(VehicleColor.BLACK) }
+    var colorExpanded by remember { mutableStateOf(false) }
+    var plate by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) { viewModel.loadAvailableVehicles(context) }
 
@@ -117,10 +124,55 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
             )
             Spacer(Modifier.height(8.dp))
             OutlinedTextField(
-                value = seatInput,
-                onValueChange = { seatInput = it },
-                label = { Text("Seats") },
+                value = seat.toString(),
+                onValueChange = { seat = it.toIntOrNull() ?: seat },
+                label = { Text(stringResource(R.string.seats_label)) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                trailingIcon = {
+                    Column {
+                        IconButton(onClick = { seat++ }) {
+                            Icon(Icons.Filled.ArrowDropUp, contentDescription = "Increase")
+                        }
+                        IconButton(onClick = { if (seat > 0) seat-- }) {
+                            Icon(Icons.Filled.ArrowDropDown, contentDescription = "Decrease")
+                        }
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.small,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                )
+            )
+            Spacer(Modifier.height(8.dp))
+            ExposedDropdownMenuBox(expanded = colorExpanded, onExpandedChange = { colorExpanded = !colorExpanded }) {
+                OutlinedTextField(
+                    value = color.label,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text(stringResource(R.string.vehicle_color)) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = colorExpanded) },
+                    modifier = Modifier.menuAnchor().fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                    )
+                )
+                ExposedDropdownMenu(expanded = colorExpanded, onDismissRequest = { colorExpanded = false }) {
+                    VehicleColor.values().forEach { option ->
+                        DropdownMenuItem(text = { Text(option.label) }, onClick = {
+                            color = option
+                            colorExpanded = false
+                        })
+                    }
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+            OutlinedTextField(
+                value = plate,
+                onValueChange = { plate = it },
+                label = { Text(stringResource(R.string.license_plate)) },
                 modifier = Modifier.fillMaxWidth(),
                 shape = MaterialTheme.shapes.small,
                 colors = OutlinedTextFieldDefaults.colors(
@@ -139,8 +191,7 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
 
             Spacer(Modifier.height(16.dp))
             Button(onClick = {
-                val seat = seatInput.toIntOrNull() ?: 0
-                viewModel.registerVehicle(context, description, type, seat)
+                viewModel.registerVehicle(context, description, type, seat, color.name, plate)
             }) {
                 Text("Register")
             }

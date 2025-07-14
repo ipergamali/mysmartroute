@@ -36,7 +36,9 @@ class VehicleViewModel : ViewModel() {
         context: Context,
         description: String,
         type: VehicleType,
-        seat: Int
+        seat: Int,
+        color: String,
+        plate: String
     ) {
         viewModelScope.launch {
             _registerState.value = RegisterState.Loading
@@ -53,7 +55,7 @@ class VehicleViewModel : ViewModel() {
             }
 
             val vehicleId = UUID.randomUUID().toString()
-            val entity = VehicleEntity(vehicleId, description, userId, type.name, seat)
+            val entity = VehicleEntity(vehicleId, description, userId, type.name, seat, color, plate)
             val vehicleData = entity.toFirestoreMap()
 
             val dbLocal = MySmartRouteDatabase.getInstance(context)
