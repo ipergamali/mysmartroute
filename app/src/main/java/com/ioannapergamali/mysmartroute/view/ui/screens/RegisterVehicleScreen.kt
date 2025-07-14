@@ -65,7 +65,10 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
             )
         }
     ) { paddingValues ->
-        ScreenContainer(modifier = Modifier.padding(paddingValues)) {
+        ScreenContainer(
+            modifier = Modifier.padding(paddingValues),
+            scrollable = false
+        ) {
             LazyVerticalGrid(
                 columns = GridCells.Fixed(3),
                 modifier = Modifier.fillMaxWidth(),
