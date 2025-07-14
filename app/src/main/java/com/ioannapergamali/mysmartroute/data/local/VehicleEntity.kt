@@ -22,5 +22,7 @@ data class VehicleEntity(
     var description: String = "",
     var userId: String = "",
     var type: String = "",
-    var seat: Int = 0
+    var seat: Int = 0,
+    var color: String = "",
+    var plate: String = ""
 )
