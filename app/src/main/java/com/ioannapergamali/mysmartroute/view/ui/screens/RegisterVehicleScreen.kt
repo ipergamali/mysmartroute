@@ -128,17 +128,24 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
                 onValueChange = { seat = it.toIntOrNull() ?: seat },
                 label = { Text(stringResource(R.string.seats_label)) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                singleLine = true,
                 trailingIcon = {
-                    Column {
-                        IconButton(onClick = { seat++ }) {
-                            Icon(Icons.Filled.ArrowDropUp, contentDescription = "Increase")
-                        }
+                    Row {
                         IconButton(onClick = { if (seat > 0) seat-- }) {
-                            Icon(Icons.Filled.ArrowDropDown, contentDescription = "Decrease")
+                            Icon(
+                                Icons.Filled.ArrowDropDown,
+                                contentDescription = "Decrease"
+                            )
+                        }
+                        IconButton(onClick = { seat++ }) {
+                            Icon(
+                                Icons.Filled.ArrowDropUp,
+                                contentDescription = "Increase"
+                            )
                         }
                     }
                 },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.width(120.dp),
                 shape = MaterialTheme.shapes.small,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
