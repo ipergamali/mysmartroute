@@ -46,12 +46,12 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
     val available by viewModel.availableVehicles.collectAsState()
     val context = LocalContext.current
 
+    var plate by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
+    var color by remember { mutableStateOf(VehicleColor.BLACK) }
     var seat by remember { mutableStateOf(0) }
     var type by remember { mutableStateOf(VehicleType.CAR) }
-    var color by remember { mutableStateOf(VehicleColor.BLACK) }
     var colorExpanded by remember { mutableStateOf(false) }
-    var plate by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) { viewModel.loadAvailableVehicles(context) }
 
@@ -115,9 +115,9 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
             }
             Spacer(Modifier.height(8.dp))
             OutlinedTextField(
-                value = description,
-                onValueChange = { description = it },
-                label = { Text("Description") },
+                value = plate,
+                onValueChange = { plate = it },
+                label = { Text(stringResource(R.string.license_plate)) },
                 modifier = Modifier.fillMaxWidth(),
                 shape = MaterialTheme.shapes.small,
                 colors = OutlinedTextFieldDefaults.colors(
@@ -127,28 +127,10 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
             )
             Spacer(Modifier.height(8.dp))
             OutlinedTextField(
-                value = seat.toString(),
-                onValueChange = { seat = it.toIntOrNull() ?: seat },
-                label = { Text(stringResource(R.string.seats_label)) },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                singleLine = true,
-                trailingIcon = {
-                    Row {
-                        IconButton(onClick = { if (seat > 0) seat-- }) {
-                            Icon(
-                                Icons.Filled.ArrowDropDown,
-                                contentDescription = "Decrease"
-                            )
-                        }
-                        IconButton(onClick = { seat++ }) {
-                            Icon(
-                                Icons.Filled.ArrowDropUp,
-                                contentDescription = "Increase"
-                            )
-                        }
-                    }
-                },
-                modifier = Modifier.width(160.dp),
+                value = description,
+                onValueChange = { description = it },
+                label = { Text("Description") },
+                modifier = Modifier.fillMaxWidth(),
                 shape = MaterialTheme.shapes.small,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -180,10 +162,28 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
             }
             Spacer(Modifier.height(8.dp))
             OutlinedTextField(
-                value = plate,
-                onValueChange = { plate = it },
-                label = { Text(stringResource(R.string.license_plate)) },
-                modifier = Modifier.fillMaxWidth(),
+                value = seat.toString(),
+                onValueChange = { seat = it.toIntOrNull() ?: seat },
+                label = { Text(stringResource(R.string.seats_label)) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                singleLine = true,
+                trailingIcon = {
+                    Row {
+                        IconButton(onClick = { if (seat > 0) seat-- }) {
+                            Icon(
+                                Icons.Filled.ArrowDropDown,
+                                contentDescription = "Decrease"
+                            )
+                        }
+                        IconButton(onClick = { seat++ }) {
+                            Icon(
+                                Icons.Filled.ArrowDropUp,
+                                contentDescription = "Increase"
+                            )
+                        }
+                    }
+                },
+                modifier = Modifier.width(160.dp),
                 shape = MaterialTheme.shapes.small,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
