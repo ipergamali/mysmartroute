@@ -71,7 +71,11 @@ fun DefinePoiScreen(
         )
     }
     val heraklionBounds = remember {
-        LatLngBounds(LatLng(34.9, 24.8), LatLng(35.5, 25.9))
+        // Περιορίζουμε την κάμερα στα όρια της πόλης του Ηρακλείου
+        LatLngBounds(
+            LatLng(35.28, 25.05), // νοτιοδυτικό όριο
+            LatLng(35.40, 25.20)  // βορειοανατολικό όριο
+        )
     }
     val mapProperties = remember { MapProperties(latLngBoundsForCameraTarget = heraklionBounds) }
 
