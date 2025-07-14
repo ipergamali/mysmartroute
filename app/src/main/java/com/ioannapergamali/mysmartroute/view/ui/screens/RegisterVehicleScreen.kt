@@ -145,7 +145,7 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
                         }
                     }
                 },
-                modifier = Modifier.width(120.dp),
+                modifier = Modifier.width(160.dp),
                 shape = MaterialTheme.shapes.small,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
