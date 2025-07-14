@@ -118,8 +118,16 @@ fun DefinePoiScreen(
                     properties = mapProperties,
                     onMapClick = { latLng ->
                         Log.d(TAG, "Map clicked at ${latLng.latitude}, ${latLng.longitude}")
-                        selectedLatLng = latLng
-                        markerState.position = latLng
+                        if (heraklionBounds.contains(latLng)) {
+                            selectedLatLng = latLng
+                            markerState.position = latLng
+                        } else {
+                            Toast.makeText(
+                                context,
+                                context.getString(R.string.poi_outside_heraklion),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
                     }
                 ) {
                     selectedLatLng?.let { Marker(state = markerState) }
