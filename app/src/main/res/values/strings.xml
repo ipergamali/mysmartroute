@@ -91,6 +91,7 @@
     <string name="view_pois">View PoIs</string>
     <string name="view_users">View Users</string>
     <string name="advance_date">Advance Date</string>
+    <string name="declare_route">Declare Route</string>
     <string name="announce_transport">Announce Transport</string>
     <string name="from">From</string>
     <string name="start_point">Starting point</string>

@@ -93,6 +93,7 @@
     <string name="view_pois">Προβολή σημείων ενδιαφέροντος</string>
     <string name="view_users">Προβολή χρηστών</string>
     <string name="advance_date">Μεταφορά ημερομηνίας</string>
+    <string name="declare_route">Δήλωση διαδρομής</string>
     <string name="announce_transport">Δήλωση μεταφοράς</string>
     <string name="from">Από</string>
     <string name="start_point">Σημείο εκκίνησης</string>

@@ -232,11 +232,12 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                 val driverMenuId = "menu_driver_main"
                 insertMenu(driverMenuId, "role_driver", "driver_menu_title")
                 insertOption("opt_driver_1", driverMenuId, "register_vehicle", "registerVehicle")
-                insertOption("opt_driver_2", driverMenuId, "announce_availability", "announceAvailability")
-                insertOption("opt_driver_3", driverMenuId, "find_passengers", "findPassengers")
-                insertOption("opt_driver_4", driverMenuId, "print_list", "printList")
-                insertOption("opt_driver_5", driverMenuId, "print_scheduled", "printScheduled")
-                insertOption("opt_driver_6", driverMenuId, "print_completed", "printCompleted")
+                insertOption("opt_driver_2", driverMenuId, "declare_route", "declareRoute")
+                insertOption("opt_driver_3", driverMenuId, "announce_availability", "announceAvailability")
+                insertOption("opt_driver_4", driverMenuId, "find_passengers", "findPassengers")
+                insertOption("opt_driver_5", driverMenuId, "print_list", "printList")
+                insertOption("opt_driver_6", driverMenuId, "print_scheduled", "printScheduled")
+                insertOption("opt_driver_7", driverMenuId, "print_completed", "printCompleted")
 
                 val adminMenuId = "menu_admin_main"
                 insertMenu(adminMenuId, "role_admin", "admin_menu_title")
@@ -473,11 +474,12 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             val driverMenuId = "menu_driver_main"
             insertMenu(driverMenuId, "role_driver", "driver_menu_title")
             insertOption("opt_driver_1", driverMenuId, "register_vehicle", "registerVehicle")
-            insertOption("opt_driver_2", driverMenuId, "announce_availability", "announceAvailability")
-            insertOption("opt_driver_3", driverMenuId, "find_passengers", "findPassengers")
-            insertOption("opt_driver_4", driverMenuId, "print_list", "printList")
-            insertOption("opt_driver_5", driverMenuId, "print_scheduled", "printScheduled")
-            insertOption("opt_driver_6", driverMenuId, "print_completed", "printCompleted")
+            insertOption("opt_driver_2", driverMenuId, "declare_route", "declareRoute")
+            insertOption("opt_driver_3", driverMenuId, "announce_availability", "announceAvailability")
+            insertOption("opt_driver_4", driverMenuId, "find_passengers", "findPassengers")
+            insertOption("opt_driver_5", driverMenuId, "print_list", "printList")
+            insertOption("opt_driver_6", driverMenuId, "print_scheduled", "printScheduled")
+            insertOption("opt_driver_7", driverMenuId, "print_completed", "printCompleted")
 
             val adminMenuId = "menu_admin_main"
             insertMenu(adminMenuId, "role_admin", "admin_menu_title")

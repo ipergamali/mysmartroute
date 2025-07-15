@@ -70,7 +70,7 @@ fun NavigationHost(navController : NavHostController, openDrawer: () -> Unit) {
             RegisterVehicleScreen(navController = navController, openDrawer = openDrawer)
         }
 
-        composable("announceTransport") {
+        composable("declareRoute") {
             AnnounceTransportScreen(navController = navController, openDrawer = openDrawer)
         }
 
