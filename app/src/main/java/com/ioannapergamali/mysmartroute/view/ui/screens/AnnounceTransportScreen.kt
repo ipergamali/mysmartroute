@@ -130,7 +130,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     }
     var unsavedAddress by rememberSaveable { mutableStateOf<String?>(null) }
     var addressQuery by remember { mutableStateOf("") }
-    var addressResults by remember { mutableStateOf<List<Address>>(emptyList()) }
+    var addressResults by remember { mutableStateOf<List<String>>(emptyList()) }
     var addressMenuExpanded by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     var pendingPoi by remember { mutableStateOf<Triple<String, Double, Double>?>(null) }
@@ -316,7 +316,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         addressQuery = queryText
                         if (queryText.length >= 3) {
                             scope.launch {
-                                addressResults = geocodeHeraklion(context, queryText)
+                                addressResults = MapsUtils.autocompleteHeraklion(queryText, apiKey)
                                 addressMenuExpanded = true
                             }
                         } else {
@@ -339,16 +339,18 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         .fillMaxWidth()
                         .heightIn(max = 300.dp)
                 ) {
-                    addressResults.forEach { addr ->
-                        val line = addr.getAddressLine(0) ?: ""
-                        DropdownMenuItem(text = { Text(line) }, onClick = {
-                            addressQuery = line
+                    addressResults.forEach { suggestion ->
+                        DropdownMenuItem(text = { Text(suggestion) }, onClick = {
+                            addressQuery = suggestion
                             addressMenuExpanded = false
                             selectedPoiId = null
-                            unsavedPoint = LatLng(addr.latitude, addr.longitude)
-                            unsavedAddress = line
-                            cameraPositionState.position = CameraPosition.fromLatLngZoom(unsavedPoint!!, 13.79f)
-                            query = line
+                            val res = geocodeHeraklion(context, suggestion).firstOrNull()
+                            if (res != null) {
+                                unsavedPoint = LatLng(res.latitude, res.longitude)
+                                unsavedAddress = suggestion
+                                cameraPositionState.position = CameraPosition.fromLatLngZoom(unsavedPoint!!, 13.79f)
+                            }
+                            query = suggestion
                             routeSaved = false
                             focusRequester.requestFocus()
                             keyboardController?.show()

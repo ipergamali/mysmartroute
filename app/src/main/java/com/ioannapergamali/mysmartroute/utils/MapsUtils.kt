@@ -7,6 +7,7 @@ import com.google.android.libraries.places.api.model.Place
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.net.URLEncoder
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
@@ -260,4 +261,27 @@ object MapsUtils {
             return@withContext null
         }
     }
+
+    suspend fun autocompleteHeraklion(query: String, apiKey: String): List<String> =
+        withContext(Dispatchers.IO) {
+            val encoded = URLEncoder.encode(query, "UTF-8")
+            val bias = "rectangle:35.28,25.05|35.40,25.20"
+            val url =
+                "https://maps.googleapis.com/maps/api/place/autocomplete/json?" +
+                    "input=$encoded&types=address&locationbias=$bias&key=$apiKey"
+            val request = Request.Builder().url(url).build()
+            client.newCall(request).execute().use { response ->
+                val body = response.body?.string() ?: return@withContext emptyList()
+                if (!response.isSuccessful) return@withContext emptyList()
+                val obj = JSONObject(body)
+                if (obj.optString("status") != "OK") return@withContext emptyList()
+                val preds = obj.optJSONArray("predictions") ?: return@withContext emptyList()
+                val list = mutableListOf<String>()
+                for (i in 0 until preds.length()) {
+                    val desc = preds.getJSONObject(i).optString("description")
+                    if (desc.isNotBlank()) list.add(desc)
+                }
+                return@withContext list
+            }
+        }
 }
