@@ -209,19 +209,21 @@ fun DefinePoiScreen(
                     ) {
                         addressResults.forEach { suggestion ->
                             DropdownMenuItem(text = { Text(suggestion) }, onClick = {
-                                addressQuery = suggestion
-                                addressMenuExpanded = false
-                                val addr = geocodeHeraklion(context, suggestion).firstOrNull()
-                                if (addr != null) {
-                                    streetName = addr.thoroughfare ?: ""
-                                    streetNumInput = addr.subThoroughfare ?: ""
-                                    city = addr.locality ?: ""
-                                    postalCodeInput = addr.postalCode ?: ""
-                                    country = addr.countryName ?: ""
-                                    selectedLatLng = LatLng(addr.latitude, addr.longitude)
-                                    selectedLatLng?.let {
-                                        markerState.position = it
-                                        cameraPositionState.position = CameraPosition.fromLatLngZoom(it, 13.79f)
+                                coroutineScope.launch {
+                                    addressQuery = suggestion
+                                    addressMenuExpanded = false
+                                    val addr = geocodeHeraklion(context, suggestion).firstOrNull()
+                                    if (addr != null) {
+                                        streetName = addr.thoroughfare ?: ""
+                                        streetNumInput = addr.subThoroughfare ?: ""
+                                        city = addr.locality ?: ""
+                                        postalCodeInput = addr.postalCode ?: ""
+                                        country = addr.countryName ?: ""
+                                        selectedLatLng = LatLng(addr.latitude, addr.longitude)
+                                        selectedLatLng?.let {
+                                            markerState.position = it
+                                            cameraPositionState.position = CameraPosition.fromLatLngZoom(it, 13.79f)
+                                        }
                                     }
                                 }
                             })
