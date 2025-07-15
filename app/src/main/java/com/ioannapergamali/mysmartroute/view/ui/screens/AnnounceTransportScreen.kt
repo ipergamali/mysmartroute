@@ -3,6 +3,7 @@ package com.ioannapergamali.mysmartroute.view.ui.screens
 import android.util.Log
 import android.widget.Toast
 import android.location.Geocoder
+import android.location.Address
 import android.content.Context
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -128,6 +129,9 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         mutableStateOf<LatLng?>(null)
     }
     var unsavedAddress by rememberSaveable { mutableStateOf<String?>(null) }
+    var addressQuery by remember { mutableStateOf("") }
+    var addressResults by remember { mutableStateOf<List<Address>>(emptyList()) }
+    var addressMenuExpanded by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     var pendingPoi by remember { mutableStateOf<Triple<String, Double, Double>?>(null) }
     var removeIndex by remember { mutableStateOf<Int?>(null) }
@@ -299,6 +303,59 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
             )
+
+            Spacer(Modifier.height(16.dp))
+
+            ExposedDropdownMenuBox(
+                expanded = addressMenuExpanded,
+                onExpandedChange = { addressMenuExpanded = !addressMenuExpanded }
+            ) {
+                OutlinedTextField(
+                    value = addressQuery,
+                    onValueChange = { queryText ->
+                        addressQuery = queryText
+                        if (queryText.length >= 3) {
+                            scope.launch {
+                                addressResults = geocodeHeraklion(context, queryText)
+                                addressMenuExpanded = true
+                            }
+                        } else {
+                            addressResults = emptyList()
+                        }
+                    },
+                    label = { Text(stringResource(R.string.search_address)) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = addressMenuExpanded) },
+                    modifier = Modifier.menuAnchor().fillMaxWidth(),
+                    shape = MaterialTheme.shapes.small,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                    )
+                )
+                DropdownMenu(
+                    expanded = addressMenuExpanded,
+                    onDismissRequest = { addressMenuExpanded = false },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 300.dp)
+                ) {
+                    addressResults.forEach { addr ->
+                        val line = addr.getAddressLine(0) ?: ""
+                        DropdownMenuItem(text = { Text(line) }, onClick = {
+                            addressQuery = line
+                            addressMenuExpanded = false
+                            selectedPoiId = null
+                            unsavedPoint = LatLng(addr.latitude, addr.longitude)
+                            unsavedAddress = line
+                            cameraPositionState.position = CameraPosition.fromLatLngZoom(unsavedPoint!!, 13.79f)
+                            query = line
+                            routeSaved = false
+                            focusRequester.requestFocus()
+                            keyboardController?.show()
+                        })
+                    }
+                }
+            }
 
             Spacer(Modifier.height(16.dp))
 
@@ -576,5 +633,23 @@ private suspend fun reverseGeocodePoint(context: Context, latLng: LatLng): Strin
         Geocoder(context).getFromLocation(latLng.latitude, latLng.longitude, 1)?.firstOrNull()?.getAddressLine(0)
     } catch (e: Exception) {
         null
+    }
+}
+
+private suspend fun geocodeHeraklion(
+    context: Context,
+    query: String
+): List<Address> = withContext(Dispatchers.IO) {
+    try {
+        Geocoder(context).getFromLocationName(
+            query,
+            5,
+            35.28,
+            25.05,
+            35.40,
+            25.20
+        ) ?: emptyList()
+    } catch (e: Exception) {
+        emptyList()
     }
 }
