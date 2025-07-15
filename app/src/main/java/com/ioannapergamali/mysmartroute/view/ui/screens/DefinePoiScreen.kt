@@ -48,6 +48,7 @@ fun DefinePoiScreen(
     val viewModel: PoIViewModel = viewModel()
     val addState by viewModel.addState.collectAsState()
     val context = LocalContext.current
+    val apiKey = MapsUtils.getApiKey(context)
     val coroutineScope = rememberCoroutineScope()
 
     var name by remember { mutableStateOf("") }
@@ -60,7 +61,7 @@ fun DefinePoiScreen(
     var streetNumInput by remember { mutableStateOf("") }
     var postalCodeInput by remember { mutableStateOf("") }
     var addressQuery by remember { mutableStateOf("") }
-    var addressResults by remember { mutableStateOf<List<Address>>(emptyList()) }
+    var addressResults by remember { mutableStateOf<List<String>>(emptyList()) }
     var addressMenuExpanded by remember { mutableStateOf(false) }
     val initialLatLng = remember(initialLat, initialLng) {
         if (initialLat != null && initialLng != null) LatLng(initialLat, initialLng) else null
@@ -113,7 +114,7 @@ fun DefinePoiScreen(
         TopBar(title = stringResource(R.string.define_poi), navController = navController, showMenu = true, onMenuClick = openDrawer)
     }) { padding ->
         ScreenContainer(modifier = Modifier.padding(padding)) {
-            if (MapsUtils.getApiKey(context).isNotBlank()) {
+            if (apiKey.isNotBlank()) {
                 GoogleMap(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -141,7 +142,7 @@ fun DefinePoiScreen(
                         cameraPositionState.position = CameraPosition.fromLatLngZoom(latLng, 13.79f)
                         val place = MapsUtils.fetchNearbyPlaceName(
                             latLng,
-                            MapsUtils.getApiKey(context)
+                            apiKey
                         )
                         Log.d(TAG, "Nearby place name: $place")
                         if (!place.isNullOrBlank()) {
@@ -149,7 +150,7 @@ fun DefinePoiScreen(
                         }
                         val type = MapsUtils.fetchNearbyPlaceType(
                             latLng,
-                            MapsUtils.getApiKey(context)
+                            apiKey
                         )
                         Log.d(TAG, "Nearby place type: ${type?.name}")
                         type?.let { selectedPlaceType = it }
@@ -183,7 +184,7 @@ fun DefinePoiScreen(
                             addressQuery = query
                             if (query.length >= 3) {
                                 coroutineScope.launch {
-                                    addressResults = geocodeHeraklion(context, query)
+                                    addressResults = MapsUtils.autocompleteHeraklion(query, apiKey)
                                     addressMenuExpanded = true
                                 }
                             } else {
@@ -206,20 +207,22 @@ fun DefinePoiScreen(
                             .fillMaxWidth()
                             .heightIn(max = 300.dp)
                     ) {
-                        addressResults.forEach { addr ->
-                            val line = addr.getAddressLine(0) ?: ""
-                            DropdownMenuItem(text = { Text(line) }, onClick = {
-                                addressQuery = line
+                        addressResults.forEach { suggestion ->
+                            DropdownMenuItem(text = { Text(suggestion) }, onClick = {
+                                addressQuery = suggestion
                                 addressMenuExpanded = false
-                                streetName = addr.thoroughfare ?: ""
-                                streetNumInput = addr.subThoroughfare ?: ""
-                                city = addr.locality ?: ""
-                                postalCodeInput = addr.postalCode ?: ""
-                                country = addr.countryName ?: ""
-                                selectedLatLng = LatLng(addr.latitude, addr.longitude)
-                                selectedLatLng?.let {
-                                    markerState.position = it
-                                    cameraPositionState.position = CameraPosition.fromLatLngZoom(it, 13.79f)
+                                val addr = geocodeHeraklion(context, suggestion).firstOrNull()
+                                if (addr != null) {
+                                    streetName = addr.thoroughfare ?: ""
+                                    streetNumInput = addr.subThoroughfare ?: ""
+                                    city = addr.locality ?: ""
+                                    postalCodeInput = addr.postalCode ?: ""
+                                    country = addr.countryName ?: ""
+                                    selectedLatLng = LatLng(addr.latitude, addr.longitude)
+                                    selectedLatLng?.let {
+                                        markerState.position = it
+                                        cameraPositionState.position = CameraPosition.fromLatLngZoom(it, 13.79f)
+                                    }
                                 }
                             })
                         }
