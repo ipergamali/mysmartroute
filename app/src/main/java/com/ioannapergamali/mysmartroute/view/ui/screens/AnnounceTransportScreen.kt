@@ -201,7 +201,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
 
     Scaffold(topBar = {
         TopBar(
-            title = stringResource(R.string.announce_transport),
+            title = stringResource(R.string.declare_route),
             navController = navController,
             showMenu = true,
             onMenuClick = openDrawer
