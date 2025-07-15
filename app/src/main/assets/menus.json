@@ -28,7 +28,7 @@
         "titleKey": "driver_menu_title",
         "options": [
           {"titleKey": "register_vehicle", "route": "registerVehicle"},
-          {"titleKey": "declare_route", "route": "declareRoute"},
+          {"titleKey": "announce_transport", "route": "declareTransport"},
           {"titleKey": "announce_availability", "route": "announceAvailability"},
           {"titleKey": "find_passengers", "route": "findPassengers"},
           {"titleKey": "print_list", "route": "printList"},

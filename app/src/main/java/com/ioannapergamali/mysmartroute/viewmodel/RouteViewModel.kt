@@ -60,6 +60,11 @@ class RouteViewModel : ViewModel() {
         }
     }
 
+    suspend fun getPointsCount(context: Context, routeId: String): Int {
+        val dao = MySmartRouteDatabase.getInstance(context).routePointDao()
+        return dao.getPointsForRoute(routeId).first().size
+    }
+
     suspend fun addRoute(context: Context, poiIds: List<String>, name: String): Boolean {
         if (poiIds.size < 2) return false
         val db = MySmartRouteDatabase.getInstance(context)
