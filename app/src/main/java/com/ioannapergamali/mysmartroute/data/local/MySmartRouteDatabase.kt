@@ -17,6 +17,8 @@ import com.ioannapergamali.mysmartroute.data.local.RouteEntity
 import com.ioannapergamali.mysmartroute.data.local.MovingEntity
 import com.ioannapergamali.mysmartroute.data.local.RoutePointEntity
 import com.ioannapergamali.mysmartroute.data.local.RoutePointDao
+import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationEntity
+import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationDao
 import androidx.room.TypeConverters
 import com.ioannapergamali.mysmartroute.data.local.Converters
 
@@ -33,9 +35,10 @@ import com.ioannapergamali.mysmartroute.data.local.Converters
         LanguageSettingEntity::class,
         RouteEntity::class,
         MovingEntity::class,
-        RoutePointEntity::class
+        RoutePointEntity::class,
+        TransportDeclarationEntity::class
     ],
-    version = 28
+    version = 29
 )
 @TypeConverters(Converters::class)
 abstract class MySmartRouteDatabase : RoomDatabase() {
@@ -51,6 +54,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
     abstract fun routeDao(): RouteDao
     abstract fun movingDao(): MovingDao
     abstract fun routePointDao(): RoutePointDao
+    abstract fun transportDeclarationDao(): TransportDeclarationDao
 
     companion object {
         @Volatile
@@ -232,7 +236,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                 val driverMenuId = "menu_driver_main"
                 insertMenu(driverMenuId, "role_driver", "driver_menu_title")
                 insertOption("opt_driver_1", driverMenuId, "register_vehicle", "registerVehicle")
-                insertOption("opt_driver_2", driverMenuId, "declare_route", "declareRoute")
+                insertOption("opt_driver_2", driverMenuId, "announce_transport", "declareTransport")
                 insertOption("opt_driver_3", driverMenuId, "announce_availability", "announceAvailability")
                 insertOption("opt_driver_4", driverMenuId, "find_passengers", "findPassengers")
                 insertOption("opt_driver_5", driverMenuId, "print_list", "printList")
@@ -423,6 +427,21 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_28_29 = object : Migration(28, 29) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `transport_declarations` (" +
+                        "`id` TEXT NOT NULL, " +
+                        "`routeId` TEXT NOT NULL, " +
+                        "`vehicleType` TEXT NOT NULL, " +
+                        "`cost` REAL NOT NULL, " +
+                        "`durationMinutes` INTEGER NOT NULL, " +
+                        "PRIMARY KEY(`id`)" +
+                    ")"
+                )
+            }
+        }
+
         private fun prepopulate(db: SupportSQLiteDatabase) {
             Log.d(TAG, "Prepopulating database")
             db.execSQL(
@@ -474,7 +493,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             val driverMenuId = "menu_driver_main"
             insertMenu(driverMenuId, "role_driver", "driver_menu_title")
             insertOption("opt_driver_1", driverMenuId, "register_vehicle", "registerVehicle")
-            insertOption("opt_driver_2", driverMenuId, "declare_route", "declareRoute")
+            insertOption("opt_driver_2", driverMenuId, "announce_transport", "declareTransport")
             insertOption("opt_driver_3", driverMenuId, "announce_availability", "announceAvailability")
             insertOption("opt_driver_4", driverMenuId, "find_passengers", "findPassengers")
             insertOption("opt_driver_5", driverMenuId, "print_list", "printList")
@@ -525,7 +544,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_24_25,
                     MIGRATION_25_26,
                     MIGRATION_26_27,
-                    MIGRATION_27_28
+                    MIGRATION_27_28,
+                    MIGRATION_28_29
                 )
                     .addCallback(object : RoomDatabase.Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {

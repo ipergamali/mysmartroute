@@ -96,6 +96,7 @@
     <string name="from">From</string>
     <string name="start_point">Starting point</string>
     <string name="destination">Destination</string>
+    <string name="route">Route</string>
     <string name="stop_point">Stop</string>
     <string name="vehicle">Vehicle</string>
     <string name="cost">Cost</string>

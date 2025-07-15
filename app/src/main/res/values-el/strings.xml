@@ -98,6 +98,7 @@
     <string name="from">Από</string>
     <string name="start_point">Σημείο εκκίνησης</string>
     <string name="destination">Προορισμός</string>
+    <string name="route">Διαδρομή</string>
     <string name="vehicle">Όχημα</string>
     <string name="cost">Κόστος</string>
     <string name="duration">Διάρκεια</string>
