@@ -341,19 +341,21 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 ) {
                     addressResults.forEach { suggestion ->
                         DropdownMenuItem(text = { Text(suggestion) }, onClick = {
-                            addressQuery = suggestion
-                            addressMenuExpanded = false
-                            selectedPoiId = null
-                            val res = geocodeHeraklion(context, suggestion).firstOrNull()
-                            if (res != null) {
-                                unsavedPoint = LatLng(res.latitude, res.longitude)
-                                unsavedAddress = suggestion
-                                cameraPositionState.position = CameraPosition.fromLatLngZoom(unsavedPoint!!, 13.79f)
+                            scope.launch {
+                                addressQuery = suggestion
+                                addressMenuExpanded = false
+                                selectedPoiId = null
+                                val res = geocodeHeraklion(context, suggestion).firstOrNull()
+                                if (res != null) {
+                                    unsavedPoint = LatLng(res.latitude, res.longitude)
+                                    unsavedAddress = suggestion
+                                    cameraPositionState.position = CameraPosition.fromLatLngZoom(unsavedPoint!!, 13.79f)
+                                }
+                                query = suggestion
+                                routeSaved = false
+                                focusRequester.requestFocus()
+                                keyboardController?.show()
                             }
-                            query = suggestion
-                            routeSaved = false
-                            focusRequester.requestFocus()
-                            keyboardController?.show()
                         })
                     }
                 }
