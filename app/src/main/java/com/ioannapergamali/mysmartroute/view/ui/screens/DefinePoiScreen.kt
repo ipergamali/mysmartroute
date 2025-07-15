@@ -2,6 +2,7 @@ package com.ioannapergamali.mysmartroute.view.ui.screens
 
 import android.widget.Toast
 import android.location.Geocoder
+import android.location.Address
 import android.content.Context
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
@@ -58,6 +59,9 @@ fun DefinePoiScreen(
     var streetName by remember { mutableStateOf("") }
     var streetNumInput by remember { mutableStateOf("") }
     var postalCodeInput by remember { mutableStateOf("") }
+    var addressQuery by remember { mutableStateOf("") }
+    var addressResults by remember { mutableStateOf<List<Address>>(emptyList()) }
+    var addressMenuExpanded by remember { mutableStateOf(false) }
     val initialLatLng = remember(initialLat, initialLng) {
         if (initialLat != null && initialLng != null) LatLng(initialLat, initialLng) else null
     }
@@ -166,6 +170,57 @@ fun DefinePoiScreen(
             }
 
 
+
+            Spacer(Modifier.height(8.dp))
+            ExposedDropdownMenuBox(expanded = addressMenuExpanded, onExpandedChange = { addressMenuExpanded = !addressMenuExpanded }) {
+                OutlinedTextField(
+                    value = addressQuery,
+                    onValueChange = { query ->
+                        addressQuery = query
+                        if (query.length >= 3) {
+                            coroutineScope.launch {
+                                addressResults = geocodeHeraklion(context, query)
+                                addressMenuExpanded = true
+                            }
+                        } else {
+                            addressResults = emptyList()
+                        }
+                    },
+                    label = { Text(stringResource(R.string.search_address)) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = addressMenuExpanded) },
+                    modifier = Modifier.menuAnchor().fillMaxWidth(),
+                    shape = MaterialTheme.shapes.small,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                    )
+                )
+                DropdownMenu(
+                    expanded = addressMenuExpanded,
+                    onDismissRequest = { addressMenuExpanded = false },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 300.dp)
+                ) {
+                    addressResults.forEach { addr ->
+                        val line = addr.getAddressLine(0) ?: ""
+                        DropdownMenuItem(text = { Text(line) }, onClick = {
+                            addressQuery = line
+                            addressMenuExpanded = false
+                            streetName = addr.thoroughfare ?: ""
+                            streetNumInput = addr.subThoroughfare ?: ""
+                            city = addr.locality ?: ""
+                            postalCodeInput = addr.postalCode ?: ""
+                            country = addr.countryName ?: ""
+                            selectedLatLng = LatLng(addr.latitude, addr.longitude)
+                            selectedLatLng?.let {
+                                markerState.position = it
+                                cameraPositionState.position = CameraPosition.fromLatLngZoom(it, 13.79f)
+                            }
+                        })
+                    }
+                }
+            }
 
             Spacer(Modifier.height(8.dp))
             OutlinedTextField(
@@ -308,6 +363,24 @@ private suspend fun reverseGeocodePoi(
             ?.firstOrNull()
     } catch (e: Exception) {
         null
+    }
+}
+
+private suspend fun geocodeHeraklion(
+    context: Context,
+    query: String
+): List<Address> = withContext(Dispatchers.IO) {
+    try {
+        Geocoder(context).getFromLocationName(
+            query,
+            5,
+            35.28,
+            25.05,
+            35.40,
+            25.20
+        ) ?: emptyList()
+    } catch (e: Exception) {
+        emptyList()
     }
 }
 
