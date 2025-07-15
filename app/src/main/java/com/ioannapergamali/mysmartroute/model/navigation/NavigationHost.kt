@@ -10,7 +10,7 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.SignUpScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.MenuScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.RegisterVehicleScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.AnnounceTransportScreen
-import com.ioannapergamali.mysmartroute.view.ui.screens.DeclareTransportScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.DeclareRouteScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.DirectionsMapScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.PoIListScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.DefinePoiScreen
@@ -71,8 +71,8 @@ fun NavigationHost(navController : NavHostController, openDrawer: () -> Unit) {
             RegisterVehicleScreen(navController = navController, openDrawer = openDrawer)
         }
 
-        composable("declareTransport") {
-            DeclareTransportScreen(navController = navController, openDrawer = openDrawer)
+        composable("declareRoute") {
+            DeclareRouteScreen(navController = navController, openDrawer = openDrawer)
         }
 
         composable("announceAvailability") {

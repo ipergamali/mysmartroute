@@ -21,7 +21,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DeclareTransportScreen(navController: NavController, openDrawer: () -> Unit) {
+fun DeclareRouteScreen(navController: NavController, openDrawer: () -> Unit) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val routeViewModel: RouteViewModel = viewModel()
@@ -39,7 +39,7 @@ fun DeclareTransportScreen(navController: NavController, openDrawer: () -> Unit)
 
     Scaffold(topBar = {
         TopBar(
-            title = stringResource(R.string.announce_transport),
+            title = stringResource(R.string.declare_route),
             navController = navController,
             showMenu = true,
             onMenuClick = openDrawer

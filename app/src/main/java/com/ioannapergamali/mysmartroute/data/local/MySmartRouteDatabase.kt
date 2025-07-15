@@ -236,7 +236,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                 val driverMenuId = "menu_driver_main"
                 insertMenu(driverMenuId, "role_driver", "driver_menu_title")
                 insertOption("opt_driver_1", driverMenuId, "register_vehicle", "registerVehicle")
-                insertOption("opt_driver_2", driverMenuId, "announce_transport", "declareTransport")
+                insertOption("opt_driver_2", driverMenuId, "declare_route", "declareRoute")
                 insertOption("opt_driver_3", driverMenuId, "announce_availability", "announceAvailability")
                 insertOption("opt_driver_4", driverMenuId, "find_passengers", "findPassengers")
                 insertOption("opt_driver_5", driverMenuId, "print_list", "printList")
@@ -493,7 +493,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             val driverMenuId = "menu_driver_main"
             insertMenu(driverMenuId, "role_driver", "driver_menu_title")
             insertOption("opt_driver_1", driverMenuId, "register_vehicle", "registerVehicle")
-            insertOption("opt_driver_2", driverMenuId, "announce_transport", "declareTransport")
+            insertOption("opt_driver_2", driverMenuId, "declare_route", "declareRoute")
             insertOption("opt_driver_3", driverMenuId, "announce_availability", "announceAvailability")
             insertOption("opt_driver_4", driverMenuId, "find_passengers", "findPassengers")
             insertOption("opt_driver_5", driverMenuId, "print_list", "printList")
