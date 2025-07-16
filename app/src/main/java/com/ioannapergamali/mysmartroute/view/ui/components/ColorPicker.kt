@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 
 /**
  * Απλός picker χρωμάτων με πλέγμα από κουμπιά.
@@ -20,6 +21,7 @@ import androidx.compose.foundation.layout.FlowRow
  * @param selectedColor Το επιλεγμένο χρώμα
  * @param onColorSelected Callback όταν επιλεχθεί χρώμα
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ColorPicker(
     colors: List<Color>,
