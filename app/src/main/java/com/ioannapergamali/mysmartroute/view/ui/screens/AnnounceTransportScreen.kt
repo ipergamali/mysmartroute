@@ -144,7 +144,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
 
             Spacer(Modifier.height(16.dp))
 
-            Text(stringResource(R.string.duration) + ": $duration")
+            Text(stringResource(R.string.duration_format, duration))
 
             Spacer(Modifier.height(16.dp))
 
