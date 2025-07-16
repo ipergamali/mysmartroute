@@ -43,11 +43,20 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
     val context = LocalContext.current
 
     var plate by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
+    val descriptionOptions = listOf(
+        "Αυτοκίνητο",
+        "Ταξί",
+        "Λεωφορείο",
+        "Βαν",
+        "Ποδήλατο",
+        "Μηχανάκι"
+    )
+    var description by remember { mutableStateOf(descriptionOptions.first()) }
     var color by remember { mutableStateOf(VehicleColor.BLACK) }
     var seat by remember { mutableStateOf(0) }
     var type by remember { mutableStateOf(VehicleType.CAR) }
     var colorExpanded by remember { mutableStateOf(false) }
+    var descExpanded by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) { viewModel.loadAvailableVehicles(context) }
 
@@ -73,7 +82,17 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
                     val selected = option == type
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         IconButton(
-                            onClick = { type = option },
+                            onClick = {
+                                type = option
+                                description = when (option) {
+                                    VehicleType.CAR -> "Αυτοκίνητο"
+                                    VehicleType.TAXI -> "Ταξί"
+                                    VehicleType.BIGBUS -> "Λεωφορείο"
+                                    VehicleType.SMALLBUS -> "Βαν"
+                                    VehicleType.BICYCLE -> "Ποδήλατο"
+                                    VehicleType.MOTORBIKE -> "Μηχανάκι"
+                                }
+                            },
                             colors = IconButtonDefaults.iconButtonColors(
                                 containerColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
                                 contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary
@@ -96,12 +115,12 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
                         }
                         Text(
                             text = when (option) {
-                                VehicleType.CAR -> "Car"
-                                VehicleType.TAXI -> "Taxi"
-                                VehicleType.BIGBUS -> "Bus"
-                                VehicleType.SMALLBUS -> "Small Bus"
-                                VehicleType.BICYCLE -> "Bicycle"
-                                VehicleType.MOTORBIKE -> "Motorbike"
+                                VehicleType.CAR -> "Αυτοκίνητο"
+                                VehicleType.TAXI -> "Ταξί"
+                                VehicleType.BIGBUS -> "Λεωφορείο"
+                                VehicleType.SMALLBUS -> "Βαν"
+                                VehicleType.BICYCLE -> "Ποδήλατο"
+                                VehicleType.MOTORBIKE -> "Μηχανάκι"
                             }
                         )
                     }
@@ -120,17 +139,30 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
                 )
             )
             Spacer(Modifier.height(8.dp))
-            OutlinedTextField(
-                value = description,
-                onValueChange = { description = it },
-                label = { Text("Description") },
-                modifier = Modifier.fillMaxWidth(),
-                shape = MaterialTheme.shapes.small,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.primary
+            ExposedDropdownMenuBox(expanded = descExpanded, onExpandedChange = {}) {
+                OutlinedTextField(
+                    value = description,
+                    onValueChange = {},
+                    readOnly = true,
+                    enabled = false,
+                    label = { Text("Περιγραφή") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = descExpanded) },
+                    modifier = Modifier.menuAnchor().fillMaxWidth(),
+                    shape = MaterialTheme.shapes.small,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                    )
                 )
-            )
+                ExposedDropdownMenu(expanded = descExpanded, onDismissRequest = { descExpanded = false }) {
+                    descriptionOptions.forEach { option ->
+                        DropdownMenuItem(text = { Text(option) }, onClick = {
+                            description = option
+                            descExpanded = false
+                        })
+                    }
+                }
+            }
             Spacer(Modifier.height(8.dp))
             ExposedDropdownMenuBox(expanded = colorExpanded, onExpandedChange = { colorExpanded = !colorExpanded }) {
                 OutlinedTextField(
