@@ -34,7 +34,7 @@ fun Modifier.bringIntoViewOnFocus(): Modifier = composed {
         .onFocusEvent { state: FocusState ->
             if (state.isFocused) {
                 scope.launch {
-                    bringIntoViewRequester.bringIntoView()
+                    bringIntoViewRequester.safeBringIntoView()
                 }
             }
         }
