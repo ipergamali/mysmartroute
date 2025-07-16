@@ -13,6 +13,9 @@ interface RouteDao {
     @Query("SELECT * FROM routes")
     fun getAll(): kotlinx.coroutines.flow.Flow<List<RouteEntity>>
 
+    @Query("SELECT * FROM routes WHERE userId = :userId")
+    fun getRoutesForUser(userId: String): kotlinx.coroutines.flow.Flow<List<RouteEntity>>
+
     @Query("SELECT * FROM routes WHERE name = :name LIMIT 1")
     suspend fun findByName(name: String): RouteEntity?
 }

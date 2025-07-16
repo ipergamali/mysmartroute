@@ -3,6 +3,7 @@ package com.ioannapergamali.mysmartroute.viewmodel
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.RouteEntity
@@ -49,9 +50,12 @@ class RouteViewModel : ViewModel() {
 
     fun loadRoutes(context: Context) {
         viewModelScope.launch {
+            val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
             val dao = MySmartRouteDatabase.getInstance(context).routeDao()
-            _routes.value = dao.getAll().first()
-            firestore.collection("routes").get()
+            _routes.value = dao.getRoutesForUser(userId).first()
+            firestore.collection("routes")
+                .whereEqualTo("userId", userId)
+                .get()
                 .addOnSuccessListener { snapshot ->
                     val list = snapshot.documents.mapNotNull { it.toRouteEntity() }
                     _routes.value = list
@@ -81,8 +85,9 @@ class RouteViewModel : ViewModel() {
 
         if (routeDao.findByName(name) != null) return false
 
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return false
         val id = UUID.randomUUID().toString()
-        val entity = RouteEntity(id, name, poiIds.first(), poiIds.last())
+        val entity = RouteEntity(id, userId, name, poiIds.first(), poiIds.last())
         val points = poiIds.mapIndexed { index, p -> RoutePointEntity(id, index, p) }
 
         if (NetworkUtils.isInternetAvailable(context)) {
