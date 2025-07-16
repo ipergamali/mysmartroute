@@ -20,7 +20,6 @@ import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import androidx.compose.ui.platform.LocalContext
 import com.ioannapergamali.mysmartroute.data.local.RouteEntity
 import com.google.android.libraries.places.api.model.Place
-import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -65,13 +64,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         val vehicle = selectedVehicle
         if (rId != null && vehicle != null) {
             scope.launch {
-                val pois = routeViewModel.getRoutePois(context, rId)
-                if (pois.size >= 2) {
-                    val start = com.google.android.gms.maps.model.LatLng(pois.first().lat, pois.first().lng)
-                    val end = com.google.android.gms.maps.model.LatLng(pois.last().lat, pois.last().lng)
-                    val way = pois.drop(1).dropLast(1).map { com.google.android.gms.maps.model.LatLng(it.lat, it.lng) }
-                    duration = MapsUtils.fetchDuration(start, end, MapsUtils.getApiKey(context), vehicle, way)
-                }
+                duration = routeViewModel.getRouteDuration(context, rId, vehicle)
             }
         }
     }
