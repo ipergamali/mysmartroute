@@ -1,9 +1,11 @@
 package com.ioannapergamali.mysmartroute.view.ui.util
 
-import androidx.compose.foundation.layout.BringIntoViewRequester
-import androidx.compose.foundation.layout.bringIntoViewRequester
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoView
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
+import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -18,7 +20,7 @@ fun Modifier.bringIntoViewOnFocus(): Modifier = composed {
     val scope = rememberCoroutineScope()
     this
         .bringIntoViewRequester(bringIntoViewRequester)
-        .onFocusEvent { state ->
+        .onFocusEvent { state: FocusState ->
             if (state.isFocused) {
                 scope.launch { bringIntoViewRequester.bringIntoView() }
             }
