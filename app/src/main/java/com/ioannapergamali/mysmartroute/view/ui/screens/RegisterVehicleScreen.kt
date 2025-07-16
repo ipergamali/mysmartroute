@@ -37,6 +37,7 @@ import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.ColorWheelPicker
 import com.ioannapergamali.mysmartroute.view.ui.components.toHex
+import com.ioannapergamali.mysmartroute.view.ui.components.toColorOrNull
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleViewModel
 import androidx.compose.ui.res.stringResource
 import com.ioannapergamali.mysmartroute.R
@@ -230,6 +231,7 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
             }
             if (showCustomDialog) {
                 var tempColor by remember { mutableStateOf(customColorValue) }
+                var tempHex by remember { mutableStateOf(tempColor.toHex()) }
                 AlertDialog(
                     onDismissRequest = { showCustomDialog = false },
                     confirmButton = {
@@ -245,7 +247,10 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             ColorWheelPicker(
                                 selectedColor = tempColor,
-                                onColorSelected = { tempColor = it },
+                                onColorSelected = {
+                                    tempColor = it
+                                    tempHex = it.toHex()
+                                },
                                 modifier = Modifier.size(220.dp)
                             )
                             Spacer(Modifier.height(8.dp))
@@ -257,7 +262,16 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
                                         .border(1.dp, MaterialTheme.colorScheme.onSurface, CircleShape)
                                 )
                                 Spacer(Modifier.width(8.dp))
-                                Text(text = tempColor.toHex())
+                                OutlinedTextField(
+                                    value = tempHex,
+                                    onValueChange = {
+                                        tempHex = it
+                                        it.toColorOrNull()?.let { c -> tempColor = c }
+                                    },
+                                    label = { Text("HEX") },
+                                    singleLine = true,
+                                    modifier = Modifier.width(120.dp)
+                                )
                             }
                             Spacer(Modifier.height(8.dp))
                             OutlinedTextField(
