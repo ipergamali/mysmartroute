@@ -43,8 +43,8 @@ android {
     }
 
     composeOptions {
-        // Χρήση της επίσημης έκδοσης του compiler
-        kotlinCompilerExtensionVersion = "1.6.1"
+        // Χρήση της νεότερης σταθερής έκδοσης του compiler
+        kotlinCompilerExtensionVersion = "1.6.7"
     }
 
     compileOptions {
@@ -80,8 +80,8 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
 
     // Jetpack Compose
-    implementation(platform("androidx.compose:compose-bom:2024.06.01"))
-    androidTestImplementation(platform("androidx.compose:compose-bom:2024.06.01"))
+    implementation(platform("androidx.compose:compose-bom:2025.05.00"))
+    androidTestImplementation(platform("androidx.compose:compose-bom:2025.05.00"))
 
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.ui:ui")
