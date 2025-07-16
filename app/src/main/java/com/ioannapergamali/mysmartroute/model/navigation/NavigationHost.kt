@@ -72,11 +72,11 @@ fun NavigationHost(navController : NavHostController, openDrawer: () -> Unit) {
         }
 
         composable("declareRoute") {
-            AnnounceTransportScreen(navController = navController, openDrawer = openDrawer)
+            DeclareRouteScreen(navController = navController, openDrawer = openDrawer)
         }
 
         composable("announceAvailability") {
-            DeclareRouteScreen(navController = navController, openDrawer = openDrawer)
+            AnnounceTransportScreen(navController = navController, openDrawer = openDrawer)
         }
 
         composable("poiList") {
