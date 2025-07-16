@@ -17,7 +17,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.toPx
 import kotlin.math.*
 
 /**
@@ -56,8 +55,8 @@ fun ColorWheelPicker(
             colors.forEachIndexed { index, color ->
                 val angle = 2 * PI * index / colors.size
                 val radius = circleRadiusPx - itemRadiusPx - 4.dp.toPx()
-                val x = center.x + cos(angle) * radius
-                val y = center.y + sin(angle) * radius
+                val x = center.x + cos(angle).toFloat() * radius
+                val y = center.y + sin(angle).toFloat() * radius
                 drawCircle(
                     color = color,
                     radius = itemRadiusPx,
