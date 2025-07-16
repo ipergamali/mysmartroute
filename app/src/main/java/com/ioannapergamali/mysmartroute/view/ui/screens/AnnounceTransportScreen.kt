@@ -10,6 +10,13 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.compose.foundation.clickable
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.Polyline
+import com.google.maps.android.compose.rememberCameraPositionState
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
@@ -20,6 +27,7 @@ import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import androidx.compose.ui.platform.LocalContext
 import com.ioannapergamali.mysmartroute.data.local.RouteEntity
 import com.google.android.libraries.places.api.model.Place
+import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -32,6 +40,10 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     val vehicleViewModel: VehicleViewModel = viewModel()
     val routes by routeViewModel.routes.collectAsState()
     val vehicles by vehicleViewModel.vehicles.collectAsState()
+    val busVehicles = vehicles.filter { v ->
+        val type = VehicleType.valueOf(v.type)
+        type == VehicleType.BIGBUS || type == VehicleType.SMALLBUS
+    }
 
     var displayRoutes by remember { mutableStateOf<List<RouteEntity>>(emptyList()) }
 
@@ -42,6 +54,9 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     var selectedVehicleDesc by remember { mutableStateOf("") }
     var costText by remember { mutableStateOf("") }
     var duration by remember { mutableStateOf(0) }
+    var pois by remember { mutableStateOf<List<PoIEntity>>(emptyList()) }
+    var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
+    val cameraPositionState = rememberCameraPositionState()
 
     LaunchedEffect(routes, selectedVehicle) {
         displayRoutes = if (selectedVehicle == VehicleType.BIGBUS || selectedVehicle == VehicleType.SMALLBUS) {
@@ -59,12 +74,18 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         vehicleViewModel.loadRegisteredVehicles(context)
     }
 
-    fun refreshDuration() {
+    fun refreshRoute() {
         val rId = selectedRouteId
         val vehicle = selectedVehicle
         if (rId != null && vehicle != null) {
             scope.launch {
-                duration = routeViewModel.getRouteDuration(context, rId, vehicle)
+                val (dur, path) = routeViewModel.getRouteDirections(context, rId, vehicle)
+                duration = dur
+                pathPoints = path
+                pois = routeViewModel.getRoutePois(context, rId)
+                path.firstOrNull()?.let { first ->
+                    cameraPositionState.move(CameraUpdateFactory.newLatLngZoom(first, 13f))
+                }
             }
         }
     }
@@ -92,7 +113,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         DropdownMenuItem(text = { Text(route.name) }, onClick = {
                             selectedRouteId = route.id
                             expandedRoute = false
-                            refreshDuration()
+                            refreshRoute()
                         })
                     }
                 }
@@ -110,18 +131,48 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     readOnly = true
                 )
                 ExposedDropdownMenu(expanded = expandedVehicle, onDismissRequest = { expandedVehicle = false }) {
-                    vehicles.forEach { vehicle ->
+                    busVehicles.forEach { vehicle ->
                         DropdownMenuItem(text = { Text(vehicle.description) }, onClick = {
                             selectedVehicle = VehicleType.valueOf(vehicle.type)
                             selectedVehicleDesc = vehicle.description
                             expandedVehicle = false
-                            refreshDuration()
+                            refreshRoute()
                         })
                     }
                 }
             }
 
             Spacer(Modifier.height(16.dp))
+
+            if (pathPoints.isNotEmpty()) {
+                GoogleMap(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp),
+                    cameraPositionState = cameraPositionState
+                ) {
+                    Polyline(points = pathPoints)
+                    pois.forEach { poi ->
+                        Marker(
+                            state = MarkerState(position = LatLng(poi.lat, poi.lng)),
+                            title = poi.name
+                        )
+                    }
+                }
+
+                Spacer(Modifier.height(16.dp))
+            }
+
+            if (pois.isNotEmpty()) {
+                Text(stringResource(R.string.stops_header))
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    pois.forEachIndexed { index, poi ->
+                        Text("${index + 1}. ${poi.name}")
+                    }
+                }
+
+                Spacer(Modifier.height(16.dp))
+            }
 
             OutlinedTextField(
                 value = costText,

@@ -127,6 +127,7 @@
     <string name="calculating_route">Calculating route…</string>
     <string name="save_route">Save route</string>
     <string name="route_name">Route name</string>
+    <string name="stops_header">Stops</string>
     <!-- Legend texts -->
     <string name="legend_header">ΣΗΜΕΙΑ ΔΙΑΔΡΟΜΗΣ</string>
     <string name="legend_unsaved_point">Μη αποθηκευμένο εκτός διαδρομής</string>
