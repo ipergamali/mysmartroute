@@ -63,9 +63,9 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
     var customColorName by remember { mutableStateOf("") }
     var customColorValue by remember { mutableStateOf(Color.Black) }
     var showCustomDialog by remember { mutableStateOf(false) }
+    var showColorDialog by remember { mutableStateOf(false) }
     var seat by remember { mutableStateOf(0) }
     var type by remember { mutableStateOf(VehicleType.CAR) }
-    var colorExpanded by remember { mutableStateOf(false) }
     var descExpanded by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) { viewModel.loadAvailableVehicles(context) }
@@ -174,57 +174,71 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
                 }
             }
             Spacer(Modifier.height(8.dp))
-            ExposedDropdownMenuBox(expanded = colorExpanded, onExpandedChange = { colorExpanded = !colorExpanded }) {
-                val currentLabel = if (usingCustomColor) customColorName else color.label
-                val previewColor = if (usingCustomColor) customColorValue else color.color
-                OutlinedTextField(
-                    value = currentLabel,
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text(stringResource(R.string.vehicle_color)) },
-                    leadingIcon = {
-                        Box(
-                            Modifier
-                                .size(24.dp)
-                                .background(previewColor, CircleShape)
-                        )
-                    },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = colorExpanded) },
-                    modifier = Modifier.menuAnchor().fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.primary
+            val currentLabel = if (usingCustomColor) customColorName else color.label
+            val previewColor = if (usingCustomColor) customColorValue else color.color
+            OutlinedTextField(
+                value = currentLabel,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text(stringResource(R.string.vehicle_color)) },
+                leadingIcon = {
+                    Box(
+                        Modifier
+                            .size(24.dp)
+                            .background(previewColor, CircleShape)
                     )
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { showColorDialog = true },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.primary
                 )
-                ExposedDropdownMenu(expanded = colorExpanded, onDismissRequest = { colorExpanded = false }) {
-                    VehicleColor.values().forEach { option ->
-                        DropdownMenuItem(
-                            text = { Text(option.label) },
-                            leadingIcon = {
+            )
+            if (showColorDialog) {
+                AlertDialog(
+                    onDismissRequest = { showColorDialog = false },
+                    confirmButton = {},
+                    text = {
+                        Column {
+                            FlowRow(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                VehicleColor.values().forEach { option ->
+                                    Box(
+                                        Modifier
+                                            .size(36.dp)
+                                            .background(option.color, CircleShape)
+                                            .border(
+                                                if (!usingCustomColor && color == option) 2.dp else 1.dp,
+                                                MaterialTheme.colorScheme.primary,
+                                                CircleShape
+                                            )
+                                            .clickable {
+                                                usingCustomColor = false
+                                                color = option
+                                                showColorDialog = false
+                                            }
+                                    )
+                                }
                                 Box(
                                     Modifier
-                                        .size(24.dp)
-                                        .background(option.color, CircleShape)
-                                )
-                            },
-                            onClick = {
-                                usingCustomColor = false
-                                color = option
-                                colorExpanded = false
+                                        .size(36.dp)
+                                        .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
+                                        .border(1.dp, MaterialTheme.colorScheme.primary, CircleShape)
+                                        .clickable {
+                                            showColorDialog = false
+                                            showCustomDialog = true
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(Icons.Default.Add, contentDescription = null)
+                                }
                             }
-                        )
-                    }
-                    DropdownMenuItem(
-                        text = { Text("Custom") },
-                        leadingIcon = {
-                            Icon(Icons.Default.Add, contentDescription = null)
-                        },
-                        onClick = {
-                            showCustomDialog = true
-                            colorExpanded = false
                         }
-                    )
-                }
+                    }
+                )
             }
             if (showCustomDialog) {
                 var tempColor by remember { mutableStateOf(customColorValue) }
