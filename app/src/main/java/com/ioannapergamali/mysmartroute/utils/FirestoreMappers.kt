@@ -150,6 +150,7 @@ fun MenuOptionEntity.toFirestoreMap(): Map<String, Any> = mapOf(
 
 fun RouteEntity.toFirestoreMap(points: List<RoutePointEntity> = emptyList()): Map<String, Any> = mapOf(
     "id" to id,
+    "userId" to userId,
     "name" to name,
     "start" to FirebaseFirestore.getInstance().collection("pois").document(startPoiId),
     "end" to FirebaseFirestore.getInstance().collection("pois").document(endPoiId),
@@ -160,6 +161,7 @@ fun RouteEntity.toFirestoreMap(points: List<RoutePointEntity> = emptyList()): Ma
 
 fun DocumentSnapshot.toRouteEntity(): RouteEntity? {
     val routeId = getString("id") ?: id
+    val userId = getString("userId") ?: ""
     val routeName = getString("name") ?: ""
     val start = when (val raw = get("start")) {
         is DocumentReference -> raw.id
@@ -171,7 +173,7 @@ fun DocumentSnapshot.toRouteEntity(): RouteEntity? {
         is String -> raw
         else -> getString("end")
     } ?: return null
-    return RouteEntity(routeId, routeName, start, end)
+    return RouteEntity(routeId, userId, routeName, start, end)
 }
 
 fun DocumentSnapshot.toRouteWithPoints(): Pair<RouteEntity, List<RoutePointEntity>>? {

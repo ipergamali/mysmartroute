@@ -18,6 +18,8 @@ import com.ioannapergamali.mysmartroute.viewmodel.TransportDeclarationViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import androidx.compose.ui.platform.LocalContext
+import com.ioannapergamali.mysmartroute.data.local.RouteEntity
+import com.google.android.libraries.places.api.model.Place
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import kotlinx.coroutines.launch
 
@@ -31,6 +33,19 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     val vehicleViewModel: VehicleViewModel = viewModel()
     val routes by routeViewModel.routes.collectAsState()
     val vehicles by vehicleViewModel.vehicles.collectAsState()
+
+    var displayRoutes by remember { mutableStateOf<List<RouteEntity>>(emptyList()) }
+
+    LaunchedEffect(routes, selectedVehicle) {
+        displayRoutes = if (selectedVehicle == VehicleType.BIGBUS || selectedVehicle == VehicleType.SMALLBUS) {
+            routes.filter { route ->
+                val pois = routeViewModel.getRoutePois(context, route.id)
+                pois.all { it.type == Place.Type.BUS_STOP }
+            }
+        } else {
+            routes
+        }
+    }
 
     LaunchedEffect(Unit) {
         routeViewModel.loadRoutes(context)
@@ -72,7 +87,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         ScreenContainer(modifier = Modifier.padding(padding)) {
             Box {
                 OutlinedTextField(
-                    value = routes.firstOrNull { it.id == selectedRouteId }?.name ?: "",
+                    value = displayRoutes.firstOrNull { it.id == selectedRouteId }?.name ?: "",
                     onValueChange = {},
                     label = { Text(stringResource(R.string.route)) },
                     modifier = Modifier
@@ -82,7 +97,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     readOnly = true
                 )
                 DropdownMenu(expanded = expandedRoute, onDismissRequest = { expandedRoute = false }) {
-                    routes.forEach { route ->
+                    displayRoutes.forEach { route ->
                         DropdownMenuItem(text = { Text(route.name) }, onClick = {
                             selectedRouteId = route.id
                             expandedRoute = false
