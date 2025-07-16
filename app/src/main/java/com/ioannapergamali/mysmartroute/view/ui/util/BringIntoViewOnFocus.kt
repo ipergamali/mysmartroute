@@ -2,6 +2,12 @@ package com.ioannapergamali.mysmartroute.view.ui.util
 
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
+
+
+// Η συνάρτηση bringIntoView είναι διαθέσιμη από Compose 1.3 και μετά
+// Φροντίζουμε να έχει γίνει import ώστε να μην εμφανίζεται σφάλμα "Unresolved reference"
+import androidx.compose.foundation.relocation.bringIntoView
+
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
