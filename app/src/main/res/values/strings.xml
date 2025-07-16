@@ -141,4 +141,5 @@
     <string name="role_admin_desc">You have access to management functions and defining points of interest.</string>
     <string name="poi_outside_heraklion">Please select a point within Heraklion</string>
     <string name="search_address">Search address</string>
+    <string name="fill_all_fields">Please fill in all fields</string>
 </resources>

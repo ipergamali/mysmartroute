@@ -133,4 +133,5 @@
     <string name="role_admin_desc">Έχετε πρόσβαση σε λειτουργίες διαχείρισης και ορισμού σημείων ενδιαφέροντος.</string>
     <string name="poi_outside_heraklion">Επιλέξτε σημείο εντός Ηρακλείου</string>
     <string name="search_address">Αναζήτηση διεύθυνσης</string>
+    <string name="fill_all_fields">Συμπλήρωσε όλα τα πεδία</string>
 </resources>

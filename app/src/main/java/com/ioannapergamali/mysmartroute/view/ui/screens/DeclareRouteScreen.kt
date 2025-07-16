@@ -560,7 +560,7 @@ fun DeclareRouteScreen(navController: NavController, openDrawer: () -> Unit) {
                 onClick = {
                     val ids = routePois.map { it.id }
                     scope.launch {
-                        if (ids.size >= 2) {
+                        if (ids.size >= 2 && routeName.isNotBlank()) {
                             val inserted = routeViewModel.addRoute(context, ids, routeName)
                             if (inserted) {
                                 routeSaved = true
@@ -571,10 +571,12 @@ fun DeclareRouteScreen(navController: NavController, openDrawer: () -> Unit) {
                             } else {
                                 Toast.makeText(context, context.getString(R.string.route_exists), Toast.LENGTH_SHORT).show()
                             }
+                        } else {
+                            Toast.makeText(context, context.getString(R.string.fill_all_fields), Toast.LENGTH_SHORT).show()
                         }
                     }
                 },
-                enabled = routePois.size >= 2
+                enabled = routePois.size >= 2 && routeName.isNotBlank()
             ) {
                 Text(stringResource(R.string.save_route))
             }

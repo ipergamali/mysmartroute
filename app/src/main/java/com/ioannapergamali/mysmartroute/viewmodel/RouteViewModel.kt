@@ -90,7 +90,7 @@ class RouteViewModel : ViewModel() {
     }
 
     suspend fun addRoute(context: Context, poiIds: List<String>, name: String): Boolean {
-        if (poiIds.size < 2) return false
+        if (poiIds.size < 2 || name.isBlank()) return false
         val db = MySmartRouteDatabase.getInstance(context)
         val routeDao = db.routeDao()
         val pointDao = db.routePointDao()
