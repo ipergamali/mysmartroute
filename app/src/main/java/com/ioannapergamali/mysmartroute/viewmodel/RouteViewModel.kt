@@ -12,6 +12,9 @@ import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.utils.toRouteEntity
+import com.google.android.gms.maps.model.LatLng
+import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
+import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -98,5 +101,23 @@ class RouteViewModel : ViewModel() {
         points.forEach { pointDao.insert(it) }
 
         return true
+    }
+
+    /**
+     * Υπολογίζει τη διάρκεια διαδρομής με βάση τα αποθηκευμένα σημεία και το επιλεγμένο όχημα.
+     * Χρησιμοποιεί το Google Maps Directions API για να επιστρέψει τη διάρκεια σε λεπτά.
+     */
+    suspend fun getRouteDuration(
+        context: Context,
+        routeId: String,
+        vehicleType: VehicleType
+    ): Int {
+        val pois = getRoutePois(context, routeId)
+        if (pois.size < 2) return 0
+        val origin = LatLng(pois.first().lat, pois.first().lng)
+        val destination = LatLng(pois.last().lat, pois.last().lng)
+        val waypoints = pois.drop(1).dropLast(1).map { LatLng(it.lat, it.lng) }
+        val apiKey = MapsUtils.getApiKey(context)
+        return MapsUtils.fetchDuration(origin, destination, apiKey, vehicleType, waypoints)
     }
 }
