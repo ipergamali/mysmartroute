@@ -23,9 +23,12 @@ import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.TransportDeclarationViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
+import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import androidx.compose.ui.platform.LocalContext
 import com.ioannapergamali.mysmartroute.data.local.RouteEntity
+import com.ioannapergamali.mysmartroute.data.local.VehicleEntity
 import com.google.android.libraries.places.api.model.Place
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import kotlinx.coroutines.launch
@@ -38,12 +41,11 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     val routeViewModel: RouteViewModel = viewModel()
     val declarationViewModel: TransportDeclarationViewModel = viewModel()
     val vehicleViewModel: VehicleViewModel = viewModel()
+    val authViewModel: AuthenticationViewModel = viewModel()
+    val role by authViewModel.currentUserRole.collectAsState()
     val routes by routeViewModel.routes.collectAsState()
     val vehicles by vehicleViewModel.vehicles.collectAsState()
-    val busVehicles = vehicles.filter { v ->
-        val type = VehicleType.valueOf(v.type)
-        type == VehicleType.BIGBUS || type == VehicleType.SMALLBUS
-    }
+    var filteredVehicles by remember { mutableStateOf<List<VehicleEntity>>(emptyList()) }
 
     var displayRoutes by remember { mutableStateOf<List<RouteEntity>>(emptyList()) }
 
@@ -58,8 +60,8 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     val cameraPositionState = rememberCameraPositionState()
 
-    LaunchedEffect(routes, selectedVehicle) {
-        displayRoutes = if (selectedVehicle == VehicleType.BIGBUS || selectedVehicle == VehicleType.SMALLBUS) {
+    LaunchedEffect(routes, selectedVehicle, selectedRouteId) {
+        displayRoutes = if (selectedVehicle == VehicleType.BIGBUS) {
             routes.filter { route ->
                 val pois = routeViewModel.getRoutePois(context, route.id)
                 pois.all { it.type == Place.Type.BUS_STATION }
@@ -67,11 +69,27 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         } else {
             routes
         }
+
+        val isBusRoute = selectedRouteId?.let { id ->
+            val poisSel = routeViewModel.getRoutePois(context, id)
+            poisSel.all { it.type == Place.Type.BUS_STATION }
+        } ?: false
+
+        filteredVehicles = if (isBusRoute) {
+            vehicles.filter { VehicleType.valueOf(it.type) == VehicleType.BIGBUS }
+        } else {
+            vehicles.filter { VehicleType.valueOf(it.type) != VehicleType.BIGBUS }
+        }
     }
 
     LaunchedEffect(Unit) {
-        routeViewModel.loadRoutes(context)
-        vehicleViewModel.loadRegisteredVehicles(context)
+        authViewModel.loadCurrentUserRole(context)
+    }
+
+    LaunchedEffect(role) {
+        val admin = role == UserRole.ADMIN
+        routeViewModel.loadRoutes(context, includeAll = admin)
+        vehicleViewModel.loadRegisteredVehicles(context, includeAll = admin)
     }
 
     fun refreshRoute() {
@@ -131,7 +149,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     readOnly = true
                 )
                 ExposedDropdownMenu(expanded = expandedVehicle, onDismissRequest = { expandedVehicle = false }) {
-                    busVehicles.forEach { vehicle ->
+                    filteredVehicles.forEach { vehicle ->
                         DropdownMenuItem(text = { Text(vehicle.description) }, onClick = {
                             selectedVehicle = VehicleType.valueOf(vehicle.type)
                             selectedVehicleDesc = vehicle.description
