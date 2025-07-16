@@ -1,4 +1,4 @@
-package com.ioannapergamali.mysmartroute.view.ui.screens
+  package com.ioannapergamali.mysmartroute.view.ui.screens
 
 import android.util.Log
 import android.widget.Toast
@@ -90,7 +90,7 @@ private const val MARKER_BLUE = BitmapDescriptorFactory.HUE_BLUE
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeclareRouteScreen(navController: NavController, openDrawer: () -> Unit) {
-    val context = LocalContext.current
+    val context: Context = LocalContext.current
     val poiViewModel: PoIViewModel = viewModel()
     val routeViewModel: RouteViewModel = viewModel()
     val pois by poiViewModel.pois.collectAsState()
@@ -529,7 +529,7 @@ fun DeclareRouteScreen(navController: NavController, openDrawer: () -> Unit) {
                                 start,
                                 end,
                                 apiKey,
-                                com.ioannapergamali.mysmartroute.model.enumerations.VehicleType.CAR,
+                                VehicleType.CAR,
                                 waypoints
                             )
                             if (data.status == "OK") {
