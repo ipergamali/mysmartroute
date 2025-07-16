@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.LocalTaxi
 import androidx.compose.material.icons.filled.TwoWheeler
 import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -19,9 +20,13 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
@@ -33,6 +38,7 @@ import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleViewModel
 import androidx.compose.ui.res.stringResource
 import com.ioannapergamali.mysmartroute.R
+import androidx.compose.ui.graphics.Color
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,9 +59,13 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
     )
     var description by remember { mutableStateOf(descriptionOptions.first()) }
     var color by remember { mutableStateOf(VehicleColor.BLACK) }
+    var usingCustomColor by remember { mutableStateOf(false) }
+    var customColorName by remember { mutableStateOf("") }
+    var customColorValue by remember { mutableStateOf(Color.Black) }
+    var showCustomDialog by remember { mutableStateOf(false) }
+    var showColorDialog by remember { mutableStateOf(false) }
     var seat by remember { mutableStateOf(0) }
     var type by remember { mutableStateOf(VehicleType.CAR) }
-    var colorExpanded by remember { mutableStateOf(false) }
     var descExpanded by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) { viewModel.loadAvailableVehicles(context) }
@@ -164,27 +174,118 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
                 }
             }
             Spacer(Modifier.height(8.dp))
-            ExposedDropdownMenuBox(expanded = colorExpanded, onExpandedChange = { colorExpanded = !colorExpanded }) {
-                OutlinedTextField(
-                    value = color.label,
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text(stringResource(R.string.vehicle_color)) },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = colorExpanded) },
-                    modifier = Modifier.menuAnchor().fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.primary
+            val currentLabel = if (usingCustomColor) customColorName else color.label
+            val previewColor = if (usingCustomColor) customColorValue else color.color
+            OutlinedTextField(
+                value = currentLabel,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text(stringResource(R.string.vehicle_color)) },
+                leadingIcon = {
+                    Box(
+                        Modifier
+                            .size(24.dp)
+                            .background(previewColor, CircleShape)
                     )
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { showColorDialog = true },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.primary
                 )
-                ExposedDropdownMenu(expanded = colorExpanded, onDismissRequest = { colorExpanded = false }) {
-                    VehicleColor.values().forEach { option ->
-                        DropdownMenuItem(text = { Text(option.label) }, onClick = {
-                            color = option
-                            colorExpanded = false
-                        })
+            )
+            if (showColorDialog) {
+                AlertDialog(
+                    onDismissRequest = { showColorDialog = false },
+                    confirmButton = {},
+                    text = {
+                        Column {
+                            FlowRow(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                VehicleColor.values().forEach { option ->
+                                    Box(
+                                        Modifier
+                                            .size(36.dp)
+                                            .background(option.color, CircleShape)
+                                            .border(
+                                                if (!usingCustomColor && color == option) 2.dp else 1.dp,
+                                                MaterialTheme.colorScheme.primary,
+                                                CircleShape
+                                            )
+                                            .clickable {
+                                                usingCustomColor = false
+                                                color = option
+                                                showColorDialog = false
+                                            }
+                                    )
+                                }
+                                Box(
+                                    Modifier
+                                        .size(36.dp)
+                                        .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
+                                        .border(1.dp, MaterialTheme.colorScheme.primary, CircleShape)
+                                        .clickable {
+                                            showColorDialog = false
+                                            showCustomDialog = true
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(Icons.Default.Add, contentDescription = null)
+                                }
+                            }
+                        }
                     }
-                }
+                )
+            }
+            if (showCustomDialog) {
+                var tempColor by remember { mutableStateOf(customColorValue) }
+                AlertDialog(
+                    onDismissRequest = { showCustomDialog = false },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            customColorValue = tempColor
+                            usingCustomColor = true
+                            if (customColorName.isBlank()) customColorName = "Custom"
+                            showCustomDialog = false
+                        }) { Text("OK") }
+                    },
+                    title = { Text("Επιλογή χρώματος") },
+                    text = {
+                        Column {
+                            val palette = listOf(
+                                Color.Red, Color.Green, Color.Blue, Color.Yellow,
+                                Color.Magenta, Color.Cyan, Color.Black, Color.White
+                            )
+                            FlowRow(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                palette.forEach { c ->
+                                    Box(
+                                        Modifier
+                                            .size(36.dp)
+                                            .background(c, CircleShape)
+                                            .border(
+                                                if (tempColor == c) 2.dp else 1.dp,
+                                                MaterialTheme.colorScheme.primary,
+                                                CircleShape
+                                            )
+                                            .clickable { tempColor = c }
+                                    )
+                                }
+                            }
+                            Spacer(Modifier.height(8.dp))
+                            OutlinedTextField(
+                                value = customColorName,
+                                onValueChange = { customColorName = it },
+                                label = { Text("Όνομα χρώματος") },
+                                singleLine = true
+                            )
+                        }
+                    }
+                )
             }
             Spacer(Modifier.height(8.dp))
             OutlinedTextField(
@@ -227,7 +328,8 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
 
             Spacer(Modifier.height(16.dp))
             Button(onClick = {
-                viewModel.registerVehicle(context, description, type, seat, color.name, plate)
+                val colorParam = if (usingCustomColor) customColorName else color.name
+                viewModel.registerVehicle(context, description, type, seat, colorParam, plate)
             }) {
                 Text("Register")
             }
