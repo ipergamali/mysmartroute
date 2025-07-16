@@ -14,8 +14,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.toPx
 import kotlin.math.*
 
 /**
@@ -34,9 +36,10 @@ fun ColorWheelPicker(
 ) {
     val colors = remember(shades) { generateColorPalette(shades) }
     BoxWithConstraints(modifier) {
-        val size = min(maxWidth, maxHeight)
+        val size = if (maxWidth < maxHeight) maxWidth else maxHeight
         val circleRadiusPx = with(LocalDensity.current) { (size / 2).toPx() }
         val itemRadiusPx = with(LocalDensity.current) { 12.dp.toPx() }
+        val borderColor = MaterialTheme.colorScheme.onSurface
         Canvas(
             modifier = Modifier
                 .size(size)
@@ -62,7 +65,7 @@ fun ColorWheelPicker(
                 )
                 if (color == selectedColor) {
                     drawCircle(
-                        color = MaterialTheme.colorScheme.onSurface,
+                        color = borderColor,
                         radius = itemRadiusPx + 4.dp.toPx(),
                         center = Offset(x, y),
                         style = androidx.compose.ui.graphics.drawscope.Stroke(width = 3.dp.toPx())
