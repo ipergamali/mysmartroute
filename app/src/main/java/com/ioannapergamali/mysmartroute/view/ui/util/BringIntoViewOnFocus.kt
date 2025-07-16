@@ -11,6 +11,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 
+// Συμβατική υλοποίηση της bringIntoView όταν η βιβλιοθήκη Compose δεν την παρέχει.
+@OptIn(ExperimentalFoundationApi::class)
+private suspend fun BringIntoViewRequester.bringIntoView() {
+    runCatching {
+        val method = BringIntoViewRequester::class.java.getDeclaredMethod("bringIntoView")
+        method.isAccessible = true
+        method.invoke(this)
+    }
+}
+
 /**
  * Modifier που μετακινεί αυτόματα το στοιχείο εντός ορατής περιοχής
  * όταν λαμβάνει το focus.

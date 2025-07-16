@@ -6,13 +6,13 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 /**
- * Συμβατική υλοποίηση της [safeBringIntoView] που επιχειρεί μέσω reflection
+
  * να καλέσει την επίσημη συνάρτηση της βιβλιοθήκης Compose αν υπάρχει.
  * Αν δεν υπάρχει, η κλήση απλώς αγνοείται.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Suppress("FunctionName")
-suspend fun BringIntoViewRequester.safeBringIntoView() {
+
     // Αναζητούμε την επίσημη μέθοδο μέσω reflection.
     val method = try {
         this::class.java.getMethod("bringIntoView", kotlin.coroutines.Continuation::class.java)
