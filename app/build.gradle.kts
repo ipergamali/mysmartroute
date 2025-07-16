@@ -87,6 +87,7 @@ dependencies {
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-text")
     implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.compose.foundation:foundation")
     implementation("androidx.compose.runtime:runtime-livedata")
     implementation("androidx.navigation:navigation-compose:2.9.1")
     implementation("androidx.compose.material:material-icons-extended")
