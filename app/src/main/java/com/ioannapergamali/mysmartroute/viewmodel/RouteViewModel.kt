@@ -120,4 +120,22 @@ class RouteViewModel : ViewModel() {
         val apiKey = MapsUtils.getApiKey(context)
         return MapsUtils.fetchDuration(origin, destination, apiKey, vehicleType, waypoints)
     }
+
+    /**
+     * Επιστρέφει τη διάρκεια και τα σημεία της διαδρομής μέσω του Directions API.
+     */
+    suspend fun getRouteDirections(
+        context: Context,
+        routeId: String,
+        vehicleType: VehicleType
+    ): Pair<Int, List<LatLng>> {
+        val pois = getRoutePois(context, routeId)
+        if (pois.size < 2) return 0 to emptyList()
+        val origin = LatLng(pois.first().lat, pois.first().lng)
+        val destination = LatLng(pois.last().lat, pois.last().lng)
+        val waypoints = pois.drop(1).dropLast(1).map { LatLng(it.lat, it.lng) }
+        val apiKey = MapsUtils.getApiKey(context)
+        val data = MapsUtils.fetchDurationAndPath(origin, destination, apiKey, vehicleType, waypoints)
+        return data.duration to data.points
+    }
 }
