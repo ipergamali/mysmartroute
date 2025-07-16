@@ -35,6 +35,7 @@ import androidx.compose.material3.menuAnchor
 import com.ioannapergamali.mysmartroute.model.classes.vehicles.RemoteVehicle
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
+import com.ioannapergamali.mysmartroute.view.ui.components.ColorPicker
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleViewModel
 import androidx.compose.ui.res.stringResource
 import com.ioannapergamali.mysmartroute.R
@@ -245,23 +246,11 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
                                 Color.Red, Color.Green, Color.Blue, Color.Yellow,
                                 Color.Magenta, Color.Cyan, Color.Black, Color.White
                             )
-                            FlowRow(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                palette.forEach { c ->
-                                    Box(
-                                        Modifier
-                                            .size(36.dp)
-                                            .background(c, CircleShape)
-                                            .border(
-                                                if (tempColor == c) 2.dp else 1.dp,
-                                                MaterialTheme.colorScheme.primary,
-                                                CircleShape
-                                            )
-                                            .clickable { tempColor = c }
-                                    )
-                                }
-                            }
+                            ColorPicker(
+                                colors = palette,
+                                selectedColor = tempColor,
+                                onColorSelected = { tempColor = it }
+                            )
                             Spacer(Modifier.height(8.dp))
                             OutlinedTextField(
                                 value = customColorName,
