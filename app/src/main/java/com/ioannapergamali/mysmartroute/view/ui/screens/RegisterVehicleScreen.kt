@@ -1,6 +1,7 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AirportShuttle
@@ -43,7 +44,7 @@ import androidx.compose.ui.res.stringResource
 import com.ioannapergamali.mysmartroute.R
 import androidx.compose.ui.graphics.Color
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
     val viewModel: VehicleViewModel = viewModel()
