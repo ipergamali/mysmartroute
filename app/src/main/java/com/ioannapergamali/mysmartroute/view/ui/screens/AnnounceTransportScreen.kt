@@ -85,18 +85,16 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         )
     }) { padding ->
         ScreenContainer(modifier = Modifier.padding(padding)) {
-            Box {
+            ExposedDropdownMenuBox(expanded = expandedRoute, onExpandedChange = { expandedRoute = !expandedRoute }) {
                 OutlinedTextField(
                     value = displayRoutes.firstOrNull { it.id == selectedRouteId }?.name ?: "",
                     onValueChange = {},
                     label = { Text(stringResource(R.string.route)) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .menuAnchor()
-                        .clickable { expandedRoute = true },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedRoute) },
+                    modifier = Modifier.menuAnchor().fillMaxWidth(),
                     readOnly = true
                 )
-                DropdownMenu(expanded = expandedRoute, onDismissRequest = { expandedRoute = false }) {
+                ExposedDropdownMenu(expanded = expandedRoute, onDismissRequest = { expandedRoute = false }) {
                     displayRoutes.forEach { route ->
                         DropdownMenuItem(text = { Text(route.name) }, onClick = {
                             selectedRouteId = route.id
@@ -109,18 +107,16 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
 
             Spacer(Modifier.height(16.dp))
 
-            Box {
+            ExposedDropdownMenuBox(expanded = expandedVehicle, onExpandedChange = { expandedVehicle = !expandedVehicle }) {
                 OutlinedTextField(
                     value = selectedVehicleDesc,
                     onValueChange = {},
                     label = { Text(stringResource(R.string.vehicle)) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .menuAnchor()
-                        .clickable { expandedVehicle = true },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedVehicle) },
+                    modifier = Modifier.menuAnchor().fillMaxWidth(),
                     readOnly = true
                 )
-                DropdownMenu(expanded = expandedVehicle, onDismissRequest = { expandedVehicle = false }) {
+                ExposedDropdownMenu(expanded = expandedVehicle, onDismissRequest = { expandedVehicle = false }) {
                     vehicles.forEach { vehicle ->
                         DropdownMenuItem(text = { Text(vehicle.description) }, onClick = {
                             selectedVehicle = VehicleType.valueOf(vehicle.type)
@@ -144,7 +140,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
 
             Spacer(Modifier.height(16.dp))
 
-            Text(stringResource(R.string.duration) + ": $duration")
+            Text(stringResource(R.string.duration_format, duration))
 
             Spacer(Modifier.height(16.dp))
 
