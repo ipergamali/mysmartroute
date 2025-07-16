@@ -249,7 +249,16 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
                                 modifier = Modifier.size(220.dp)
                             )
                             Spacer(Modifier.height(8.dp))
-                            Text(text = tempColor.toHex())
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    Modifier
+                                        .size(24.dp)
+                                        .background(tempColor, CircleShape)
+                                        .border(1.dp, MaterialTheme.colorScheme.onSurface, CircleShape)
+                                )
+                                Spacer(Modifier.width(8.dp))
+                                Text(text = tempColor.toHex())
+                            }
                             Spacer(Modifier.height(8.dp))
                             OutlinedTextField(
                                 value = customColorName,
