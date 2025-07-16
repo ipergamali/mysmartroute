@@ -15,8 +15,10 @@ import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.TransportDeclarationViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.VehicleViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import androidx.compose.ui.platform.LocalContext
+import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -26,16 +28,38 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     val scope = rememberCoroutineScope()
     val routeViewModel: RouteViewModel = viewModel()
     val declarationViewModel: TransportDeclarationViewModel = viewModel()
+    val vehicleViewModel: VehicleViewModel = viewModel()
     val routes by routeViewModel.routes.collectAsState()
+    val vehicles by vehicleViewModel.vehicles.collectAsState()
 
-    LaunchedEffect(Unit) { routeViewModel.loadRoutes(context) }
+    LaunchedEffect(Unit) {
+        routeViewModel.loadRoutes(context)
+        vehicleViewModel.loadRegisteredVehicles(context)
+    }
 
     var expandedRoute by remember { mutableStateOf(false) }
     var selectedRouteId by remember { mutableStateOf<String?>(null) }
     var expandedVehicle by remember { mutableStateOf(false) }
     var selectedVehicle by remember { mutableStateOf<VehicleType?>(null) }
+    var selectedVehicleDesc by remember { mutableStateOf("") }
     var costText by remember { mutableStateOf("") }
     var duration by remember { mutableStateOf(0) }
+
+    fun refreshDuration() {
+        val rId = selectedRouteId
+        val vehicle = selectedVehicle
+        if (rId != null && vehicle != null) {
+            scope.launch {
+                val pois = routeViewModel.getRoutePois(context, rId)
+                if (pois.size >= 2) {
+                    val start = com.google.android.gms.maps.model.LatLng(pois.first().lat, pois.first().lng)
+                    val end = com.google.android.gms.maps.model.LatLng(pois.last().lat, pois.last().lng)
+                    val way = pois.drop(1).dropLast(1).map { com.google.android.gms.maps.model.LatLng(it.lat, it.lng) }
+                    duration = MapsUtils.fetchDuration(start, end, MapsUtils.getApiKey(context), vehicle, way)
+                }
+            }
+        }
+    }
 
     Scaffold(topBar = {
         TopBar(
@@ -62,10 +86,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         DropdownMenuItem(text = { Text(route.name) }, onClick = {
                             selectedRouteId = route.id
                             expandedRoute = false
-                            scope.launch {
-                                val points = routeViewModel.getPointsCount(context, route.id)
-                                duration = points * 5
-                            }
+                            refreshDuration()
                         })
                     }
                 }
@@ -75,7 +96,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
 
             Box {
                 OutlinedTextField(
-                    value = selectedVehicle?.name ?: "",
+                    value = selectedVehicleDesc,
                     onValueChange = {},
                     label = { Text(stringResource(R.string.vehicle)) },
                     modifier = Modifier
@@ -85,10 +106,12 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     readOnly = true
                 )
                 DropdownMenu(expanded = expandedVehicle, onDismissRequest = { expandedVehicle = false }) {
-                    VehicleType.values().forEach { type ->
-                        DropdownMenuItem(text = { Text(type.name) }, onClick = {
-                            selectedVehicle = type
+                    vehicles.forEach { vehicle ->
+                        DropdownMenuItem(text = { Text(vehicle.description) }, onClick = {
+                            selectedVehicle = VehicleType.valueOf(vehicle.type)
+                            selectedVehicleDesc = vehicle.description
                             expandedVehicle = false
+                            refreshDuration()
                         })
                     }
                 }
