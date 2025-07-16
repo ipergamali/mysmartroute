@@ -2,6 +2,7 @@ package com.ioannapergamali.mysmartroute.view.ui.util
 
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoView
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -24,9 +25,7 @@ fun Modifier.bringIntoViewOnFocus(): Modifier = composed {
         .onFocusEvent { state: FocusState ->
             if (state.isFocused) {
                 scope.launch {
-                    androidx.compose.foundation.relocation.bringIntoView(
-                        bringIntoViewRequester
-                    )
+                    bringIntoViewRequester.bringIntoView()
                 }
             }
         }
