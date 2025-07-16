@@ -55,6 +55,21 @@ class VehicleViewModel : ViewModel() {
                 return@launch
             }
 
+            if (plate.isBlank()) {
+                _registerState.value = RegisterState.Error("License plate required")
+                return@launch
+            }
+
+            if (seat <= 0) {
+                _registerState.value = RegisterState.Error("Seats must be greater than 0")
+                return@launch
+            }
+
+            if (color.isBlank()) {
+                _registerState.value = RegisterState.Error("Color required")
+                return@launch
+            }
+
             val vehicleId = UUID.randomUUID().toString()
             val entity = VehicleEntity(vehicleId, description, userId, type.name, seat, color, plate)
             val vehicleData = entity.toFirestoreMap()

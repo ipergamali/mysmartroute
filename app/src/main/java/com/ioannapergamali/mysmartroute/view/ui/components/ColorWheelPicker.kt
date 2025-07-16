@@ -99,3 +99,10 @@ fun Color.toRgb(): String {
     val b = (blue * 255).roundToInt()
     return "rgb($r,$g,$b)"
 }
+
+/** Μετατρέπει μια συμβολοσειρά HEX σε [Color] αν είναι έγκυρη */
+fun String.toColorOrNull(): Color? = try {
+    Color(AndroidColor.parseColor(this))
+} catch (_: Exception) {
+    null
+}
