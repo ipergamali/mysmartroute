@@ -16,6 +16,7 @@ import com.ioannapergamali.mysmartroute.utils.VehiclePlacesUtils
 import com.ioannapergamali.mysmartroute.model.classes.vehicles.RemoteVehicle
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.util.UUID
 
@@ -80,11 +81,15 @@ class VehicleViewModel : ViewModel() {
         }
     }
 
-    fun loadRegisteredVehicles(context: Context) {
+    fun loadRegisteredVehicles(context: Context, includeAll: Boolean = false) {
         viewModelScope.launch {
-            val userId = auth.currentUser?.uid ?: return@launch
             val dao = MySmartRouteDatabase.getInstance(context).vehicleDao()
-            _vehicles.value = dao.getVehiclesForUser(userId)
+            _vehicles.value = if (includeAll) {
+                dao.getAllVehicles().first()
+            } else {
+                val userId = auth.currentUser?.uid ?: return@launch
+                dao.getVehiclesForUser(userId)
+            }
         }
     }
 
