@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">mysmartroute</string>
 
-    <!-- Additional strings used in AnnounceTransportScreen -->
+    <!-- Additional strings used in DeclareRouteScreen -->
     <string name="invalid_coordinates">Μη έγκυρες συντεταγμένες</string>
     <string name="no_internet">Δεν υπάρχει σύνδεση στο διαδίκτυο</string>
     <string name="directions">Λήψη διαδρομής</string>
