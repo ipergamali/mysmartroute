@@ -36,11 +36,19 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
 
     var displayRoutes by remember { mutableStateOf<List<RouteEntity>>(emptyList()) }
 
+    var expandedRoute by remember { mutableStateOf(false) }
+    var selectedRouteId by remember { mutableStateOf<String?>(null) }
+    var expandedVehicle by remember { mutableStateOf(false) }
+    var selectedVehicle by remember { mutableStateOf<VehicleType?>(null) }
+    var selectedVehicleDesc by remember { mutableStateOf("") }
+    var costText by remember { mutableStateOf("") }
+    var duration by remember { mutableStateOf(0) }
+
     LaunchedEffect(routes, selectedVehicle) {
         displayRoutes = if (selectedVehicle == VehicleType.BIGBUS || selectedVehicle == VehicleType.SMALLBUS) {
             routes.filter { route ->
                 val pois = routeViewModel.getRoutePois(context, route.id)
-                pois.all { it.type == Place.Type.BUS_STOP }
+                pois.all { it.type == Place.Type.BUS_STATION }
             }
         } else {
             routes
@@ -51,14 +59,6 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         routeViewModel.loadRoutes(context)
         vehicleViewModel.loadRegisteredVehicles(context)
     }
-
-    var expandedRoute by remember { mutableStateOf(false) }
-    var selectedRouteId by remember { mutableStateOf<String?>(null) }
-    var expandedVehicle by remember { mutableStateOf(false) }
-    var selectedVehicle by remember { mutableStateOf<VehicleType?>(null) }
-    var selectedVehicleDesc by remember { mutableStateOf("") }
-    var costText by remember { mutableStateOf("") }
-    var duration by remember { mutableStateOf(0) }
 
     fun refreshDuration() {
         val rId = selectedRouteId
