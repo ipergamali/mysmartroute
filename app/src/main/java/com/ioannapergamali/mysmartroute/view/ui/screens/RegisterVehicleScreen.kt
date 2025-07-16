@@ -35,7 +35,8 @@ import androidx.compose.material3.menuAnchor
 import com.ioannapergamali.mysmartroute.model.classes.vehicles.RemoteVehicle
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
-import com.ioannapergamali.mysmartroute.view.ui.components.ColorPicker
+import com.ioannapergamali.mysmartroute.view.ui.components.ColorWheelPicker
+import com.ioannapergamali.mysmartroute.view.ui.components.toHex
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleViewModel
 import androidx.compose.ui.res.stringResource
 import com.ioannapergamali.mysmartroute.R
@@ -241,16 +242,14 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
                     },
                     title = { Text("Επιλογή χρώματος") },
                     text = {
-                        Column {
-                            val palette = listOf(
-                                Color.Red, Color.Green, Color.Blue, Color.Yellow,
-                                Color.Magenta, Color.Cyan, Color.Black, Color.White
-                            )
-                            ColorPicker(
-                                colors = palette,
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            ColorWheelPicker(
                                 selectedColor = tempColor,
-                                onColorSelected = { tempColor = it }
+                                onColorSelected = { tempColor = it },
+                                modifier = Modifier.size(220.dp)
                             )
+                            Spacer(Modifier.height(8.dp))
+                            Text(text = tempColor.toHex())
                             Spacer(Modifier.height(8.dp))
                             OutlinedTextField(
                                 value = customColorName,
