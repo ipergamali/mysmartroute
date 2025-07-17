@@ -198,7 +198,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         contentDescription = null
                     )
                     Spacer(Modifier.width(8.dp))
-                    Text(routeName, style = MaterialTheme.typography.titleMedium)
+                    Text("$selectedVehicleDesc - $routeName", style = MaterialTheme.typography.titleMedium)
                 }
 
                 Spacer(Modifier.height(16.dp))
@@ -235,7 +235,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                             style = MaterialTheme.typography.labelMedium
                         )
                         Text(
-                            stringResource(R.string.poi_description),
+                            stringResource(R.string.poi_type),
                             modifier = Modifier.weight(1f),
                             style = MaterialTheme.typography.labelMedium
                         )
@@ -248,7 +248,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                 modifier = Modifier.weight(1f)
                             )
                             Text(
-                                formatAddress(poi.address),
+                                poi.type.name,
                                 modifier = Modifier.weight(1f)
                             )
                         }
