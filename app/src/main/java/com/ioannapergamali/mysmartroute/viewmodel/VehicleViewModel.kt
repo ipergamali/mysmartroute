@@ -37,6 +37,7 @@ class VehicleViewModel : ViewModel() {
 
     fun registerVehicle(
         context: Context,
+        name: String,
         description: String,
         type: VehicleType,
         seat: Int,
@@ -49,6 +50,11 @@ class VehicleViewModel : ViewModel() {
             val userId = auth.currentUser?.uid
             if (userId == null) {
                 _registerState.value = RegisterState.Error("User not logged in")
+                return@launch
+            }
+
+            if (name.isBlank()) {
+                _registerState.value = RegisterState.Error("Name required")
                 return@launch
             }
 
@@ -73,7 +79,7 @@ class VehicleViewModel : ViewModel() {
             }
 
             val vehicleId = UUID.randomUUID().toString()
-            val entity = VehicleEntity(vehicleId, description, userId, type.name, seat, color, plate)
+            val entity = VehicleEntity(vehicleId, name, description, userId, type.name, seat, color, plate)
             val vehicleData = entity.toFirestoreMap()
 
             val dbLocal = MySmartRouteDatabase.getInstance(context)

@@ -73,6 +73,7 @@
     <string name="shutdown">Τερματισμός συστήματος</string>
     <string name="register_vehicle">Καταχώρηση οχήματος</string>
     <string name="vehicle_color">Χρώμα</string>
+    <string name="vehicle_name">Όνομα οχήματος</string>
     <string name="license_plate">Πινακίδα</string>
     <string name="seats_label">Θέσεις</string>
     <string name="announce_availability">Δήλωση διαθεσιμότητας για μεταφορά</string>

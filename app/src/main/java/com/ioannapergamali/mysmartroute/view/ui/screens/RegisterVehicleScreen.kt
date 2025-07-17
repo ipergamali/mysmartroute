@@ -52,6 +52,7 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
     val available by viewModel.availableVehicles.collectAsState()
     val context = LocalContext.current
 
+    var name by remember { mutableStateOf("") }
     var plate by remember { mutableStateOf("") }
     val descriptionOptions = listOf(
         "Αυτοκίνητο",
@@ -140,6 +141,18 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
                     }
                 }
             }
+            Spacer(Modifier.height(8.dp))
+            OutlinedTextField(
+                value = name,
+                onValueChange = { name = it },
+                label = { Text(stringResource(R.string.vehicle_name)) },
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.small,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                )
+            )
             Spacer(Modifier.height(8.dp))
             OutlinedTextField(
                 value = plate,
@@ -327,7 +340,7 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
             Spacer(Modifier.height(16.dp))
             Button(onClick = {
                 val colorParam = if (usingCustomColor) customColorName else color.name
-                viewModel.registerVehicle(context, description, type, seat, colorParam, plate)
+                viewModel.registerVehicle(context, name, description, type, seat, colorParam, plate)
             }) {
                 Text("Register")
             }
