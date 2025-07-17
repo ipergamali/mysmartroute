@@ -107,19 +107,15 @@ class VehicleViewModel : ViewModel() {
             val userId = auth.currentUser?.uid
 
             val snapshot = if (NetworkUtils.isInternetAvailable(context)) {
-                runCatching {
-                    if (includeAll) {
-                        db.collection("vehicles").get().await()
-                    } else if (userId != null) {
-                        db.collection("vehicles")
-                            .whereEqualTo("userId", db.collection("users").document(userId))
-                            .get().await()
-                    } else null
-                }.getOrNull()
+                runCatching { db.collection("vehicles").get().await() }.getOrNull()
             } else null
 
             if (snapshot != null) {
-                val list = snapshot.documents.mapNotNull { it.toVehicleEntity() }
+                var list = snapshot.documents.mapNotNull { it.toVehicleEntity() }
+                list = list.distinctBy { it.id }
+                if (!includeAll && userId != null) {
+                    list = list.filter { it.userId == userId }
+                }
                 _vehicles.value = list
                 list.forEach { insertVehicleSafely(vehicleDao, userDao, it) }
             } else {
