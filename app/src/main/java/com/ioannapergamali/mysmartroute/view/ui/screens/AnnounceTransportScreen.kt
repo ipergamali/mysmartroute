@@ -84,7 +84,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     val cameraPositionState = rememberCameraPositionState()
 
-    LaunchedEffect(routes, selectedVehicle, selectedRouteId) {
+    LaunchedEffect(routes, vehicles, selectedVehicle, selectedRouteId) {
         displayRoutes = if (selectedVehicle == VehicleType.BIGBUS) {
             routes.filter { route ->
                 val pois = routeViewModel.getRoutePois(context, route.id)
