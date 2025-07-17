@@ -53,12 +53,14 @@ class RouteViewModel : ViewModel() {
 
     fun loadRoutes(context: Context, includeAll: Boolean = false) {
         viewModelScope.launch {
-            val dao = MySmartRouteDatabase.getInstance(context).routeDao()
+            val db = MySmartRouteDatabase.getInstance(context)
+            val routeDao = db.routeDao()
+            val pointDao = db.routePointDao()
             val userId = FirebaseAuth.getInstance().currentUser?.uid
             _routes.value = if (includeAll) {
-                dao.getAll().first()
+                routeDao.getAll().first()
             } else if (userId != null) {
-                dao.getRoutesForUser(userId).first()
+                routeDao.getRoutesForUser(userId).first()
             } else {
                 emptyList()
             }
@@ -69,9 +71,15 @@ class RouteViewModel : ViewModel() {
                 firestore.collection("routes").whereEqualTo("userId", userId)
             }
             query.get().addOnSuccessListener { snapshot ->
-                val list = snapshot.documents.mapNotNull { it.toRouteEntity() }
-                _routes.value = list
-                viewModelScope.launch { list.forEach { dao.insert(it) } }
+                val list = snapshot.documents.mapNotNull { it.toRouteWithPoints() }
+                val routes = list.map { it.first }
+                _routes.value = routes
+                viewModelScope.launch {
+                    list.forEach { (route, points) ->
+                        routeDao.insert(route)
+                        points.forEach { pointDao.insert(it) }
+                    }
+                }
             }
         }
     }
