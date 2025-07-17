@@ -78,6 +78,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     var expandedVehicle by remember { mutableStateOf(false) }
     var selectedVehicle by remember { mutableStateOf<VehicleType?>(null) }
     var selectedVehicleName by remember { mutableStateOf("") }
+    var selectedVehicleDescription by remember { mutableStateOf("") }
     var costText by remember { mutableStateOf("") }
     var duration by remember { mutableStateOf(0) }
     var pois by remember { mutableStateOf<List<PoIEntity>>(emptyList()) }
@@ -181,6 +182,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         DropdownMenuItem(text = { Text(vehicle.name) }, onClick = {
                             selectedVehicle = VehicleType.valueOf(vehicle.type)
                             selectedVehicleName = vehicle.name
+                            selectedVehicleDescription = vehicle.description
                             expandedVehicle = false
                             refreshRoute()
                         })
@@ -198,7 +200,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         contentDescription = null
                     )
                     Spacer(Modifier.width(8.dp))
-                    Text("$selectedVehicleName - $routeName", style = MaterialTheme.typography.titleMedium)
+                    Text("$selectedVehicleDescription - $routeName", style = MaterialTheme.typography.titleMedium)
                 }
 
                 Spacer(Modifier.height(16.dp))
