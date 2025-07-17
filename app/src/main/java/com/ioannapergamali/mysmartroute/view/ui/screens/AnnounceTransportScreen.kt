@@ -1,6 +1,13 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AirportShuttle
+import androidx.compose.material.icons.filled.DirectionsBike
+import androidx.compose.material.icons.filled.DirectionsBus
+import androidx.compose.material.icons.filled.DirectionsCar
+import androidx.compose.material.icons.filled.LocalTaxi
+import androidx.compose.material.icons.filled.TwoWheeler
 import androidx.compose.material3.*
 import androidx.compose.material3.menuAnchor
 import androidx.compose.runtime.*
@@ -53,7 +60,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     var selectedRouteId by remember { mutableStateOf<String?>(null) }
     var expandedVehicle by remember { mutableStateOf(false) }
     var selectedVehicle by remember { mutableStateOf<VehicleType?>(null) }
-    var selectedVehicleDesc by remember { mutableStateOf("") }
+    var selectedVehicleName by remember { mutableStateOf("") }
     var costText by remember { mutableStateOf("") }
     var duration by remember { mutableStateOf(0) }
     var pois by remember { mutableStateOf<List<PoIEntity>>(emptyList()) }
@@ -145,7 +152,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
 
             ExposedDropdownMenuBox(expanded = expandedVehicle, onExpandedChange = { expandedVehicle = !expandedVehicle }) {
                 OutlinedTextField(
-                    value = selectedVehicleDesc,
+                    value = selectedVehicleName,
                     onValueChange = {},
                     label = { Text(stringResource(R.string.vehicle)) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedVehicle) },
@@ -154,13 +161,20 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 )
                 ExposedDropdownMenu(expanded = expandedVehicle, onDismissRequest = { expandedVehicle = false }) {
                     filteredVehicles.forEach { vehicle ->
-                        DropdownMenuItem(text = { Text(vehicle.description) }, onClick = {
+                        DropdownMenuItem(text = { Text(vehicle.name) }, onClick = {
                             selectedVehicle = VehicleType.valueOf(vehicle.type)
-                            selectedVehicleDesc = vehicle.description
+                            selectedVehicleName = vehicle.name
                             expandedVehicle = false
                             refreshRoute()
                         })
                     }
+                }
+            }
+
+            selectedVehicle?.let { type ->
+                Spacer(Modifier.height(8.dp))
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                    VehicleTypeIcon(type = type, modifier = Modifier.size(48.dp))
                 }
             }
 
@@ -228,4 +242,17 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
             }
         }
     }
+}
+
+@Composable
+private fun VehicleTypeIcon(type: VehicleType, modifier: Modifier = Modifier) {
+    val image = when (type) {
+        VehicleType.CAR -> Icons.Filled.DirectionsCar
+        VehicleType.TAXI -> Icons.Filled.LocalTaxi
+        VehicleType.BIGBUS -> Icons.Filled.DirectionsBus
+        VehicleType.SMALLBUS -> Icons.Filled.AirportShuttle
+        VehicleType.BICYCLE -> Icons.Filled.DirectionsBike
+        VehicleType.MOTORBIKE -> Icons.Filled.TwoWheeler
+    }
+    Icon(imageVector = image, contentDescription = type.name, modifier = modifier)
 }
