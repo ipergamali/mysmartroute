@@ -3,10 +3,16 @@ package com.ioannapergamali.mysmartroute.view.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.material3.menuAnchor
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DirectionsBike
+import androidx.compose.material.icons.filled.DirectionsBus
+import androidx.compose.material.icons.filled.DirectionsCar
+import androidx.compose.material.icons.filled.TwoWheeler
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.Alignment
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.compose.foundation.clickable
@@ -27,11 +33,29 @@ import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.vector.ImageVector
 import com.ioannapergamali.mysmartroute.data.local.RouteEntity
 import com.ioannapergamali.mysmartroute.data.local.VehicleEntity
 import com.google.android.libraries.places.api.model.Place
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import kotlinx.coroutines.launch
+import com.ioannapergamali.mysmartroute.model.classes.poi.PoiAddress
+
+private fun iconForVehicle(type: VehicleType): ImageVector = when (type) {
+    VehicleType.CAR, VehicleType.TAXI -> Icons.Default.DirectionsCar
+    VehicleType.BIGBUS, VehicleType.SMALLBUS -> Icons.Default.DirectionsBus
+    VehicleType.BICYCLE -> Icons.Default.DirectionsBike
+    VehicleType.MOTORBIKE -> Icons.Default.TwoWheeler
+}
+
+private fun formatAddress(address: PoiAddress): String = buildString {
+    if (address.streetName.isNotBlank()) append(address.streetName)
+    if (address.streetNum != 0) append(" ${address.streetNum}")
+    if (address.postalCode != 0 || address.city.isNotBlank()) {
+        if (isNotEmpty()) append(", ")
+        append("${address.postalCode} ${address.city}".trim())
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -166,6 +190,20 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
 
             Spacer(Modifier.height(16.dp))
 
+            if (selectedRouteId != null && selectedVehicle != null) {
+                val routeName = displayRoutes.firstOrNull { it.id == selectedRouteId }?.name ?: ""
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = iconForVehicle(selectedVehicle!!),
+                        contentDescription = null
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(routeName, style = MaterialTheme.typography.titleMedium)
+                }
+
+                Spacer(Modifier.height(16.dp))
+            }
+
             if (pathPoints.isNotEmpty() || pois.isNotEmpty()) {
                 GoogleMap(
                     modifier = Modifier
@@ -190,8 +228,30 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
             if (pois.isNotEmpty()) {
                 Text(stringResource(R.string.stops_header))
                 Column(modifier = Modifier.fillMaxWidth()) {
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            stringResource(R.string.poi_name),
+                            modifier = Modifier.weight(1f),
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                        Text(
+                            stringResource(R.string.poi_description),
+                            modifier = Modifier.weight(1f),
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                    }
+                    Divider()
                     pois.forEachIndexed { index, poi ->
-                        Text("${index + 1}. ${poi.name}")
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            Text(
+                                "${index + 1}. ${poi.name}",
+                                modifier = Modifier.weight(1f)
+                            )
+                            Text(
+                                formatAddress(poi.address),
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
                     }
                 }
 
