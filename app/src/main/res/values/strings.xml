@@ -71,6 +71,7 @@
     <string name="shutdown">Shut Down the System</string>
     <string name="register_vehicle">Register Vehicle</string>
     <string name="vehicle_color">Color</string>
+    <string name="vehicle_name">Vehicle Name</string>
     <string name="license_plate">License Plate</string>
     <string name="seats_label">Seats</string>
     <string name="announce_availability">Announce Availability for a specific Transport</string>

@@ -36,6 +36,7 @@ fun UserEntity.toFirestoreMap(): Map<String, Any> = mapOf(
 /** Μετατροπή [VehicleEntity] σε Map. */
 fun VehicleEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     "id" to id,
+    "name" to name,
     "description" to description,
     "userId" to FirebaseFirestore.getInstance()
         .collection("users")
@@ -54,6 +55,7 @@ fun com.google.firebase.firestore.DocumentSnapshot.toVehicleEntity(): VehicleEnt
     }
     return VehicleEntity(
         id = getString("id") ?: id,
+        name = getString("name") ?: "",
         description = getString("description") ?: "",
         userId = userId,
         type = getString("type") ?: "",
