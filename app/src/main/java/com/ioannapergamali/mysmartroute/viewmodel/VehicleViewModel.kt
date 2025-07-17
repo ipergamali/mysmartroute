@@ -106,6 +106,13 @@ class VehicleViewModel : ViewModel() {
 
             val userId = auth.currentUser?.uid
 
+            val remote = if (NetworkUtils.isInternetAvailable(context)) {
+                runCatching { db.collection("vehicles").get().await() }.getOrNull()
+                    ?.documents?.mapNotNull { it.toVehicleEntity() }
+            } else null
+
+            val local = if (includeAll) {
+                vehicleDao.getAllVehicles().first()
             } else {
                 userId?.let { vehicleDao.getVehiclesForUser(it) } ?: emptyList()
             }
