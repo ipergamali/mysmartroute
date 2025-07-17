@@ -166,14 +166,16 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
 
             Spacer(Modifier.height(16.dp))
 
-            if (pathPoints.isNotEmpty()) {
+            if (pathPoints.isNotEmpty() || pois.isNotEmpty()) {
                 GoogleMap(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp),
                     cameraPositionState = cameraPositionState
                 ) {
-                    Polyline(points = pathPoints)
+                    if (pathPoints.isNotEmpty()) {
+                        Polyline(points = pathPoints)
+                    }
                     pois.forEach { poi ->
                         Marker(
                             state = MarkerState(position = LatLng(poi.lat, poi.lng)),
