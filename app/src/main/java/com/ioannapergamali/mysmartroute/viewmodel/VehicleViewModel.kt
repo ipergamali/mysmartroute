@@ -106,26 +106,27 @@ class VehicleViewModel : ViewModel() {
 
             val userId = auth.currentUser?.uid
 
-            // Φόρτωση από την τοπική βάση
-            _vehicles.value = if (includeAll) {
-                vehicleDao.getAllVehicles().first()
+            val snapshot = if (NetworkUtils.isInternetAvailable(context)) {
+                runCatching {
+                    if (includeAll) {
+                        db.collection("vehicles").get().await()
+                    } else if (userId != null) {
+                        db.collection("vehicles")
+                            .whereEqualTo("userId", db.collection("users").document(userId))
+                            .get().await()
+                    } else null
+                }.getOrNull()
+            } else null
+
+            if (snapshot != null) {
+                val list = snapshot.documents.mapNotNull { it.toVehicleEntity() }
+                _vehicles.value = list
+                list.forEach { insertVehicleSafely(vehicleDao, userDao, it) }
             } else {
-                userId?.let { vehicleDao.getVehiclesForUser(it) } ?: emptyList()
-            }
-
-            if (NetworkUtils.isInternetAvailable(context)) {
-                val snapshot = if (includeAll) {
-                    db.collection("vehicles").get().await()
-                } else if (userId != null) {
-                    db.collection("vehicles")
-                        .whereEqualTo("userId", db.collection("users").document(userId))
-                        .get().await()
-                } else null
-
-                snapshot?.let { snap ->
-                    val list = snap.documents.mapNotNull { it.toVehicleEntity() }
-                    _vehicles.value = list
-                    list.forEach { insertVehicleSafely(vehicleDao, userDao, it) }
+                _vehicles.value = if (includeAll) {
+                    vehicleDao.getAllVehicles().first()
+                } else {
+                    userId?.let { vehicleDao.getVehiclesForUser(it) } ?: emptyList()
                 }
             }
         }

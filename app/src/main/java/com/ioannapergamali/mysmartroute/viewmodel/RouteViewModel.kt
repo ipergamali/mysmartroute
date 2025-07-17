@@ -58,28 +58,28 @@ class RouteViewModel : ViewModel() {
             val routeDao = db.routeDao()
             val pointDao = db.routePointDao()
             val userId = FirebaseAuth.getInstance().currentUser?.uid
-            _routes.value = if (includeAll) {
-                routeDao.getAll().first()
-            } else if (userId != null) {
-                routeDao.getRoutesForUser(userId).first()
-            } else {
-                emptyList()
-            }
 
             val query = if (includeAll) {
                 firestore.collection("routes")
             } else {
                 firestore.collection("routes").whereEqualTo("userId", userId)
             }
-            query.get().addOnSuccessListener { snapshot ->
+
+            val snapshot = runCatching { query.get().await() }.getOrNull()
+            if (snapshot != null) {
                 val list = snapshot.documents.mapNotNull { it.toRouteWithPoints() }
-                val routes = list.map { it.first }
-                _routes.value = routes
-                viewModelScope.launch {
-                    list.forEach { (route, points) ->
-                        routeDao.insert(route)
-                        points.forEach { pointDao.insert(it) }
-                    }
+                _routes.value = list.map { it.first }
+                list.forEach { (route, points) ->
+                    routeDao.insert(route)
+                    points.forEach { pointDao.insert(it) }
+                }
+            } else {
+                _routes.value = if (includeAll) {
+                    routeDao.getAll().first()
+                } else if (userId != null) {
+                    routeDao.getRoutesForUser(userId).first()
+                } else {
+                    emptyList()
                 }
             }
         }
