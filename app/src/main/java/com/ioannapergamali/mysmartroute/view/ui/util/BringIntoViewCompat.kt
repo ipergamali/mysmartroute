@@ -12,7 +12,7 @@ import kotlin.coroutines.suspendCoroutine
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Suppress("FunctionName")
-
+suspend fun BringIntoViewRequester.safeBringIntoView() {
     // Αναζητούμε την επίσημη μέθοδο μέσω reflection.
     val method = try {
         this::class.java.getMethod("bringIntoView", kotlin.coroutines.Continuation::class.java)
