@@ -14,6 +14,8 @@ import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.utils.VehiclePlacesUtils
 import com.ioannapergamali.mysmartroute.model.classes.vehicles.RemoteVehicle
+import com.ioannapergamali.mysmartroute.utils.toVehicleEntity
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -98,12 +100,33 @@ class VehicleViewModel : ViewModel() {
 
     fun loadRegisteredVehicles(context: Context, includeAll: Boolean = false) {
         viewModelScope.launch {
-            val dao = MySmartRouteDatabase.getInstance(context).vehicleDao()
+            val dbLocal = MySmartRouteDatabase.getInstance(context)
+            val vehicleDao = dbLocal.vehicleDao()
+            val userDao = dbLocal.userDao()
+
+            val userId = auth.currentUser?.uid
+
+            // Φόρτωση από την τοπική βάση
             _vehicles.value = if (includeAll) {
-                dao.getAllVehicles().first()
+                vehicleDao.getAllVehicles().first()
             } else {
-                val userId = auth.currentUser?.uid ?: return@launch
-                dao.getVehiclesForUser(userId)
+                userId?.let { vehicleDao.getVehiclesForUser(it) } ?: emptyList()
+            }
+
+            if (NetworkUtils.isInternetAvailable(context)) {
+                val snapshot = if (includeAll) {
+                    db.collection("vehicles").get().await()
+                } else if (userId != null) {
+                    db.collection("vehicles")
+                        .whereEqualTo("userId", db.collection("users").document(userId))
+                        .get().await()
+                } else null
+
+                snapshot?.let { snap ->
+                    val list = snap.documents.mapNotNull { it.toVehicleEntity() }
+                    _vehicles.value = list
+                    list.forEach { insertVehicleSafely(vehicleDao, userDao, it) }
+                }
             }
         }
     }
