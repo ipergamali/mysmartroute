@@ -76,9 +76,13 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         } ?: false
 
         filteredVehicles = if (isBusRoute) {
+            // Εάν η επιλεγμένη διαδρομή αποτελείται αποκλειστικά από στάσεις
+            // λεωφορείων, επιτρέπουμε μόνο την επιλογή μεγάλου λεωφορείου.
             vehicles.filter { VehicleType.valueOf(it.type) == VehicleType.BIGBUS }
         } else {
-            vehicles.filter { VehicleType.valueOf(it.type) != VehicleType.BIGBUS }
+            // Σε κάθε άλλη περίπτωση εμφανίζουμε όλα τα οχήματα ώστε ο χρήστης
+            // να μπορεί να επιλέξει ελεύθερα.
+            vehicles
         }
     }
 
