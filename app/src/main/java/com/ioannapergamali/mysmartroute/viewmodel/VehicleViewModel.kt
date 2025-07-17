@@ -113,7 +113,12 @@ class VehicleViewModel : ViewModel() {
             val userId = auth.currentUser?.uid
 
             val remote = if (NetworkUtils.isInternetAvailable(context)) {
-                runCatching { db.collection("vehicles").get().await() }.getOrNull()
+                val query = when {
+                    includeAll -> db.collection("vehicles")
+                    userId != null -> db.collection("vehicles").whereEqualTo("userId", userId)
+                    else -> null
+                }
+                query?.let { runCatching { it.get().await() }.getOrNull() }
                     ?.documents?.mapNotNull { it.toVehicleEntity() }
             } else null
 
