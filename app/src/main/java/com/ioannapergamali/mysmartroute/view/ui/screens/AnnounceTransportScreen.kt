@@ -77,7 +77,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     var selectedRouteId by remember { mutableStateOf<String?>(null) }
     var expandedVehicle by remember { mutableStateOf(false) }
     var selectedVehicle by remember { mutableStateOf<VehicleType?>(null) }
-    var selectedVehicleDesc by remember { mutableStateOf("") }
+    var selectedVehicleName by remember { mutableStateOf("") }
     var costText by remember { mutableStateOf("") }
     var duration by remember { mutableStateOf(0) }
     var pois by remember { mutableStateOf<List<PoIEntity>>(emptyList()) }
@@ -169,7 +169,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
 
             ExposedDropdownMenuBox(expanded = expandedVehicle, onExpandedChange = { expandedVehicle = !expandedVehicle }) {
                 OutlinedTextField(
-                    value = selectedVehicleDesc,
+                    value = selectedVehicleName,
                     onValueChange = {},
                     label = { Text(stringResource(R.string.vehicle)) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedVehicle) },
@@ -178,9 +178,9 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 )
                 ExposedDropdownMenu(expanded = expandedVehicle, onDismissRequest = { expandedVehicle = false }) {
                     filteredVehicles.forEach { vehicle ->
-                        DropdownMenuItem(text = { Text(vehicle.description) }, onClick = {
+                        DropdownMenuItem(text = { Text(vehicle.name) }, onClick = {
                             selectedVehicle = VehicleType.valueOf(vehicle.type)
-                            selectedVehicleDesc = vehicle.description
+                            selectedVehicleName = vehicle.name
                             expandedVehicle = false
                             refreshRoute()
                         })
@@ -198,7 +198,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         contentDescription = null
                     )
                     Spacer(Modifier.width(8.dp))
-                    Text("$selectedVehicleDesc - $routeName", style = MaterialTheme.typography.titleMedium)
+                    Text("$selectedVehicleName - $routeName", style = MaterialTheme.typography.titleMedium)
                 }
 
                 Spacer(Modifier.height(16.dp))
