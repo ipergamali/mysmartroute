@@ -32,6 +32,7 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.ManageFavoritesScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.PrintCompletedScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.PrintListScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.PrintScheduledScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.RouteModeScreen
 
 
 
@@ -144,6 +145,10 @@ fun NavigationHost(navController : NavHostController, openDrawer: () -> Unit) {
 
         composable("manageFavorites") {
             ManageFavoritesScreen(navController = navController, openDrawer = openDrawer)
+        }
+
+        composable("routeMode") {
+            RouteModeScreen(navController = navController, openDrawer = openDrawer)
         }
 
         composable("printList") {
