@@ -44,6 +44,7 @@ import com.ioannapergamali.mysmartroute.view.ui.util.LocalKeyboardBubbleState
 import kotlinx.coroutines.launch
 import com.google.firebase.auth.FirebaseAuth
 import com.ioannapergamali.mysmartroute.model.classes.poi.PoiAddress
+import com.ioannapergamali.mysmartroute.utils.MapsUtils
 
 private fun iconForVehicle(type: VehicleType): ImageVector = when (type) {
     VehicleType.CAR, VehicleType.TAXI -> Icons.Default.DirectionsCar
@@ -93,6 +94,8 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     var pois by remember { mutableStateOf<List<PoIEntity>>(emptyList()) }
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     val cameraPositionState = rememberCameraPositionState()
+    val apiKey = MapsUtils.getApiKey(context)
+    val isKeyMissing = apiKey.isBlank()
 
     fun refreshRoute() {
         val rId = selectedRouteId
@@ -269,7 +272,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 Spacer(Modifier.height(16.dp))
             }
 
-            if (pathPoints.isNotEmpty() || pois.isNotEmpty()) {
+            if (!isKeyMissing && (pathPoints.isNotEmpty() || pois.isNotEmpty())) {
                 GoogleMap(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -287,6 +290,9 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     }
                 }
 
+                Spacer(Modifier.height(16.dp))
+            } else if (isKeyMissing) {
+                Text(stringResource(R.string.map_api_key_missing))
                 Spacer(Modifier.height(16.dp))
             }
 
