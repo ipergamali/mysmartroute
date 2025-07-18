@@ -119,6 +119,10 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         } else {
             list
         }
+
+        if (selectedRouteId != null && selectedVehicle != null) {
+            refreshRoute()
+        }
     }
 
     LaunchedEffect(Unit) {
