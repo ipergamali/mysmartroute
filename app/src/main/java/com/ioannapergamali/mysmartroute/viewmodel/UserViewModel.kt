@@ -36,7 +36,7 @@ class UserViewModel : ViewModel() {
                 if (snapshot != null) {
                     val remote = snapshot.documents.mapNotNull { it.toUserEntity() }
                     remote.forEach { dao.insert(it) }
-                    list = remote
+                    list = (list + remote).distinctBy { it.id }
                     _drivers.value = list
                 }
             }
