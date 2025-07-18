@@ -30,6 +30,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.TransportDeclarationViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.UserViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import androidx.compose.ui.platform.LocalContext
@@ -41,6 +42,7 @@ import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.view.ui.util.observeBubble
 import com.ioannapergamali.mysmartroute.view.ui.util.LocalKeyboardBubbleState
 import kotlinx.coroutines.launch
+import com.google.firebase.auth.FirebaseAuth
 import com.ioannapergamali.mysmartroute.model.classes.poi.PoiAddress
 
 private fun iconForVehicle(type: VehicleType): ImageVector = when (type) {
@@ -68,13 +70,18 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     val declarationViewModel: TransportDeclarationViewModel = viewModel()
     val vehicleViewModel: VehicleViewModel = viewModel()
     val authViewModel: AuthenticationViewModel = viewModel()
+    val userViewModel: UserViewModel = viewModel()
     val role by authViewModel.currentUserRole.collectAsState()
     val routes by routeViewModel.routes.collectAsState()
     val vehicles by vehicleViewModel.vehicles.collectAsState()
+    val drivers by userViewModel.drivers.collectAsState()
     var filteredVehicles by remember { mutableStateOf<List<VehicleEntity>>(emptyList()) }
 
     var displayRoutes by remember { mutableStateOf<List<RouteEntity>>(emptyList()) }
 
+    var expandedDriver by remember { mutableStateOf(false) }
+    var selectedDriverId by remember { mutableStateOf<String?>(null) }
+    var selectedDriverName by remember { mutableStateOf("") }
     var expandedRoute by remember { mutableStateOf(false) }
     var selectedRouteId by remember { mutableStateOf<String?>(null) }
     var expandedVehicle by remember { mutableStateOf(false) }
@@ -87,14 +94,17 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     val cameraPositionState = rememberCameraPositionState()
 
-    LaunchedEffect(routes, vehicles, selectedVehicle, selectedRouteId) {
+    LaunchedEffect(routes, vehicles, selectedVehicle, selectedRouteId, selectedDriverId) {
+        val driverFiltered = selectedDriverId?.let { id ->
+            routes.filter { it.userId == id }
+        } ?: routes
         displayRoutes = if (selectedVehicle == VehicleType.BIGBUS) {
-            routes.filter { route ->
+            driverFiltered.filter { route ->
                 val pois = routeViewModel.getRoutePois(context, route.id)
                 pois.isNotEmpty() && pois.all { it.type == Place.Type.BUS_STATION }
             }
         } else {
-            routes
+            driverFiltered
         }
 
         val isBusRoute = selectedRouteId?.let { id ->
@@ -102,14 +112,12 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
             poisSel.isNotEmpty() && poisSel.all { it.type == Place.Type.BUS_STATION }
         } ?: false
 
+        var list = vehicles
+        selectedDriverId?.let { id -> list = list.filter { it.userId == id } }
         filteredVehicles = if (isBusRoute) {
-            // Εάν η επιλεγμένη διαδρομή αποτελείται αποκλειστικά από στάσεις
-            // λεωφορείων, επιτρέπουμε μόνο την επιλογή μεγάλου λεωφορείου.
-            vehicles.filter { VehicleType.valueOf(it.type) == VehicleType.BIGBUS }
+            list.filter { VehicleType.valueOf(it.type) == VehicleType.BIGBUS }
         } else {
-            // Σε κάθε άλλη περίπτωση εμφανίζουμε όλα τα οχήματα ώστε ο χρήστης
-            // να μπορεί να επιλέξει ελεύθερα.
-            vehicles
+            list
         }
     }
 
@@ -121,6 +129,17 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         val admin = role == UserRole.ADMIN
         routeViewModel.loadRoutes(context, includeAll = admin)
         vehicleViewModel.loadRegisteredVehicles(context, includeAll = admin)
+        if (admin) {
+            userViewModel.loadDrivers(context)
+            selectedDriverId = null
+            selectedDriverName = ""
+        } else {
+            val uid = FirebaseAuth.getInstance().currentUser?.uid
+            if (uid != null) {
+                selectedDriverId = uid
+                selectedDriverName = userViewModel.getUserName(context, uid)
+            }
+        }
     }
 
     fun refreshRoute() {
@@ -149,6 +168,43 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     }) { padding ->
         ScreenContainer(modifier = Modifier.padding(padding)) {
             val bubbleState = LocalKeyboardBubbleState.current!!
+
+            if (role == UserRole.ADMIN) {
+                ExposedDropdownMenuBox(expanded = expandedDriver, onExpandedChange = { expandedDriver = !expandedDriver }) {
+                    OutlinedTextField(
+                        value = selectedDriverName,
+                        onValueChange = {},
+                        label = { Text(stringResource(R.string.driver)) },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedDriver) },
+                        modifier = Modifier.menuAnchor().fillMaxWidth(),
+                        readOnly = true
+                    )
+                    ExposedDropdownMenu(expanded = expandedDriver, onDismissRequest = { expandedDriver = false }) {
+                        drivers.forEach { driver ->
+                            DropdownMenuItem(text = { Text("${'$'}{driver.name} ${'$'}{driver.surname}") }, onClick = {
+                                selectedDriverId = driver.id
+                                selectedDriverName = "${'$'}{driver.name} ${'$'}{driver.surname}"
+                                expandedDriver = false
+                                selectedRouteId = null
+                                selectedVehicle = null
+                                selectedVehicleName = ""
+                                selectedVehicleDescription = ""
+                            })
+                        }
+                    }
+                }
+                Spacer(Modifier.height(16.dp))
+            } else {
+                OutlinedTextField(
+                    value = selectedDriverName,
+                    onValueChange = {},
+                    label = { Text(stringResource(R.string.driver)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    readOnly = true
+                )
+                Spacer(Modifier.height(16.dp))
+            }
+
             ExposedDropdownMenuBox(expanded = expandedRoute, onExpandedChange = { expandedRoute = !expandedRoute }) {
                 OutlinedTextField(
                     value = displayRoutes.firstOrNull { it.id == selectedRouteId }?.name ?: "",
