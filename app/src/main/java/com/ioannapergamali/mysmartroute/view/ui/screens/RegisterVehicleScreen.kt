@@ -43,6 +43,8 @@ import com.ioannapergamali.mysmartroute.viewmodel.VehicleViewModel
 import androidx.compose.ui.res.stringResource
 import com.ioannapergamali.mysmartroute.R
 import androidx.compose.ui.graphics.Color
+import com.ioannapergamali.mysmartroute.view.ui.util.observeBubble
+import com.ioannapergamali.mysmartroute.view.ui.util.LocalKeyboardBubbleState
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -72,6 +74,7 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
     var type by remember { mutableStateOf(VehicleType.CAR) }
     var colorExpanded by remember { mutableStateOf(false) }
     var descExpanded by remember { mutableStateOf(false) }
+    val bubbleState = LocalKeyboardBubbleState.current!!
 
     LaunchedEffect(Unit) { viewModel.loadAvailableVehicles(context) }
 
@@ -146,7 +149,9 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
                 value = name,
                 onValueChange = { name = it },
                 label = { Text(stringResource(R.string.vehicle_name)) },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .observeBubble(bubbleState, 0) { name },
                 shape = MaterialTheme.shapes.small,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -158,7 +163,9 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
                 value = plate,
                 onValueChange = { plate = it },
                 label = { Text(stringResource(R.string.license_plate)) },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .observeBubble(bubbleState, 1) { plate },
                 shape = MaterialTheme.shapes.small,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -284,7 +291,9 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
                                     },
                                     label = { Text("HEX") },
                                     singleLine = true,
-                                    modifier = Modifier.width(120.dp)
+                                    modifier = Modifier
+                                        .width(120.dp)
+                                        .observeBubble(bubbleState, 2) { tempHex }
                                 )
                             }
                             Spacer(Modifier.height(8.dp))
@@ -292,7 +301,8 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
                                 value = customColorName,
                                 onValueChange = { customColorName = it },
                                 label = { Text("Όνομα χρώματος") },
-                                singleLine = true
+                                singleLine = true,
+                                modifier = Modifier.observeBubble(bubbleState, 3) { customColorName }
                             )
                         }
                     }
@@ -305,6 +315,7 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
                 label = { Text(stringResource(R.string.seats_label)) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 singleLine = true,
+                modifier = Modifier.observeBubble(bubbleState, 4) { seat.toString() },
                 trailingIcon = {
                     Row {
                         IconButton(onClick = { if (seat > 0) seat-- }) {

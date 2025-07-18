@@ -32,6 +32,8 @@ import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.model.classes.poi.PoiAddress
 import androidx.compose.material3.menuAnchor
+import com.ioannapergamali.mysmartroute.view.ui.util.observeBubble
+import com.ioannapergamali.mysmartroute.view.ui.util.LocalKeyboardBubbleState
 
 private const val TAG = "DefinePoiScreen"
 
@@ -63,6 +65,7 @@ fun DefinePoiScreen(
     var addressQuery by remember { mutableStateOf("") }
     var addressResults by remember { mutableStateOf<List<String>>(emptyList()) }
     var addressMenuExpanded by remember { mutableStateOf(false) }
+    val bubbleState = LocalKeyboardBubbleState.current!!
     val initialLatLng = remember(initialLat, initialLng) {
         if (initialLat != null && initialLng != null) LatLng(initialLat, initialLng) else null
     }
@@ -193,7 +196,10 @@ fun DefinePoiScreen(
                         },
                         label = { Text(stringResource(R.string.search_address)) },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = addressMenuExpanded) },
-                        modifier = Modifier.menuAnchor().fillMaxWidth(),
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth()
+                            .observeBubble(bubbleState, 0) { addressQuery },
                         shape = MaterialTheme.shapes.small,
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -237,7 +243,9 @@ fun DefinePoiScreen(
                 value = name,
                 onValueChange = { name = it },
                 label = { Text(stringResource(R.string.poi_name)) },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .observeBubble(bubbleState, 1) { name },
                 shape = MaterialTheme.shapes.small,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -280,7 +288,9 @@ fun DefinePoiScreen(
                 value = country,
                 onValueChange = { country = it },
                 label = { Text("Country") },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .observeBubble(bubbleState, 2) { country },
                 shape = MaterialTheme.shapes.small,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -292,7 +302,9 @@ fun DefinePoiScreen(
                 value = city,
                 onValueChange = { city = it },
                 label = { Text("City") },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .observeBubble(bubbleState, 3) { city },
                 shape = MaterialTheme.shapes.small,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -304,7 +316,9 @@ fun DefinePoiScreen(
                 value = streetName,
                 onValueChange = { streetName = it },
                 label = { Text("Street Name") },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .observeBubble(bubbleState, 4) { streetName },
                 shape = MaterialTheme.shapes.small,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -316,7 +330,9 @@ fun DefinePoiScreen(
                 value = streetNumInput,
                 onValueChange = { streetNumInput = it },
                 label = { Text("Street Number") },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .observeBubble(bubbleState, 5) { streetNumInput },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 shape = MaterialTheme.shapes.small,
                 colors = OutlinedTextFieldDefaults.colors(
@@ -329,7 +345,9 @@ fun DefinePoiScreen(
                 value = postalCodeInput,
                 onValueChange = { postalCodeInput = it },
                 label = { Text("Postal Code") },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .observeBubble(bubbleState, 6) { postalCodeInput },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 shape = MaterialTheme.shapes.small,
                 colors = OutlinedTextFieldDefaults.colors(

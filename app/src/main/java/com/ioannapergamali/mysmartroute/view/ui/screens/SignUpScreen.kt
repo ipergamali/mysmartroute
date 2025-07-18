@@ -12,7 +12,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import android.app.Activity
 import android.widget.Toast
@@ -21,10 +20,9 @@ import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
-import com.ioannapergamali.mysmartroute.view.ui.components.KeyboardBubble
 import com.ioannapergamali.mysmartroute.view.ui.util.bringIntoViewOnFocus
 import com.ioannapergamali.mysmartroute.view.ui.util.observeBubble
-import com.ioannapergamali.mysmartroute.view.ui.util.rememberKeyboardBubbleState
+import com.ioannapergamali.mysmartroute.view.ui.util.LocalKeyboardBubbleState
 
 @Composable
 fun SignUpScreen(
@@ -52,8 +50,7 @@ fun SignUpScreen(
 
     var selectedRole by remember { mutableStateOf(UserRole.PASSENGER) }
 
-    val bubbleState = rememberKeyboardBubbleState()
-    val imeVisible = WindowInsets.ime.getBottom(LocalDensity.current) > 0
+    val bubbleState = LocalKeyboardBubbleState.current!!
 
 
 
@@ -78,9 +75,8 @@ fun SignUpScreen(
                 ) {
                 OutlinedTextField(
                     value = name,
-                    onValueChange = { 
+                    onValueChange = {
                         name = it
-                        if (bubbleState.activeFieldId == 0) bubbleState.text = it
                     },
                     label = { Text("Name") },
                     modifier = Modifier
@@ -98,7 +94,6 @@ fun SignUpScreen(
                     value = surname,
                     onValueChange = {
                         surname = it
-                        if (bubbleState.activeFieldId == 1) bubbleState.text = it
                     },
                     label = { Text("Surname") },
                     modifier = Modifier
@@ -116,7 +111,6 @@ fun SignUpScreen(
                     value = username,
                     onValueChange = {
                         username = it
-                        if (bubbleState.activeFieldId == 2) bubbleState.text = it
                     },
                     label = { Text("Username") },
                     modifier = Modifier
@@ -134,7 +128,6 @@ fun SignUpScreen(
                     value = email,
                     onValueChange = {
                         email = it
-                        if (bubbleState.activeFieldId == 3) bubbleState.text = it
                     },
                     label = { Text("Email") },
                     modifier = Modifier
@@ -152,7 +145,6 @@ fun SignUpScreen(
                     value = phoneNum,
                     onValueChange = {
                         phoneNum = it
-                        if (bubbleState.activeFieldId == 4) bubbleState.text = it
                     },
                     label = { Text("Phone Number") },
                     modifier = Modifier
@@ -171,7 +163,6 @@ fun SignUpScreen(
                     value = password,
                     onValueChange = {
                         password = it
-                        if (bubbleState.activeFieldId == 5) bubbleState.text = it
                     },
                     label = { Text("Password") },
                     modifier = Modifier
@@ -192,7 +183,6 @@ fun SignUpScreen(
                     value = city,
                     onValueChange = {
                         city = it
-                        if (bubbleState.activeFieldId == 6) bubbleState.text = it
                     },
                     label = { Text("City") },
                     modifier = Modifier
@@ -210,7 +200,6 @@ fun SignUpScreen(
                     value = streetName,
                     onValueChange = {
                         streetName = it
-                        if (bubbleState.activeFieldId == 7) bubbleState.text = it
                     },
                     label = { Text("Street Name") },
                     modifier = Modifier
@@ -228,7 +217,6 @@ fun SignUpScreen(
                     value = streetNumInput,
                     onValueChange = {
                         streetNumInput = it
-                        if (bubbleState.activeFieldId == 8) bubbleState.text = it
                     },
                     label = { Text("Street Number") },
                     modifier = Modifier
@@ -247,7 +235,6 @@ fun SignUpScreen(
                     value = postalCodeInput,
                     onValueChange = {
                         postalCodeInput = it
-                        if (bubbleState.activeFieldId == 9) bubbleState.text = it
                     },
                     label = { Text("Postal Code") },
                     modifier = Modifier
@@ -312,10 +299,6 @@ fun SignUpScreen(
 
                 }
 
-                KeyboardBubble(
-                    text = bubbleState.text,
-                    visible = imeVisible && bubbleState.activeFieldId != null
-                )
             }
         }
 
