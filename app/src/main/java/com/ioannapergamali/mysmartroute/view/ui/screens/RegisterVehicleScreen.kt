@@ -315,7 +315,9 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
                 label = { Text(stringResource(R.string.seats_label)) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 singleLine = true,
-                modifier = Modifier.observeBubble(bubbleState, 4) { seat.toString() },
+                modifier = Modifier
+                    .observeBubble(bubbleState, 4) { seat.toString() }
+                    .width(160.dp),
                 trailingIcon = {
                     Row {
                         IconButton(onClick = { if (seat > 0) seat-- }) {
@@ -332,7 +334,6 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
                         }
                     }
                 },
-                modifier = Modifier.width(160.dp),
                 shape = MaterialTheme.shapes.small,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
