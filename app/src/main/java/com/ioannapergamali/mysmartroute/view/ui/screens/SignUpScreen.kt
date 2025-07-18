@@ -50,7 +50,6 @@ fun SignUpScreen(
 
     var selectedRole by remember { mutableStateOf(UserRole.PASSENGER) }
 
-    val bubbleState = LocalKeyboardBubbleState.current!!
 
 
 
@@ -65,6 +64,7 @@ fun SignUpScreen(
         }
     ) { paddingValues ->
         ScreenContainer(modifier = Modifier.padding(paddingValues)) {
+        val bubbleState = LocalKeyboardBubbleState.current!!
             Box(Modifier.fillMaxSize()) {
                 Column(
                     modifier = Modifier

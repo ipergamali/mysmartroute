@@ -65,7 +65,6 @@ fun DefinePoiScreen(
     var addressQuery by remember { mutableStateOf("") }
     var addressResults by remember { mutableStateOf<List<String>>(emptyList()) }
     var addressMenuExpanded by remember { mutableStateOf(false) }
-    val bubbleState = LocalKeyboardBubbleState.current!!
     val initialLatLng = remember(initialLat, initialLng) {
         if (initialLat != null && initialLng != null) LatLng(initialLat, initialLng) else null
     }
@@ -117,6 +116,7 @@ fun DefinePoiScreen(
         TopBar(title = stringResource(R.string.define_poi), navController = navController, showMenu = true, onMenuClick = openDrawer)
     }) { padding ->
         ScreenContainer(modifier = Modifier.padding(padding)) {
+            val bubbleState = LocalKeyboardBubbleState.current!!
             if (apiKey.isNotBlank()) {
                 GoogleMap(
                     modifier = Modifier

@@ -59,7 +59,6 @@ fun HomeScreen(
         val context = LocalContext.current
         var email by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
-        val bubbleState = LocalKeyboardBubbleState.current!!
 
         ScreenContainer(modifier = Modifier.padding(paddingValues)) {
             val isLarge = windowInfo.width > 600.dp && windowInfo.orientation == WindowOrientation.Landscape

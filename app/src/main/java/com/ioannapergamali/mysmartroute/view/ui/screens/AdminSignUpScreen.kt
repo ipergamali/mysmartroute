@@ -47,7 +47,6 @@ fun AdminSignUpScreen(
     var streetNumInput by remember { mutableStateOf("") }
     var postalCodeInput by remember { mutableStateOf("") }
 
-    val bubbleState = LocalKeyboardBubbleState.current!!
 
 
 
@@ -60,8 +59,8 @@ fun AdminSignUpScreen(
                 onMenuClick = openDrawer
             )
         }
-    ) { paddingValues ->
         ScreenContainer(modifier = Modifier.padding(paddingValues)) {
+        val bubbleState = LocalKeyboardBubbleState.current!!
             Column(
                 modifier = Modifier
                     .fillMaxSize(),

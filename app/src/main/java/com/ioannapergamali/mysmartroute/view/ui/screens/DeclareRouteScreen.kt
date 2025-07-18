@@ -140,7 +140,6 @@ fun DeclareRouteScreen(navController: NavController, openDrawer: () -> Unit) {
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
-    val bubbleState = LocalKeyboardBubbleState.current!!
 
     fun goToCurrentLocation() {
         if (ActivityCompat.checkSelfPermission(
@@ -211,6 +210,7 @@ fun DeclareRouteScreen(navController: NavController, openDrawer: () -> Unit) {
         )
     }) { padding ->
         ScreenContainer(modifier = Modifier.padding(padding)) {
+            val bubbleState = LocalKeyboardBubbleState.current!!
             if (!isKeyMissing) {
                 GoogleMap(
                     modifier = Modifier
