@@ -91,7 +91,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         displayRoutes = if (selectedVehicle == VehicleType.BIGBUS) {
             routes.filter { route ->
                 val pois = routeViewModel.getRoutePois(context, route.id)
-                pois.all { it.type == Place.Type.BUS_STATION }
+                pois.isNotEmpty() && pois.all { it.type == Place.Type.BUS_STATION }
             }
         } else {
             routes
@@ -99,7 +99,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
 
         val isBusRoute = selectedRouteId?.let { id ->
             val poisSel = routeViewModel.getRoutePois(context, id)
-            poisSel.all { it.type == Place.Type.BUS_STATION }
+            poisSel.isNotEmpty() && poisSel.all { it.type == Place.Type.BUS_STATION }
         } ?: false
 
         filteredVehicles = if (isBusRoute) {
