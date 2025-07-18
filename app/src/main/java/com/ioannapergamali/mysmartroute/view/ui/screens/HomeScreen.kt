@@ -27,6 +27,8 @@ import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.google.firebase.auth.FirebaseAuth
+import com.ioannapergamali.mysmartroute.view.ui.util.observeBubble
+import com.ioannapergamali.mysmartroute.view.ui.util.LocalKeyboardBubbleState
 
 @Composable
 fun HomeScreen(
@@ -57,6 +59,7 @@ fun HomeScreen(
         val context = LocalContext.current
         var email by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
+        val bubbleState = LocalKeyboardBubbleState.current!!
 
         ScreenContainer(modifier = Modifier.padding(paddingValues)) {
             val isLarge = windowInfo.width > 600.dp && windowInfo.orientation == WindowOrientation.Landscape
@@ -176,7 +179,9 @@ private fun HomeContent(
                 value = email,
                 onValueChange = onEmailChange,
                 label = { Text(stringResource(R.string.email)) },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .observeBubble(bubbleState, 0) { email },
                 shape = MaterialTheme.shapes.small,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -191,7 +196,9 @@ private fun HomeContent(
                 onValueChange = onPasswordChange,
                 label = { Text(stringResource(R.string.password)) },
                 visualTransformation = PasswordVisualTransformation(),
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .observeBubble(bubbleState, 1) { password },
                 shape = MaterialTheme.shapes.small,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,

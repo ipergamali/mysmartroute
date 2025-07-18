@@ -78,6 +78,8 @@ import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import kotlinx.coroutines.launch
+import com.ioannapergamali.mysmartroute.view.ui.util.observeBubble
+import com.ioannapergamali.mysmartroute.view.ui.util.LocalKeyboardBubbleState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlin.math.abs
@@ -138,6 +140,7 @@ fun DeclareRouteScreen(navController: NavController, openDrawer: () -> Unit) {
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
+    val bubbleState = LocalKeyboardBubbleState.current!!
 
     fun goToCurrentLocation() {
         if (ActivityCompat.checkSelfPermission(
@@ -325,7 +328,10 @@ fun DeclareRouteScreen(navController: NavController, openDrawer: () -> Unit) {
                     },
                     label = { Text(stringResource(R.string.search_address)) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = addressMenuExpanded) },
-                    modifier = Modifier.menuAnchor().fillMaxWidth(),
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth()
+                        .observeBubble(bubbleState, 0) { addressQuery },
                     shape = MaterialTheme.shapes.small,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -413,6 +419,7 @@ fun DeclareRouteScreen(navController: NavController, openDrawer: () -> Unit) {
                         .menuAnchor()
                         .fillMaxWidth()
                         .focusRequester(focusRequester)
+                        .observeBubble(bubbleState, 1) { query }
                 )
 
                 val filtered = if (query.isNotBlank()) {
@@ -549,7 +556,9 @@ fun DeclareRouteScreen(navController: NavController, openDrawer: () -> Unit) {
                 onValueChange = { routeName = it },
                 label = { Text(stringResource(R.string.route_name)) },
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .observeBubble(bubbleState, 2) { routeName },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                     unfocusedBorderColor = MaterialTheme.colorScheme.primary

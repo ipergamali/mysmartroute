@@ -38,6 +38,8 @@ import com.ioannapergamali.mysmartroute.data.local.RouteEntity
 import com.ioannapergamali.mysmartroute.data.local.VehicleEntity
 import com.google.android.libraries.places.api.model.Place
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
+import com.ioannapergamali.mysmartroute.view.ui.util.observeBubble
+import com.ioannapergamali.mysmartroute.view.ui.util.LocalKeyboardBubbleState
 import kotlinx.coroutines.launch
 import com.ioannapergamali.mysmartroute.model.classes.poi.PoiAddress
 
@@ -84,6 +86,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     var pois by remember { mutableStateOf<List<PoIEntity>>(emptyList()) }
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     val cameraPositionState = rememberCameraPositionState()
+    val bubbleState = LocalKeyboardBubbleState.current!!
 
     LaunchedEffect(routes, vehicles, selectedVehicle, selectedRouteId) {
         displayRoutes = if (selectedVehicle == VehicleType.BIGBUS) {
@@ -264,7 +267,9 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 value = costText,
                 onValueChange = { costText = it },
                 label = { Text(stringResource(R.string.cost)) },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .observeBubble(bubbleState, 0) { costText },
                 keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number)
             )
 
