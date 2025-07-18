@@ -165,6 +165,25 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         }
     }
 
+    LaunchedEffect(role, drivers) {
+        if (role != UserRole.ADMIN && selectedDriverName.isBlank()) {
+            val uid = FirebaseAuth.getInstance().currentUser?.uid
+            if (uid != null) {
+                selectedDriverId = uid
+                selectedDriverName = userViewModel.getUserName(context, uid)
+            }
+        }
+    }
+
+    LaunchedEffect(filteredVehicles) {
+        if (selectedVehicle == null && filteredVehicles.isNotEmpty()) {
+            val first = filteredVehicles.first()
+            selectedVehicle = VehicleType.valueOf(first.type)
+            selectedVehicleName = first.name
+            selectedVehicleDescription = first.description
+        }
+    }
+
     Scaffold(topBar = {
         TopBar(
             title = stringResource(R.string.announce_availability),
