@@ -59,8 +59,9 @@ fun AdminSignUpScreen(
                 onMenuClick = openDrawer
             )
         }
+    ) { paddingValues ->
         ScreenContainer(modifier = Modifier.padding(paddingValues)) {
-        val bubbleState = LocalKeyboardBubbleState.current!!
+            val bubbleState = LocalKeyboardBubbleState.current!!
             Column(
                 modifier = Modifier
                     .fillMaxSize(),
