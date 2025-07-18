@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import android.widget.Toast
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -59,7 +60,15 @@ fun RouteEditorScreen(navController: NavController, openDrawer: () -> Unit) {
                         DropdownMenuItem(
                             text = { Text(poi.name) },
                             onClick = {
-                                routePois.add(poi)
+                                if (routePois.lastOrNull()?.id != poi.id) {
+                                    routePois.add(poi)
+                                } else {
+                                    Toast.makeText(
+                                        context,
+                                        context.getString(R.string.poi_already_last),
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
                                 menuExpanded = false
                             }
                         )

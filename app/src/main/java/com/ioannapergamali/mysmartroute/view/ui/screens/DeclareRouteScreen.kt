@@ -485,8 +485,16 @@ fun DeclareRouteScreen(navController: NavController, openDrawer: () -> Unit) {
                     onClick = {
                         when {
                             selectedPoi != null && unsavedPoint == null -> {
-                                routeViewModel.addPoiToCurrentRoute(selectedPoi!!)
-                                routeSaved = false
+                                val added = routeViewModel.addPoiToCurrentRoute(selectedPoi!!)
+                                if (!added) {
+                                    Toast.makeText(
+                                        context,
+                                        context.getString(R.string.poi_already_last),
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                } else {
+                                    routeSaved = false
+                                }
                             }
                             unsavedPoint != null -> Toast.makeText(context, context.getString(R.string.point_not_saved_toast), Toast.LENGTH_SHORT).show()
                         }
