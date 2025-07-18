@@ -267,5 +267,4 @@ fun AdminSignUpScreen(
             }
         }
         }
-    )
 }
