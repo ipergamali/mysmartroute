@@ -69,12 +69,57 @@ fun LocalDatabaseScreen(navController: NavController, openDrawer: () -> Unit) {
                     }
                 }
                 item { Spacer(modifier = Modifier.padding(8.dp)) }
+                item { Text("Poi Types", style = MaterialTheme.typography.titleMedium) }
+                if (data!!.poiTypes.isEmpty()) {
+                    item { Text("Ο πίνακας είναι άδειος") }
+                } else {
+                    items(data!!.poiTypes) { t ->
+                        Text("${t.id} -> ${t.name}")
+                    }
+                }
+                item { Spacer(modifier = Modifier.padding(8.dp)) }
                 item { Text("PoIs", style = MaterialTheme.typography.titleMedium) }
                 if (data!!.pois.isEmpty()) {
                     item { Text("Ο πίνακας είναι άδειος") }
                 } else {
                     items(data!!.pois) { poi ->
                         Text("${poi.name} (${poi.type}) - ${poi.address.city}")
+                    }
+                }
+                item { Spacer(modifier = Modifier.padding(8.dp)) }
+                item { Text("Routes", style = MaterialTheme.typography.titleMedium) }
+                if (data!!.routes.isEmpty()) {
+                    item { Text("Ο πίνακας είναι άδειος") }
+                } else {
+                    items(data!!.routes) { r ->
+                        Text("${r.id} -> ${r.name}")
+                    }
+                }
+                item { Spacer(modifier = Modifier.padding(8.dp)) }
+                item { Text("Route Points", style = MaterialTheme.typography.titleMedium) }
+                if (data!!.routePoints.isEmpty()) {
+                    item { Text("Ο πίνακας είναι άδειος") }
+                } else {
+                    items(data!!.routePoints) { p ->
+                        Text("${p.routeId} : ${p.position} -> ${p.poiId}")
+                    }
+                }
+                item { Spacer(modifier = Modifier.padding(8.dp)) }
+                item { Text("Movings", style = MaterialTheme.typography.titleMedium) }
+                if (data!!.movings.isEmpty()) {
+                    item { Text("Ο πίνακας είναι άδειος") }
+                } else {
+                    items(data!!.movings) { m ->
+                        Text("${m.id} route:${m.routeId} user:${m.userId}")
+                    }
+                }
+                item { Spacer(modifier = Modifier.padding(8.dp)) }
+                item { Text("Transport Declarations", style = MaterialTheme.typography.titleMedium) }
+                if (data!!.declarations.isEmpty()) {
+                    item { Text("Ο πίνακας είναι άδειος") }
+                } else {
+                    items(data!!.declarations) { d ->
+                        Text("${d.id} route:${d.routeId} type:${d.vehicleType}")
                     }
                 }
                 item { Spacer(modifier = Modifier.padding(8.dp)) }

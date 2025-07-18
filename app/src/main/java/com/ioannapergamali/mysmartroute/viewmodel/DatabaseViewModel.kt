@@ -24,6 +24,13 @@ import com.ioannapergamali.mysmartroute.utils.toPoiTypeEntity
 import com.ioannapergamali.mysmartroute.data.local.VehicleEntity
 import com.ioannapergamali.mysmartroute.utils.toVehicleEntity
 import com.ioannapergamali.mysmartroute.data.local.LanguageSettingEntity
+import com.ioannapergamali.mysmartroute.data.local.RouteEntity
+import com.ioannapergamali.mysmartroute.data.local.RoutePointEntity
+import com.ioannapergamali.mysmartroute.data.local.MovingEntity
+import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationEntity
+import com.ioannapergamali.mysmartroute.utils.toRouteWithPoints
+import com.ioannapergamali.mysmartroute.utils.toMovingEntity
+import com.ioannapergamali.mysmartroute.utils.toTransportDeclarationEntity
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -72,7 +79,11 @@ class DatabaseViewModel : ViewModel() {
                 db.roleDao().getAllRoles(),
                 db.menuDao().getAllMenus(),
                 db.menuOptionDao().getAllMenuOptions(),
-                db.languageSettingDao().getAll()
+                db.languageSettingDao().getAll(),
+                db.routeDao().getAll(),
+                db.routePointDao().getAll(),
+                db.movingDao().getAll(),
+                db.transportDeclarationDao().getAll()
             ) { values ->
                 val users = values[0] as List<UserEntity>
                 val vehicles = values[1] as List<VehicleEntity>
@@ -83,14 +94,19 @@ class DatabaseViewModel : ViewModel() {
                 val options = values[7] as List<MenuOptionEntity>
                 val languages = values[8] as List<LanguageSettingEntity>
                 val poiTypes = values[3] as List<PoiTypeEntity>
+                val routes = values[9] as List<RouteEntity>
+                val routePoints = values[10] as List<RoutePointEntity>
+                val movings = values[11] as List<MovingEntity>
+                val declarations = values[12] as List<TransportDeclarationEntity>
 
-                DatabaseData(users, vehicles, pois, poiTypes, settings, roles, menus, options, languages)
+                DatabaseData(users, vehicles, pois, poiTypes, settings, roles, menus, options, languages, routes, routePoints, movings, declarations)
             }.collect { data ->
                 Log.d(
                     TAG,
                     "Local data -> users:${data.users.size} vehicles:${data.vehicles.size} " +
                     "pois:${data.pois.size} poiTypes:${data.poiTypes.size} settings:${data.settings.size} roles:${data.roles.size} " +
-                        "menus:${data.menus.size} options:${data.menuOptions.size}"
+                        "menus:${data.menus.size} options:${data.menuOptions.size} routes:${data.routes.size} " +
+                        "points:${data.routePoints.size} movings:${data.movings.size} declarations:${data.declarations.size}"
                 )
                 _localData.value = data
             }
@@ -180,8 +196,19 @@ class DatabaseViewModel : ViewModel() {
                 }
             }
 
-            Log.d(TAG, "Firebase data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} types:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size}")
-            _firebaseData.value = DatabaseData(users, vehicles, pois, poiTypes, settings, roles, menus, menuOptions, emptyList())
+            val routePairs = firestore.collection("routes").get().await()
+                .documents.mapNotNull { it.toRouteWithPoints() }
+            val routes = routePairs.map { it.first }
+            val routePoints = routePairs.flatMap { it.second }
+
+            val movings = firestore.collection("movings").get().await()
+                .documents.mapNotNull { it.toMovingEntity() }
+
+            val declarations = firestore.collection("transport_declarations").get().await()
+                .documents.mapNotNull { it.toTransportDeclarationEntity() }
+
+            Log.d(TAG, "Firebase data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} types:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size} routes:${routes.size} movings:${movings.size} declarations:${declarations.size}")
+            _firebaseData.value = DatabaseData(users, vehicles, pois, poiTypes, settings, roles, menus, menuOptions, emptyList(), routes, routePoints, movings, declarations)
         }
     }
 
@@ -297,9 +324,20 @@ class DatabaseViewModel : ViewModel() {
                         }
                     }
 
+                    val routePairs = firestore.collection("routes").get().await()
+                        .documents.mapNotNull { it.toRouteWithPoints() }
+                    val routes = routePairs.map { it.first }
+                    val routePoints = routePairs.flatMap { it.second }
+
+                    val movings = firestore.collection("movings").get().await()
+                        .documents.mapNotNull { it.toMovingEntity() }
+
+                    val declarations = firestore.collection("transport_declarations").get().await()
+                        .documents.mapNotNull { it.toTransportDeclarationEntity() }
+
                     Log.d(
                         TAG,
-                        "Remote data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} poiTypes:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size}"
+                        "Remote data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} poiTypes:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size} routes:${routes.size} movings:${movings.size} declarations:${declarations.size}"
                     )
                     users.forEach { db.userDao().insert(it) }
                     vehicles.forEach { insertVehicleSafely(db.vehicleDao(), db.userDao(), it) }
@@ -309,6 +347,10 @@ class DatabaseViewModel : ViewModel() {
                     roles.forEach { db.roleDao().insert(it) }
                     menus.forEach { insertMenuSafely(db.menuDao(), db.roleDao(), it) }
                     menuOptions.forEach { db.menuOptionDao().insert(it) }
+                    routes.forEach { db.routeDao().insert(it) }
+                    routePoints.forEach { db.routePointDao().insert(it) }
+                    movings.forEach { db.movingDao().insert(it) }
+                    declarations.forEach { db.transportDeclarationDao().insert(it) }
                     Log.d(TAG, "Inserted remote data to local DB")
                     prefs.edit().putLong("last_sync", remoteTs).apply()
                     _lastSyncTime.value = remoteTs
@@ -330,10 +372,18 @@ class DatabaseViewModel : ViewModel() {
                     Log.d(TAG, "Fetched ${menus.size} local menus")
                     val menuOptions = db.menuOptionDao().getAllMenuOptions().first()
                     Log.d(TAG, "Fetched ${menuOptions.size} local options")
+                    val routes = db.routeDao().getAll().first()
+                    Log.d(TAG, "Fetched ${routes.size} local routes")
+                    val routePoints = db.routePointDao().getAll().first()
+                    Log.d(TAG, "Fetched ${routePoints.size} local points")
+                    val movings = db.movingDao().getAll().first()
+                    Log.d(TAG, "Fetched ${movings.size} local movings")
+                    val declarations = db.transportDeclarationDao().getAll().first()
+                    Log.d(TAG, "Fetched ${declarations.size} local declarations")
 
                     Log.d(
                         TAG,
-                        "Local data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} poiTypes:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size}"
+                        "Local data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} poiTypes:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size} routes:${routes.size} points:${routePoints.size} movings:${movings.size} declarations:${declarations.size}"
                     )
 
                     users.forEach {
@@ -375,6 +425,25 @@ class DatabaseViewModel : ViewModel() {
                         }
                     }
 
+                    routes.forEach { route ->
+                        val points = routePoints.filter { it.routeId == route.id }
+                        firestore.collection("routes")
+                            .document(route.id)
+                            .set(route.toFirestoreMap(points)).await()
+                    }
+
+                    movings.forEach {
+                        firestore.collection("movings")
+                            .document(it.id)
+                            .set(it.toFirestoreMap()).await()
+                    }
+
+                    declarations.forEach {
+                        firestore.collection("transport_declarations")
+                            .document(it.id)
+                            .set(it.toFirestoreMap()).await()
+                    }
+
                     Log.d(TAG, "Uploaded local data to Firebase")
 
                     val newTs = System.currentTimeMillis()
@@ -406,7 +475,11 @@ data class DatabaseData(
     val roles: List<RoleEntity>,
     val menus: List<MenuEntity>,
     val menuOptions: List<MenuOptionEntity>,
-    val languages: List<LanguageSettingEntity>
+    val languages: List<LanguageSettingEntity>,
+    val routes: List<RouteEntity>,
+    val routePoints: List<RoutePointEntity>,
+    val movings: List<MovingEntity>,
+    val declarations: List<TransportDeclarationEntity>
 )
 
 sealed class SyncState {

@@ -222,3 +222,57 @@ fun DocumentSnapshot.toPoiTypeEntity(): PoiTypeEntity? {
     val typeName = getString("name") ?: return null
     return PoiTypeEntity(typeId, typeName)
 }
+
+fun MovingEntity.toFirestoreMap(): Map<String, Any> = mapOf(
+    "id" to id,
+    "routeId" to FirebaseFirestore.getInstance().collection("routes").document(routeId),
+    "userId" to FirebaseFirestore.getInstance().collection("users").document(userId),
+    "date" to date,
+    "vehicleId" to FirebaseFirestore.getInstance().collection("vehicles").document(vehicleId),
+    "cost" to cost,
+    "durationMinutes" to durationMinutes
+)
+
+fun DocumentSnapshot.toMovingEntity(): MovingEntity? {
+    val movingId = getString("id") ?: id
+    val routeId = when (val r = get("routeId")) {
+        is DocumentReference -> r.id
+        is String -> r
+        else -> getString("routeId")
+    } ?: return null
+    val userId = when (val u = get("userId")) {
+        is DocumentReference -> u.id
+        is String -> u
+        else -> getString("userId")
+    } ?: ""
+    val vehicleId = when (val v = get("vehicleId")) {
+        is DocumentReference -> v.id
+        is String -> v
+        else -> getString("vehicleId")
+    } ?: ""
+    val dateVal = (getLong("date") ?: 0L).toInt()
+    val costVal = getDouble("cost") ?: 0.0
+    val durVal = (getLong("durationMinutes") ?: 0L).toInt()
+    return MovingEntity(movingId, routeId, userId, dateVal, vehicleId, costVal, durVal)
+}
+
+fun TransportDeclarationEntity.toFirestoreMap(): Map<String, Any> = mapOf(
+    "id" to id,
+    "routeId" to FirebaseFirestore.getInstance().collection("routes").document(routeId),
+    "vehicleType" to vehicleType,
+    "cost" to cost,
+    "durationMinutes" to durationMinutes
+)
+
+fun DocumentSnapshot.toTransportDeclarationEntity(): TransportDeclarationEntity? {
+    val declId = getString("id") ?: id
+    val routeId = when (val r = get("routeId")) {
+        is DocumentReference -> r.id
+        is String -> r
+        else -> getString("routeId")
+    } ?: return null
+    val type = getString("vehicleType") ?: return null
+    val costVal = getDouble("cost") ?: 0.0
+    val durVal = (getLong("durationMinutes") ?: 0L).toInt()
+    return TransportDeclarationEntity(declId, routeId, type, costVal, durVal)
+}
