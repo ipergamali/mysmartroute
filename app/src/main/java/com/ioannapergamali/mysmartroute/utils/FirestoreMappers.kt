@@ -12,6 +12,8 @@ import com.ioannapergamali.mysmartroute.data.local.RouteEntity
 import com.ioannapergamali.mysmartroute.data.local.RoutePointEntity
 import com.ioannapergamali.mysmartroute.data.local.PoiTypeEntity
 import com.google.firebase.firestore.DocumentReference
+import com.ioannapergamali.mysmartroute.data.local.MovingEntity
+import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationEntity
 
 /** Βοηθητικά extensions για μετατροπή οντοτήτων σε δομές κατάλληλες για το Firestore. */
 /** Μετατροπή ενός [UserEntity] σε Map. */
