@@ -36,8 +36,19 @@ class RouteViewModel : ViewModel() {
     private val _currentRoute = MutableStateFlow<List<PoIEntity>>(emptyList())
     val currentRoute: StateFlow<List<PoIEntity>> = _currentRoute
 
-    fun addPoiToCurrentRoute(poi: PoIEntity) {
-        _currentRoute.value = _currentRoute.value + poi
+    /**
+     * Προσθέτει ένα σημείο στη τρέχουσα διαδρομή εφόσον δεν είναι ίδιο με το
+     * τελευταίο καταχωρημένο.
+     * @return true αν το σημείο προστέθηκε, false αν ήδη υπάρχει τελευταίο
+     */
+    fun addPoiToCurrentRoute(poi: PoIEntity): Boolean {
+        val last = _currentRoute.value.lastOrNull()
+        return if (last?.id != poi.id) {
+            _currentRoute.value = _currentRoute.value + poi
+            true
+        } else {
+            false
+        }
     }
 
     fun removePoiAt(index: Int) {
