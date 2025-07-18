@@ -266,5 +266,6 @@ fun AdminSignUpScreen(
                 else -> {}
             }
         }
+        }
     )
 }
