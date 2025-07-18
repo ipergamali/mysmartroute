@@ -181,9 +181,9 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     )
                     ExposedDropdownMenu(expanded = expandedDriver, onDismissRequest = { expandedDriver = false }) {
                         drivers.forEach { driver ->
-                            DropdownMenuItem(text = { Text("${'$'}{driver.name} ${'$'}{driver.surname}") }, onClick = {
+                            DropdownMenuItem(text = { Text("${driver.name} ${driver.surname}") }, onClick = {
                                 selectedDriverId = driver.id
-                                selectedDriverName = "${'$'}{driver.name} ${'$'}{driver.surname}"
+                                selectedDriverName = "${driver.name} ${driver.surname}"
                                 expandedDriver = false
                                 selectedRouteId = null
                                 selectedVehicle = null
