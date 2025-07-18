@@ -94,6 +94,22 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     val cameraPositionState = rememberCameraPositionState()
 
+    fun refreshRoute() {
+        val rId = selectedRouteId
+        val vehicle = selectedVehicle
+        if (rId != null && vehicle != null) {
+            scope.launch {
+                val (dur, path) = routeViewModel.getRouteDirections(context, rId, vehicle)
+                duration = dur
+                pathPoints = path
+                pois = routeViewModel.getRoutePois(context, rId)
+                path.firstOrNull()?.let { first ->
+                    cameraPositionState.move(CameraUpdateFactory.newLatLngZoom(first, 13f))
+                }
+            }
+        }
+    }
+
     LaunchedEffect(routes, vehicles, selectedVehicle, selectedRouteId, selectedDriverId) {
         val driverFiltered = selectedDriverId?.let { id ->
             routes.filter { it.userId == id }
@@ -142,22 +158,6 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
             if (uid != null) {
                 selectedDriverId = uid
                 selectedDriverName = userViewModel.getUserName(context, uid)
-            }
-        }
-    }
-
-    fun refreshRoute() {
-        val rId = selectedRouteId
-        val vehicle = selectedVehicle
-        if (rId != null && vehicle != null) {
-            scope.launch {
-                val (dur, path) = routeViewModel.getRouteDirections(context, rId, vehicle)
-                duration = dur
-                pathPoints = path
-                pois = routeViewModel.getRoutePois(context, rId)
-                path.firstOrNull()?.let { first ->
-                    cameraPositionState.move(CameraUpdateFactory.newLatLngZoom(first, 13f))
-                }
             }
         }
     }
