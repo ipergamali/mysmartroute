@@ -86,7 +86,6 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     var pois by remember { mutableStateOf<List<PoIEntity>>(emptyList()) }
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     val cameraPositionState = rememberCameraPositionState()
-    val bubbleState = LocalKeyboardBubbleState.current!!
 
     LaunchedEffect(routes, vehicles, selectedVehicle, selectedRouteId) {
         displayRoutes = if (selectedVehicle == VehicleType.BIGBUS) {
@@ -149,6 +148,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         )
     }) { padding ->
         ScreenContainer(modifier = Modifier.padding(padding)) {
+            val bubbleState = LocalKeyboardBubbleState.current!!
             ExposedDropdownMenuBox(expanded = expandedRoute, onExpandedChange = { expandedRoute = !expandedRoute }) {
                 OutlinedTextField(
                     value = displayRoutes.firstOrNull { it.id == selectedRouteId }?.name ?: "",

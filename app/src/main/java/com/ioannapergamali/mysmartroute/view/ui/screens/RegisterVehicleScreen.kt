@@ -74,7 +74,6 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
     var type by remember { mutableStateOf(VehicleType.CAR) }
     var colorExpanded by remember { mutableStateOf(false) }
     var descExpanded by remember { mutableStateOf(false) }
-    val bubbleState = LocalKeyboardBubbleState.current!!
 
     LaunchedEffect(Unit) { viewModel.loadAvailableVehicles(context) }
 
@@ -91,6 +90,7 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
         ScreenContainer(
             modifier = Modifier.padding(paddingValues)
         ) {
+            val bubbleState = LocalKeyboardBubbleState.current!!
             FlowRow(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
