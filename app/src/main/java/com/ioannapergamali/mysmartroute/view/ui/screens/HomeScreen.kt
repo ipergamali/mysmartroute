@@ -148,6 +148,7 @@ private fun HomeContent(
     onLogout: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    val bubbleState = LocalKeyboardBubbleState.current!!
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
