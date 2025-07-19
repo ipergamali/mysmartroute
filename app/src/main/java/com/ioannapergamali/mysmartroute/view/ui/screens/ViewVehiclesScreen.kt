@@ -64,7 +64,7 @@ fun ViewVehiclesScreen(navController: NavController, openDrawer: () -> Unit) {
     ) { paddingValues ->
         ScreenContainer(modifier = Modifier.padding(paddingValues)) {
             if (vehicles.isEmpty()) {
-                Text(stringResource(R.string.roles_empty))
+
             } else {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
                     grouped.forEach { (driverId, vList) ->
