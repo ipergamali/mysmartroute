@@ -1,6 +1,8 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -62,7 +64,7 @@ fun ViewVehiclesScreen(navController: NavController, openDrawer: () -> Unit) {
             )
         }
     ) { paddingValues ->
-        ScreenContainer(modifier = Modifier.padding(paddingValues)) {
+        ScreenContainer(modifier = Modifier.padding(paddingValues), scrollable = false) {
             if (vehicles.isEmpty()) {
 
             } else {
@@ -80,15 +82,31 @@ fun ViewVehiclesScreen(navController: NavController, openDrawer: () -> Unit) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 4.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween
+                                    .padding(vertical = 4.dp)
+                                    .horizontalScroll(rememberScrollState()),
+                                horizontalArrangement = Arrangement.spacedBy(16.dp)
                             ) {
                                 Spacer(Modifier.width(24.dp))
-                                Text(text = stringResource(R.string.vehicle_name), modifier = Modifier.weight(1f))
-                                Text(text = stringResource(R.string.license_plate), modifier = Modifier.weight(1f))
-                                Text(text = stringResource(R.string.poi_description), modifier = Modifier.weight(1f))
-                                Text(text = stringResource(R.string.vehicle_color), modifier = Modifier.weight(1f))
-                                Text(text = stringResource(R.string.seats_label), modifier = Modifier.weight(1f))
+                                Text(
+                                    text = stringResource(R.string.vehicle_name),
+                                    softWrap = false
+                                )
+                                Text(
+                                    text = stringResource(R.string.license_plate),
+                                    softWrap = false
+                                )
+                                Text(
+                                    text = stringResource(R.string.poi_description),
+                                    softWrap = false
+                                )
+                                Text(
+                                    text = stringResource(R.string.vehicle_color),
+                                    softWrap = false
+                                )
+                                Text(
+                                    text = stringResource(R.string.seats_label),
+                                    softWrap = false
+                                )
                             }
                         }
                         items(vList) { vehicle ->
@@ -107,18 +125,20 @@ private fun VehicleRow(vehicle: VehicleEntity) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(vertical = 4.dp)
+            .horizontalScroll(rememberScrollState()),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         val type = runCatching { VehicleType.valueOf(vehicle.type) }.getOrNull()
         type?.let {
             Icon(imageVector = iconForVehicle(it), contentDescription = null)
         }
         Spacer(Modifier.width(8.dp))
-        Text(text = vehicle.name, modifier = Modifier.weight(1f))
-        Text(text = vehicle.plate, modifier = Modifier.weight(1f))
-        Text(text = vehicle.description, modifier = Modifier.weight(1f))
-        Text(text = vehicle.color, modifier = Modifier.weight(1f))
-        Text(text = vehicle.seat.toString(), modifier = Modifier.weight(1f))
+        Text(text = vehicle.name, softWrap = false)
+        Text(text = vehicle.plate, softWrap = false)
+        Text(text = vehicle.description, softWrap = false)
+        Text(text = vehicle.color, softWrap = false)
+        Text(text = vehicle.seat.toString(), softWrap = false)
     }
 }
