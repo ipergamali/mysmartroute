@@ -91,6 +91,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     var selectedVehicleDescription by remember { mutableStateOf("") }
     var costText by remember { mutableStateOf("") }
     var duration by remember { mutableStateOf(0) }
+    var calculating by remember { mutableStateOf(false) }
     var pois by remember { mutableStateOf<List<PoIEntity>>(emptyList()) }
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     val cameraPositionState = rememberCameraPositionState()
@@ -102,6 +103,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         val vehicle = selectedVehicle
         if (rId != null && vehicle != null) {
             scope.launch {
+                calculating = true
                 val (dur, path) = routeViewModel.getRouteDirections(context, rId, vehicle)
                 duration = dur
                 pathPoints = path
@@ -109,6 +111,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 path.firstOrNull()?.let { first ->
                     cameraPositionState.move(CameraUpdateFactory.newLatLngZoom(first, 13f))
                 }
+                calculating = false
             }
         }
     }
@@ -362,7 +365,15 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
 
             Text(stringResource(R.string.duration_format, duration))
 
-            Spacer(Modifier.height(16.dp))
+            if (calculating) {
+                Spacer(Modifier.height(8.dp))
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                    CircularProgressIndicator()
+                }
+                Spacer(Modifier.height(8.dp))
+            } else {
+                Spacer(Modifier.height(16.dp))
+            }
 
             Button(
                 onClick = {
@@ -374,7 +385,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         navController.popBackStack()
                     }
                 },
-                enabled = selectedRouteId != null && selectedVehicle != null
+                enabled = selectedRouteId != null && selectedVehicle != null && !calculating
             ) {
                 Text(stringResource(R.string.announce))
             }
