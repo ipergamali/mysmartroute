@@ -89,6 +89,7 @@
     <string name="rank_drivers">Show 10 Best and Worst Drivers</string>
     <string name="rank_passengers">View 10 Happiest/Least Happy Passengers</string>
     <string name="view_vehicles">View Available Vehicles</string>
+    <string name="vehicles_empty">No vehicles found</string>
     <string name="view_pois">View PoIs</string>
     <string name="view_users">View Users</string>
     <string name="advance_date">Advance Date</string>

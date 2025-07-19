@@ -91,6 +91,7 @@
     <string name="rank_drivers">Προβολή 10 καλύτερων και χειρότερων οδηγών</string>
     <string name="rank_passengers">Προβολή 10 πιο και λιγότερο ικανοποιημένων επιβατών</string>
     <string name="view_vehicles">Προβολή διαθέσιμων οχημάτων</string>
+    <string name="vehicles_empty">Δεν βρέθηκαν οχήματα</string>
     <string name="view_pois">Προβολή σημείων ενδιαφέροντος</string>
     <string name="view_users">Προβολή χρηστών</string>
     <string name="advance_date">Μεταφορά ημερομηνίας</string>
