@@ -33,6 +33,7 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.PrintCompletedScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.PrintListScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.PrintScheduledScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.RouteModeScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.ViewVehiclesScreen
 
 
 
@@ -161,6 +162,10 @@ fun NavigationHost(navController : NavHostController, openDrawer: () -> Unit) {
 
         composable("printCompleted") {
             PrintCompletedScreen(navController = navController, openDrawer = openDrawer)
+        }
+
+        composable("viewVehicles") {
+            ViewVehiclesScreen(navController = navController, openDrawer = openDrawer)
         }
 
         composable("soundPicker") {
