@@ -1,18 +1,11 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Button
-import androidx.compose.material3.Divider
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -30,23 +23,23 @@ import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
-import com.ioannapergamali.mysmartroute.viewmodel.BookingViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
-    val viewModel: BookingViewModel = viewModel()
+fun ViewRoutesScreen(navController: NavController, openDrawer: () -> Unit) {
+    val context = LocalContext.current
     val routeViewModel: RouteViewModel = viewModel()
-    val routes by viewModel.availableRoutes.collectAsState()
+    val routes by routeViewModel.routes.collectAsState()
     val scope = rememberCoroutineScope()
+
     var selectedRoute by remember { mutableStateOf<RouteEntity?>(null) }
-    var message by remember { mutableStateOf("") }
     var pois by remember { mutableStateOf<List<PoIEntity>>(emptyList()) }
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
+    var expanded by remember { mutableStateOf(false) }
+
     val cameraPositionState = rememberCameraPositionState()
-    val context = LocalContext.current
     val apiKey = MapsUtils.getApiKey(context)
     val isKeyMissing = apiKey.isBlank()
 
@@ -55,16 +48,14 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
     Scaffold(
         topBar = {
             TopBar(
-                title = stringResource(R.string.book_seat),
+                title = stringResource(R.string.view_routes),
                 navController = navController,
                 showMenu = true,
                 onMenuClick = openDrawer
             )
         }
-    ) { paddingValues ->
-        ScreenContainer(modifier = Modifier.padding(paddingValues)) {
-            var expanded by remember { mutableStateOf(false) }
-
+    ) { padding ->
+        ScreenContainer(modifier = Modifier.padding(padding)) {
             Box {
                 Button(onClick = { expanded = true }) {
                     Text(selectedRoute?.name ?: stringResource(R.string.select_route))
@@ -143,29 +134,6 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
                         }
                     }
                 }
-
-                Spacer(Modifier.height(16.dp))
-            }
-
-            Button(
-                enabled = selectedRoute != null,
-                onClick = {
-                    selectedRoute?.let { r ->
-                        val success = viewModel.reserveSeat(r.id)
-                        message = if (success) {
-                            context.getString(R.string.seat_booked)
-                        } else {
-                            context.getString(R.string.seat_unavailable)
-                        }
-                    }
-                }
-            ) {
-                Text(stringResource(R.string.reserve_seat))
-            }
-
-            if (message.isNotBlank()) {
-                Spacer(Modifier.height(8.dp))
-                Text(message)
             }
         }
     }
