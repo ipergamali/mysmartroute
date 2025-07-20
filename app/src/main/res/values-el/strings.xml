@@ -137,4 +137,8 @@
     <string name="poi_outside_heraklion">Επιλέξτε σημείο εντός Ηρακλείου</string>
     <string name="search_address">Αναζήτηση διεύθυνσης</string>
     <string name="fill_all_fields">Συμπλήρωσε όλα τα πεδία</string>
+    <string name="seat_booked">Η θέση κλείστηκε!</string>
+    <string name="seat_unavailable">Δεν υπάρχουν διαθέσιμες θέσεις.</string>
+    <string name="reserve_seat">Κλείσε Θέση</string>
+    <string name="select_route">Επιλογή διαδρομής</string>
 </resources>
