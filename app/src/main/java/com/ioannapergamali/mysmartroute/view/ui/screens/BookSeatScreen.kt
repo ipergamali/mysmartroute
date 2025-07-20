@@ -2,9 +2,11 @@ package com.ioannapergamali.mysmartroute.view.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
+import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -14,20 +16,41 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.Polyline
+import com.google.maps.android.compose.rememberCameraPositionState
 import com.ioannapergamali.mysmartroute.R
+import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.data.local.RouteEntity
+import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
+import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.BookingViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
     val viewModel: BookingViewModel = viewModel()
+    val routeViewModel: RouteViewModel = viewModel()
     val routes by viewModel.availableRoutes.collectAsState()
+    val scope = rememberCoroutineScope()
     var selectedRoute by remember { mutableStateOf<RouteEntity?>(null) }
     var message by remember { mutableStateOf("") }
+    var pois by remember { mutableStateOf<List<PoIEntity>>(emptyList()) }
+    var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
+    val cameraPositionState = rememberCameraPositionState()
     val context = LocalContext.current
+    val apiKey = MapsUtils.getApiKey(context)
+    val isKeyMissing = apiKey.isBlank()
+
+    LaunchedEffect(Unit) { routeViewModel.loadRoutes(context, includeAll = true) }
 
     Scaffold(
         topBar = {
@@ -53,6 +76,20 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
                             onClick = {
                                 selectedRoute = route
                                 expanded = false
+                                scope.launch {
+                                    val (_, path) = routeViewModel.getRouteDirections(
+                                        context,
+                                        route.id,
+                                        VehicleType.CAR
+                                    )
+                                    pathPoints = path
+                                    pois = routeViewModel.getRoutePois(context, route.id)
+                                    path.firstOrNull()?.let {
+                                        cameraPositionState.move(
+                                            CameraUpdateFactory.newLatLngZoom(it, 13f)
+                                        )
+                                    }
+                                }
                             }
                         )
                     }
@@ -60,6 +97,55 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
             }
 
             Spacer(Modifier.height(16.dp))
+
+            if (selectedRoute != null && pathPoints.isNotEmpty() && !isKeyMissing) {
+                GoogleMap(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp),
+                    cameraPositionState = cameraPositionState
+                ) {
+                    Polyline(points = pathPoints)
+                    pois.forEach { poi ->
+                        Marker(
+                            state = MarkerState(position = LatLng(poi.lat, poi.lng)),
+                            title = poi.name
+                        )
+                    }
+                }
+
+                Spacer(Modifier.height(16.dp))
+            } else if (isKeyMissing) {
+                Text(stringResource(R.string.map_api_key_missing))
+                Spacer(Modifier.height(16.dp))
+            }
+
+            if (pois.isNotEmpty()) {
+                Text(stringResource(R.string.stops_header))
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            stringResource(R.string.poi_name),
+                            modifier = Modifier.weight(1f),
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                        Text(
+                            stringResource(R.string.poi_type),
+                            modifier = Modifier.weight(1f),
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                    }
+                    Divider()
+                    pois.forEachIndexed { index, poi ->
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            Text("${index + 1}. ${poi.name}", modifier = Modifier.weight(1f))
+                            Text(poi.type.name, modifier = Modifier.weight(1f))
+                        }
+                    }
+                }
+
+                Spacer(Modifier.height(16.dp))
+            }
 
             Button(
                 enabled = selectedRoute != null,
