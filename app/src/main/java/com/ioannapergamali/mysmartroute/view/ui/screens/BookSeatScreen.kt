@@ -10,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -26,6 +27,7 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
     val routes by viewModel.availableRoutes.collectAsState()
     var selectedRoute by remember { mutableStateOf<RouteEntity?>(null) }
     var message by remember { mutableStateOf("") }
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -65,9 +67,9 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
                     selectedRoute?.let { r ->
                         val success = viewModel.reserveSeat(r.id)
                         message = if (success) {
-                            stringResource(R.string.seat_booked)
+                            context.getString(R.string.seat_booked)
                         } else {
-                            stringResource(R.string.seat_unavailable)
+                            context.getString(R.string.seat_unavailable)
                         }
                     }
                 }
