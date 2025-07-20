@@ -45,6 +45,7 @@ private fun TableCell(width: Dp, content: @Composable () -> Unit) {
     Box(
         modifier = Modifier
             .width(width)
+
             .padding(4.dp),
         contentAlignment = Alignment.CenterStart
     ) {
