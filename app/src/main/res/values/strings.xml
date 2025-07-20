@@ -146,4 +146,8 @@
     <string name="search_address">Search address</string>
     <string name="fill_all_fields">Please fill in all fields</string>
     <string name="poi_already_last">Το σημείο έχει ήδη προστεθεί</string>
+    <string name="seat_booked">Seat booked!</string>
+    <string name="seat_unavailable">No available seats.</string>
+    <string name="reserve_seat">Reserve Seat</string>
+    <string name="select_route">Select route</string>
 </resources>
