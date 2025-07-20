@@ -3,6 +3,7 @@ package com.ioannapergamali.mysmartroute.view.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.border
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -20,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -36,6 +38,31 @@ private fun iconForVehicle(type: VehicleType): ImageVector = when (type) {
     VehicleType.BIGBUS, VehicleType.SMALLBUS -> Icons.Default.DirectionsBus
     VehicleType.BICYCLE -> Icons.Default.DirectionsBike
     VehicleType.MOTORBIKE -> Icons.Default.TwoWheeler
+}
+
+@Composable
+private fun TableCell(width: Dp, content: @Composable () -> Unit) {
+    Box(
+        modifier = Modifier
+            .width(width)
+            .border(1.dp, MaterialTheme.colorScheme.outline)
+            .padding(4.dp),
+        contentAlignment = Alignment.CenterStart
+    ) {
+        content()
+    }
+}
+
+@Composable
+private fun HeaderRow() {
+    Row {
+        TableCell(width = 40.dp) { Text("") }
+        TableCell(width = 120.dp) { Text(stringResource(R.string.vehicle_name)) }
+        TableCell(width = 120.dp) { Text(stringResource(R.string.license_plate)) }
+        TableCell(width = 180.dp) { Text(stringResource(R.string.poi_description)) }
+        TableCell(width = 80.dp) { Text(stringResource(R.string.vehicle_color)) }
+        TableCell(width = 60.dp) { Text(stringResource(R.string.seats_label)) }
+    }
 }
 
 @Composable
@@ -65,54 +92,25 @@ fun ViewVehiclesScreen(navController: NavController, openDrawer: () -> Unit) {
         }
     ) { paddingValues ->
         ScreenContainer(modifier = Modifier.padding(paddingValues), scrollable = false) {
-            if (vehicles.isEmpty()) {
-
-            } else {
-                LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    grouped.forEach { (driverId, vList) ->
-                        val driverName = driverNames[driverId] ?: ""
-                        item {
-                            Text(
-                                text = driverName,
-                                style = MaterialTheme.typography.titleMedium,
-                                modifier = Modifier.padding(vertical = 8.dp)
-                            )
-                        }
-                        item {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 4.dp)
-                                    .horizontalScroll(rememberScrollState()),
-                                horizontalArrangement = Arrangement.spacedBy(16.dp)
-                            ) {
-                                Spacer(Modifier.width(24.dp))
+            if (vehicles.isNotEmpty()) {
+                val scrollState = rememberScrollState()
+                Box(modifier = Modifier.horizontalScroll(scrollState)) {
+                    LazyColumn(modifier = Modifier.fillMaxWidth()) {
+                        grouped.forEach { (driverId, vList) ->
+                            val driverName = driverNames[driverId] ?: ""
+                            item {
                                 Text(
-                                    text = stringResource(R.string.vehicle_name),
-                                    softWrap = false
-                                )
-                                Text(
-                                    text = stringResource(R.string.license_plate),
-                                    softWrap = false
-                                )
-                                Text(
-                                    text = stringResource(R.string.poi_description),
-                                    softWrap = false
-                                )
-                                Text(
-                                    text = stringResource(R.string.vehicle_color),
-                                    softWrap = false
-                                )
-                                Text(
-                                    text = stringResource(R.string.seats_label),
-                                    softWrap = false
+                                    text = driverName,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    modifier = Modifier.padding(vertical = 8.dp)
                                 )
                             }
+                            item { HeaderRow() }
+                            items(vList) { vehicle ->
+                                VehicleRow(vehicle)
+                            }
+                            item { Divider(modifier = Modifier.padding(vertical = 8.dp)) }
                         }
-                        items(vList) { vehicle ->
-                            VehicleRow(vehicle)
-                        }
-                        item { Divider(modifier = Modifier.padding(vertical = 8.dp)) }
                     }
                 }
             }
@@ -122,23 +120,15 @@ fun ViewVehiclesScreen(navController: NavController, openDrawer: () -> Unit) {
 
 @Composable
 private fun VehicleRow(vehicle: VehicleEntity) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp)
-            .horizontalScroll(rememberScrollState()),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
+    Row {
         val type = runCatching { VehicleType.valueOf(vehicle.type) }.getOrNull()
-        type?.let {
-            Icon(imageVector = iconForVehicle(it), contentDescription = null)
+        TableCell(width = 40.dp) {
+            type?.let { Icon(imageVector = iconForVehicle(it), contentDescription = null) }
         }
-        Spacer(Modifier.width(8.dp))
-        Text(text = vehicle.name, softWrap = false)
-        Text(text = vehicle.plate, softWrap = false)
-        Text(text = vehicle.description, softWrap = false)
-        Text(text = vehicle.color, softWrap = false)
-        Text(text = vehicle.seat.toString(), softWrap = false)
+        TableCell(width = 120.dp) { Text(text = vehicle.name, softWrap = false) }
+        TableCell(width = 120.dp) { Text(text = vehicle.plate, softWrap = false) }
+        TableCell(width = 180.dp) { Text(text = vehicle.description, softWrap = false) }
+        TableCell(width = 80.dp) { Text(text = vehicle.color, softWrap = false) }
+        TableCell(width = 60.dp) { Text(text = vehicle.seat.toString(), softWrap = false) }
     }
 }
