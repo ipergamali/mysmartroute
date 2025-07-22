@@ -31,6 +31,12 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Directions
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.CircularProgressIndicator
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.data.local.RouteEntity
@@ -62,6 +68,7 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     var addMenuExpanded by remember { mutableStateOf(false) }
     var pendingPoi by remember { mutableStateOf<Triple<String, Double, Double>?>(null) }
+    var calculating by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
     var showDatePicker by remember { mutableStateOf(false) }
     val dateFormatter = remember { DateTimeFormatter.ofPattern("dd/MM/yyyy") }
@@ -216,6 +223,13 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
                         Row(modifier = Modifier.fillMaxWidth()) {
                             Text("${index + 1}. ${poi.name}", modifier = Modifier.weight(1f))
                             Text(poi.type.name, modifier = Modifier.weight(1f))
+                            IconButton(onClick = {
+                                val list = pois.toMutableList()
+                                list.removeAt(index)
+                                pois = list
+                            }) {
+                                Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.remove_point))
+                            }
                         }
                     }
                 }
@@ -245,6 +259,47 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
                                 navController.navigate("definePoi?lat=&lng=&source=&view=false")
                             }
                         )
+                    }
+                }
+
+                Spacer(Modifier.height(8.dp))
+
+                Button(
+                    onClick = {
+                        if (pois.size >= 2) {
+                            calculating = true
+                            scope.launch {
+                                val start = LatLng(pois.first().lat, pois.first().lng)
+                                val end = LatLng(pois.last().lat, pois.last().lng)
+                                val waypoints = pois.drop(1).dropLast(1).map { LatLng(it.lat, it.lng) }
+                                val data = MapsUtils.fetchDurationAndPath(start, end, apiKey, VehicleType.CAR, waypoints)
+                                if (data.status == "OK") {
+                                    pathPoints = data.points
+                                    data.points.firstOrNull()?.let {
+                                        MapsInitializer.initialize(context)
+                                        cameraPositionState.move(CameraUpdateFactory.newLatLngZoom(it, 13f))
+                                    }
+                                }
+                                calculating = false
+                            }
+                        }
+                    },
+                    enabled = !calculating && pois.size >= 2 && !isKeyMissing
+                ) {
+                    Icon(Icons.Default.Directions, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(R.string.update_route))
+                }
+
+                if (calculating) {
+                    Spacer(Modifier.height(16.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        CircularProgressIndicator()
+                        Spacer(Modifier.width(8.dp))
+                        Text(stringResource(R.string.calculating_route))
                     }
                 }
 
