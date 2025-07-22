@@ -155,4 +155,5 @@
     <string name="select_pois_screen_title">Select Route POIs</string>
     <string name="choose_pois">Choose points of interest</string>
     <string name="confirm_poi_selection">Confirm selection</string>
+    <string name="update_route">Update route</string>
 </resources>
