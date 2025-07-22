@@ -435,44 +435,7 @@ class AuthenticationViewModel : ViewModel() {
 
             roleDao.insert(RoleEntity(id = roleId, name = roleName, parentRoleId = parentId))
 
-            val menusSnap = roleRef.collection("menus").get().await()
-            val existingMenus = menusSnap.documents.associateBy { it.getString("id") ?: it.id }
-            cfg.menus.forEachIndexed { menuIndex, menu ->
-                val menuId = "menu_${role.name.lowercase()}_${menuIndex}"
-                val menuDoc = roleRef.collection("menus").document(menuId)
 
-                if (!existingMenus.containsKey(menuId)) {
-                    batch.set(menuDoc, mapOf("id" to menuId, "titleKey" to menu.titleKey))
-                    commitNeeded = true
-                }
-
-                val existingOptions = menuDoc.collection("options").get().await()
-                    .documents.associateBy { it.getString("id") ?: it.id }
-                menu.options.forEachIndexed { optionIndex, option ->
-                    val optId = "opt_${role.name.lowercase()}_${menuIndex}_${optionIndex}"
-                    val optDoc = menuDoc.collection("options").document(optId)
-                    if (!existingOptions.containsKey(optId)) {
-                        batch.set(
-                            optDoc,
-                            mapOf(
-                                "id" to optId,
-                                "titleKey" to option.titleKey,
-                                "route" to option.route
-                            )
-                        )
-                        commitNeeded = true
-                    }
-                    optionDao.insert(
-                        MenuOptionEntity(
-                            id = optId,
-                            menuId = menuId,
-                            titleResKey = option.titleKey,
-                            route = option.route
-                        )
-                    )
-                }
-
-                insertMenuSafely(menuDao, roleDao, MenuEntity(menuId, roleId, menu.titleKey))
 
             }
         }
