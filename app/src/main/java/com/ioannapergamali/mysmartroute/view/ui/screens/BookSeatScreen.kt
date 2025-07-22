@@ -1,6 +1,9 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -13,6 +16,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -58,9 +63,10 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
     val scope = rememberCoroutineScope()
     var selectedRoute by remember { mutableStateOf<RouteEntity?>(null) }
     var message by remember { mutableStateOf("") }
-    var pois by remember { mutableStateOf<List<PoIEntity>>(emptyList()) }
+    val pois = remember { mutableStateListOf<PoIEntity>() }
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     var addMenuExpanded by remember { mutableStateOf(false) }
+    var calculating by remember { mutableStateOf(false) }
     var pendingPoi by remember { mutableStateOf<Triple<String, Double, Double>?>(null) }
     val datePickerState = rememberDatePickerState()
     var showDatePicker by remember { mutableStateOf(false) }
@@ -72,6 +78,23 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
     val context = LocalContext.current
     val apiKey = MapsUtils.getApiKey(context)
     val isKeyMissing = apiKey.isBlank()
+
+    fun refreshRoute() {
+        if (pois.size >= 2) {
+            scope.launch {
+                calculating = true
+                val origin = LatLng(pois.first().lat, pois.first().lng)
+                val destination = LatLng(pois.last().lat, pois.last().lng)
+                val waypoints = pois.drop(1).dropLast(1).map { LatLng(it.lat, it.lng) }
+                val data = MapsUtils.fetchDurationAndPath(origin, destination, apiKey, VehicleType.CAR, waypoints)
+                pathPoints = data.points
+                data.points.firstOrNull()?.let {
+                    cameraPositionState.move(CameraUpdateFactory.newLatLngZoom(it, 13f))
+                }
+                calculating = false
+            }
+        }
+    }
 
     val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -97,8 +120,9 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
             savedStateHandle?.remove<Double>("poiLat")
             savedStateHandle?.remove<Double>("poiLng")
             allPois.find { it.name == name && abs(it.lat - lat) < 0.00001 && abs(it.lng - lng) < 0.00001 }?.let { poi ->
-                if (poi !in pois) {
-                    pois = pois + poi
+                if (pois.none { it.id == poi.id }) {
+                    pois.add(poi)
+                    refreshRoute()
                 }
             }
             pendingPoi = null
@@ -141,7 +165,8 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
                                         VehicleType.CAR
                                     )
                                     pathPoints = path
-                                    pois = routeViewModel.getRoutePois(context, route.id)
+                                    pois.clear()
+                                    pois.addAll(routeViewModel.getRoutePois(context, route.id))
                                     path.firstOrNull()?.let {
                                         MapsInitializer.initialize(context)
                                         cameraPositionState.move(
@@ -216,6 +241,12 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
                         Row(modifier = Modifier.fillMaxWidth()) {
                             Text("${index + 1}. ${poi.name}", modifier = Modifier.weight(1f))
                             Text(poi.type.name, modifier = Modifier.weight(1f))
+                            IconButton(onClick = {
+                                pois.removeAt(index)
+                                refreshRoute()
+                            }) {
+                                Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.remove_point))
+                            }
                         }
                     }
                 }
@@ -231,8 +262,9 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
                     DropdownMenu(expanded = addMenuExpanded, onDismissRequest = { addMenuExpanded = false }) {
                         allPois.forEach { poi ->
                             DropdownMenuItem(text = { Text(poi.name) }, onClick = {
-                                if (poi !in pois) {
-                                    pois = pois + poi
+                                if (pois.none { it.id == poi.id }) {
+                                    pois.add(poi)
+                                    refreshRoute()
                                 }
                                 addMenuExpanded = false
                             })
@@ -246,6 +278,16 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
                             }
                         )
                     }
+                }
+
+                Spacer(Modifier.height(16.dp))
+            }
+
+            if (pois.size >= 2) {
+                Button(onClick = { refreshRoute() }, enabled = !calculating) {
+                    Icon(Icons.Default.Refresh, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(R.string.recalculate_route))
                 }
 
                 Spacer(Modifier.height(16.dp))
