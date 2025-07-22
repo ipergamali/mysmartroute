@@ -20,6 +20,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.LifecycleEventObserver
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.model.LatLng
@@ -37,22 +39,28 @@ import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.BookingViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import kotlin.math.abs
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
     val viewModel: BookingViewModel = viewModel()
     val routeViewModel: RouteViewModel = viewModel()
+    val poiViewModel: PoIViewModel = viewModel()
     val routes by viewModel.availableRoutes.collectAsState()
+    val allPois by poiViewModel.pois.collectAsState()
     val scope = rememberCoroutineScope()
     var selectedRoute by remember { mutableStateOf<RouteEntity?>(null) }
     var message by remember { mutableStateOf("") }
     var pois by remember { mutableStateOf<List<PoIEntity>>(emptyList()) }
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
+    var addMenuExpanded by remember { mutableStateOf(false) }
+    var pendingPoi by remember { mutableStateOf<Triple<String, Double, Double>?>(null) }
     val datePickerState = rememberDatePickerState()
     var showDatePicker by remember { mutableStateOf(false) }
     val dateFormatter = remember { DateTimeFormatter.ofPattern("dd/MM/yyyy") }
@@ -64,7 +72,42 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
     val apiKey = MapsUtils.getApiKey(context)
     val isKeyMissing = apiKey.isBlank()
 
-    LaunchedEffect(Unit) { routeViewModel.loadRoutes(context, includeAll = true) }
+    val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                val newName = savedStateHandle?.get<String>("poiName")
+                val lat = savedStateHandle?.get<Double>("poiLat")
+                val lng = savedStateHandle?.get<Double>("poiLng")
+                if (newName != null && lat != null && lng != null) {
+                    pendingPoi = Triple(newName, lat, lng)
+                    poiViewModel.loadPois(context)
+                }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
+    LaunchedEffect(allPois, pendingPoi) {
+        pendingPoi?.let { (name, lat, lng) ->
+            savedStateHandle?.remove<String>("poiName")
+            savedStateHandle?.remove<Double>("poiLat")
+            savedStateHandle?.remove<Double>("poiLng")
+            allPois.find { it.name == name && abs(it.lat - lat) < 0.00001 && abs(it.lng - lng) < 0.00001 }?.let { poi ->
+                if (poi !in pois) {
+                    pois = pois + poi
+                }
+            }
+            pendingPoi = null
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        routeViewModel.loadRoutes(context, includeAll = true)
+        poiViewModel.loadPois(context)
+    }
 
     Scaffold(
         topBar = {
@@ -108,14 +151,6 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
                             }
                         )
                     }
-                    Divider()
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.add_poi_option)) },
-                        onClick = {
-                            expanded = false
-                            navController.navigate("definePoi?lat=&lng=&source=&view=false")
-                        }
-                    )
                 }
             }
 
@@ -181,6 +216,34 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
                             Text("${index + 1}. ${poi.name}", modifier = Modifier.weight(1f))
                             Text(poi.type.name, modifier = Modifier.weight(1f))
                         }
+                    }
+                }
+
+                Spacer(Modifier.height(16.dp))
+            }
+
+            if (selectedRoute != null) {
+                Box {
+                    Button(onClick = { addMenuExpanded = true }) {
+                        Text(stringResource(R.string.add_poi_option))
+                    }
+                    DropdownMenu(expanded = addMenuExpanded, onDismissRequest = { addMenuExpanded = false }) {
+                        allPois.forEach { poi ->
+                            DropdownMenuItem(text = { Text(poi.name) }, onClick = {
+                                if (poi !in pois) {
+                                    pois = pois + poi
+                                }
+                                addMenuExpanded = false
+                            })
+                        }
+                        Divider()
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.define_poi)) },
+                            onClick = {
+                                addMenuExpanded = false
+                                navController.navigate("definePoi?lat=&lng=&source=&view=false")
+                            }
+                        )
                     }
                 }
 
