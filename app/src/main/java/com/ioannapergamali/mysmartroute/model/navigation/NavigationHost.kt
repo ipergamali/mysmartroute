@@ -10,8 +10,10 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.SignUpScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.MenuScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.RegisterVehicleScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.AnnounceTransportScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.DeclareRouteScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.DirectionsMapScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.PoIListScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.DefinePoiScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.SettingsScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.AboutScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.SupportScreen
@@ -25,6 +27,16 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.AdminSignUpScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.DatabaseSyncScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.RolesScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.ProfileScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.RouteEditorScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.ManageFavoritesScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.PrintCompletedScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.PrintListScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.PrintScheduledScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.RouteModeScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.ViewVehiclesScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.BookSeatScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.ViewRoutesScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.SelectRoutePoisScreen
 
 
 
@@ -64,8 +76,8 @@ fun NavigationHost(navController : NavHostController, openDrawer: () -> Unit) {
             RegisterVehicleScreen(navController = navController, openDrawer = openDrawer)
         }
 
-        composable("announceTransport") {
-            AnnounceTransportScreen(navController = navController, openDrawer = openDrawer)
+        composable("declareRoute") {
+            DeclareRouteScreen(navController = navController, openDrawer = openDrawer)
         }
 
         composable("announceAvailability") {
@@ -75,6 +87,33 @@ fun NavigationHost(navController : NavHostController, openDrawer: () -> Unit) {
         composable("poiList") {
             PoIListScreen(navController = navController, openDrawer = openDrawer)
         }
+        composable("editRoute") {
+            RouteEditorScreen(navController = navController, openDrawer = openDrawer)
+        }
+        composable(
+            route = "definePoi?lat={lat}&lng={lng}&source={source}&view={view}",
+            arguments = listOf(
+                navArgument("lat") { defaultValue = "" },
+                navArgument("lng") { defaultValue = "" },
+                navArgument("source") { defaultValue = "" },
+                navArgument("view") { defaultValue = "false" }
+            )
+        ) { backStackEntry ->
+            val lat = backStackEntry.arguments?.getString("lat")?.toDoubleOrNull()
+            val lng = backStackEntry.arguments?.getString("lng")?.toDoubleOrNull()
+            val source = backStackEntry.arguments?.getString("source")
+            val viewOnly = backStackEntry.arguments?.getString("view")?.toBoolean() ?: false
+            DefinePoiScreen(
+                navController = navController,
+                openDrawer = openDrawer,
+                initialLat = lat,
+                initialLng = lng,
+                source = source,
+                viewOnly = viewOnly
+            )
+        }
+
+
 
         composable(
             route = "directionsMap/{start}/{end}",
@@ -106,6 +145,42 @@ fun NavigationHost(navController : NavHostController, openDrawer: () -> Unit) {
 
         composable("profile") {
             ProfileScreen(navController = navController, openDrawer = openDrawer)
+        }
+
+        composable("manageFavorites") {
+            ManageFavoritesScreen(navController = navController, openDrawer = openDrawer)
+        }
+
+        composable("routeMode") {
+            RouteModeScreen(navController = navController, openDrawer = openDrawer)
+        }
+
+        composable("bookSeat") {
+            BookSeatScreen(navController = navController, openDrawer = openDrawer)
+        }
+
+        composable("viewRoutes") {
+            ViewRoutesScreen(navController = navController, openDrawer = openDrawer)
+        }
+
+        composable("selectRoutePois") {
+            SelectRoutePoisScreen(navController = navController, openDrawer = openDrawer)
+        }
+
+        composable("printList") {
+            PrintListScreen(navController = navController, openDrawer = openDrawer)
+        }
+
+        composable("printScheduled") {
+            PrintScheduledScreen(navController = navController, openDrawer = openDrawer)
+        }
+
+        composable("printCompleted") {
+            PrintCompletedScreen(navController = navController, openDrawer = openDrawer)
+        }
+
+        composable("viewVehicles") {
+            ViewVehiclesScreen(navController = navController, openDrawer = openDrawer)
         }
 
         composable("soundPicker") {

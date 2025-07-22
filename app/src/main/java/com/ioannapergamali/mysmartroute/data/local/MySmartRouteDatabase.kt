@@ -13,29 +13,48 @@ import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.data.local.MenuOptionEntity
 import com.ioannapergamali.mysmartroute.data.local.LanguageSettingEntity
 import com.ioannapergamali.mysmartroute.data.local.LanguageSettingDao
+import com.ioannapergamali.mysmartroute.data.local.RouteEntity
+import com.ioannapergamali.mysmartroute.data.local.MovingEntity
+import com.ioannapergamali.mysmartroute.data.local.RoutePointEntity
+import com.ioannapergamali.mysmartroute.data.local.RoutePointDao
+import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationEntity
+import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationDao
+import androidx.room.TypeConverters
+import com.ioannapergamali.mysmartroute.data.local.Converters
 
 @Database(
     entities = [
         UserEntity::class,
         VehicleEntity::class,
+        PoiTypeEntity::class,
         PoIEntity::class,
         SettingsEntity::class,
         RoleEntity::class,
         MenuEntity::class,
         MenuOptionEntity::class,
-        LanguageSettingEntity::class
+        LanguageSettingEntity::class,
+        RouteEntity::class,
+        MovingEntity::class,
+        RoutePointEntity::class,
+        TransportDeclarationEntity::class
     ],
-    version = 19
+    version = 31
 )
+@TypeConverters(Converters::class)
 abstract class MySmartRouteDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun vehicleDao(): VehicleDao
+    abstract fun poiTypeDao(): PoiTypeDao
     abstract fun poIDao(): PoIDao
     abstract fun settingsDao(): SettingsDao
     abstract fun roleDao(): RoleDao
     abstract fun menuDao(): MenuDao
     abstract fun menuOptionDao(): MenuOptionDao
     abstract fun languageSettingDao(): LanguageSettingDao
+    abstract fun routeDao(): RouteDao
+    abstract fun movingDao(): MovingDao
+    abstract fun routePointDao(): RoutePointDao
+    abstract fun transportDeclarationDao(): TransportDeclarationDao
 
     companion object {
         @Volatile
@@ -217,11 +236,12 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                 val driverMenuId = "menu_driver_main"
                 insertMenu(driverMenuId, "role_driver", "driver_menu_title")
                 insertOption("opt_driver_1", driverMenuId, "register_vehicle", "registerVehicle")
-                insertOption("opt_driver_2", driverMenuId, "announce_availability", "announceAvailability")
-                insertOption("opt_driver_3", driverMenuId, "find_passengers", "findPassengers")
-                insertOption("opt_driver_4", driverMenuId, "print_list", "printList")
-                insertOption("opt_driver_5", driverMenuId, "print_scheduled", "printScheduled")
-                insertOption("opt_driver_6", driverMenuId, "print_completed", "printCompleted")
+                insertOption("opt_driver_2", driverMenuId, "declare_route", "declareRoute")
+                insertOption("opt_driver_3", driverMenuId, "announce_availability", "announceAvailability")
+                insertOption("opt_driver_4", driverMenuId, "find_passengers", "findPassengers")
+                insertOption("opt_driver_5", driverMenuId, "print_list", "printList")
+                insertOption("opt_driver_6", driverMenuId, "print_scheduled", "printScheduled")
+                insertOption("opt_driver_7", driverMenuId, "print_completed", "printCompleted")
 
                 val adminMenuId = "menu_admin_main"
                 insertMenu(adminMenuId, "role_admin", "admin_menu_title")
@@ -269,6 +289,171 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_19_20 = object : Migration(19, 20) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `routes` (" +
+                        "`id` TEXT NOT NULL, " +
+                        "`startPoiId` TEXT NOT NULL, " +
+                        "`endPoiId` TEXT NOT NULL, " +
+                        "`cost` REAL NOT NULL, " +
+                        "PRIMARY KEY(`id`)" +
+                        ")"
+                )
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `movings` (" +
+                        "`id` TEXT NOT NULL, " +
+                        "`routeId` TEXT NOT NULL, " +
+                        "`userId` TEXT NOT NULL, " +
+                        "`date` INTEGER NOT NULL, " +
+                        "`vehicleId` TEXT NOT NULL, " +
+                        "`cost` REAL NOT NULL, " +
+                        "`durationMinutes` INTEGER NOT NULL, " +
+                        "PRIMARY KEY(`id`)" +
+                        ")"
+                )
+            }
+        }
+
+        private val MIGRATION_21_22 = object : Migration(20, 21) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE `pois` ADD COLUMN `country` TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE `pois` ADD COLUMN `city` TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE `pois` ADD COLUMN `streetName` TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE `pois` ADD COLUMN `streetNum` INTEGER NOT NULL DEFAULT 0")
+                database.execSQL("ALTER TABLE `pois` ADD COLUMN `postalCode` INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
+        private val MIGRATION_23_24 = object : Migration(23, 24) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `poi_types` (" +
+                        "`id` TEXT NOT NULL, " +
+                        "`name` TEXT NOT NULL, " +
+                        "PRIMARY KEY(`id`)" +
+                        ")"
+                )
+                database.execSQL(
+                    "INSERT INTO `poi_types` (`id`, `name`) VALUES " +
+                        "('HISTORICAL','HISTORICAL')," +
+                        "('BUS_STOP','BUS_STOP')," +
+                        "('RESTAURANT','RESTAURANT')," +
+                        "('PARKING','PARKING')," +
+                        "('SHOPPING','SHOPPING')," +
+                        "('GENERAL','GENERAL')"
+                )
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `pois_new` (" +
+                        "`id` TEXT NOT NULL, " +
+                        "`name` TEXT NOT NULL, " +
+                        "`country` TEXT NOT NULL, " +
+                        "`city` TEXT NOT NULL, " +
+                        "`streetName` TEXT NOT NULL, " +
+                        "`streetNum` INTEGER NOT NULL, " +
+                        "`postalCode` INTEGER NOT NULL, " +
+                        "`typeId` TEXT NOT NULL, " +
+                        "`lat` REAL NOT NULL, " +
+                        "`lng` REAL NOT NULL, " +
+                        "FOREIGN KEY(`typeId`) REFERENCES `poi_types`(`id`) ON DELETE RESTRICT, " +
+                        "PRIMARY KEY(`id`)" +
+                        ")"
+                )
+                database.execSQL(
+                    "INSERT INTO `pois_new` (`id`, `name`, `country`, `city`, `streetName`, `streetNum`, `postalCode`, `typeId`, `lat`, `lng`) " +
+                        "SELECT `id`, `name`, `country`, `city`, `streetName`, `streetNum`, `postalCode`, `type`, `lat`, `lng` FROM `pois`"
+                )
+                database.execSQL("DROP TABLE `pois`")
+                database.execSQL("ALTER TABLE `pois_new` RENAME TO `pois`")
+            }
+        }
+
+        private val MIGRATION_24_25 = object : Migration(24, 25) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `route_points` (" +
+                        "`routeId` TEXT NOT NULL, " +
+                        "`position` INTEGER NOT NULL, " +
+                        "`poiId` TEXT NOT NULL, " +
+                        "PRIMARY KEY(`routeId`, `position`)" +
+                        ")"
+                )
+            }
+        }
+
+        private val MIGRATION_25_26 = object : Migration(25, 26) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `routes_new` (" +
+                        "`id` TEXT NOT NULL, " +
+                        "`startPoiId` TEXT NOT NULL, " +
+                        "`endPoiId` TEXT NOT NULL, " +
+                        "PRIMARY KEY(`id`)" +
+                        ")"
+                )
+                database.execSQL(
+                    "INSERT INTO `routes_new` (`id`, `startPoiId`, `endPoiId`) " +
+                        "SELECT `id`, `startPoiId`, `endPoiId` FROM `routes`"
+                )
+                database.execSQL("DROP TABLE `routes`")
+                database.execSQL("ALTER TABLE `routes_new` RENAME TO `routes`")
+            }
+        }
+
+        private val MIGRATION_26_27 = object : Migration(26, 27) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `routes_new` (" +
+                        "`id` TEXT NOT NULL, " +
+                        "`name` TEXT NOT NULL DEFAULT '', " +
+                        "`startPoiId` TEXT NOT NULL, " +
+                        "`endPoiId` TEXT NOT NULL, " +
+                        "PRIMARY KEY(`id`)" +
+                        ")"
+                )
+                database.execSQL(
+                    "INSERT INTO `routes_new` (`id`, `name`, `startPoiId`, `endPoiId`) " +
+                        "SELECT `id`, '' as `name`, `startPoiId`, `endPoiId` FROM `routes`"
+                )
+                database.execSQL("DROP TABLE `routes`")
+                database.execSQL("ALTER TABLE `routes_new` RENAME TO `routes`")
+            }
+        }
+
+        private val MIGRATION_27_28 = object : Migration(27, 28) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE `vehicles` ADD COLUMN `color` TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE `vehicles` ADD COLUMN `plate` TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
+        private val MIGRATION_28_29 = object : Migration(28, 29) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `transport_declarations` (" +
+                        "`id` TEXT NOT NULL, " +
+                        "`routeId` TEXT NOT NULL, " +
+                        "`vehicleType` TEXT NOT NULL, " +
+                        "`cost` REAL NOT NULL, " +
+                        "`durationMinutes` INTEGER NOT NULL, " +
+                        "PRIMARY KEY(`id`)" +
+                    ")"
+                )
+            }
+        }
+
+        private val MIGRATION_29_30 = object : Migration(29, 30) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE `routes` ADD COLUMN `userId` TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
+        private val MIGRATION_30_31 = object : Migration(30, 31) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE `vehicles` ADD COLUMN `name` TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
         private fun prepopulate(db: SupportSQLiteDatabase) {
             Log.d(TAG, "Prepopulating database")
             db.execSQL(
@@ -276,6 +461,16 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     "('role_passenger', 'PASSENGER', NULL)," +
                     "('role_driver', 'DRIVER', 'role_passenger')," +
                     "('role_admin', 'ADMIN', 'role_driver')"
+            )
+
+            db.execSQL(
+                "INSERT INTO poi_types (id, name) VALUES " +
+                    "('HISTORICAL','HISTORICAL')," +
+                    "('BUS_STOP','BUS_STOP')," +
+                    "('RESTAURANT','RESTAURANT')," +
+                    "('PARKING','PARKING')," +
+                    "('SHOPPING','SHOPPING')," +
+                    "('GENERAL','GENERAL')"
             )
 
             fun insertMenu(id: String, roleId: String, titleResKey: String) {
@@ -310,11 +505,12 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             val driverMenuId = "menu_driver_main"
             insertMenu(driverMenuId, "role_driver", "driver_menu_title")
             insertOption("opt_driver_1", driverMenuId, "register_vehicle", "registerVehicle")
-            insertOption("opt_driver_2", driverMenuId, "announce_availability", "announceAvailability")
-            insertOption("opt_driver_3", driverMenuId, "find_passengers", "findPassengers")
-            insertOption("opt_driver_4", driverMenuId, "print_list", "printList")
-            insertOption("opt_driver_5", driverMenuId, "print_scheduled", "printScheduled")
-            insertOption("opt_driver_6", driverMenuId, "print_completed", "printCompleted")
+            insertOption("opt_driver_2", driverMenuId, "declare_route", "declareRoute")
+            insertOption("opt_driver_3", driverMenuId, "announce_availability", "announceAvailability")
+            insertOption("opt_driver_4", driverMenuId, "find_passengers", "findPassengers")
+            insertOption("opt_driver_5", driverMenuId, "print_list", "printList")
+            insertOption("opt_driver_6", driverMenuId, "print_scheduled", "printScheduled")
+            insertOption("opt_driver_7", driverMenuId, "print_completed", "printCompleted")
 
             val adminMenuId = "menu_admin_main"
             insertMenu(adminMenuId, "role_admin", "admin_menu_title")
@@ -353,7 +549,17 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_15_16,
                     MIGRATION_16_17,
                     MIGRATION_17_18,
-                    MIGRATION_18_19
+                    MIGRATION_18_19,
+                    MIGRATION_19_20,
+                    MIGRATION_21_22,
+                    MIGRATION_23_24,
+                    MIGRATION_24_25,
+                    MIGRATION_25_26,
+                    MIGRATION_26_27,
+                    MIGRATION_27_28,
+                    MIGRATION_28_29,
+                    MIGRATION_29_30,
+                    MIGRATION_30_31
                 )
                     .addCallback(object : RoomDatabase.Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {

@@ -27,6 +27,8 @@ import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.google.firebase.auth.FirebaseAuth
+import com.ioannapergamali.mysmartroute.view.ui.util.observeBubble
+import com.ioannapergamali.mysmartroute.view.ui.util.LocalKeyboardBubbleState
 
 @Composable
 fun HomeScreen(
@@ -145,6 +147,7 @@ private fun HomeContent(
     onLogout: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    val bubbleState = LocalKeyboardBubbleState.current!!
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
@@ -176,7 +179,9 @@ private fun HomeContent(
                 value = email,
                 onValueChange = onEmailChange,
                 label = { Text(stringResource(R.string.email)) },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .observeBubble(bubbleState, 0) { email },
                 shape = MaterialTheme.shapes.small,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -191,7 +196,9 @@ private fun HomeContent(
                 onValueChange = onPasswordChange,
                 label = { Text(stringResource(R.string.password)) },
                 visualTransformation = PasswordVisualTransformation(),
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .observeBubble(bubbleState, 1) { password },
                 shape = MaterialTheme.shapes.small,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,

@@ -46,7 +46,7 @@ fun MenuScreen(navController: NavController, openDrawer: () -> Unit) {
     }
 
     LaunchedEffect(role, menus) {
-        Log.d(TAG, "Role: ${'$'}role, menus size: ${'$'}{menus.size}")
+        Log.d(TAG, "Role: $role, menus size: ${menus.size}")
     }
 
     Scaffold(
@@ -71,9 +71,10 @@ fun MenuScreen(navController: NavController, openDrawer: () -> Unit) {
                 CircularProgressIndicator()
             } else {
                 RoleMenu(role, menus) { route ->
-                    if (route.isNotEmpty() &&
-                        navController.graph.any { it.route == route }) {
-                        navController.navigate(route)
+                    val targetRoute = if (route == "definePoi") "definePoi?lat=&lng=&source=&view=false" else route
+                    if (targetRoute.isNotEmpty() &&
+                        navController.graph.any { it.route == "definePoi?lat={lat}&lng={lng}&source={source}&view={view}" || it.route == targetRoute }) {
+                        navController.navigate(targetRoute)
                     } else {
                         Toast.makeText(
                             context,
@@ -98,6 +99,19 @@ private fun RoleMenu(
             text = stringResource(R.string.menu_role_prefix, role?.localizedName() ?: ""),
             style = MaterialTheme.typography.titleLarge
         )
+        val descKey = when (role) {
+            UserRole.PASSENGER -> "role_passenger_desc"
+            UserRole.DRIVER -> "role_driver_desc"
+            UserRole.ADMIN -> null
+            else -> null
+        }
+        descKey?.let { key ->
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = resolveString(key),
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
         Spacer(Modifier.height(8.dp))
         Card(
             modifier = Modifier.fillMaxWidth(),

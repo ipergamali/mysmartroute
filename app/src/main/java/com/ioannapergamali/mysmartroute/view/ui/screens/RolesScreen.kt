@@ -80,7 +80,7 @@ fun RolesScreen(navController: NavController, openDrawer: () -> Unit) {
                                 null
                             }
                             val displayName = roleEnum?.localizedName() ?: role.name
-                            Text("${'$'}{role.id} - ${'$'}displayName")
+                            Text("${role.id} - $displayName")
                         }
                     }
                 }

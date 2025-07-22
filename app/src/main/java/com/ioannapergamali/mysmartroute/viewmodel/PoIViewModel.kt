@@ -6,6 +6,10 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
+import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
+import com.ioannapergamali.mysmartroute.model.classes.poi.PoiAddress
+import com.google.android.libraries.places.api.model.Place
+import com.ioannapergamali.mysmartroute.utils.toPoIEntity
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -31,7 +35,7 @@ class PoIViewModel : ViewModel() {
             db.collection("pois").get()
                 .addOnSuccessListener { snapshot ->
                     val list = snapshot.documents.mapNotNull { doc ->
-                        doc.toObject(PoIEntity::class.java)
+                        doc.toPoIEntity()
                     }
                     _pois.value = list
                     viewModelScope.launch { dao.insertAll(list) }
@@ -42,31 +46,34 @@ class PoIViewModel : ViewModel() {
     fun addPoi(
         context: Context,
         name: String,
-        description: String,
-        type: String,
+        address: PoiAddress,
+        type: Place.Type,
         lat: Double,
         lng: Double
     ) {
         viewModelScope.launch {
             val dao = MySmartRouteDatabase.getInstance(context).poIDao()
-            val exists = dao.findByLocation(lat, lng) != null || dao.findByName(name) != null
+            // Επιτρέπουμε αποθήκευση ίδιου σημείου αν έχει διαφορετικό όνομα.
+            val exists = dao.findByName(name) != null
             if (exists) {
                 _addState.value = AddPoiState.Exists
                 return@launch
             }
 
             val id = UUID.randomUUID().toString()
-            val poi = PoIEntity(id, name, description, type, lat, lng)
-            dao.insert(poi)
-            val data = hashMapOf(
-                "id" to id,
-                "name" to name,
-                "description" to description,
-                "type" to type,
-                "lat" to lat,
-                "lng" to lng
+            val poi = PoIEntity(
+                id = id,
+                name = name,
+                address = address,
+                type = type,
+                lat = lat,
+                lng = lng
             )
-            db.collection("pois").document(id).set(data)
+            dao.insert(poi)
+            _pois.value = _pois.value + poi
+            db.collection("pois")
+                .document(id)
+                .set(poi.toFirestoreMap())
             _addState.value = AddPoiState.Success
         }
     }
@@ -80,5 +87,14 @@ class PoIViewModel : ViewModel() {
 
     fun resetAddState() {
         _addState.value = AddPoiState.Idle
+    }
+
+    fun deletePoi(context: Context, id: String) {
+        viewModelScope.launch {
+            val dao = MySmartRouteDatabase.getInstance(context).poIDao()
+            dao.deleteById(id)
+            _pois.value = _pois.value.filterNot { it.id == id }
+            db.collection("pois").document(id).delete()
+        }
     }
 }

@@ -30,8 +30,8 @@ android {
         applicationId = "com.ioannapergamali.mysmartroute"
         minSdk = 33
         targetSdk = 35
-        versionCode = 10
-        versionName = "1.9"
+        versionCode = 16
+        versionName = "2.8"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "MAPS_API_KEY", "\"$MAPS_API_KEY\"")
         manifestPlaceholders["MAPS_API_KEY"] = MAPS_API_KEY
@@ -43,7 +43,8 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.15"
+        // Χρήση της νεότερης σταθερής έκδοσης του compiler
+        kotlinCompilerExtensionVersion = "1.6.7"
     }
 
     compileOptions {
@@ -79,15 +80,16 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
 
     // Jetpack Compose
-    implementation(platform("androidx.compose:compose-bom:2024.06.00"))
-    androidTestImplementation(platform("androidx.compose:compose-bom:2024.06.00"))
+    implementation(platform("androidx.compose:compose-bom:2025.05.00"))
+    androidTestImplementation(platform("androidx.compose:compose-bom:2025.05.00"))
 
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-text")
     implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.compose.foundation:foundation")
     implementation("androidx.compose.runtime:runtime-livedata")
-    implementation("androidx.navigation:navigation-compose:2.7.1")
+    implementation("androidx.navigation:navigation-compose:2.9.1")
     implementation("androidx.compose.material:material-icons-extended")
 
     // DataStore για αποθήκευση ρυθμίσεων
@@ -95,7 +97,7 @@ dependencies {
 
     // Firebase
     // Χρήση της πιο πρόσφατης έκδοσης BOM
-    implementation(platform("com.google.firebase:firebase-bom:33.15.0"))
+    implementation(platform("com.google.firebase:firebase-bom:33.16.0"))
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
 
@@ -109,6 +111,7 @@ dependencies {
     implementation("com.google.maps.android:maps-compose:6.6.0")
     implementation("com.google.maps.android:maps-ktx:5.2.0")
     implementation("com.google.android.gms:play-services-location:21.3.0")
+    implementation("com.google.android.libraries.places:places:3.4.0")
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3") // ✅ downgrade
@@ -120,6 +123,9 @@ dependencies {
 
     // JSON parsing
     implementation("com.google.code.gson:gson:2.13.1")
+
+    // Crash reporting με ACRA
+    implementation("ch.acra:acra-mail:5.12.0")
 
     // Testing
     testImplementation("junit:junit:4.13.2")

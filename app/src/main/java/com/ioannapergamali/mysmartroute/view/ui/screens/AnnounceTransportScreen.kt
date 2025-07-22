@@ -1,685 +1,394 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
-import android.util.Log
-import android.widget.Toast
-import android.content.Context
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.res.stringResource
-import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
-import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.menuAnchor
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Place
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Warning
-import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.rememberCameraPositionState
-import com.google.maps.android.compose.rememberMarkerState
-import com.google.maps.android.compose.Polyline
-import com.google.maps.android.compose.MapProperties
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.LatLngBounds
-import android.location.Address
-import android.location.Geocoder
+import androidx.compose.material.icons.filled.DirectionsBike
+import androidx.compose.material.icons.filled.DirectionsBus
+import androidx.compose.material.icons.filled.DirectionsCar
+import androidx.compose.material.icons.filled.TwoWheeler
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.Alignment
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.ioannapergamali.mysmartroute.model.classes.routes.Route
-import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
-import com.ioannapergamali.mysmartroute.utils.MapsUtils
-import com.ioannapergamali.mysmartroute.utils.NetworkUtils
-import com.ioannapergamali.mysmartroute.utils.CoordinateUtils
-import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
+import androidx.compose.foundation.clickable
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.Polyline
+import com.google.maps.android.compose.rememberCameraPositionState
 import com.ioannapergamali.mysmartroute.R
-import com.ioannapergamali.mysmartroute.viewmodel.TransportAnnouncementViewModel
+import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
+import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
+import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.TransportDeclarationViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleViewModel
-import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
-import kotlinx.coroutines.Dispatchers
+import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.UserViewModel
+import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
+import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.vector.ImageVector
+import com.ioannapergamali.mysmartroute.data.local.RouteEntity
+import com.ioannapergamali.mysmartroute.data.local.VehicleEntity
+import com.google.android.libraries.places.api.model.Place
+import com.ioannapergamali.mysmartroute.data.local.PoIEntity
+import com.ioannapergamali.mysmartroute.view.ui.util.observeBubble
+import com.ioannapergamali.mysmartroute.view.ui.util.LocalKeyboardBubbleState
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.google.firebase.auth.FirebaseAuth
+import com.ioannapergamali.mysmartroute.model.classes.poi.PoiAddress
+import com.ioannapergamali.mysmartroute.utils.MapsUtils
 
-private enum class MapSelectionMode { FROM, TO }
+private fun iconForVehicle(type: VehicleType): ImageVector = when (type) {
+    VehicleType.CAR, VehicleType.TAXI -> Icons.Default.DirectionsCar
+    VehicleType.BIGBUS, VehicleType.SMALLBUS -> Icons.Default.DirectionsBus
+    VehicleType.BICYCLE -> Icons.Default.DirectionsBike
+    VehicleType.MOTORBIKE -> Icons.Default.TwoWheeler
+}
 
-private const val TAG = "AnnounceTransport"
-
-private suspend fun reverseGeocode(context: Context, latLng: LatLng): String? =
-    withContext(Dispatchers.IO) {
-        try {
-            Geocoder(context).getFromLocation(latLng.latitude, latLng.longitude, 1)
-                ?.firstOrNull()
-                ?.getAddressLine(0)
-        } catch (e: Exception) {
-            null
-        }
+private fun formatAddress(address: PoiAddress): String = buildString {
+    if (address.streetName.isNotBlank()) append(address.streetName)
+    if (address.streetNum != 0) append(" ${address.streetNum}")
+    if (address.postalCode != 0 || address.city.isNotBlank()) {
+        if (isNotEmpty()) append(", ")
+        append("${address.postalCode} ${address.city}".trim())
     }
-
-private suspend fun geocode(context: Context, query: String): Pair<LatLng, String>? =
-    withContext(Dispatchers.IO) {
-        try { Geocoder(context).getFromLocationName(query, 1)?.firstOrNull() } catch (e: Exception) { null }
-    }?.let { Pair(LatLng(it.latitude, it.longitude), it.getAddressLine(0) ?: query) }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit) {
-    val viewModel: TransportAnnouncementViewModel = viewModel()
-    val vehicleViewModel: VehicleViewModel = viewModel()
-    val poiViewModel: PoIViewModel = viewModel()
-    val state by viewModel.state.collectAsState()
-    val vehicles by vehicleViewModel.vehicles.collectAsState()
-    val pois by poiViewModel.pois.collectAsState()
-    val poiAddState by poiViewModel.addState.collectAsState()
-
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val routeViewModel: RouteViewModel = viewModel()
+    val declarationViewModel: TransportDeclarationViewModel = viewModel()
+    val vehicleViewModel: VehicleViewModel = viewModel()
+    val authViewModel: AuthenticationViewModel = viewModel()
+    val userViewModel: UserViewModel = viewModel()
+    val role by authViewModel.currentUserRole.collectAsState()
+    val routes by routeViewModel.routes.collectAsState()
+    val vehicles by vehicleViewModel.vehicles.collectAsState()
+    val drivers by userViewModel.drivers.collectAsState()
+    var filteredVehicles by remember { mutableStateOf<List<VehicleEntity>>(emptyList()) }
 
-    val coroutineScope = rememberCoroutineScope()
+    var displayRoutes by remember { mutableStateOf<List<RouteEntity>>(emptyList()) }
 
-    var mapSelectionMode by remember { mutableStateOf<MapSelectionMode?>(null) }
-    var routePoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
-    var showRoute by remember { mutableStateOf(false) }
-
-    var fromQuery by remember { mutableStateOf("") }
-    var selectedFromDescription by remember { mutableStateOf<String?>(null) }
-    var fromExpanded by remember { mutableStateOf(false) }
-    var fromSuggestions by remember { mutableStateOf<List<Address>>(emptyList()) }
-    val fromPoiSuggestions = remember(fromQuery, pois) {
-        pois.filter { it.name.contains(fromQuery, ignoreCase = true) }
-    }
-
-    var toQuery by remember { mutableStateOf("") }
-    var selectedToDescription by remember { mutableStateOf<String?>(null) }
-    var toExpanded by remember { mutableStateOf(false) }
-    var toSuggestions by remember { mutableStateOf<List<Address>>(emptyList()) }
-    val toPoiSuggestions = remember(toQuery, pois) {
-        pois.filter { it.name.contains(toQuery, ignoreCase = true) }
-    }
-
-    var selectedVehicleType by remember { mutableStateOf<VehicleType?>(null) }
-
-    var startLatLng by remember { mutableStateOf<LatLng?>(null) }
-    var endLatLng by remember { mutableStateOf<LatLng?>(null) }
-    val fromMarkerState = rememberMarkerState()
-    val toMarkerState = rememberMarkerState()
-    var costInput by remember { mutableStateOf("") }
-    var durationMinutes by remember { mutableStateOf(0) }
-    var dateInput by remember { mutableStateOf("") }
-
-    var fromError by remember { mutableStateOf(false) }
-    var toError by remember { mutableStateOf(false) }
-    var lastAddFrom by remember { mutableStateOf<Boolean?>(null) }
-
-    // Αρχικοποίηση του χάρτη στο Ηράκλειο με ζουμ όπως στο ζητούμενο URL
-    val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(
-            LatLng(35.3325932, 25.073835),
-            13.79f
-        )
-    }
-
-    val heraklionBounds = remember {
-        LatLngBounds(
-            LatLng(34.9, 24.8), // Southwest corner
-            LatLng(35.5, 25.9)  // Northeast corner
-        )
-    }
-
-    // Ιδιότητες χάρτη με περιορισμό στα όρια του Ηρακλείου
-    val mapProperties = remember {
-        MapProperties(latLngBoundsForCameraTarget = heraklionBounds)
-    }
-
+    var expandedDriver by remember { mutableStateOf(false) }
+    var selectedDriverId by remember { mutableStateOf<String?>(null) }
+    var selectedDriverName by remember { mutableStateOf("") }
+    var expandedRoute by remember { mutableStateOf(false) }
+    var selectedRouteId by remember { mutableStateOf<String?>(null) }
+    var expandedVehicle by remember { mutableStateOf(false) }
+    var selectedVehicle by remember { mutableStateOf<VehicleType?>(null) }
+    var selectedVehicleName by remember { mutableStateOf("") }
+    var selectedVehicleDescription by remember { mutableStateOf("") }
+    var costText by remember { mutableStateOf("") }
+    var duration by remember { mutableStateOf(0) }
+    var calculating by remember { mutableStateOf(false) }
+    var pois by remember { mutableStateOf<List<PoIEntity>>(emptyList()) }
+    var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
+    val cameraPositionState = rememberCameraPositionState()
     val apiKey = MapsUtils.getApiKey(context)
     val isKeyMissing = apiKey.isBlank()
-    Log.d(TAG, "API key loaded? ${!isKeyMissing}")
+
+    fun refreshRoute() {
+        val rId = selectedRouteId
+        val vehicle = selectedVehicle
+        if (rId != null && vehicle != null) {
+            scope.launch {
+                calculating = true
+                val (dur, path) = routeViewModel.getRouteDirections(context, rId, vehicle)
+                duration = dur
+                pathPoints = path
+                pois = routeViewModel.getRoutePois(context, rId)
+                path.firstOrNull()?.let { first ->
+                    cameraPositionState.move(CameraUpdateFactory.newLatLngZoom(first, 13f))
+                }
+                calculating = false
+            }
+        }
+    }
+
+    LaunchedEffect(routes, vehicles, selectedVehicle, selectedRouteId, selectedDriverId) {
+        val driverFiltered = selectedDriverId?.let { id ->
+            routes.filter { it.userId == id }
+        } ?: routes
+        displayRoutes = if (selectedVehicle == VehicleType.BIGBUS) {
+            driverFiltered.filter { route ->
+                val pois = routeViewModel.getRoutePois(context, route.id)
+                pois.isNotEmpty() && pois.all { it.type == Place.Type.BUS_STATION }
+            }
+        } else {
+            driverFiltered
+        }
+
+        val isBusRoute = selectedRouteId?.let { id ->
+            val poisSel = routeViewModel.getRoutePois(context, id)
+            poisSel.isNotEmpty() && poisSel.all { it.type == Place.Type.BUS_STATION }
+        } ?: false
+
+        var list = vehicles
+        selectedDriverId?.let { id -> list = list.filter { it.userId == id } }
+        filteredVehicles = if (isBusRoute) {
+            list.filter { VehicleType.valueOf(it.type) == VehicleType.BIGBUS }
+        } else {
+            list
+        }
+
+        if (selectedRouteId != null && selectedVehicle != null) {
+            refreshRoute()
+        }
+    }
 
     LaunchedEffect(Unit) {
-        vehicleViewModel.loadRegisteredVehicles(context)
-        poiViewModel.loadPois(context)
+        authViewModel.loadCurrentUserRole(context)
     }
 
-
-    LaunchedEffect(fromQuery) {
-        if (fromQuery.length > 3) {
-            fromSuggestions = withContext(Dispatchers.IO) {
-                try {
-                    Geocoder(context).getFromLocationName(fromQuery, 5) ?: emptyList()
-                } catch (e: Exception) {
-                    emptyList()
-                }
-            }
+    LaunchedEffect(role) {
+        val admin = role == UserRole.ADMIN
+        routeViewModel.loadRoutes(context, includeAll = admin)
+        vehicleViewModel.loadRegisteredVehicles(context, includeAll = admin)
+        if (admin) {
+            userViewModel.loadDrivers(context)
+            selectedDriverId = null
+            selectedDriverName = ""
         } else {
-            fromSuggestions = emptyList()
-        }
-    }
-
-    LaunchedEffect(startLatLng, endLatLng) {
-        if (!isKeyMissing && startLatLng != null && endLatLng != null) {
-            durationMinutes = MapsUtils.fetchDuration(
-                startLatLng!!,
-                endLatLng!!,
-                apiKey,
-                selectedVehicleType ?: VehicleType.CAR
-            )
-        }
-    }
-
-    LaunchedEffect(toQuery) {
-        if (toQuery.length > 3) {
-            toSuggestions = withContext(Dispatchers.IO) {
-                try { Geocoder(context).getFromLocationName(toQuery, 5) ?: emptyList() } catch (e: Exception) { emptyList() }
+            val uid = FirebaseAuth.getInstance().currentUser?.uid
+            if (uid != null) {
+                selectedDriverId = uid
+                selectedDriverName = userViewModel.getUserName(context, uid)
             }
-        } else {
-            toSuggestions = emptyList()
         }
     }
 
-    LaunchedEffect(startLatLng) {
-        startLatLng?.let { fromMarkerState.position = it }
-    }
-    LaunchedEffect(endLatLng) {
-        endLatLng?.let { toMarkerState.position = it }
+    LaunchedEffect(role, drivers) {
+        if (role != UserRole.ADMIN && selectedDriverName.isBlank()) {
+            val uid = FirebaseAuth.getInstance().currentUser?.uid
+            if (uid != null) {
+                selectedDriverId = uid
+                selectedDriverName = userViewModel.getUserName(context, uid)
+            }
+        }
     }
 
-    ScreenContainer(modifier = Modifier.padding(0.dp)) {
+    LaunchedEffect(filteredVehicles) {
+        if (selectedVehicle == null && filteredVehicles.isNotEmpty()) {
+            val first = filteredVehicles.first()
+            selectedVehicle = VehicleType.valueOf(first.type)
+            selectedVehicleName = first.name
+            selectedVehicleDescription = first.description
+        }
+    }
+
+    Scaffold(topBar = {
         TopBar(
-            title = stringResource(R.string.announce_transport),
+            title = stringResource(R.string.announce_availability),
             navController = navController,
             showMenu = true,
             onMenuClick = openDrawer
         )
-        Spacer(modifier = Modifier.height(16.dp))
+    }) { padding ->
+        ScreenContainer(modifier = Modifier.padding(padding)) {
+            val bubbleState = LocalKeyboardBubbleState.current!!
 
-        if (!isKeyMissing) {
-            GoogleMap(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(300.dp),
-                cameraPositionState = cameraPositionState,
-                properties = mapProperties,
-                onMapLoaded = { Log.d(TAG, "Map loaded") },
-                onMapClick = { latLng ->
-                    when (mapSelectionMode) {
-                        MapSelectionMode.FROM -> {
-                            startLatLng = latLng
-                            showRoute = false
-                            coroutineScope.launch {
-                                fromQuery = reverseGeocode(context, latLng) ?: "${latLng.latitude},${latLng.longitude}"
-                                selectedFromDescription = fromQuery
-                            }
-                            fromError = false
-                            mapSelectionMode = null
+            if (role == UserRole.ADMIN) {
+                ExposedDropdownMenuBox(expanded = expandedDriver, onExpandedChange = { expandedDriver = !expandedDriver }) {
+                    OutlinedTextField(
+                        value = selectedDriverName,
+                        onValueChange = {},
+                        label = { Text(stringResource(R.string.driver)) },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedDriver) },
+                        modifier = Modifier.menuAnchor().fillMaxWidth(),
+                        readOnly = true
+                    )
+                    ExposedDropdownMenu(expanded = expandedDriver, onDismissRequest = { expandedDriver = false }) {
+                        drivers.forEach { driver ->
+                            DropdownMenuItem(text = { Text("${driver.name} ${driver.surname}") }, onClick = {
+                                selectedDriverId = driver.id
+                                selectedDriverName = "${driver.name} ${driver.surname}"
+                                expandedDriver = false
+                                selectedRouteId = null
+                                selectedVehicle = null
+                                selectedVehicleName = ""
+                                selectedVehicleDescription = ""
+                            })
                         }
-                        MapSelectionMode.TO -> {
-                            endLatLng = latLng
-                            showRoute = false
-                            coroutineScope.launch {
-                                toQuery = reverseGeocode(context, latLng) ?: "${latLng.latitude},${latLng.longitude}"
-                                selectedToDescription = toQuery
-                            }
-                            toError = false
-                            mapSelectionMode = null
-                        }
-                        null -> {}
                     }
                 }
-            ) {
-                startLatLng?.let {
-                    Marker(state = fromMarkerState, title = "From")
-                }
-                endLatLng?.let {
-                    Marker(state = toMarkerState, title = "To")
-                }
-                if (showRoute && routePoints.isNotEmpty()) {
-                    Polyline(points = routePoints)
-                }
-            }
-
-            // Removed external maps button; map is shown directly on screen
-        } else {
-            Text(
-                stringResource(R.string.map_api_key_missing),
-                color = MaterialTheme.colorScheme.primary
-            )
-        }
-
-        if (startLatLng != null && endLatLng != null) {
-            Spacer(modifier = Modifier.height(8.dp))
-            Button(onClick = {
-                coroutineScope.launch {
-                    Log.d(TAG, "Fetching directions from $startLatLng to $endLatLng")
-                    Toast.makeText(context, "Αναζήτηση διαδρομής...", Toast.LENGTH_SHORT).show()
-                    if (!isKeyMissing &&
-                        CoordinateUtils.isValid(startLatLng) &&
-                        CoordinateUtils.isValid(endLatLng)
-                    ) {
-                        if (NetworkUtils.isInternetAvailable(context)) {
-                            val type = selectedVehicleType ?: VehicleType.CAR
-                            val result = MapsUtils.fetchDurationAndPath(startLatLng!!, endLatLng!!, apiKey, type)
-                            Log.d(TAG, "Directions API status: ${result.status}")
-                            val factor = when (selectedVehicleType) {
-                                VehicleType.BICYCLE -> 1.5
-                                VehicleType.MOTORBIKE -> 0.8
-                                VehicleType.BIGBUS -> 1.2
-                                VehicleType.SMALLBUS -> 1.1
-                                else -> 1.0
-                            }
-                            durationMinutes = (result.duration * factor).toInt()
-                            routePoints = result.points
-                            when {
-                                result.status == "OK" && routePoints.isNotEmpty() -> {
-                                    Log.d(TAG, "Route received with ${routePoints.size} points, duration $durationMinutes")
-                                    Toast.makeText(context, "Διαδρομή βρέθηκε", Toast.LENGTH_SHORT).show()
-                                }
-                                result.status == "NOT_FOUND" || result.status == "INVALID_REQUEST" -> {
-                                    Log.w(TAG, "Invalid coordinates provided")
-                                    Toast.makeText(context, context.getString(R.string.invalid_coordinates), Toast.LENGTH_SHORT).show()
-                                }
-                                else -> {
-                                    Log.w(TAG, "Route not found or API error: ${result.status}")
-                                    Toast.makeText(context, "Δεν βρέθηκε διαδρομή", Toast.LENGTH_SHORT).show()
-                                }
-                            }
-                        } else {
-                            Toast.makeText(context, context.getString(R.string.no_internet), Toast.LENGTH_SHORT).show()
-                        }
-                    } else {
-                        Toast.makeText(context, context.getString(R.string.invalid_coordinates), Toast.LENGTH_SHORT).show()
-                    }
-                    showRoute = true
-                    Log.d(TAG, "Displaying route on map")
-                }
-            }) {
-                Text(stringResource(R.string.directions))
-            }
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-        Button(onClick = {
-            if (CoordinateUtils.isValid(startLatLng) && CoordinateUtils.isValid(endLatLng)) {
-                Toast.makeText(context, context.getString(R.string.coordinates_valid), Toast.LENGTH_SHORT).show()
+                Spacer(Modifier.height(16.dp))
             } else {
-                Toast.makeText(context, context.getString(R.string.coordinates_missing), Toast.LENGTH_SHORT).show()
-            }
-        }) {
-            Text(stringResource(R.string.check_coordinates))
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-        Button(onClick = {
-            if (NetworkUtils.isInternetAvailable(context)) {
-                Toast.makeText(context, context.getString(R.string.internet_available), Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(context, context.getString(R.string.no_internet), Toast.LENGTH_SHORT).show()
-            }
-        }) {
-            Text(stringResource(R.string.check_internet))
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        ExposedDropdownMenuBox(expanded = fromExpanded, onExpandedChange = { fromExpanded = !fromExpanded }) {
-            OutlinedTextField(
-                value = fromQuery,
-                onValueChange = {
-                    fromQuery = it
-                    fromExpanded = true
-                    fromError = false
-                    if (selectedFromDescription != null && fromQuery != selectedFromDescription) {
-                        startLatLng = null
-                        selectedFromDescription = null
-                        showRoute = false
-                    }
-                },
-                label = { Text(stringResource(R.string.from)) },
-                isError = fromError,
-                trailingIcon = {
-                    Row {
-                        if (fromError) {
-                            Icon(
-                                Icons.Default.Warning,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.error
-                            )
-                        }
-                        IconButton(onClick = {
-                            coroutineScope.launch {
-                                val result = geocode(context, fromQuery)
-                                if (result != null) {
-                                    startLatLng = result.first
-                                    showRoute = false
-                                    routePoints = emptyList()
-                                    fromQuery = result.second
-                                    selectedFromDescription = fromQuery
-                                    cameraPositionState.position = CameraPosition.fromLatLngZoom(startLatLng!!, 10f)
-                                } else {
-                                    Toast.makeText(context, context.getString(R.string.invalid_coordinates), Toast.LENGTH_SHORT).show()
-                                }
-                            }
-                        }) {
-                            Icon(Icons.Default.Check, contentDescription = "Set From", tint = MaterialTheme.colorScheme.primary)
-                        }
-                        IconButton(onClick = {
-                            startLatLng = null
-                            fromQuery = ""
-                            selectedFromDescription = null
-                            routePoints = emptyList()
-                            showRoute = false
-                            mapSelectionMode = MapSelectionMode.FROM
-                        }) {
-                            Icon(Icons.Default.Place, contentDescription = "Pick From on Map", tint = MaterialTheme.colorScheme.primary)
-                        }
-                        IconButton(onClick = {
-                            lastAddFrom = true
-                            when {
-                                startLatLng == null -> {
-                                    Toast.makeText(context, "Επιλέξτε σημείο στον χάρτη", Toast.LENGTH_SHORT).show()
-                                    fromError = true
-                                }
-                                fromQuery.isBlank() -> {
-                                    Toast.makeText(context, "Η περιγραφή είναι κενή", Toast.LENGTH_SHORT).show()
-                                    fromError = true
-                                }
-                                else -> {
-                                    poiViewModel.addPoi(
-                                        context,
-                                        fromQuery,
-                                        fromQuery,
-                                        "HISTORICAL",
-                                        startLatLng!!.latitude,
-                                        startLatLng!!.longitude
-                                    )
-                                }
-                            }
-                        }) {
-                            Icon(Icons.Default.Add, contentDescription = "Save From POI", tint = MaterialTheme.colorScheme.primary)
-                        }
-                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = fromExpanded)
-                    }
-                },
-                modifier = Modifier.menuAnchor().fillMaxWidth(),
-                shape = MaterialTheme.shapes.small,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                OutlinedTextField(
+                    value = selectedDriverName,
+                    onValueChange = {},
+                    label = { Text(stringResource(R.string.driver)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    readOnly = true
                 )
-            )
-            DropdownMenu(expanded = fromExpanded, onDismissRequest = { fromExpanded = false }) {
-                fromSuggestions.forEach { address ->
-                    DropdownMenuItem(
-                        text = { Text(address.getAddressLine(0) ?: "") },
-                        onClick = {
-                            fromQuery = address.getAddressLine(0) ?: ""
-                            startLatLng = LatLng(address.latitude, address.longitude)
-                            selectedFromDescription = fromQuery
-                            showRoute = false
-                            routePoints = emptyList()
-                            fromError = false
-                            cameraPositionState.position = CameraPosition.fromLatLngZoom(startLatLng!!, 10f)
-                            fromExpanded = false
-                        }
-                    )
-                }
-                fromPoiSuggestions.forEach { poi ->
-                    DropdownMenuItem(
-                        text = { Text(poi.name) },
-                        onClick = {
-                            fromQuery = poi.name
-                            startLatLng = LatLng(poi.lat, poi.lng)
-                            selectedFromDescription = fromQuery
-                            showRoute = false
-                            routePoints = emptyList()
-                            fromError = false
-                            cameraPositionState.position = CameraPosition.fromLatLngZoom(startLatLng!!, 10f)
-                            fromExpanded = false
-                        }
-                    )
+                Spacer(Modifier.height(16.dp))
+            }
+
+            ExposedDropdownMenuBox(expanded = expandedRoute, onExpandedChange = { expandedRoute = !expandedRoute }) {
+                OutlinedTextField(
+                    value = displayRoutes.firstOrNull { it.id == selectedRouteId }?.name ?: "",
+                    onValueChange = {},
+                    label = { Text(stringResource(R.string.route)) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedRoute) },
+                    modifier = Modifier.menuAnchor().fillMaxWidth(),
+                    readOnly = true
+                )
+                ExposedDropdownMenu(expanded = expandedRoute, onDismissRequest = { expandedRoute = false }) {
+                    displayRoutes.forEach { route ->
+                        DropdownMenuItem(text = { Text(route.name) }, onClick = {
+                            selectedRouteId = route.id
+                            expandedRoute = false
+                            refreshRoute()
+                        })
+                    }
                 }
             }
-        }
 
-        Spacer(modifier = Modifier.height(8.dp))
+            Spacer(Modifier.height(16.dp))
 
-        ExposedDropdownMenuBox(expanded = toExpanded, onExpandedChange = { toExpanded = !toExpanded }) {
-            OutlinedTextField(
-                value = toQuery,
-                onValueChange = {
-                    toQuery = it
-                    toExpanded = true
-                    toError = false
-                    if (selectedToDescription != null && toQuery != selectedToDescription) {
-                        endLatLng = null
-                        selectedToDescription = null
-                        showRoute = false
-                    }
-                },
-                label = { Text(stringResource(R.string.to)) },
-                isError = toError,
-                trailingIcon = {
-                    Row {
-                        if (toError) {
-                            Icon(
-                                Icons.Default.Warning,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.error
-                            )
-                        }
-                        IconButton(onClick = {
-                            coroutineScope.launch {
-                                val result = geocode(context, toQuery)
-                                if (result != null) {
-                                    endLatLng = result.first
-                                    showRoute = false
-                                    routePoints = emptyList()
-                                    toQuery = result.second
-                                    selectedToDescription = toQuery
-                                    cameraPositionState.position = CameraPosition.fromLatLngZoom(endLatLng!!, 10f)
-                                } else {
-                                    Toast.makeText(context, context.getString(R.string.invalid_coordinates), Toast.LENGTH_SHORT).show()
-                                }
-                            }
-                        }) {
-                            Icon(Icons.Default.Check, contentDescription = "Set To", tint = MaterialTheme.colorScheme.primary)
-                        }
-                        IconButton(onClick = {
-                            endLatLng = null
-                            toQuery = ""
-                            selectedToDescription = null
-                            routePoints = emptyList()
-                            showRoute = false
-                            mapSelectionMode = MapSelectionMode.TO
-                        }) {
-                            Icon(Icons.Default.Place, contentDescription = "Pick To on Map", tint = MaterialTheme.colorScheme.primary)
-                        }
-                        IconButton(onClick = {
-                            lastAddFrom = false
-                            when {
-                                endLatLng == null -> {
-                                    Toast.makeText(context, "Επιλέξτε σημείο στον χάρτη", Toast.LENGTH_SHORT).show()
-                                    toError = true
-                                }
-                                toQuery.isBlank() -> {
-                                    Toast.makeText(context, "Η περιγραφή είναι κενή", Toast.LENGTH_SHORT).show()
-                                    toError = true
-                                }
-                                else -> {
-                                    poiViewModel.addPoi(
-                                        context,
-                                        toQuery,
-                                        toQuery,
-                                        "HISTORICAL",
-                                        endLatLng!!.latitude,
-                                        endLatLng!!.longitude
-                                    )
-                                }
-                            }
-                        }) {
-                            Icon(Icons.Default.Add, contentDescription = "Save To POI", tint = MaterialTheme.colorScheme.primary)
-                        }
-                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = toExpanded)
-                    }
-                },
-                modifier = Modifier.menuAnchor().fillMaxWidth(),
-                shape = MaterialTheme.shapes.small,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.primary
+            ExposedDropdownMenuBox(expanded = expandedVehicle, onExpandedChange = { expandedVehicle = !expandedVehicle }) {
+                OutlinedTextField(
+                    value = selectedVehicleName,
+                    onValueChange = {},
+                    label = { Text(stringResource(R.string.vehicle)) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedVehicle) },
+                    modifier = Modifier.menuAnchor().fillMaxWidth(),
+                    readOnly = true
                 )
-            )
-            DropdownMenu(expanded = toExpanded, onDismissRequest = { toExpanded = false }) {
-                toSuggestions.forEach { address ->
-                    DropdownMenuItem(
-                        text = { Text(address.getAddressLine(0) ?: "") },
-                        onClick = {
-                            toQuery = address.getAddressLine(0) ?: ""
-                            endLatLng = LatLng(address.latitude, address.longitude)
-                            selectedToDescription = toQuery
-                            showRoute = false
-                            routePoints = emptyList()
-                            toError = false
-                            cameraPositionState.position = CameraPosition.fromLatLngZoom(endLatLng!!, 10f)
-                            toExpanded = false
-                        }
-                    )
-                }
-                toPoiSuggestions.forEach { poi ->
-                    DropdownMenuItem(
-                        text = { Text(poi.name) },
-                        onClick = {
-                            toQuery = poi.name
-                            endLatLng = LatLng(poi.lat, poi.lng)
-                            selectedToDescription = toQuery
-                            showRoute = false
-                            routePoints = emptyList()
-                            toError = false
-                            cameraPositionState.position = CameraPosition.fromLatLngZoom(endLatLng!!, 10f)
-                            toExpanded = false
-                        }
-                    )
+                ExposedDropdownMenu(expanded = expandedVehicle, onDismissRequest = { expandedVehicle = false }) {
+                    filteredVehicles.forEach { vehicle ->
+                        DropdownMenuItem(text = { Text(vehicle.name) }, onClick = {
+                            selectedVehicle = VehicleType.valueOf(vehicle.type)
+                            selectedVehicleName = vehicle.name
+                            selectedVehicleDescription = vehicle.description
+                            expandedVehicle = false
+                            refreshRoute()
+                        })
+                    }
                 }
             }
-        }
 
-        Spacer(modifier = Modifier.height(8.dp))
+            Spacer(Modifier.height(16.dp))
 
-        var vehicleMenuExpanded by remember { mutableStateOf(false) }
+            if (selectedRouteId != null && selectedVehicle != null) {
+                val routeName = displayRoutes.firstOrNull { it.id == selectedRouteId }?.name ?: ""
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = iconForVehicle(selectedVehicle!!),
+                        contentDescription = null
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text("$selectedVehicleDescription - $routeName", style = MaterialTheme.typography.titleMedium)
+                }
 
-        ExposedDropdownMenuBox(expanded = vehicleMenuExpanded, onExpandedChange = { vehicleMenuExpanded = !vehicleMenuExpanded }) {
-            OutlinedTextField(
-                value = selectedVehicleType?.name ?: "",
-                onValueChange = {},
-                readOnly = true,
-                label = { Text(stringResource(R.string.vehicle)) },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = vehicleMenuExpanded) },
-                modifier = Modifier.menuAnchor().fillMaxWidth(),
-                shape = MaterialTheme.shapes.small,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.primary
-                )
-            )
-            DropdownMenu(expanded = vehicleMenuExpanded, onDismissRequest = { vehicleMenuExpanded = false }) {
-                vehicles.forEach { entity ->
-                    val type = try { VehicleType.valueOf(entity.type) } catch (e: Exception) { null }
-                    type?.let {
-                        DropdownMenuItem(
-                            text = { Text(it.name) },
-                            onClick = {
-                                selectedVehicleType = it
-                                showRoute = false
-                                vehicleMenuExpanded = false
-                            }
+                Spacer(Modifier.height(16.dp))
+            }
+
+            if (!isKeyMissing && (pathPoints.isNotEmpty() || pois.isNotEmpty())) {
+                GoogleMap(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp),
+                    cameraPositionState = cameraPositionState
+                ) {
+                    if (pathPoints.isNotEmpty()) {
+                        Polyline(points = pathPoints)
+                    }
+                    pois.forEach { poi ->
+                        Marker(
+                            state = MarkerState(position = LatLng(poi.lat, poi.lng)),
+                            title = poi.name
                         )
                     }
                 }
+
+                Spacer(Modifier.height(16.dp))
+            } else if (isKeyMissing) {
+                Text(stringResource(R.string.map_api_key_missing))
+                Spacer(Modifier.height(16.dp))
             }
-        }
 
-        Spacer(modifier = Modifier.height(8.dp))
-        OutlinedTextField(
-            value = costInput,
-            onValueChange = { costInput = it },
-            label = { Text(stringResource(R.string.cost)) },
-            shape = MaterialTheme.shapes.small,
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.primary
-            )
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(text = stringResource(R.string.duration_format, durationMinutes))
-        Spacer(modifier = Modifier.height(8.dp))
-        OutlinedTextField(
-            value = dateInput,
-            onValueChange = { dateInput = it },
-            label = { Text(stringResource(R.string.date)) },
-            shape = MaterialTheme.shapes.small,
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.primary
-            )
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = {
-            if (fromQuery.isBlank() || startLatLng == null || toQuery.isBlank() || endLatLng == null) {
-                Toast.makeText(context, context.getString(R.string.invalid_coordinates), Toast.LENGTH_SHORT).show()
-            } else {
-                val cost = costInput.toDoubleOrNull() ?: 0.0
-                val date = dateInput.toIntOrNull() ?: 0
-                val start = "${startLatLng!!.latitude},${startLatLng!!.longitude}"
-                val end = "${endLatLng!!.latitude},${endLatLng!!.longitude}"
-                val route = Route(start, end, cost)
-                val type = selectedVehicleType ?: VehicleType.CAR
-                viewModel.announce(route, type, date, cost, durationMinutes)
-            }
-        }) {
-            Text(stringResource(R.string.announce))
-        }
-
-        if (state is TransportAnnouncementViewModel.AnnouncementState.Error) {
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = (state as TransportAnnouncementViewModel.AnnouncementState.Error).message)
-    }
-
-    LaunchedEffect(state) {
-        if (state is TransportAnnouncementViewModel.AnnouncementState.Success) {
-            navController.popBackStack()
-        }
-    }
-
-    LaunchedEffect(poiAddState) {
-        when (poiAddState) {
-            PoIViewModel.AddPoiState.Success -> {
-                Toast.makeText(context, "POI αποθηκεύτηκε", Toast.LENGTH_SHORT).show()
-                fromError = false
-                toError = false
-                poiViewModel.resetAddState()
-            }
-            PoIViewModel.AddPoiState.Exists -> {
-                Toast.makeText(context, "Το POI είναι ήδη καταχωρημένο", Toast.LENGTH_SHORT).show()
-                if (lastAddFrom == true) {
-                    fromError = true
-                } else if (lastAddFrom == false) {
-                    toError = true
+            if (pois.isNotEmpty()) {
+                Text(stringResource(R.string.stops_header))
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            stringResource(R.string.poi_name),
+                            modifier = Modifier.weight(1f),
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                        Text(
+                            stringResource(R.string.poi_type),
+                            modifier = Modifier.weight(1f),
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                    }
+                    Divider()
+                    pois.forEachIndexed { index, poi ->
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            Text(
+                                "${index + 1}. ${poi.name}",
+                                modifier = Modifier.weight(1f)
+                            )
+                            Text(
+                                poi.type.name,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
                 }
-                poiViewModel.resetAddState()
+
+                Spacer(Modifier.height(16.dp))
             }
-            else -> {}
+
+            OutlinedTextField(
+                value = costText,
+                onValueChange = { costText = it },
+                label = { Text(stringResource(R.string.cost)) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .observeBubble(bubbleState, 0) { costText },
+                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number)
+            )
+
+            Spacer(Modifier.height(16.dp))
+
+            Text(stringResource(R.string.duration_format, duration))
+
+            if (calculating) {
+                Spacer(Modifier.height(8.dp))
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                    CircularProgressIndicator()
+                }
+                Spacer(Modifier.height(8.dp))
+            } else {
+                Spacer(Modifier.height(16.dp))
+            }
+
+            Button(
+                onClick = {
+                    val routeId = selectedRouteId
+                    val vehicle = selectedVehicle
+                    val cost = costText.toDoubleOrNull() ?: 0.0
+                    if (routeId != null && vehicle != null) {
+                        declarationViewModel.declareTransport(context, routeId, vehicle, cost, duration)
+                        navController.popBackStack()
+                    }
+                },
+                enabled = selectedRouteId != null && selectedVehicle != null && !calculating
+            ) {
+                Text(stringResource(R.string.announce))
+            }
         }
-    }
     }
 }

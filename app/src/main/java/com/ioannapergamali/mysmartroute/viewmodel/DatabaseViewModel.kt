@@ -10,6 +10,7 @@ import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.utils.toUserEntity
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
+import com.ioannapergamali.mysmartroute.data.local.PoiTypeEntity
 import com.ioannapergamali.mysmartroute.data.local.SettingsEntity
 import com.ioannapergamali.mysmartroute.data.local.insertSettingsSafely
 import com.ioannapergamali.mysmartroute.data.local.insertVehicleSafely
@@ -18,8 +19,18 @@ import com.ioannapergamali.mysmartroute.data.local.RoleEntity
 import com.ioannapergamali.mysmartroute.data.local.MenuEntity
 import com.ioannapergamali.mysmartroute.data.local.MenuOptionEntity
 import com.ioannapergamali.mysmartroute.data.local.UserEntity
+import com.ioannapergamali.mysmartroute.utils.toPoIEntity
+import com.ioannapergamali.mysmartroute.utils.toPoiTypeEntity
 import com.ioannapergamali.mysmartroute.data.local.VehicleEntity
+import com.ioannapergamali.mysmartroute.utils.toVehicleEntity
 import com.ioannapergamali.mysmartroute.data.local.LanguageSettingEntity
+import com.ioannapergamali.mysmartroute.data.local.RouteEntity
+import com.ioannapergamali.mysmartroute.data.local.RoutePointEntity
+import com.ioannapergamali.mysmartroute.data.local.MovingEntity
+import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationEntity
+import com.ioannapergamali.mysmartroute.utils.toRouteWithPoints
+import com.ioannapergamali.mysmartroute.utils.toMovingEntity
+import com.ioannapergamali.mysmartroute.utils.toTransportDeclarationEntity
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -63,28 +74,39 @@ class DatabaseViewModel : ViewModel() {
                 db.userDao().getAllUsers(),
                 db.vehicleDao().getAllVehicles(),
                 db.poIDao().getAll(),
+                db.poiTypeDao().getAll(),
                 db.settingsDao().getAllSettings(),
                 db.roleDao().getAllRoles(),
                 db.menuDao().getAllMenus(),
                 db.menuOptionDao().getAllMenuOptions(),
-                db.languageSettingDao().getAll()
+                db.languageSettingDao().getAll(),
+                db.routeDao().getAll(),
+                db.routePointDao().getAll(),
+                db.movingDao().getAll(),
+                db.transportDeclarationDao().getAll()
             ) { values ->
                 val users = values[0] as List<UserEntity>
                 val vehicles = values[1] as List<VehicleEntity>
                 val pois = values[2] as List<PoIEntity>
-                val settings = values[3] as List<SettingsEntity>
-                val roles = values[4] as List<RoleEntity>
-                val menus = values[5] as List<MenuEntity>
-                val options = values[6] as List<MenuOptionEntity>
-                val languages = values[7] as List<LanguageSettingEntity>
+                val settings = values[4] as List<SettingsEntity>
+                val roles = values[5] as List<RoleEntity>
+                val menus = values[6] as List<MenuEntity>
+                val options = values[7] as List<MenuOptionEntity>
+                val languages = values[8] as List<LanguageSettingEntity>
+                val poiTypes = values[3] as List<PoiTypeEntity>
+                val routes = values[9] as List<RouteEntity>
+                val routePoints = values[10] as List<RoutePointEntity>
+                val movings = values[11] as List<MovingEntity>
+                val declarations = values[12] as List<TransportDeclarationEntity>
 
-                DatabaseData(users, vehicles, pois, settings, roles, menus, options, languages)
+                DatabaseData(users, vehicles, pois, poiTypes, settings, roles, menus, options, languages, routes, routePoints, movings, declarations)
             }.collect { data ->
                 Log.d(
                     TAG,
-                    "Local data -> users:${'$'}{data.users.size} vehicles:${'$'}{data.vehicles.size} " +
-                        "pois:${'$'}{data.pois.size} settings:${'$'}{data.settings.size} roles:${'$'}{data.roles.size} " +
-                        "menus:${'$'}{data.menus.size} options:${'$'}{data.menuOptions.size}"
+                    "Local data -> users:${data.users.size} vehicles:${data.vehicles.size} " +
+                    "pois:${data.pois.size} poiTypes:${data.poiTypes.size} settings:${data.settings.size} roles:${data.roles.size} " +
+                        "menus:${data.menus.size} options:${data.menuOptions.size} routes:${data.routes.size} " +
+                        "points:${data.routePoints.size} movings:${data.movings.size} declarations:${data.declarations.size}"
                 )
                 _localData.value = data
             }
@@ -96,26 +118,18 @@ class DatabaseViewModel : ViewModel() {
             Log.d(TAG, "Loading Firebase data")
             val users = firestore.collection("users").get().await()
                 .documents.mapNotNull { it.toUserEntity() }
-            Log.d(TAG, "Fetched ${'$'}{users.size} users from Firebase")
+            Log.d(TAG, "Fetched ${users.size} users from Firebase")
             val vehicles = firestore.collection("vehicles").get().await()
-                .documents.mapNotNull { doc ->
-                    val userId = when (val uid = doc.get("userId")) {
-                        is String -> uid
-                        is DocumentReference -> uid.id
-                        else -> null
-                    } ?: return@mapNotNull null
-                    VehicleEntity(
-                        id = doc.getString("id") ?: "",
-                        description = doc.getString("description") ?: "",
-                        userId = userId,
-                        type = doc.getString("type") ?: "",
-                        seat = (doc.getLong("seat") ?: 0L).toInt()
-                    )
-                }
-            Log.d(TAG, "Fetched ${'$'}{vehicles.size} vehicles from Firebase")
+                .documents.mapNotNull { doc -> doc.toVehicleEntity() }
+            Log.d(TAG, "Fetched ${vehicles.size} vehicles from Firebase")
             val pois = firestore.collection("pois").get().await()
-                .documents.mapNotNull { it.toObject(PoIEntity::class.java) }
-            Log.d(TAG, "Fetched ${'$'}{pois.size} pois from Firebase")
+                .documents.mapNotNull { it.toPoIEntity() }
+            Log.d(TAG, "Fetched ${pois.size} pois from Firebase")
+            val poiTypes = firestore.collection("poi_types").get().await()
+                .documents.mapNotNull { doc: com.google.firebase.firestore.DocumentSnapshot ->
+                    doc.toPoiTypeEntity()
+                }
+            Log.d(TAG, "Fetched ${poiTypes.size} poi types from Firebase")
             val settings = firestore.collection("user_settings").get().await()
                 .documents.mapNotNull { doc ->
                     val userId = when (val uid = doc.get("userId")) {
@@ -133,7 +147,7 @@ class DatabaseViewModel : ViewModel() {
                         language = doc.getString("language") ?: "el"
                     )
                 }
-            Log.d(TAG, "Fetched ${'$'}{settings.size} settings from Firebase")
+            Log.d(TAG, "Fetched ${settings.size} settings from Firebase")
 
             Log.d(TAG, "Fetching roles from Firestore")
             val rolesSnap = firestore.collection("roles").get().await()
@@ -182,8 +196,19 @@ class DatabaseViewModel : ViewModel() {
                 }
             }
 
-            Log.d(TAG, "Firebase data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size}")
-            _firebaseData.value = DatabaseData(users, vehicles, pois, settings, roles, menus, menuOptions, emptyList())
+            val routePairs = firestore.collection("routes").get().await()
+                .documents.mapNotNull { it.toRouteWithPoints() }
+            val routes = routePairs.map { it.first }
+            val routePoints = routePairs.flatMap { it.second }
+
+            val movings = firestore.collection("movings").get().await()
+                .documents.mapNotNull { it.toMovingEntity() }
+
+            val declarations = firestore.collection("transport_declarations").get().await()
+                .documents.mapNotNull { it.toTransportDeclarationEntity() }
+
+            Log.d(TAG, "Firebase data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} types:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size} routes:${routes.size} movings:${movings.size} declarations:${declarations.size}")
+            _firebaseData.value = DatabaseData(users, vehicles, pois, poiTypes, settings, roles, menus, menuOptions, emptyList(), routes, routePoints, movings, declarations)
         }
     }
 
@@ -227,24 +252,17 @@ class DatabaseViewModel : ViewModel() {
                     Log.d(TAG, "Fetched ${users.size} users")
                     Log.d(TAG, "Fetching vehicles from Firestore")
                     val vehicles = firestore.collection("vehicles").get().await()
-                        .documents.mapNotNull { doc ->
-                            val userId = when (val uid = doc.get("userId")) {
-                                is String -> uid
-                                is DocumentReference -> uid.id
-                                else -> null
-                            } ?: return@mapNotNull null
-                            VehicleEntity(
-                                id = doc.getString("id") ?: "",
-                                description = doc.getString("description") ?: "",
-                                userId = userId,
-                                type = doc.getString("type") ?: "",
-                                seat = (doc.getLong("seat") ?: 0L).toInt()
-                            )
-                        }
+                        .documents.mapNotNull { doc -> doc.toVehicleEntity() }
                     Log.d(TAG, "Fetching PoIs from Firestore")
                     val pois = firestore.collection("pois").get().await()
-                        .documents.mapNotNull { it.toObject(PoIEntity::class.java) }
+                        .documents.mapNotNull { it.toPoIEntity() }
                     Log.d(TAG, "Fetched ${pois.size} pois")
+                    Log.d(TAG, "Fetching PoiTypes from Firestore")
+                    val poiTypes = firestore.collection("poi_types").get().await()
+                        .documents.mapNotNull { doc: com.google.firebase.firestore.DocumentSnapshot ->
+                            doc.toPoiTypeEntity()
+                        }
+                    Log.d(TAG, "Fetched ${poiTypes.size} poi types")
                     Log.d(TAG, "Fetching settings from Firestore")
                     val settings = firestore.collection("user_settings").get().await()
                         .documents.mapNotNull { doc ->
@@ -306,17 +324,33 @@ class DatabaseViewModel : ViewModel() {
                         }
                     }
 
+                    val routePairs = firestore.collection("routes").get().await()
+                        .documents.mapNotNull { it.toRouteWithPoints() }
+                    val routes = routePairs.map { it.first }
+                    val routePoints = routePairs.flatMap { it.second }
+
+                    val movings = firestore.collection("movings").get().await()
+                        .documents.mapNotNull { it.toMovingEntity() }
+
+                    val declarations = firestore.collection("transport_declarations").get().await()
+                        .documents.mapNotNull { it.toTransportDeclarationEntity() }
+
                     Log.d(
                         TAG,
-                        "Remote data -> users:${'$'}{users.size} vehicles:${'$'}{vehicles.size} pois:${'$'}{pois.size} settings:${'$'}{settings.size} roles:${'$'}{roles.size} menus:${'$'}{menus.size} options:${'$'}{menuOptions.size}"
+                        "Remote data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} poiTypes:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size} routes:${routes.size} movings:${movings.size} declarations:${declarations.size}"
                     )
                     users.forEach { db.userDao().insert(it) }
                     vehicles.forEach { insertVehicleSafely(db.vehicleDao(), db.userDao(), it) }
                     pois.forEach { db.poIDao().insert(it) }
+                    db.poiTypeDao().insertAll(poiTypes)
                     settings.forEach { insertSettingsSafely(db.settingsDao(), db.userDao(), it) }
                     roles.forEach { db.roleDao().insert(it) }
                     menus.forEach { insertMenuSafely(db.menuDao(), db.roleDao(), it) }
                     menuOptions.forEach { db.menuOptionDao().insert(it) }
+                    routes.forEach { db.routeDao().insert(it) }
+                    routePoints.forEach { db.routePointDao().insert(it) }
+                    movings.forEach { db.movingDao().insert(it) }
+                    declarations.forEach { db.transportDeclarationDao().insert(it) }
                     Log.d(TAG, "Inserted remote data to local DB")
                     prefs.edit().putLong("last_sync", remoteTs).apply()
                     _lastSyncTime.value = remoteTs
@@ -328,6 +362,8 @@ class DatabaseViewModel : ViewModel() {
                     Log.d(TAG, "Fetched ${vehicles.size} local vehicles")
                     val pois = db.poIDao().getAll().first()
                     Log.d(TAG, "Fetched ${pois.size} local pois")
+                    val poiTypes = db.poiTypeDao().getAll().first()
+                    Log.d(TAG, "Fetched ${poiTypes.size} local poi types")
                     val settings = db.settingsDao().getAllSettings().first()
                     Log.d(TAG, "Fetched ${settings.size} local settings")
                     val roles = db.roleDao().getAllRoles().first()
@@ -336,10 +372,18 @@ class DatabaseViewModel : ViewModel() {
                     Log.d(TAG, "Fetched ${menus.size} local menus")
                     val menuOptions = db.menuOptionDao().getAllMenuOptions().first()
                     Log.d(TAG, "Fetched ${menuOptions.size} local options")
+                    val routes = db.routeDao().getAll().first()
+                    Log.d(TAG, "Fetched ${routes.size} local routes")
+                    val routePoints = db.routePointDao().getAll().first()
+                    Log.d(TAG, "Fetched ${routePoints.size} local points")
+                    val movings = db.movingDao().getAll().first()
+                    Log.d(TAG, "Fetched ${movings.size} local movings")
+                    val declarations = db.transportDeclarationDao().getAll().first()
+                    Log.d(TAG, "Fetched ${declarations.size} local declarations")
 
                     Log.d(
                         TAG,
-                        "Local data -> users:${'$'}{users.size} vehicles:${'$'}{vehicles.size} pois:${'$'}{pois.size} settings:${'$'}{settings.size} roles:${'$'}{roles.size} menus:${'$'}{menus.size} options:${'$'}{menuOptions.size}"
+                        "Local data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} poiTypes:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size} routes:${routes.size} points:${routePoints.size} movings:${movings.size} declarations:${declarations.size}"
                     )
 
                     users.forEach {
@@ -352,7 +396,12 @@ class DatabaseViewModel : ViewModel() {
                             .document(it.id)
                             .set(it.toFirestoreMap()).await()
                     }
-                    pois.forEach { firestore.collection("pois").document(it.id).set(it).await() }
+                    pois.forEach { firestore.collection("pois").document(it.id).set(it.toFirestoreMap()).await() }
+                    poiTypes.forEach {
+                        firestore.collection("poi_types")
+                            .document(it.id)
+                            .set(it.toFirestoreMap()).await()
+                    }
                     settings.forEach {
                         firestore.collection("user_settings")
                             .document(it.userId)
@@ -374,6 +423,25 @@ class DatabaseViewModel : ViewModel() {
                                 .document(opt.id)
                                 .set(opt.toFirestoreMap()).await()
                         }
+                    }
+
+                    routes.forEach { route ->
+                        val points = routePoints.filter { it.routeId == route.id }
+                        firestore.collection("routes")
+                            .document(route.id)
+                            .set(route.toFirestoreMap(points)).await()
+                    }
+
+                    movings.forEach {
+                        firestore.collection("movings")
+                            .document(it.id)
+                            .set(it.toFirestoreMap()).await()
+                    }
+
+                    declarations.forEach {
+                        firestore.collection("transport_declarations")
+                            .document(it.id)
+                            .set(it.toFirestoreMap()).await()
                     }
 
                     Log.d(TAG, "Uploaded local data to Firebase")
@@ -402,11 +470,16 @@ data class DatabaseData(
     val users: List<UserEntity>,
     val vehicles: List<VehicleEntity>,
     val pois: List<PoIEntity>,
+    val poiTypes: List<PoiTypeEntity>,
     val settings: List<SettingsEntity>,
     val roles: List<RoleEntity>,
     val menus: List<MenuEntity>,
     val menuOptions: List<MenuOptionEntity>,
-    val languages: List<LanguageSettingEntity>
+    val languages: List<LanguageSettingEntity>,
+    val routes: List<RouteEntity>,
+    val routePoints: List<RoutePointEntity>,
+    val movings: List<MovingEntity>,
+    val declarations: List<TransportDeclarationEntity>
 )
 
 sealed class SyncState {

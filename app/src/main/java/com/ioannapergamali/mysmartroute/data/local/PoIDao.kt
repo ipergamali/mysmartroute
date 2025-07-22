@@ -21,4 +21,10 @@ interface PoIDao {
 
     @Query("SELECT * FROM pois WHERE name = :name LIMIT 1")
     suspend fun findByName(name: String): PoIEntity?
+
+    @Query("DELETE FROM pois WHERE id = :id")
+    suspend fun deleteById(id: String)
+
+    @Query("SELECT * FROM pois WHERE id = :id LIMIT 1")
+    suspend fun findById(id: String): PoIEntity?
 }

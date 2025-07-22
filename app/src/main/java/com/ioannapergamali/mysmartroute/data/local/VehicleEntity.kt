@@ -19,8 +19,11 @@ import androidx.room.PrimaryKey
 )
 data class VehicleEntity(
     @PrimaryKey var id: String = "",
+    var name: String = "",
     var description: String = "",
     var userId: String = "",
     var type: String = "",
-    var seat: Int = 0
+    var seat: Int = 0,
+    var color: String = "",
+    var plate: String = ""
 )

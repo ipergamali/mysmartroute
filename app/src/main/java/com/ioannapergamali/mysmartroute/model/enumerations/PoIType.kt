@@ -1,9 +1,8 @@
 package com.ioannapergamali.mysmartroute.model.enumerations
 
-enum class PoIType {
-    HISTORICAL,
-    BUS_STOP,
-    RESTAURANT,
-    PARKING,
-    SHOPPING
-}
+import com.google.android.libraries.places.api.model.Place
+
+/**
+ * Χρησιμοποιούμε απευθείας τους τύπους του Google Places SDK.
+ */
+typealias PoIType = Place.Type

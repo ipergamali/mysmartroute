@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">mysmartroute</string>
 
-    <!-- Additional strings used in AnnounceTransportScreen -->
+    <!-- Additional strings used in DeclareRouteScreen -->
     <string name="invalid_coordinates">Μη έγκυρες συντεταγμένες</string>
     <string name="no_internet">Δεν υπάρχει σύνδεση στο διαδίκτυο</string>
     <string name="directions">Λήψη διαδρομής</string>
@@ -72,6 +72,10 @@
     <string name="rank_transports">Βαθμολόγηση και σχόλια μεταφορών</string>
     <string name="shutdown">Τερματισμός συστήματος</string>
     <string name="register_vehicle">Καταχώρηση οχήματος</string>
+    <string name="vehicle_color">Χρώμα</string>
+    <string name="vehicle_name">Όνομα οχήματος</string>
+    <string name="license_plate">Πινακίδα</string>
+    <string name="seats_label">Θέσεις</string>
     <string name="announce_availability">Δήλωση διαθεσιμότητας για μεταφορά</string>
     <string name="find_passengers">Εύρεση επιβατών</string>
     <string name="print_list">Εκτύπωση λίστας επιβατών</string>
@@ -87,12 +91,17 @@
     <string name="rank_drivers">Προβολή 10 καλύτερων και χειρότερων οδηγών</string>
     <string name="rank_passengers">Προβολή 10 πιο και λιγότερο ικανοποιημένων επιβατών</string>
     <string name="view_vehicles">Προβολή διαθέσιμων οχημάτων</string>
+    <string name="vehicles_empty">Δεν βρέθηκαν οχήματα</string>
     <string name="view_pois">Προβολή σημείων ενδιαφέροντος</string>
     <string name="view_users">Προβολή χρηστών</string>
     <string name="advance_date">Μεταφορά ημερομηνίας</string>
+    <string name="declare_route">Δήλωση διαδρομής</string>
     <string name="announce_transport">Δήλωση μεταφοράς</string>
     <string name="from">Από</string>
-    <string name="to">Προς</string>
+    <string name="start_point">Σημείο εκκίνησης</string>
+    <string name="destination">Προορισμός</string>
+    <string name="route">Διαδρομή</string>
+    <string name="driver">Οδηγός</string>
     <string name="vehicle">Όχημα</string>
     <string name="cost">Κόστος</string>
     <string name="duration">Διάρκεια</string>
@@ -100,5 +109,41 @@
     <string name="announce">Αποστολή</string>
     <string name="duration_format">Διάρκεια: %1$d λεπτά</string>
     <string name="app_language">Γλώσσα εφαρμογής</string>
+    <string name="poi_name">Όνομα POI</string>
+    <string name="poi_description">Περιγραφή</string>
+    <string name="select_poi">Επιλογή POI</string>
+    <string name="save_poi">Αποθήκευση POI</string>
+    <string name="poi_saved">Το POI αποθηκεύτηκε</string>
+    <string name="poi_exists">Το POI υπάρχει ήδη</string>
+    <string name="poi_type">Τύπος POI</string>
+    <string name="poi_details">Λεπτομέρειες POI</string>
+    <string name="save_point">Αποθήκευση σημείου</string>
+    <string name="point_not_saved_toast">Πρέπει να αποθηκεύσετε το σημείο πρώτα</string>
     <string name="not_implemented">Η λειτουργία δεν είναι διαθέσιμη</string>
+    <string name="route_editor">Επεξεργασία διαδρομής</string>
+    <string name="add_stop">Προσθήκη στάσης</string>
+    <string name="add_point">Προσθήκη σημείου</string>
+    <string name="remove_point">Αφαίρεση σημείου</string>
+    <string name="reset_field">Καθαρισμός πεδίου</string>
+    <string name="edit_route">Επεξεργασία διαδρομής</string>
+    <string name="calculating_route">Υπολογισμός διαδρομής…</string>
+    <string name="save_route">Αποθήκευση διαδρομής</string>
+    <string name="route_name">Όνομα διαδρομής</string>
+    <string name="stops_header">Στάσεις</string>
+    <!-- Περιγραφές ρόλων -->
+    <string name="role_passenger_desc">Μπορείτε να δείτε διαδρομές και να κάνετε κρατήσεις.</string>
+    <string name="role_driver_desc">Μπορείτε να δηλώνετε διαθέσιμες μεταφορές και να διαχειρίζεστε οχήματα.</string>
+    <string name="role_admin_desc">Έχετε πρόσβαση σε λειτουργίες διαχείρισης και ορισμού σημείων ενδιαφέροντος.</string>
+    <string name="poi_outside_heraklion">Επιλέξτε σημείο εντός Ηρακλείου</string>
+    <string name="search_address">Αναζήτηση διεύθυνσης</string>
+    <string name="fill_all_fields">Συμπλήρωσε όλα τα πεδία</string>
+    <string name="seat_booked">Η θέση κλείστηκε!</string>
+    <string name="seat_unavailable">Δεν υπάρχουν διαθέσιμες θέσεις.</string>
+    <string name="reserve_seat">Κλείσε Θέση</string>
+    <string name="select_route">Επιλογή διαδρομής</string>
+    <string name="add_poi_option">Προσθήκη POI</string>
+    <string name="select_date">Επιλογή ημερομηνίας</string>
+    <string name="select_pois_screen_title">Επιλογή POI διαδρομής</string>
+    <string name="choose_pois">Επιλογή σημείων ενδιαφέροντος</string>
+    <string name="confirm_poi_selection">Επιβεβαίωση επιλογής</string>
 </resources>

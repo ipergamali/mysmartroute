@@ -19,6 +19,8 @@ import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
+import com.ioannapergamali.mysmartroute.view.ui.util.observeBubble
+import com.ioannapergamali.mysmartroute.view.ui.util.LocalKeyboardBubbleState
 
 @Composable
 fun AdminSignUpScreen(
@@ -47,6 +49,7 @@ fun AdminSignUpScreen(
 
 
 
+
     Scaffold(
         topBar = {
             TopBar(
@@ -58,6 +61,7 @@ fun AdminSignUpScreen(
         }
     ) { paddingValues ->
         ScreenContainer(modifier = Modifier.padding(paddingValues)) {
+            val bubbleState = LocalKeyboardBubbleState.current!!
             Column(
                 modifier = Modifier
                     .fillMaxSize(),
@@ -68,7 +72,9 @@ fun AdminSignUpScreen(
                     value = name,
                     onValueChange = { name = it },
                     label = { Text("Name") },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .observeBubble(bubbleState, 0) { name },
                     shape = MaterialTheme.shapes.small,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -80,7 +86,9 @@ fun AdminSignUpScreen(
                     value = surname,
                     onValueChange = { surname = it },
                     label = { Text("Surname") },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .observeBubble(bubbleState, 1) { surname },
                     shape = MaterialTheme.shapes.small,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -92,7 +100,9 @@ fun AdminSignUpScreen(
                     value = username,
                     onValueChange = { username = it },
                     label = { Text("Username") },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .observeBubble(bubbleState, 2) { username },
                     shape = MaterialTheme.shapes.small,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -104,7 +114,9 @@ fun AdminSignUpScreen(
                     value = email,
                     onValueChange = { email = it },
                     label = { Text("Email") },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .observeBubble(bubbleState, 3) { email },
                     shape = MaterialTheme.shapes.small,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -116,7 +128,9 @@ fun AdminSignUpScreen(
                     value = phoneNum,
                     onValueChange = { phoneNum = it },
                     label = { Text("Phone Number") },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .observeBubble(bubbleState, 4) { phoneNum },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                     shape = MaterialTheme.shapes.small,
                     colors = OutlinedTextFieldDefaults.colors(
@@ -129,7 +143,9 @@ fun AdminSignUpScreen(
                     value = password,
                     onValueChange = { password = it },
                     label = { Text("Password") },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .observeBubble(bubbleState, 5) { password },
                     visualTransformation = PasswordVisualTransformation(),
                     shape = MaterialTheme.shapes.small,
                     colors = OutlinedTextFieldDefaults.colors(
@@ -144,7 +160,9 @@ fun AdminSignUpScreen(
                     value = city,
                     onValueChange = { city = it },
                     label = { Text("City") },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .observeBubble(bubbleState, 6) { city },
                     shape = MaterialTheme.shapes.small,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -156,7 +174,9 @@ fun AdminSignUpScreen(
                     value = streetName,
                     onValueChange = { streetName = it },
                     label = { Text("Street Name") },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .observeBubble(bubbleState, 7) { streetName },
                     shape = MaterialTheme.shapes.small,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -168,7 +188,9 @@ fun AdminSignUpScreen(
                     value = streetNumInput,
                     onValueChange = { streetNumInput = it },
                     label = { Text("Street Number") },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .observeBubble(bubbleState, 8) { streetNumInput },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     shape = MaterialTheme.shapes.small,
                     colors = OutlinedTextFieldDefaults.colors(
@@ -181,7 +203,9 @@ fun AdminSignUpScreen(
                     value = postalCodeInput,
                     onValueChange = { postalCodeInput = it },
                     label = { Text("Postal Code") },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .observeBubble(bubbleState, 9) { postalCodeInput },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     shape = MaterialTheme.shapes.small,
                     colors = OutlinedTextFieldDefaults.colors(
@@ -242,5 +266,5 @@ fun AdminSignUpScreen(
                 else -> {}
             }
         }
-    }
+        }
 }

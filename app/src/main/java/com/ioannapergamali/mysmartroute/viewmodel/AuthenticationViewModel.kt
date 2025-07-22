@@ -154,7 +154,7 @@ class AuthenticationViewModel : ViewModel() {
                             batch.set(menuDoc, mapOf("id" to menuId, "titleKey" to menuTitle))
                             options.forEachIndexed { optionIndex, (optTitle, route) ->
                                 val base = role.name.lowercase()
-                                val optId = "opt_${'$'}base_${menuIndex}_${optionIndex}"
+                                val optId = "opt_${base}_${menuIndex}_${optionIndex}"
                                 batch.set(
                                     menuDoc.collection("options").document(optId),
                                     mapOf("id" to optId, "titleKey" to optTitle, "route" to route)
@@ -240,9 +240,15 @@ class AuthenticationViewModel : ViewModel() {
                 .addOnSuccessListener { document ->
                     val roleName = document.getString("role")
                         ?: document.getString("roleId")
+                    val roleId = document.getString("roleId") ?: ""
                     Log.i(TAG, "Role from Firestore: $roleName")
                     _currentUserRole.value = roleName?.let {
                         runCatching { UserRole.valueOf(it) }.getOrNull()
+                    }
+                    viewModelScope.launch {
+                        val dao = MySmartRouteDatabase.getInstance(context).userDao()
+                        val current = dao.getUser(uid) ?: UserEntity(id = uid)
+                        dao.insert(current.copy(role = roleName ?: "", roleId = roleId))
                     }
                     if (loadMenus) loadCurrentUserMenus(context)
                 }
@@ -342,7 +348,7 @@ class AuthenticationViewModel : ViewModel() {
 
             Log.i(TAG, "Using roleId: $roleId")
             var menusLocal = loadMenusWithInheritanceLocal(dbLocal, roleId)
-            var hasOptions = menusLocal.any { it.options.isNotEmpty() }
+            var hasOptions = menusLocal.all { it.options.isNotEmpty() }
             if (menusLocal.isEmpty() || !hasOptions) {
                 // Βεβαιωνόμαστε ότι η τοπική βάση περιέχει τα προεπιλεγμένα μενού
                 try {
@@ -351,7 +357,7 @@ class AuthenticationViewModel : ViewModel() {
                     Log.e(TAG, "Failed to initialize menus", e)
                 }
                 menusLocal = loadMenusWithInheritanceLocal(dbLocal, roleId)
-                hasOptions = menusLocal.any { it.options.isNotEmpty() }
+                hasOptions = menusLocal.all { it.options.isNotEmpty() }
             }
 
             if (menusLocal.isNotEmpty() && hasOptions) {
@@ -364,7 +370,7 @@ class AuthenticationViewModel : ViewModel() {
                     Log.e(TAG, "Failed to load menus", e)
                     emptyList()
                 }
-                val remoteHasOptions = menusRemote.any { it.options.isNotEmpty() }
+                val remoteHasOptions = menusRemote.all { it.options.isNotEmpty() }
                 if (menusRemote.isEmpty() || !remoteHasOptions) {
                     Log.i(TAG, "No menus found remotely, initializing defaults")
                     try {
@@ -380,7 +386,7 @@ class AuthenticationViewModel : ViewModel() {
                 Log.w(TAG, "No internet connection and no local menus")
                 _currentMenus.value = emptyList()
             }
-            Log.i(TAG, "Menus loaded: ${'$'}{_currentMenus.value.size}")
+            Log.i(TAG, "Menus loaded: ${_currentMenus.value.size}")
         }
     }
 
@@ -413,10 +419,10 @@ class AuthenticationViewModel : ViewModel() {
 
         map.forEach { (roleName, cfg) ->
             val role = UserRole.valueOf(roleName)
-            val roleId = roleIds[role] ?: "role_${'$'}{role.name.lowercase()}"
+            val roleId = roleIds[role] ?: "role_${role.name.lowercase()}"
             val roleRef = db.collection("roles").document(roleId)
             val parentId = cfg.inheritsFrom?.let { parent ->
-                roleIds[UserRole.valueOf(parent)] ?: "role_${'$'}{parent.lowercase()}"
+                roleIds[UserRole.valueOf(parent)] ?: "role_${parent.lowercase()}"
             }
             val data = mutableMapOf<String, Any>("id" to roleId, "name" to roleName)
             parentId?.let { data["parentRoleId"] = it }
@@ -430,51 +436,11 @@ class AuthenticationViewModel : ViewModel() {
             roleDao.insert(RoleEntity(id = roleId, name = roleName, parentRoleId = parentId))
 
             val menusSnap = roleRef.collection("menus").get().await()
-            if (menusSnap.isEmpty) {
-                cfg.menus.forEachIndexed { menuIndex, menu ->
-                    val menuId = "menu_${role.name.lowercase()}_${menuIndex}"
-                    val menuDoc = roleRef.collection("menus").document(menuId)
+            val existingMenus = menusSnap.documents.associateBy { it.getString("id") ?: it.id }
+            cfg.menus.forEachIndexed { menuIndex, menu ->
+                val menuId = "menu_${role.name.lowercase()}_${menuIndex}"
+                val menuDoc = roleRef.collection("menus").document(menuId)
+
+                if (!existingMenus.containsKey(menuId)) {
                     batch.set(menuDoc, mapOf("id" to menuId, "titleKey" to menu.titleKey))
                     commitNeeded = true
-                    dbLocal.withTransaction {
-                        menuDao.insert(MenuEntity(menuId, roleId, menu.titleKey))
-                        menu.options.forEachIndexed { optionIndex, opt ->
-                            val base = role.name.lowercase()
-                            val optId = "opt_${'$'}base_${menuIndex}_${optionIndex}"
-                            batch.set(
-                                menuDoc.collection("options").document(optId),
-                                mapOf("id" to optId, "titleKey" to opt.titleKey, "route" to opt.route),
-                            )
-                            optionDao.insert(MenuOptionEntity(optId, menuId, opt.titleKey, opt.route))
-                        }
-                    }
-                }
-            }
-        }
-
-        if (commitNeeded) {
-            batch.commit().await()
-        }
-    }
-    private fun defaultMenus(context: Context, role: UserRole): List<Pair<String, List<Pair<String, String>>>> {
-        return try {
-            val json = context.assets.open("menus.json").bufferedReader().use { it.readText() }
-            val type = object : TypeToken<Map<String, RoleMenuConfig>>() {}.type
-            val map: Map<String, RoleMenuConfig> = gson.fromJson(json, type)
-
-            fun collect(roleName: String, acc: MutableList<MenuConfig>) {
-                val cfg = map[roleName] ?: return
-                cfg.inheritsFrom?.let { collect(it, acc) }
-                acc.addAll(cfg.menus)
-            }
-
-            val allMenus = mutableListOf<MenuConfig>()
-            collect(role.name, allMenus)
-            allMenus.map { menu ->
-                menu.titleKey to menu.options.map { it.titleKey to it.route }
-            }
-        } catch (e: Exception) {
-            emptyList()
-        }
-    }
-}
