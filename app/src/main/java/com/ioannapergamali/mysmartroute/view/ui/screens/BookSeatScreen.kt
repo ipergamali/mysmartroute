@@ -31,6 +31,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
@@ -51,6 +52,10 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import kotlin.math.abs
+import androidx.compose.ui.graphics.Color
+
+private const val MARKER_ORANGE = BitmapDescriptorFactory.HUE_ORANGE
+private const val MARKER_BLUE = BitmapDescriptorFactory.HUE_BLUE
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -64,6 +69,7 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
     var selectedRoute by remember { mutableStateOf<RouteEntity?>(null) }
     var message by remember { mutableStateOf("") }
     val pois = remember { mutableStateListOf<PoIEntity>() }
+    val userPoiIds = remember { mutableStateListOf<String>() }
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     var addMenuExpanded by remember { mutableStateOf(false) }
     var calculating by remember { mutableStateOf(false) }
@@ -122,6 +128,7 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
             allPois.find { it.name == name && abs(it.lat - lat) < 0.00001 && abs(it.lng - lng) < 0.00001 }?.let { poi ->
                 if (pois.none { it.id == poi.id }) {
                     pois.add(poi)
+                    userPoiIds.add(poi.id)
                     refreshRoute()
                 }
             }
@@ -166,6 +173,7 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
                                     )
                                     pathPoints = path
                                     pois.clear()
+                                    userPoiIds.clear()
                                     pois.addAll(routeViewModel.getRoutePois(context, route.id))
                                     path.firstOrNull()?.let {
                                         MapsInitializer.initialize(context)
@@ -206,11 +214,13 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
                         .height(200.dp),
                     cameraPositionState = cameraPositionState
                 ) {
-                    Polyline(points = pathPoints)
+                    Polyline(points = pathPoints, color = Color.Green)
                     pois.forEach { poi ->
+                        val hue = if (poi.id in userPoiIds) MARKER_ORANGE else MARKER_BLUE
                         Marker(
                             state = MarkerState(position = LatLng(poi.lat, poi.lng)),
-                            title = poi.name
+                            title = poi.name,
+                            icon = BitmapDescriptorFactory.defaultMarker(hue)
                         )
                     }
                 }
@@ -242,7 +252,8 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
                             Text("${index + 1}. ${poi.name}", modifier = Modifier.weight(1f))
                             Text(poi.type.name, modifier = Modifier.weight(1f))
                             IconButton(onClick = {
-                                pois.removeAt(index)
+                                val removed = pois.removeAt(index)
+                                userPoiIds.remove(removed.id)
                                 refreshRoute()
                             }) {
                                 Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.remove_point))
@@ -264,6 +275,7 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
                             DropdownMenuItem(text = { Text(poi.name) }, onClick = {
                                 if (pois.none { it.id == poi.id }) {
                                     pois.add(poi)
+                                    userPoiIds.add(poi.id)
                                     refreshRoute()
                                 }
                                 addMenuExpanded = false
