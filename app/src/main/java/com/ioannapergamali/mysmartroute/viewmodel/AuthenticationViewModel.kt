@@ -147,7 +147,7 @@ class AuthenticationViewModel : ViewModel() {
                     val roleMenusRef = roleRef.collection("menus")
                     val snapshot = roleMenusRef.get().await()
                     if (snapshot.isEmpty) {
-                        defaultMenus(context, role).forEachIndexed { menuIndex, (menuTitle, options) ->
+                        getDefaultMenus(context, role).forEachIndexed { menuIndex, (menuTitle, options) ->
                             val menuId = "menu_${role.name.lowercase()}_${menuIndex}"
                             val menuDoc = roleMenusRef.document(menuId)
                             batch.set(menuDoc, mapOf("id" to menuId, "titleKey" to menuTitle))
@@ -469,7 +469,7 @@ class AuthenticationViewModel : ViewModel() {
             batch.commit().await()
         }
     }
-    private fun defaultMenus(context: Context, role: UserRole): List<Pair<String, List<Pair<String, String>>>> {
+    private fun getDefaultMenus(context: Context, role: UserRole): List<Pair<String, List<Pair<String, String>>>> {
         return try {
             val json = context.assets.open("menus.json").bufferedReader().use { it.readText() }
             val type = object : TypeToken<Map<String, RoleMenuConfig>>() {}.type
