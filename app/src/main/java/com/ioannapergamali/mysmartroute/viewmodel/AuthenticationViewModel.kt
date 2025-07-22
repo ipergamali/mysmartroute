@@ -444,3 +444,48 @@ class AuthenticationViewModel : ViewModel() {
                 if (!existingMenus.containsKey(menuId)) {
                     batch.set(menuDoc, mapOf("id" to menuId, "titleKey" to menu.titleKey))
                     commitNeeded = true
+                }
+
+                menuDao.insert(MenuEntity(menuId, roleId, menu.titleKey))
+
+                val optionsSnap = existingMenus[menuId]?.reference?.collection("options")?.get()?.await()
+                val existingOptions = optionsSnap?.documents?.associateBy { it.getString("id") ?: it.id } ?: emptyMap()
+
+                menu.options.forEachIndexed { optionIndex, opt ->
+                    val base = role.name.lowercase()
+                    val optId = "opt_${base}_${menuIndex}_${optionIndex}"
+                    if (!existingOptions.containsKey(optId)) {
+                        batch.set(
+                            menuDoc.collection("options").document(optId),
+                            mapOf("id" to optId, "titleKey" to opt.titleKey, "route" to opt.route),
+                        )
+                        commitNeeded = true
+                    }
+                    optionDao.insert(MenuOptionEntity(optId, menuId, opt.titleKey, opt.route))
+                }
+            }
+        }
+
+        if (commitNeeded) {
+            batch.commit().await()
+        }
+    }
+
+    private fun defaultMenus(context: Context, role: UserRole): List<Pair<String, List<Pair<String, String>>>> {
+        val json = context.assets.open("menus.json").bufferedReader().use { it.readText() }
+        val type = object : TypeToken<Map<String, RoleMenuConfig>>() {}.type
+        val map: Map<String, RoleMenuConfig> = gson.fromJson(json, type)
+
+        val menus = mutableListOf<MenuConfig>()
+        var current: String? = role.name
+        while (current != null) {
+            val cfg = map[current] ?: break
+            menus += cfg.menus
+            current = cfg.inheritsFrom
+        }
+
+        return menus.map { menu ->
+            menu.titleKey to menu.options.map { opt -> opt.titleKey to opt.route }
+        }
+    }
+}
