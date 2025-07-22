@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
@@ -98,6 +99,7 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
                                     pathPoints = path
                                     pois = routeViewModel.getRoutePois(context, route.id)
                                     path.firstOrNull()?.let {
+                                        MapsInitializer.initialize(context)
                                         cameraPositionState.move(
                                             CameraUpdateFactory.newLatLngZoom(it, 13f)
                                         )
