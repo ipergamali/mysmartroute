@@ -12,6 +12,7 @@
           {"titleKey": "find_way", "route": "findWay"},
           {"titleKey": "book_seat", "route": "bookSeat"},
           {"titleKey": "view_routes", "route": "viewRoutes"},
+          {"titleKey": "select_pois_screen_title", "route": "selectRoutePois"},
           {"titleKey": "view_transports", "route": "viewTransports"},
           {"titleKey": "print_ticket", "route": "printTicket"},
           {"titleKey": "cancel_seat", "route": "cancelSeat"},
