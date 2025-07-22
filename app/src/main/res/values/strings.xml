@@ -150,4 +150,6 @@
     <string name="seat_unavailable">No available seats.</string>
     <string name="reserve_seat">Reserve Seat</string>
     <string name="select_route">Select route</string>
+    <string name="add_poi_option">Add POI</string>
+    <string name="select_date">Select date</string>
 </resources>
