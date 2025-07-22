@@ -437,7 +437,6 @@ class AuthenticationViewModel : ViewModel() {
 
 
 
-            }
         }
 
         if (commitNeeded) {
