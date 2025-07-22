@@ -141,4 +141,6 @@
     <string name="seat_unavailable">Δεν υπάρχουν διαθέσιμες θέσεις.</string>
     <string name="reserve_seat">Κλείσε Θέση</string>
     <string name="select_route">Επιλογή διαδρομής</string>
+    <string name="add_poi_option">Προσθήκη POI</string>
+    <string name="select_date">Επιλογή ημερομηνίας</string>
 </resources>
