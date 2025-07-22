@@ -146,4 +146,5 @@
     <string name="select_pois_screen_title">Επιλογή POI διαδρομής</string>
     <string name="choose_pois">Επιλογή σημείων ενδιαφέροντος</string>
     <string name="confirm_poi_selection">Επιβεβαίωση επιλογής</string>
+    <string name="recalculate_route">Επανασχεδίαση διαδρομής</string>
 </resources>
