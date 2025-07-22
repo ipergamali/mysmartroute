@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.util.UUID
+import androidx.room.withTransaction
 
 class AuthenticationViewModel : ViewModel() {
 
@@ -443,51 +444,3 @@ class AuthenticationViewModel : ViewModel() {
                 if (!existingMenus.containsKey(menuId)) {
                     batch.set(menuDoc, mapOf("id" to menuId, "titleKey" to menu.titleKey))
                     commitNeeded = true
-                }
-
-                menuDao.insert(MenuEntity(menuId, roleId, menu.titleKey))
-
-                val optionsSnap = existingMenus[menuId]?.reference?.collection("options")?.get()?.await()
-                val existingOptions = optionsSnap?.documents?.associateBy { it.getString("id") ?: it.id } ?: emptyMap()
-
-                menu.options.forEachIndexed { optionIndex, opt ->
-                    val base = role.name.lowercase()
-                    val optId = "opt_${base}_${menuIndex}_${optionIndex}"
-                    if (!existingOptions.containsKey(optId)) {
-                        batch.set(
-                            menuDoc.collection("options").document(optId),
-                            mapOf("id" to optId, "titleKey" to opt.titleKey, "route" to opt.route),
-                        )
-                        commitNeeded = true
-                    }
-                    optionDao.insert(MenuOptionEntity(optId, menuId, opt.titleKey, opt.route))
-                }
-            }
-        }
-
-        if (commitNeeded) {
-            batch.commit().await()
-        }
-    }
-    private fun defaultMenus(context: Context, role: UserRole): List<Pair<String, List<Pair<String, String>>>> {
-        return try {
-            val json = context.assets.open("menus.json").bufferedReader().use { it.readText() }
-            val type = object : TypeToken<Map<String, RoleMenuConfig>>() {}.type
-            val map: Map<String, RoleMenuConfig> = gson.fromJson(json, type)
-
-            fun collect(roleName: String, acc: MutableList<MenuConfig>) {
-                val cfg = map[roleName] ?: return
-                cfg.inheritsFrom?.let { collect(it, acc) }
-                acc.addAll(cfg.menus)
-            }
-
-            val allMenus = mutableListOf<MenuConfig>()
-            collect(role.name, allMenus)
-            allMenus.map { menu ->
-                menu.titleKey to menu.options.map { it.titleKey to it.route }
-            }
-        } catch (e: Exception) {
-            emptyList()
-        }
-    }
-}
