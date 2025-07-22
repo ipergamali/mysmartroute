@@ -2,6 +2,8 @@ package com.ioannapergamali.mysmartroute.view.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -9,6 +11,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -33,6 +37,9 @@ import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.BookingViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import kotlinx.coroutines.launch
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,6 +52,12 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
     var message by remember { mutableStateOf("") }
     var pois by remember { mutableStateOf<List<PoIEntity>>(emptyList()) }
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
+    val datePickerState = rememberDatePickerState()
+    var showDatePicker by remember { mutableStateOf(false) }
+    val dateFormatter = remember { DateTimeFormatter.ofPattern("dd/MM/yyyy") }
+    val selectedDateText = datePickerState.selectedDateMillis?.let { millis ->
+        Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter)
+    } ?: stringResource(R.string.select_date)
     val cameraPositionState = rememberCameraPositionState()
     val context = LocalContext.current
     val apiKey = MapsUtils.getApiKey(context)
@@ -93,10 +106,35 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
                             }
                         )
                     }
+                    Divider()
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.add_poi_option)) },
+                        onClick = {
+                            expanded = false
+                            navController.navigate("definePoi?lat=&lng=&source=&view=false")
+                        }
+                    )
                 }
             }
 
             Spacer(Modifier.height(16.dp))
+
+            Button(onClick = { showDatePicker = true }) {
+                Text(selectedDateText)
+            }
+
+            if (showDatePicker) {
+                DatePickerDialog(
+                    onDismissRequest = { showDatePicker = false },
+                    confirmButton = {
+                        TextButton(onClick = { showDatePicker = false }) {
+                            Text(stringResource(android.R.string.ok))
+                        }
+                    }
+                ) {
+                    DatePicker(state = datePickerState)
+                }
+            }
 
             if (selectedRoute != null && pathPoints.isNotEmpty() && !isKeyMissing) {
                 GoogleMap(
