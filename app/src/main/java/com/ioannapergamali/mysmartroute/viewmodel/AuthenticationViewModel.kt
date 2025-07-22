@@ -436,6 +436,7 @@ class AuthenticationViewModel : ViewModel() {
             roleDao.insert(RoleEntity(id = roleId, name = roleName, parentRoleId = parentId))
 
 
+
             }
         }
 
