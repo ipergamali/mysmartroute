@@ -15,6 +15,7 @@ import com.google.firebase.firestore.DocumentReference
 import com.ioannapergamali.mysmartroute.data.local.MovingEntity
 import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationEntity
 import com.ioannapergamali.mysmartroute.data.local.AvailabilityEntity
+import com.ioannapergamali.mysmartroute.data.local.SeatReservationEntity
 
 /** Βοηθητικά extensions για μετατροπή οντοτήτων σε δομές κατάλληλες για το Firestore. */
 /** Μετατροπή ενός [UserEntity] σε Map. */
@@ -308,4 +309,25 @@ fun DocumentSnapshot.toAvailabilityEntity(): AvailabilityEntity? {
     val fromVal = (getLong("fromTime") ?: 0L).toInt()
     val toVal = (getLong("toTime") ?: 0L).toInt()
     return AvailabilityEntity(availId, userId, dateVal, fromVal, toVal)
+}
+
+fun SeatReservationEntity.toFirestoreMap(): Map<String, Any> = mapOf(
+    "id" to id,
+    "routeId" to FirebaseFirestore.getInstance().collection("routes").document(routeId),
+    "userId" to FirebaseFirestore.getInstance().collection("users").document(userId)
+)
+
+fun DocumentSnapshot.toSeatReservationEntity(): SeatReservationEntity? {
+    val resId = getString("id") ?: id
+    val routeId = when (val r = get("routeId")) {
+        is DocumentReference -> r.id
+        is String -> r
+        else -> getString("routeId")
+    } ?: return null
+    val userId = when (val u = get("userId")) {
+        is DocumentReference -> u.id
+        is String -> u
+        else -> getString("userId")
+    } ?: return null
+    return SeatReservationEntity(resId, routeId, userId)
 }
