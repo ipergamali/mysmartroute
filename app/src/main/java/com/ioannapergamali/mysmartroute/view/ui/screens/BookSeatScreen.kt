@@ -305,6 +305,12 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
                 Spacer(Modifier.height(16.dp))
             }
 
+            Button(onClick = { navController.navigate("declareRoute") }) {
+                Text(stringResource(R.string.declare_route))
+            }
+
+            Spacer(Modifier.height(16.dp))
+
             Button(
                 enabled = selectedRoute != null,
                 onClick = {
