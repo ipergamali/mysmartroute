@@ -32,6 +32,7 @@ import com.ioannapergamali.mysmartroute.data.local.AvailabilityEntity
 import com.ioannapergamali.mysmartroute.utils.toRouteWithPoints
 import com.ioannapergamali.mysmartroute.utils.toMovingEntity
 import com.ioannapergamali.mysmartroute.utils.toTransportDeclarationEntity
+import com.ioannapergamali.mysmartroute.utils.toAvailabilityEntity
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -226,8 +227,11 @@ class DatabaseViewModel : ViewModel() {
             val declarations = firestore.collection("transport_declarations").get().await()
                 .documents.mapNotNull { it.toTransportDeclarationEntity() }
 
-            Log.d(TAG, "Firebase data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} types:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size} routes:${routes.size} movings:${movings.size} declarations:${declarations.size}")
-            _firebaseData.value = DatabaseData(users, vehicles, pois, poiTypes, settings, roles, menus, menuOptions, emptyList(), routes, routePoints, movings, declarations, emptyList())
+            val availabilities = firestore.collection("availabilities").get().await()
+                .documents.mapNotNull { it.toAvailabilityEntity() }
+
+            Log.d(TAG, "Firebase data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} types:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size} routes:${routes.size} movings:${movings.size} declarations:${declarations.size} availabilities:${availabilities.size}")
+            _firebaseData.value = DatabaseData(users, vehicles, pois, poiTypes, settings, roles, menus, menuOptions, emptyList(), routes, routePoints, movings, declarations, availabilities)
         }
     }
 
@@ -354,9 +358,12 @@ class DatabaseViewModel : ViewModel() {
                     val declarations = firestore.collection("transport_declarations").get().await()
                         .documents.mapNotNull { it.toTransportDeclarationEntity() }
 
+                    val availabilities = firestore.collection("availabilities").get().await()
+                        .documents.mapNotNull { it.toAvailabilityEntity() }
+
                     Log.d(
                         TAG,
-                        "Remote data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} poiTypes:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size} routes:${routes.size} movings:${movings.size} declarations:${declarations.size}"
+                        "Remote data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} poiTypes:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size} routes:${routes.size} movings:${movings.size} declarations:${declarations.size} availabilities:${availabilities.size}"
                     )
                     users.forEach { db.userDao().insert(it) }
                     vehicles.forEach { insertVehicleSafely(db.vehicleDao(), db.userDao(), it) }
@@ -370,6 +377,7 @@ class DatabaseViewModel : ViewModel() {
                     routePoints.forEach { db.routePointDao().insert(it) }
                     movings.forEach { db.movingDao().insert(it) }
                     declarations.forEach { db.transportDeclarationDao().insert(it) }
+                    availabilities.forEach { db.availabilityDao().insert(it) }
                     Log.d(TAG, "Inserted remote data to local DB")
                     prefs.edit().putLong("last_sync", remoteTs).apply()
                     _lastSyncTime.value = remoteTs
@@ -399,10 +407,12 @@ class DatabaseViewModel : ViewModel() {
                     Log.d(TAG, "Fetched ${movings.size} local movings")
                     val declarations = db.transportDeclarationDao().getAll().first()
                     Log.d(TAG, "Fetched ${declarations.size} local declarations")
+                    val availabilities = db.availabilityDao().getAll().first()
+                    Log.d(TAG, "Fetched ${availabilities.size} local availabilities")
 
                     Log.d(
                         TAG,
-                        "Local data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} poiTypes:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size} routes:${routes.size} points:${routePoints.size} movings:${movings.size} declarations:${declarations.size}"
+                        "Local data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} poiTypes:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size} routes:${routes.size} points:${routePoints.size} movings:${movings.size} declarations:${declarations.size} availabilities:${availabilities.size}"
                     )
 
                     users.forEach {
@@ -459,6 +469,12 @@ class DatabaseViewModel : ViewModel() {
 
                     declarations.forEach {
                         firestore.collection("transport_declarations")
+                            .document(it.id)
+                            .set(it.toFirestoreMap()).await()
+                    }
+
+                    availabilities.forEach {
+                        firestore.collection("availabilities")
                             .document(it.id)
                             .set(it.toFirestoreMap()).await()
                     }
