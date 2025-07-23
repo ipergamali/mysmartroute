@@ -578,13 +578,15 @@ fun DeclareRouteScreen(navController: NavController, openDrawer: () -> Unit) {
                     val ids = routePois.map { it.id }
                     scope.launch {
                         if (ids.size >= 2 && routeName.isNotBlank()) {
-                            val inserted = routeViewModel.addRoute(context, ids, routeName)
-                            if (inserted) {
+                            val newId = routeViewModel.addRoute(context, ids, routeName)
+                            if (newId != null) {
                                 routeSaved = true
                                 selectedPoiId = null
                                 unsavedPoint = null
                                 unsavedAddress = null
                                 Toast.makeText(context, context.getString(R.string.route_saved_success), Toast.LENGTH_SHORT).show()
+                                navController.previousBackStackEntry?.savedStateHandle?.set("newRouteId", newId)
+                                navController.popBackStack()
                             } else {
                                 Toast.makeText(context, context.getString(R.string.route_exists), Toast.LENGTH_SHORT).show()
                             }

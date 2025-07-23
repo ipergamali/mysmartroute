@@ -15,6 +15,10 @@ class BookingViewModel : ViewModel() {
     val availableRoutes: StateFlow<List<RouteEntity>> = _availableRoutes
 
     init {
+        refreshRoutes()
+    }
+
+    fun refreshRoutes() {
         db.collection("routes").get().addOnSuccessListener { snapshot ->
             val list = snapshot.documents.mapNotNull { it.toObject(RouteEntity::class.java) }
             _availableRoutes.value = list
