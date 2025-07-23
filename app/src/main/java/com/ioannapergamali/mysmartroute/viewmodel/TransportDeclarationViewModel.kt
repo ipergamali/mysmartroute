@@ -19,6 +19,10 @@ class TransportDeclarationViewModel : ViewModel() {
     private val _declarations = MutableStateFlow<List<TransportDeclarationEntity>>(emptyList())
     val declarations: StateFlow<List<TransportDeclarationEntity>> = _declarations
 
+    companion object {
+        private const val TAG = "TransportDeclVM"
+    }
+
     fun loadDeclarations(context: Context) {
         viewModelScope.launch {
             val dao = MySmartRouteDatabase.getInstance(context).transportDeclarationDao()
@@ -47,7 +51,9 @@ class TransportDeclarationViewModel : ViewModel() {
                     .document(id)
                     .set(entity.toFirestoreMap())
                     .await()
-            } catch (_: Exception) {
+                Log.d(TAG, "Declaration $id stored remotely")
+            } catch (e: Exception) {
+                Log.w(TAG, "Remote store failed", e)
                 // Σε περίπτωση αποτυχίας, θα αποσταλεί αργότερα μέσω συγχρονισμού
             }
         }

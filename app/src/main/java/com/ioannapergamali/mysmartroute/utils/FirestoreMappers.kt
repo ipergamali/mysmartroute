@@ -261,8 +261,9 @@ fun DocumentSnapshot.toMovingEntity(): MovingEntity? {
 
 fun TransportDeclarationEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     "id" to id,
-    "routeId" to FirebaseFirestore.getInstance().collection("routes").document(routeId),
-    "driverId" to FirebaseFirestore.getInstance().collection("users").document(driverId),
+    // Αποθηκεύουμε απλά τα ids για ευκολότερη αναζήτηση
+    "routeId" to routeId,
+    "driverId" to driverId,
     "vehicleType" to vehicleType,
     "cost" to cost,
     "durationMinutes" to durationMinutes,
