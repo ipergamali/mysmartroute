@@ -8,6 +8,8 @@ import androidx.room.PrimaryKey
 data class TransportDeclarationEntity(
     @PrimaryKey val id: String = "",
     val routeId: String = "",
+    /** Ο οδηγός που αναλαμβάνει τη μεταφορά */
+    val driverId: String = "",
     val vehicleType: String = "",
     val cost: Double = 0.0,
     val durationMinutes: Int = 0,
