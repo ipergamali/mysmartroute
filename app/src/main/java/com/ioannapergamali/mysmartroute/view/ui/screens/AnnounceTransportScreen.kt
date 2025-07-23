@@ -412,8 +412,9 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     val vehicle = selectedVehicle
                     val cost = costText.toDoubleOrNull() ?: 0.0
                     val date = datePickerState.selectedDateMillis ?: 0L
+                    val driverId = selectedDriverId ?: ""
                     if (routeId != null && vehicle != null) {
-                        declarationViewModel.declareTransport(context, routeId, vehicle, cost, duration, date)
+                        declarationViewModel.declareTransport(context, routeId, driverId, vehicle, cost, duration, date)
                         navController.popBackStack()
                     }
                 },
