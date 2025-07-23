@@ -14,6 +14,7 @@ import com.ioannapergamali.mysmartroute.data.local.PoiTypeEntity
 import com.google.firebase.firestore.DocumentReference
 import com.ioannapergamali.mysmartroute.data.local.MovingEntity
 import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationEntity
+import com.ioannapergamali.mysmartroute.data.local.AvailabilityEntity
 
 /** Βοηθητικά extensions για μετατροπή οντοτήτων σε δομές κατάλληλες για το Firestore. */
 /** Μετατροπή ενός [UserEntity] σε Map. */
@@ -279,4 +280,25 @@ fun DocumentSnapshot.toTransportDeclarationEntity(): TransportDeclarationEntity?
     val durVal = (getLong("durationMinutes") ?: 0L).toInt()
     val dateVal = getLong("date") ?: 0L
     return TransportDeclarationEntity(declId, routeId, type, costVal, durVal, dateVal)
+}
+
+fun AvailabilityEntity.toFirestoreMap(): Map<String, Any> = mapOf(
+    "id" to id,
+    "userId" to FirebaseFirestore.getInstance().collection("users").document(userId),
+    "date" to date,
+    "fromTime" to fromTime,
+    "toTime" to toTime
+)
+
+fun DocumentSnapshot.toAvailabilityEntity(): AvailabilityEntity? {
+    val availId = getString("id") ?: id
+    val userId = when (val u = get("userId")) {
+        is DocumentReference -> u.id
+        is String -> u
+        else -> getString("userId")
+    } ?: return null
+    val dateVal = getLong("date") ?: 0L
+    val fromVal = (getLong("fromTime") ?: 0L).toInt()
+    val toVal = (getLong("toTime") ?: 0L).toInt()
+    return AvailabilityEntity(availId, userId, dateVal, fromVal, toVal)
 }
