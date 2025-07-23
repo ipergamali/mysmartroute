@@ -261,7 +261,9 @@ fun DocumentSnapshot.toMovingEntity(): MovingEntity? {
 
 fun TransportDeclarationEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     "id" to id,
-    "routeId" to FirebaseFirestore.getInstance().collection("routes").document(routeId),
+    // Αποθηκεύουμε απλά τα ids για ευκολότερη αναζήτηση
+    "routeId" to routeId,
+    "driverId" to driverId,
     "vehicleType" to vehicleType,
     "cost" to cost,
     "durationMinutes" to durationMinutes,
@@ -275,11 +277,16 @@ fun DocumentSnapshot.toTransportDeclarationEntity(): TransportDeclarationEntity?
         is String -> r
         else -> getString("routeId")
     } ?: return null
+    val driverId = when (val d = get("driverId")) {
+        is DocumentReference -> d.id
+        is String -> d
+        else -> getString("driverId")
+    } ?: ""
     val type = getString("vehicleType") ?: return null
     val costVal = getDouble("cost") ?: 0.0
     val durVal = (getLong("durationMinutes") ?: 0L).toInt()
     val dateVal = getLong("date") ?: 0L
-    return TransportDeclarationEntity(declId, routeId, type, costVal, durVal, dateVal)
+    return TransportDeclarationEntity(declId, routeId, driverId, type, costVal, durVal, dateVal)
 }
 
 fun AvailabilityEntity.toFirestoreMap(): Map<String, Any> = mapOf(

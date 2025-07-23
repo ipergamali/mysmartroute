@@ -6,6 +6,9 @@ import androidx.lifecycle.viewModelScope
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationEntity
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
+import com.google.firebase.firestore.FirebaseFirestore
+import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -15,6 +18,10 @@ import java.util.UUID
 class TransportDeclarationViewModel : ViewModel() {
     private val _declarations = MutableStateFlow<List<TransportDeclarationEntity>>(emptyList())
     val declarations: StateFlow<List<TransportDeclarationEntity>> = _declarations
+
+    companion object {
+        private const val TAG = "TransportDeclVM"
+    }
 
     fun loadDeclarations(context: Context) {
         viewModelScope.launch {
@@ -27,6 +34,7 @@ class TransportDeclarationViewModel : ViewModel() {
     fun declareTransport(
         context: Context,
         routeId: String,
+        driverId: String,
         vehicleType: VehicleType,
         cost: Double,
         durationMinutes: Int,
@@ -35,8 +43,19 @@ class TransportDeclarationViewModel : ViewModel() {
         viewModelScope.launch {
             val dao = MySmartRouteDatabase.getInstance(context).transportDeclarationDao()
             val id = UUID.randomUUID().toString()
-            val entity = TransportDeclarationEntity(id, routeId, vehicleType.name, cost, durationMinutes, date)
+            val entity = TransportDeclarationEntity(id, routeId, driverId, vehicleType.name, cost, durationMinutes, date)
             dao.insert(entity)
+            try {
+                FirebaseFirestore.getInstance()
+                    .collection("transport_declarations")
+                    .document(id)
+                    .set(entity.toFirestoreMap())
+                    .await()
+                Log.d(TAG, "Declaration $id stored remotely")
+            } catch (e: Exception) {
+                Log.w(TAG, "Remote store failed", e)
+                // Σε περίπτωση αποτυχίας, θα αποσταλεί αργότερα μέσω συγχρονισμού
+            }
         }
     }
 }
