@@ -11,11 +11,16 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.menuAnchor
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.*
@@ -152,19 +157,42 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
         }
     ) { paddingValues ->
         ScreenContainer(modifier = Modifier.padding(paddingValues)) {
-            var expanded by remember { mutableStateOf(false) }
+            var routeMenuExpanded by remember { mutableStateOf(false) }
 
-            Box {
-                Button(onClick = { expanded = true }) {
-                    Text(selectedRoute?.name ?: stringResource(R.string.select_route))
-                }
-                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            ExposedDropdownMenuBox(
+                expanded = routeMenuExpanded,
+                onExpandedChange = { routeMenuExpanded = !routeMenuExpanded }
+            ) {
+                OutlinedTextField(
+                    value = selectedRoute?.name ?: "",
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text(stringResource(R.string.select_route)) },
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = routeMenuExpanded)
+                    },
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth(),
+                    shape = MaterialTheme.shapes.small,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                    )
+                )
+                DropdownMenu(
+                    expanded = routeMenuExpanded,
+                    onDismissRequest = { routeMenuExpanded = false },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 300.dp)
+                ) {
                     routes.forEach { route ->
                         DropdownMenuItem(
                             text = { Text(route.name) },
                             onClick = {
                                 selectedRoute = route
-                                expanded = false
+                                routeMenuExpanded = false
                                 scope.launch {
                                     val (_, path) = routeViewModel.getRouteDirections(
                                         context,
