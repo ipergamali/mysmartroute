@@ -35,6 +35,8 @@ import androidx.navigation.NavController
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import com.ioannapergamali.mysmartroute.model.enumerations.BookingStep
+import com.ioannapergamali.mysmartroute.model.enumerations.localizedName
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.model.LatLng
@@ -50,6 +52,7 @@ import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
+import com.ioannapergamali.mysmartroute.view.ui.components.BookingStepsIndicator
 import com.ioannapergamali.mysmartroute.viewmodel.BookingViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
@@ -191,6 +194,17 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
     ) { paddingValues ->
         ScreenContainer(modifier = Modifier.padding(paddingValues)) {
             var routeMenuExpanded by remember { mutableStateOf(false) }
+
+            val currentStep = when {
+                selectedRoute == null -> BookingStep.SELECT_ROUTE
+                poiIds.size < 2 -> BookingStep.ADD_POI
+                pathPoints.isEmpty() -> BookingStep.RECALCULATE_ROUTE
+                datePickerState.selectedDateMillis == null -> BookingStep.SELECT_DATE
+                else -> BookingStep.RESERVE_SEAT
+            }
+
+            BookingStepsIndicator(currentStep = currentStep)
+            Spacer(modifier = Modifier.height(16.dp))
 
             ExposedDropdownMenuBox(
                 expanded = routeMenuExpanded,
