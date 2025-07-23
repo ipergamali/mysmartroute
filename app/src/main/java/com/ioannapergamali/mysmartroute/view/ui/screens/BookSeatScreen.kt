@@ -24,6 +24,8 @@ import androidx.compose.material3.menuAnchor
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
@@ -44,7 +46,6 @@ import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
-import com.ioannapergamali.mysmartroute.data.local.RouteEntity
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
@@ -71,10 +72,22 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
     val routes by viewModel.availableRoutes.collectAsState()
     val allPois by poiViewModel.pois.collectAsState()
     val scope = rememberCoroutineScope()
-    var selectedRoute by remember { mutableStateOf<RouteEntity?>(null) }
+    var selectedRouteId by rememberSaveable { mutableStateOf<String?>(null) }
+    val selectedRoute = routes.find { it.id == selectedRouteId }
     var message by remember { mutableStateOf("") }
-    val pois = remember { mutableStateListOf<PoIEntity>() }
-    val userPoiIds = remember { mutableStateListOf<String>() }
+    val poiIds = rememberSaveable(
+        saver = listSaver(
+            save = { it.toList() },
+            restore = { mutableStateListOf<String>().apply { addAll(it) } }
+        )
+    ) { mutableStateListOf<String>() }
+    val userPoiIds = rememberSaveable(
+        saver = listSaver(
+            save = { it.toList() },
+            restore = { mutableStateListOf<String>().apply { addAll(it) } }
+        )
+    ) { mutableStateListOf<String>() }
+    val pois = poiIds.mapNotNull { id -> allPois.find { it.id == id } }
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     var calculating by remember { mutableStateOf(false) }
     var pendingPoi by remember { mutableStateOf<Triple<String, Double, Double>?>(null) }
@@ -90,12 +103,13 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
     val isKeyMissing = apiKey.isBlank()
 
     fun refreshRoute() {
-        if (pois.size >= 2) {
+        val currentPois = poiIds.mapNotNull { id -> allPois.find { it.id == id } }
+        if (currentPois.size >= 2) {
             scope.launch {
                 calculating = true
-                val origin = LatLng(pois.first().lat, pois.first().lng)
-                val destination = LatLng(pois.last().lat, pois.last().lng)
-                val waypoints = pois.drop(1).dropLast(1).map { LatLng(it.lat, it.lng) }
+                val origin = LatLng(currentPois.first().lat, currentPois.first().lng)
+                val destination = LatLng(currentPois.last().lat, currentPois.last().lng)
+                val waypoints = currentPois.drop(1).dropLast(1).map { LatLng(it.lat, it.lng) }
                 val data = MapsUtils.fetchDurationAndPath(
                     origin,
                     destination,
@@ -141,11 +155,11 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
                     abs(poi.lat - lat) < 0.00001 &&
                     abs(poi.lng - lng) < 0.00001
             }?.let { poi ->
-                if (pois.none { it.id == poi.id }) {
+                if (poiIds.none { it == poi.id }) {
                     savedStateHandle?.remove<String>("poiName")
                     savedStateHandle?.remove<Double>("poiLat")
                     savedStateHandle?.remove<Double>("poiLng")
-                    pois.add(poi)
+                    poiIds.add(poi.id)
                     userPoiIds.add(poi.id)
                     refreshRoute()
                     pendingPoi = null
@@ -157,6 +171,12 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
     LaunchedEffect(Unit) {
         routeViewModel.loadRoutes(context, includeAll = true)
         poiViewModel.loadPois(context)
+    }
+
+    LaunchedEffect(selectedRouteId, poiIds, allPois) {
+        if (selectedRouteId != null && poiIds.size >= 2 && pathPoints.isEmpty()) {
+            refreshRoute()
+        }
     }
 
     Scaffold(
@@ -204,7 +224,7 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
                         DropdownMenuItem(
                             text = { Text(route.name) },
                             onClick = {
-                                selectedRoute = route
+                                selectedRouteId = route.id
                                 routeMenuExpanded = false
                                 scope.launch {
                                     val (_, path) = routeViewModel.getRouteDirections(
@@ -213,9 +233,9 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
                                         VehicleType.CAR
                                     )
                                     pathPoints = path
-                                    pois.clear()
+                                    poiIds.clear()
                                     userPoiIds.clear()
-                                    pois.addAll(routeViewModel.getRoutePois(context, route.id))
+                                    poiIds.addAll(routeViewModel.getRoutePois(context, route.id).map { it.id })
                                     path.firstOrNull()?.let {
                                         MapsInitializer.initialize(context)
                                         cameraPositionState.move(
@@ -293,8 +313,8 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
                             Text("${index + 1}. ${poi.name}", modifier = Modifier.weight(1f))
                             Text(poi.type.name, modifier = Modifier.weight(1f))
                             IconButton(onClick = {
-                                val removed = pois.removeAt(index)
-                                userPoiIds.remove(removed.id)
+                                val removedId = poiIds.removeAt(index)
+                                userPoiIds.remove(removedId)
                                 refreshRoute()
                             }) {
                                 Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.remove_point))
