@@ -156,4 +156,6 @@
     <string name="choose_pois">Choose points of interest</string>
     <string name="confirm_poi_selection">Confirm selection</string>
     <string name="recalculate_route">Recalculate route</string>
+    <string name="departure_date">Departure date</string>
+    <string name="no_departures">No scheduled departures</string>
 </resources>
