@@ -96,13 +96,23 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
                 val origin = LatLng(pois.first().lat, pois.first().lng)
                 val destination = LatLng(pois.last().lat, pois.last().lng)
                 val waypoints = pois.drop(1).dropLast(1).map { LatLng(it.lat, it.lng) }
-                val data = MapsUtils.fetchDurationAndPath(origin, destination, apiKey, VehicleType.CAR, waypoints)
+                val data = MapsUtils.fetchDurationAndPath(
+                    origin,
+                    destination,
+                    apiKey,
+                    VehicleType.CAR,
+                    waypoints
+                )
                 pathPoints = data.points
                 data.points.firstOrNull()?.let {
-                    cameraPositionState.move(CameraUpdateFactory.newLatLngZoom(it, 13f))
+                    cameraPositionState.move(
+                        CameraUpdateFactory.newLatLngZoom(it, 13f)
+                    )
                 }
                 calculating = false
             }
+        } else {
+            pathPoints = emptyList()
         }
     }
 
