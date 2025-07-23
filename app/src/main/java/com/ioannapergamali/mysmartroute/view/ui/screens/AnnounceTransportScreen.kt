@@ -45,6 +45,12 @@ import kotlinx.coroutines.launch
 import com.google.firebase.auth.FirebaseAuth
 import com.ioannapergamali.mysmartroute.model.classes.poi.PoiAddress
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.rememberDatePickerState
 
 private fun iconForVehicle(type: VehicleType): ImageVector = when (type) {
     VehicleType.CAR, VehicleType.TAXI -> Icons.Default.DirectionsCar
@@ -92,6 +98,12 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     var costText by remember { mutableStateOf("") }
     var duration by remember { mutableStateOf(0) }
     var calculating by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState()
+    var showDatePicker by remember { mutableStateOf(false) }
+    val dateFormatter = remember { DateTimeFormatter.ofPattern("dd/MM/yyyy") }
+    val selectedDateText = datePickerState.selectedDateMillis?.let { millis ->
+        Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter)
+    } ?: stringResource(R.string.select_date)
     var pois by remember { mutableStateOf<List<PoIEntity>>(emptyList()) }
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     val cameraPositionState = rememberCameraPositionState()
@@ -351,6 +363,25 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 Spacer(Modifier.height(16.dp))
             }
 
+            Button(onClick = { showDatePicker = true }) {
+                Text(selectedDateText)
+            }
+
+            if (showDatePicker) {
+                DatePickerDialog(
+                    onDismissRequest = { showDatePicker = false },
+                    confirmButton = {
+                        TextButton(onClick = { showDatePicker = false }) {
+                            Text(stringResource(android.R.string.ok))
+                        }
+                    }
+                ) {
+                    DatePicker(state = datePickerState)
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+
             OutlinedTextField(
                 value = costText,
                 onValueChange = { costText = it },
@@ -380,8 +411,9 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     val routeId = selectedRouteId
                     val vehicle = selectedVehicle
                     val cost = costText.toDoubleOrNull() ?: 0.0
+                    val date = datePickerState.selectedDateMillis ?: 0L
                     if (routeId != null && vehicle != null) {
-                        declarationViewModel.declareTransport(context, routeId, vehicle, cost, duration)
+                        declarationViewModel.declareTransport(context, routeId, vehicle, cost, duration, date)
                         navController.popBackStack()
                     }
                 },

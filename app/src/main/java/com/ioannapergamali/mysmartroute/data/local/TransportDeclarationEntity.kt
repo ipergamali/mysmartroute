@@ -10,5 +10,7 @@ data class TransportDeclarationEntity(
     val routeId: String = "",
     val vehicleType: String = "",
     val cost: Double = 0.0,
-    val durationMinutes: Int = 0
+    val durationMinutes: Int = 0,
+    /** Ημερομηνία πραγματοποίησης της διαδρομής */
+    val date: Long = 0L
 )

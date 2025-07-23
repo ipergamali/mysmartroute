@@ -16,12 +16,13 @@ class TransportDeclarationViewModel : ViewModel() {
         routeId: String,
         vehicleType: VehicleType,
         cost: Double,
-        durationMinutes: Int
+        durationMinutes: Int,
+        date: Long
     ) {
         viewModelScope.launch {
             val dao = MySmartRouteDatabase.getInstance(context).transportDeclarationDao()
             val id = UUID.randomUUID().toString()
-            val entity = TransportDeclarationEntity(id, routeId, vehicleType.name, cost, durationMinutes)
+            val entity = TransportDeclarationEntity(id, routeId, vehicleType.name, cost, durationMinutes, date)
             dao.insert(entity)
         }
     }
