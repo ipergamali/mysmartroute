@@ -22,35 +22,7 @@ fun BookingStepsIndicator(currentStep: BookingStep) {
     Column {
         BookingStep.ordered.forEach { step ->
             val isCurrent = step == currentStep
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(vertical = 4.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(24.dp)
-                        .clip(CircleShape)
-                        .background(
-                            if (isCurrent) MaterialTheme.colorScheme.primary
-                            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = step.position.toString(),
-                        color = Color.White,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = step.localizedName(),
-                    color = if (isCurrent) MaterialTheme.colorScheme.primary
-                    else MaterialTheme.colorScheme.onSurface,
-                    style = if (isCurrent) MaterialTheme.typography.bodyLarge
-                    else MaterialTheme.typography.bodyMedium
-                )
-            }
+
         }
     }
 }
