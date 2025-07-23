@@ -393,6 +393,7 @@ class AuthenticationViewModel : ViewModel() {
     fun signOut() {
         auth.signOut()
         _currentUserRole.value = null
+        _currentMenus.value = emptyList()
     }
 
     /** Δημόσια μέθοδος που φροντίζει να δημιουργηθούν οι ρόλοι και τα μενού αν χρειάζεται. */
