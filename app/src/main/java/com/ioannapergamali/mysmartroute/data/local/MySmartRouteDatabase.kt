@@ -21,6 +21,8 @@ import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationEntity
 import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationDao
 import com.ioannapergamali.mysmartroute.data.local.AvailabilityEntity
 import com.ioannapergamali.mysmartroute.data.local.AvailabilityDao
+import com.ioannapergamali.mysmartroute.data.local.SeatReservationEntity
+import com.ioannapergamali.mysmartroute.data.local.SeatReservationDao
 import androidx.room.TypeConverters
 import com.ioannapergamali.mysmartroute.data.local.Converters
 
@@ -39,9 +41,10 @@ import com.ioannapergamali.mysmartroute.data.local.Converters
         MovingEntity::class,
         RoutePointEntity::class,
         TransportDeclarationEntity::class,
-        AvailabilityEntity::class
+        AvailabilityEntity::class,
+        SeatReservationEntity::class
     ],
-    version = 34
+    version = 35
 )
 @TypeConverters(Converters::class)
 abstract class MySmartRouteDatabase : RoomDatabase() {
@@ -59,6 +62,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
     abstract fun routePointDao(): RoutePointDao
     abstract fun transportDeclarationDao(): TransportDeclarationDao
     abstract fun availabilityDao(): AvailabilityDao
+    abstract fun seatReservationDao(): SeatReservationDao
 
     companion object {
         @Volatile
@@ -489,6 +493,19 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_34_35 = object : Migration(34, 35) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `seat_reservations` (" +
+                        "`id` TEXT NOT NULL, " +
+                        "`routeId` TEXT NOT NULL, " +
+                        "`userId` TEXT NOT NULL, " +
+                        "PRIMARY KEY(`id`)" +
+                    ")"
+                )
+            }
+        }
+
         private fun prepopulate(db: SupportSQLiteDatabase) {
             Log.d(TAG, "Prepopulating database")
             db.execSQL(
@@ -597,7 +614,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_30_31,
                     MIGRATION_31_32,
                     MIGRATION_32_33,
-                    MIGRATION_33_34
+                    MIGRATION_33_34,
+                    MIGRATION_34_35
                 )
                     .addCallback(object : RoomDatabase.Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {
