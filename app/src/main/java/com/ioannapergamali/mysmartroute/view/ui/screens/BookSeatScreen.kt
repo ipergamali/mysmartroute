@@ -76,7 +76,6 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
     val pois = remember { mutableStateListOf<PoIEntity>() }
     val userPoiIds = remember { mutableStateListOf<String>() }
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
-    var addMenuExpanded by remember { mutableStateOf(false) }
     var calculating by remember { mutableStateOf(false) }
     var pendingPoi by remember { mutableStateOf<Triple<String, Double, Double>?>(null) }
     val datePickerState = rememberDatePickerState()
@@ -294,30 +293,10 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
             }
 
             if (selectedRoute != null) {
-                Box {
-                    Button(onClick = { addMenuExpanded = true }) {
-                        Text(stringResource(R.string.add_poi_option))
-                    }
-                    DropdownMenu(expanded = addMenuExpanded, onDismissRequest = { addMenuExpanded = false }) {
-                        allPois.forEach { poi ->
-                            DropdownMenuItem(text = { Text(poi.name) }, onClick = {
-                                if (pois.none { it.id == poi.id }) {
-                                    pois.add(poi)
-                                    userPoiIds.add(poi.id)
-                                    refreshRoute()
-                                }
-                                addMenuExpanded = false
-                            })
-                        }
-                        Divider()
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.define_poi)) },
-                            onClick = {
-                                addMenuExpanded = false
-                                navController.navigate("definePoi?lat=&lng=&source=&view=false")
-                            }
-                        )
-                    }
+                Button(onClick = {
+                    navController.navigate("definePoi?lat=&lng=&source=&view=false")
+                }) {
+                    Text(stringResource(R.string.add_poi_option))
                 }
 
                 Spacer(Modifier.height(16.dp))
