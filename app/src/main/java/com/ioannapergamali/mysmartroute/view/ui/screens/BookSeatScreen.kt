@@ -136,17 +136,21 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
 
     LaunchedEffect(allPois, pendingPoi) {
         pendingPoi?.let { (name, lat, lng) ->
-            savedStateHandle?.remove<String>("poiName")
-            savedStateHandle?.remove<Double>("poiLat")
-            savedStateHandle?.remove<Double>("poiLng")
-            allPois.find { it.name == name && abs(it.lat - lat) < 0.00001 && abs(it.lng - lng) < 0.00001 }?.let { poi ->
+            allPois.find { poi ->
+                poi.name == name &&
+                    abs(poi.lat - lat) < 0.00001 &&
+                    abs(poi.lng - lng) < 0.00001
+            }?.let { poi ->
                 if (pois.none { it.id == poi.id }) {
+                    savedStateHandle?.remove<String>("poiName")
+                    savedStateHandle?.remove<Double>("poiLat")
+                    savedStateHandle?.remove<Double>("poiLng")
                     pois.add(poi)
                     userPoiIds.add(poi.id)
                     refreshRoute()
+                    pendingPoi = null
                 }
             }
-            pendingPoi = null
         }
     }
 
