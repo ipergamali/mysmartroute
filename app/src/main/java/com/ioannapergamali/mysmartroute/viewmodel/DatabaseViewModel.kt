@@ -28,6 +28,7 @@ import com.ioannapergamali.mysmartroute.data.local.RouteEntity
 import com.ioannapergamali.mysmartroute.data.local.RoutePointEntity
 import com.ioannapergamali.mysmartroute.data.local.MovingEntity
 import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationEntity
+import com.ioannapergamali.mysmartroute.data.local.AvailabilityEntity
 import com.ioannapergamali.mysmartroute.utils.toRouteWithPoints
 import com.ioannapergamali.mysmartroute.utils.toMovingEntity
 import com.ioannapergamali.mysmartroute.utils.toTransportDeclarationEntity
@@ -83,7 +84,8 @@ class DatabaseViewModel : ViewModel() {
                 db.routeDao().getAll(),
                 db.routePointDao().getAll(),
                 db.movingDao().getAll(),
-                db.transportDeclarationDao().getAll()
+                db.transportDeclarationDao().getAll(),
+                db.availabilityDao().getAll()
             ) { values ->
                 val users = values[0] as List<UserEntity>
                 val vehicles = values[1] as List<VehicleEntity>
@@ -98,15 +100,32 @@ class DatabaseViewModel : ViewModel() {
                 val routePoints = values[10] as List<RoutePointEntity>
                 val movings = values[11] as List<MovingEntity>
                 val declarations = values[12] as List<TransportDeclarationEntity>
+                val availabilities = values[13] as List<AvailabilityEntity>
 
-                DatabaseData(users, vehicles, pois, poiTypes, settings, roles, menus, options, languages, routes, routePoints, movings, declarations)
+                DatabaseData(
+                    users,
+                    vehicles,
+                    pois,
+                    poiTypes,
+                    settings,
+                    roles,
+                    menus,
+                    options,
+                    languages,
+                    routes,
+                    routePoints,
+                    movings,
+                    declarations,
+                    availabilities
+                )
             }.collect { data ->
                 Log.d(
                     TAG,
                     "Local data -> users:${data.users.size} vehicles:${data.vehicles.size} " +
                     "pois:${data.pois.size} poiTypes:${data.poiTypes.size} settings:${data.settings.size} roles:${data.roles.size} " +
                         "menus:${data.menus.size} options:${data.menuOptions.size} routes:${data.routes.size} " +
-                        "points:${data.routePoints.size} movings:${data.movings.size} declarations:${data.declarations.size}"
+                    "points:${data.routePoints.size} movings:${data.movings.size} declarations:${data.declarations.size}"
+                        + " availabilities:${data.availabilities.size}"
                 )
                 _localData.value = data
             }
@@ -208,7 +227,7 @@ class DatabaseViewModel : ViewModel() {
                 .documents.mapNotNull { it.toTransportDeclarationEntity() }
 
             Log.d(TAG, "Firebase data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} types:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size} routes:${routes.size} movings:${movings.size} declarations:${declarations.size}")
-            _firebaseData.value = DatabaseData(users, vehicles, pois, poiTypes, settings, roles, menus, menuOptions, emptyList(), routes, routePoints, movings, declarations)
+            _firebaseData.value = DatabaseData(users, vehicles, pois, poiTypes, settings, roles, menus, menuOptions, emptyList(), routes, routePoints, movings, declarations, emptyList())
         }
     }
 
@@ -479,7 +498,8 @@ data class DatabaseData(
     val routes: List<RouteEntity>,
     val routePoints: List<RoutePointEntity>,
     val movings: List<MovingEntity>,
-    val declarations: List<TransportDeclarationEntity>
+    val declarations: List<TransportDeclarationEntity>,
+    val availabilities: List<AvailabilityEntity>
 )
 
 sealed class SyncState {
