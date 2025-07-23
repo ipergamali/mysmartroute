@@ -1,6 +1,7 @@
 package com.ioannapergamali.mysmartroute.viewmodel
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
