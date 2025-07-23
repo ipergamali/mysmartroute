@@ -109,15 +109,15 @@ class RouteViewModel : ViewModel() {
         return points.mapNotNull { poiDao.findById(it.poiId) }
     }
 
-    suspend fun addRoute(context: Context, poiIds: List<String>, name: String): Boolean {
-        if (poiIds.size < 2 || name.isBlank()) return false
+    suspend fun addRoute(context: Context, poiIds: List<String>, name: String): String? {
+        if (poiIds.size < 2 || name.isBlank()) return null
         val db = MySmartRouteDatabase.getInstance(context)
         val routeDao = db.routeDao()
         val pointDao = db.routePointDao()
 
-        if (routeDao.findByName(name) != null) return false
+        if (routeDao.findByName(name) != null) return null
 
-        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return false
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return null
         val id = UUID.randomUUID().toString()
         val entity = RouteEntity(id, userId, name, poiIds.first(), poiIds.last())
         val points = poiIds.mapIndexed { index, p -> RoutePointEntity(id, index, p) }
@@ -129,7 +129,7 @@ class RouteViewModel : ViewModel() {
         routeDao.insert(entity)
         points.forEach { pointDao.insert(it) }
 
-        return true
+        return id
     }
 
     /**

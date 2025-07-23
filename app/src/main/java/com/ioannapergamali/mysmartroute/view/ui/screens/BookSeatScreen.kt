@@ -145,6 +145,31 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
                     pendingPoi = Triple(newName, lat, lng)
                     poiViewModel.loadPois(context)
                 }
+
+                val newRoute = savedStateHandle?.get<String>("newRouteId")
+                if (newRoute != null) {
+                    savedStateHandle.remove<String>("newRouteId")
+                    selectedRouteId = newRoute
+                    viewModel.refreshRoutes()
+                    routeViewModel.loadRoutes(context, includeAll = true)
+                    scope.launch {
+                        val (_, path) = routeViewModel.getRouteDirections(
+                            context,
+                            newRoute,
+                            VehicleType.CAR
+                        )
+                        pathPoints = path
+                        poiIds.clear()
+                        userPoiIds.clear()
+                        poiIds.addAll(routeViewModel.getRoutePois(context, newRoute).map { it.id })
+                        path.firstOrNull()?.let {
+                            MapsInitializer.initialize(context)
+                            cameraPositionState.move(
+                                CameraUpdateFactory.newLatLngZoom(it, 13f)
+                            )
+                        }
+                    }
+                }
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
