@@ -196,6 +196,7 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
             var routeMenuExpanded by remember { mutableStateOf(false) }
 
             val currentStep = when {
+                routes.isEmpty() -> BookingStep.DECLARE_ROUTE
                 selectedRoute == null -> BookingStep.SELECT_ROUTE
                 poiIds.size < 2 -> BookingStep.ADD_POI
                 pathPoints.isEmpty() -> BookingStep.RECALCULATE_ROUTE
@@ -205,6 +206,12 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
 
             BookingStepsIndicator(currentStep = currentStep)
             Spacer(modifier = Modifier.height(16.dp))
+
+            Button(onClick = { navController.navigate("declareRoute") }) {
+                Text(stringResource(R.string.declare_route))
+            }
+
+            Spacer(Modifier.height(16.dp))
 
             ExposedDropdownMenuBox(
                 expanded = routeMenuExpanded,
@@ -265,21 +272,24 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
 
             Spacer(Modifier.height(16.dp))
 
-            Button(onClick = { showDatePicker = true }) {
-                Text(selectedDateText)
+            if (selectedRoute != null) {
+                Button(onClick = {
+                    navController.navigate("definePoi?lat=&lng=&source=&view=false")
+                }) {
+                    Text(stringResource(R.string.add_poi_option))
+                }
+
+                Spacer(Modifier.height(16.dp))
             }
 
-            if (showDatePicker) {
-                DatePickerDialog(
-                    onDismissRequest = { showDatePicker = false },
-                    confirmButton = {
-                        TextButton(onClick = { showDatePicker = false }) {
-                            Text(stringResource(android.R.string.ok))
-                        }
-                    }
-                ) {
-                    DatePicker(state = datePickerState)
+            if (pois.size >= 2) {
+                Button(onClick = { refreshRoute() }, enabled = !calculating) {
+                    Icon(Icons.Default.Refresh, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(R.string.recalculate_route))
                 }
+
+                Spacer(Modifier.height(16.dp))
             }
 
             if (selectedRoute != null && pathPoints.isNotEmpty() && !isKeyMissing) {
@@ -340,28 +350,21 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
                 Spacer(Modifier.height(16.dp))
             }
 
-            if (selectedRoute != null) {
-                Button(onClick = {
-                    navController.navigate("definePoi?lat=&lng=&source=&view=false")
-                }) {
-                    Text(stringResource(R.string.add_poi_option))
-                }
-
-                Spacer(Modifier.height(16.dp))
+            Button(onClick = { showDatePicker = true }) {
+                Text(selectedDateText)
             }
 
-            if (pois.size >= 2) {
-                Button(onClick = { refreshRoute() }, enabled = !calculating) {
-                    Icon(Icons.Default.Refresh, contentDescription = null)
-                    Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.recalculate_route))
+            if (showDatePicker) {
+                DatePickerDialog(
+                    onDismissRequest = { showDatePicker = false },
+                    confirmButton = {
+                        TextButton(onClick = { showDatePicker = false }) {
+                            Text(stringResource(android.R.string.ok))
+                        }
+                    }
+                ) {
+                    DatePicker(state = datePickerState)
                 }
-
-                Spacer(Modifier.height(16.dp))
-            }
-
-            Button(onClick = { navController.navigate("declareRoute") }) {
-                Text(stringResource(R.string.declare_route))
             }
 
             Spacer(Modifier.height(16.dp))
