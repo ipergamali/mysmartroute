@@ -20,8 +20,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.maps.android.compose.*
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
@@ -30,12 +32,18 @@ import com.ioannapergamali.mysmartroute.utils.PlacesHelper
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.model.classes.poi.PoiAddress
+import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
+import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import androidx.compose.material3.menuAnchor
 import com.ioannapergamali.mysmartroute.view.ui.util.observeBubble
 import com.ioannapergamali.mysmartroute.view.ui.util.LocalKeyboardBubbleState
+import androidx.compose.ui.graphics.Color
 
 private const val TAG = "DefinePoiScreen"
+private const val MARKER_ORANGE = BitmapDescriptorFactory.HUE_ORANGE
+private const val MARKER_BLUE = BitmapDescriptorFactory.HUE_BLUE
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,7 +53,8 @@ fun DefinePoiScreen(
     initialLat: Double? = null,
     initialLng: Double? = null,
     source: String? = null,
-    viewOnly: Boolean = false
+    viewOnly: Boolean = false,
+    routeId: String? = null
 ) {
     val viewModel: PoIViewModel = viewModel()
     val addState by viewModel.addState.collectAsState()
@@ -65,6 +74,9 @@ fun DefinePoiScreen(
     var addressQuery by remember { mutableStateOf("") }
     var addressResults by remember { mutableStateOf<List<String>>(emptyList()) }
     var addressMenuExpanded by remember { mutableStateOf(false) }
+    val routeViewModel: RouteViewModel = viewModel()
+    var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
+    var routePois by remember { mutableStateOf<List<PoIEntity>>(emptyList()) }
     val initialLatLng = remember(initialLat, initialLng) {
         if (initialLat != null && initialLng != null) LatLng(initialLat, initialLng) else null
     }
@@ -87,6 +99,23 @@ fun DefinePoiScreen(
     val mapProperties = remember { MapProperties(latLngBoundsForCameraTarget = heraklionBounds) }
 
     LaunchedEffect(Unit) { viewModel.loadPois(context) }
+
+    LaunchedEffect(routeId) {
+        if (!routeId.isNullOrBlank()) {
+            routeViewModel.loadRoutes(context, includeAll = true)
+            val pois = routeViewModel.getRoutePois(context, routeId)
+            routePois = pois
+            val (_, points) = routeViewModel.getRouteDirections(
+                context,
+                routeId,
+                VehicleType.CAR
+            )
+            pathPoints = points
+            points.firstOrNull()?.let {
+                cameraPositionState.move(CameraUpdateFactory.newLatLngZoom(it, 13f))
+            }
+        }
+    }
 
 
     LaunchedEffect(addState) {
@@ -138,7 +167,22 @@ fun DefinePoiScreen(
                         }
                     }
                 ) {
-                    selectedLatLng?.let { Marker(state = markerState) }
+                    if (pathPoints.isNotEmpty()) {
+                        Polyline(points = pathPoints, color = Color.Green)
+                    }
+                    routePois.forEach { poi ->
+                        Marker(
+                            state = MarkerState(position = LatLng(poi.lat, poi.lng)),
+                            title = poi.name,
+                            icon = BitmapDescriptorFactory.defaultMarker(MARKER_BLUE)
+                        )
+                    }
+                    selectedLatLng?.let {
+                        Marker(
+                            state = markerState,
+                            icon = BitmapDescriptorFactory.defaultMarker(MARKER_ORANGE)
+                        )
+                    }
                 }
                 LaunchedEffect(selectedLatLng) {
                     selectedLatLng?.let { latLng ->
