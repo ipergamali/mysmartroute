@@ -20,7 +20,7 @@ fun BookingStepsIndicator(currentStep: BookingStep) {
         BookingStep.ordered.forEach { step ->
             val isCurrent = step == currentStep
             Text(
-                text = "${'$'}{step.position}. ${'$'}{step.localizedName()}",
+                text = "${'$'}{step.position} ${'$'}{step.localizedName()}",
                 color = if (isCurrent) MaterialTheme.colorScheme.primary
                 else MaterialTheme.colorScheme.onSurface,
                 style = if (isCurrent) MaterialTheme.typography.bodyLarge
