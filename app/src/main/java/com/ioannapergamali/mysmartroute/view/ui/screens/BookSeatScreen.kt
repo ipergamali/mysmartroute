@@ -299,7 +299,8 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
 
             if (selectedRoute != null) {
                 Button(onClick = {
-                    navController.navigate("definePoi?lat=&lng=&source=&view=false")
+                    val rId = selectedRouteId ?: ""
+                    navController.navigate("definePoi?lat=&lng=&source=&view=false&routeId=$rId")
                 }) {
                     Text(stringResource(R.string.add_poi_option))
                 }
