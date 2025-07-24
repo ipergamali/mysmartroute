@@ -9,6 +9,7 @@ import com.ioannapergamali.mysmartroute.data.local.RouteEntity
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.SeatReservationEntity
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
+import com.ioannapergamali.mysmartroute.utils.toVehicleEntity
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -32,23 +33,28 @@ class BookingViewModel : ViewModel() {
         }
     }
 
-    fun reserveSeat(context: Context, routeId: String): Boolean {
+    fun reserveSeat(context: Context, routeId: String, date: Long): Boolean {
         val userId = auth.currentUser?.uid ?: return false
-        val routeRef = db.collection("served_movings").document(routeId)
+        val routeRef = db.collection("served_movings").document("${routeId}_$date")
         val reservationId = UUID.randomUUID().toString()
         return try {
             db.runTransaction { tx ->
                 val served = tx.get(routeRef)
                     .toObject(com.ioannapergamali.mysmartroute.model.classes.transports.ServedMoving::class.java)
                     ?: return@runTransaction false
-                if (served.hasAvailableSeat(capacity = 4)) {
+                val vehicleSnap = tx.get(
+                    db.collection("vehicles").document(served.vehicleId)
+                )
+                val vehicle = vehicleSnap.toVehicleEntity()
+                val capacity = vehicle?.seat ?: 4
+                if (served.hasAvailableSeat(capacity)) {
                     served.passengers.add(userId)
                     tx.set(routeRef, served)
                     true
                 } else false
             }
 
-            val reservation = SeatReservationEntity(reservationId, routeId, userId)
+            val reservation = SeatReservationEntity(reservationId, routeId, userId, date)
             viewModelScope.launch {
                 MySmartRouteDatabase.getInstance(context).seatReservationDao().insert(reservation)
             }

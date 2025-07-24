@@ -427,7 +427,8 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
                 enabled = selectedRoute != null,
                 onClick = {
                     selectedRoute?.let { r ->
-                        val success = viewModel.reserveSeat(context, r.id)
+                        val dateMillis = datePickerState.selectedDateMillis ?: 0L
+                        val success = viewModel.reserveSeat(context, r.id, dateMillis)
                         message = if (success) {
                             context.getString(R.string.seat_booked)
                         } else {

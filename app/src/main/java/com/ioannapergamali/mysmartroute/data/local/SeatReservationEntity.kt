@@ -8,5 +8,7 @@ import androidx.room.PrimaryKey
 data class SeatReservationEntity(
     @PrimaryKey val id: String = "",
     val routeId: String = "",
-    val userId: String = ""
+    val userId: String = "",
+    /** Ημερομηνία κράτησης σε millis */
+    val date: Long = 0L
 )
