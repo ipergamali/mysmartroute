@@ -238,9 +238,16 @@ class AuthenticationViewModel : ViewModel() {
                 .document(uid)
                 .get()
                 .addOnSuccessListener { document ->
-                    val roleName = document.getString("role")
-                        ?: document.getString("roleId")
-                    val roleId = document.getString("roleId") ?: ""
+                    val roleNameRaw = document.getString("role")
+                    val roleIdField = when (val field = document.get("roleId")) {
+                        is String -> field
+                        is DocumentReference -> field.id
+                        else -> null
+                    }
+                    val roleName = roleNameRaw ?: roleIdField?.let { id ->
+                        roleIds.entries.find { it.value == id }?.key?.name
+                    }
+                    val roleId = roleIdField ?: ""
                     Log.i(TAG, "Role from Firestore: $roleName")
                     _currentUserRole.value = roleName?.let {
                         runCatching { UserRole.valueOf(it) }.getOrNull()
