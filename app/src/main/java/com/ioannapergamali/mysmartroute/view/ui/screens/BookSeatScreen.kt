@@ -3,6 +3,8 @@ package com.ioannapergamali.mysmartroute.view.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Flag
+import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
@@ -375,21 +377,35 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
                         ) {
                             Text("${index + 1}. ${poi.name}", modifier = Modifier.weight(1f))
                             Text(poi.type.name, modifier = Modifier.weight(1f))
-                            Button(
+                            IconButton(
                                 onClick = {
                                     startIndex = index
                                     if (endIndex != null && endIndex!! < index) endIndex = null
                                 },
-                                modifier = Modifier.padding(end = 4.dp)
-                            ) { Text(stringResource(R.string.select_boarding)) }
-                            Button(
+                                modifier = Modifier
+                                    .padding(end = 4.dp)
+                                    .size(32.dp)
+                            ) {
+                                Icon(
+                                    Icons.Default.Flag,
+                                    contentDescription = stringResource(R.string.select_boarding)
+                                )
+                            }
+                            IconButton(
                                 onClick = {
                                     if (startIndex == null || index >= startIndex!!) {
                                         endIndex = index
                                     }
                                 },
-                                modifier = Modifier.padding(end = 4.dp)
-                            ) { Text(stringResource(R.string.select_dropoff)) }
+                                modifier = Modifier
+                                    .padding(end = 4.dp)
+                                    .size(32.dp)
+                            ) {
+                                Icon(
+                                    Icons.Default.Place,
+                                    contentDescription = stringResource(R.string.select_dropoff)
+                                )
+                            }
                             IconButton(onClick = {
                                 val removedId = poiIds.removeAt(index)
                                 userPoiIds.remove(removedId)
