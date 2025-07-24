@@ -340,10 +340,15 @@ class AuthenticationViewModel : ViewModel() {
                     is String -> field
                     is DocumentReference -> field.id
                     else -> null
-                } ?: return@launch
-                user?.let { dbLocal.userDao().insert(it.copy(roleId = remoteRoleId)) }
-                Log.i(TAG, "Fetched roleId from Firestore: $remoteRoleId")
-                remoteRoleId
+                }
+                val fallbackRole = doc.getString("role")?.let {
+                    runCatching { UserRole.valueOf(it) }.getOrNull()
+                }
+                val resolvedRoleId = remoteRoleId ?: fallbackRole?.let { roleIds[it] }
+                    ?: return@launch
+                user?.let { dbLocal.userDao().insert(it.copy(roleId = resolvedRoleId)) }
+                Log.i(TAG, "Fetched roleId from Firestore: $resolvedRoleId")
+                resolvedRoleId
             }
 
             Log.i(TAG, "Using roleId: $roleId")
