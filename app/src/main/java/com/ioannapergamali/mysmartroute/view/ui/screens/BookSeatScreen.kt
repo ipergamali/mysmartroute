@@ -3,6 +3,8 @@ package com.ioannapergamali.mysmartroute.view.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Flag
+import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
@@ -26,6 +28,7 @@ import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -90,6 +93,8 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
             restore = { mutableStateListOf<String>().apply { addAll(it) } }
         )
     ) { mutableStateListOf<String>() }
+    var startIndex by rememberSaveable { mutableStateOf<Int?>(null) }
+    var endIndex by rememberSaveable { mutableStateOf<Int?>(null) }
     val pois = poiIds.mapNotNull { id -> allPois.find { it.id == id } }
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     var calculating by remember { mutableStateOf(false) }
@@ -163,6 +168,8 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
                         pathPoints = path
                         poiIds.clear()
                         userPoiIds.clear()
+                        startIndex = null
+                        endIndex = null
                         poiIds.addAll(routeViewModel.getRoutePois(context, newRoute).map { it.id })
                         path.firstOrNull()?.let {
                             MapsInitializer.initialize(context)
@@ -284,6 +291,8 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
                                     pathPoints = path
                                     poiIds.clear()
                                     userPoiIds.clear()
+                                    startIndex = null
+                                    endIndex = null
                                     poiIds.addAll(routeViewModel.getRoutePois(context, route.id).map { it.id })
                                     path.firstOrNull()?.let {
                                         MapsInitializer.initialize(context)
@@ -362,12 +371,50 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
                     }
                     Divider()
                     pois.forEachIndexed { index, poi ->
-                        Row(modifier = Modifier.fillMaxWidth()) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
                             Text("${index + 1}. ${poi.name}", modifier = Modifier.weight(1f))
                             Text(poi.type.name, modifier = Modifier.weight(1f))
+                            IconButton(
+                                onClick = {
+                                    startIndex = index
+                                    if (endIndex != null && endIndex!! < index) endIndex = null
+                                },
+                                modifier = Modifier
+                                    .padding(end = 4.dp)
+                                    .size(32.dp)
+                            ) {
+                                Icon(
+                                    Icons.Default.Flag,
+                                    contentDescription = stringResource(R.string.select_boarding)
+                                )
+                            }
+                            IconButton(
+                                onClick = {
+                                    if (startIndex == null || index >= startIndex!!) {
+                                        endIndex = index
+                                    }
+                                },
+                                modifier = Modifier
+                                    .padding(end = 4.dp)
+                                    .size(32.dp)
+                            ) {
+                                Icon(
+                                    Icons.Default.Place,
+                                    contentDescription = stringResource(R.string.select_dropoff)
+                                )
+                            }
                             IconButton(onClick = {
                                 val removedId = poiIds.removeAt(index)
                                 userPoiIds.remove(removedId)
+                                if (startIndex != null) {
+                                    if (index == startIndex) startIndex = null else if (index < startIndex!!) startIndex = startIndex!! - 1
+                                }
+                                if (endIndex != null) {
+                                    if (index == endIndex) endIndex = null else if (index < endIndex!!) endIndex = endIndex!! - 1
+                                }
                                 refreshRoute()
                             }) {
                                 Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.remove_point))
@@ -375,6 +422,36 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
                         }
                     }
                 }
+
+                Spacer(Modifier.height(16.dp))
+
+                OutlinedTextField(
+                    value = startIndex?.let { "${it + 1}. ${pois[it].name}" } ?: "",
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text(stringResource(R.string.boarding_stop)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.small,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                    )
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                OutlinedTextField(
+                    value = endIndex?.let { "${it + 1}. ${pois[it].name}" } ?: "",
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text(stringResource(R.string.dropoff_stop)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.small,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                    )
+                )
 
                 Spacer(Modifier.height(16.dp))
             }
