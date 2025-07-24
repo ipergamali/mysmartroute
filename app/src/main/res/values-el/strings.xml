@@ -147,4 +147,8 @@
     <string name="choose_pois">Επιλογή σημείων ενδιαφέροντος</string>
     <string name="confirm_poi_selection">Επιβεβαίωση επιλογής</string>
     <string name="recalculate_route">Επανασχεδίαση διαδρομής</string>
+    <string name="select_boarding">Επιλογή ως στάση επιβίβασης</string>
+    <string name="select_dropoff">Επιλογή ως στάση αποβίβασης</string>
+    <string name="boarding_stop">Στάση εκκίνησης</string>
+    <string name="dropoff_stop">Στάση αποβίβασης</string>
 </resources>
