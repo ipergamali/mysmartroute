@@ -448,8 +448,30 @@ class AuthenticationViewModel : ViewModel() {
 
             roleDao.insert(RoleEntity(id = roleId, name = roleName, parentRoleId = parentId))
 
+            cfg.menus.forEachIndexed { menuIndex, menuCfg ->
+                val menuId = "menu_${role.name.lowercase()}_${menuIndex}"
+                val menuRef = roleRef.collection("menus").document(menuId)
+                batch.set(menuRef, mapOf("id" to menuId, "titleKey" to menuCfg.titleKey))
+                commitNeeded = true
+                insertMenuSafely(menuDao, roleDao, MenuEntity(menuId, roleId, menuCfg.titleKey))
 
-
+                menuCfg.options.forEachIndexed { optIndex, optCfg ->
+                    val optId = "opt_${role.name.lowercase()}_${menuIndex}_${optIndex}"
+                    batch.set(
+                        menuRef.collection("options").document(optId),
+                        mapOf("id" to optId, "titleKey" to optCfg.titleKey, "route" to optCfg.route)
+                    )
+                    commitNeeded = true
+                    optionDao.insert(
+                        MenuOptionEntity(
+                            id = optId,
+                            menuId = menuId,
+                            titleResKey = optCfg.titleKey,
+                            route = optCfg.route
+                        )
+                    )
+                }
+            }
         }
 
         if (commitNeeded) {

@@ -34,7 +34,8 @@
           {"titleKey": "find_passengers", "route": "findPassengers"},
           {"titleKey": "print_list", "route": "printList"},
           {"titleKey": "print_scheduled", "route": "printScheduled"},
-          {"titleKey": "print_completed", "route": "printCompleted"}
+          {"titleKey": "print_completed", "route": "printCompleted"},
+          {"titleKey": "prepare_complete_route", "route": "prepareCompleteRoute"}
         ]
       }
     ]
