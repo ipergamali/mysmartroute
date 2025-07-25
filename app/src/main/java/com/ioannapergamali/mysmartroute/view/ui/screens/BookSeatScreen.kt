@@ -378,6 +378,13 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
                             Text("${index + 1}. ${poi.name}", modifier = Modifier.weight(1f))
                             Text(poi.type.name, modifier = Modifier.weight(1f))
 
+                            IconButton(onClick = { startIndex = index }) {
+                                Text("\uD83C\uDD95")
+                            }
+                            IconButton(onClick = { endIndex = index }) {
+                                Text("\uD83D\uDD1A")
+                            }
+
                             IconButton(onClick = {
                                 val removedId = poiIds.removeAt(index)
                                 userPoiIds.remove(removedId)
@@ -402,7 +409,6 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
                     onValueChange = {},
                     readOnly = true,
                     label = { Text(stringResource(R.string.boarding_stop)) },
-                    leadingIcon = { Text("\uD83C\uDD95") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = MaterialTheme.shapes.small,
                     colors = OutlinedTextFieldDefaults.colors(
@@ -418,7 +424,6 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
                     onValueChange = {},
                     readOnly = true,
                     label = { Text(stringResource(R.string.dropoff_stop)) },
-                    leadingIcon = { Text("\uD83D\uDD1A") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = MaterialTheme.shapes.small,
                     colors = OutlinedTextFieldDefaults.colors(
