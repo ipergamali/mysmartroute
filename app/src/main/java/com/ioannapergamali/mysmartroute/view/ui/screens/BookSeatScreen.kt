@@ -402,6 +402,7 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
                     onValueChange = {},
                     readOnly = true,
                     label = { Text(stringResource(R.string.boarding_stop)) },
+                    leadingIcon = { Text("\uD83C\uDD95") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = MaterialTheme.shapes.small,
                     colors = OutlinedTextFieldDefaults.colors(
@@ -417,6 +418,7 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
                     onValueChange = {},
                     readOnly = true,
                     label = { Text(stringResource(R.string.dropoff_stop)) },
+                    leadingIcon = { Text("\uD83D\uDD1A") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = MaterialTheme.shapes.small,
                     colors = OutlinedTextFieldDefaults.colors(
