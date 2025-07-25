@@ -44,7 +44,7 @@ import com.ioannapergamali.mysmartroute.data.local.Converters
         AvailabilityEntity::class,
         SeatReservationEntity::class
     ],
-    version = 36
+    version = 37
 )
 @TypeConverters(Converters::class)
 abstract class MySmartRouteDatabase : RoomDatabase() {
@@ -250,6 +250,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                 insertOption("opt_driver_5", driverMenuId, "print_list", "printList")
                 insertOption("opt_driver_6", driverMenuId, "print_scheduled", "printScheduled")
                 insertOption("opt_driver_7", driverMenuId, "print_completed", "printCompleted")
+                insertOption("opt_driver_8", driverMenuId, "prepare_complete_route", "prepareCompleteRoute")
 
                 val adminMenuId = "menu_admin_main"
                 insertMenu(adminMenuId, "role_admin", "admin_menu_title")
@@ -514,6 +515,14 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_36_37 = object : Migration(36, 37) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "INSERT INTO `menu_options` (`id`, `menuId`, `titleResKey`, `route`) VALUES ('opt_driver_8', 'menu_driver_main', 'prepare_complete_route', 'prepareCompleteRoute')"
+                )
+            }
+        }
+
         private fun prepopulate(db: SupportSQLiteDatabase) {
             Log.d(TAG, "Prepopulating database")
             db.execSQL(
@@ -571,6 +580,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             insertOption("opt_driver_5", driverMenuId, "print_list", "printList")
             insertOption("opt_driver_6", driverMenuId, "print_scheduled", "printScheduled")
             insertOption("opt_driver_7", driverMenuId, "print_completed", "printCompleted")
+            insertOption("opt_driver_8", driverMenuId, "prepare_complete_route", "prepareCompleteRoute")
 
             val adminMenuId = "menu_admin_main"
             insertMenu(adminMenuId, "role_admin", "admin_menu_title")
@@ -624,7 +634,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_32_33,
                     MIGRATION_33_34,
                     MIGRATION_34_35,
-                    MIGRATION_35_36
+                    MIGRATION_35_36,
+                    MIGRATION_36_37
                 )
                     .addCallback(object : RoomDatabase.Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {
