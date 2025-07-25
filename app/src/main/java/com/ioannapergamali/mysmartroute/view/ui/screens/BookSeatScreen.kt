@@ -378,6 +378,13 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
                             Text("${index + 1}. ${poi.name}", modifier = Modifier.weight(1f))
                             Text(poi.type.name, modifier = Modifier.weight(1f))
 
+                            IconButton(onClick = { startIndex = index }) {
+                                Text("\uD83C\uDD95")
+                            }
+                            IconButton(onClick = { endIndex = index }) {
+                                Text("\uD83D\uDD1A")
+                            }
+
                             IconButton(onClick = {
                                 val removedId = poiIds.removeAt(index)
                                 userPoiIds.remove(removedId)
