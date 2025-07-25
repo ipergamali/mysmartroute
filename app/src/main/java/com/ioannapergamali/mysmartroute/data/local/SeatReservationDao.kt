@@ -13,4 +13,7 @@ interface SeatReservationDao {
 
     @Query("SELECT * FROM seat_reservations WHERE userId = :userId")
     fun getReservationsForUser(userId: String): Flow<List<SeatReservationEntity>>
+
+    @Query("SELECT * FROM seat_reservations WHERE routeId = :routeId")
+    fun getReservationsForRoute(routeId: String): Flow<List<SeatReservationEntity>>
 }

@@ -81,6 +81,7 @@
     <string name="print_list">Εκτύπωση λίστας επιβατών</string>
     <string name="print_scheduled">Εκτύπωση λίστας για προγραμματισμένες μεταφορές</string>
     <string name="print_completed">Εκτύπωση λίστας για ολοκληρωμένες μεταφορές</string>
+    <string name="prepare_complete_route">Προετοιμασία ολοκλήρωσης διαδρομής</string>
     <string name="init_system">Αρχικοποίηση συστήματος</string>
     <string name="create_user">Δημιουργία λογαριασμού χρήστη</string>
     <string name="edit_privileges">Αλλαγή δικαιωμάτων χρήστη</string>

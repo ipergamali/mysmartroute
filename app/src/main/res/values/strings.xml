@@ -79,6 +79,7 @@
     <string name="print_list">Print Passenger List</string>
     <string name="print_scheduled">Print Passenger List for Scheduled Transports</string>
     <string name="print_completed">Print Passenger List for Completed Transports</string>
+    <string name="prepare_complete_route">Prepare Route Completion</string>
     <string name="init_system">Initialize System</string>
     <string name="create_user">Create User Account</string>
     <string name="edit_privileges">Promote or Demote User</string>
