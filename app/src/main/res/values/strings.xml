@@ -165,4 +165,5 @@
     <string name="boarding_stop">Boarding stop</string>
     <string name="dropoff_stop">Drop-off stop</string>
     <string name="passenger">Passenger</string>
+    <string name="no_reservations">No reservations found</string>
 </resources>
