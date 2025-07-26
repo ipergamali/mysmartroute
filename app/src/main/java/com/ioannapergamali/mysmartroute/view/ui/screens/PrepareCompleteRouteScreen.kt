@@ -76,14 +76,6 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
         }
     }
 
-    LaunchedEffect(reservations) {
-        reservations.forEach { res ->
-            if (!userNames.containsKey(res.userId)) {
-                val name = userViewModel.getUserName(context, res.userId)
-                userNames[res.userId] = name
-            }
-        }
-    }
 
     Scaffold(
         topBar = {
@@ -182,9 +174,7 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                     }
                     Divider()
                     reservations.forEach { res ->
-                        val userName = userNames[res.userId] ?: res.userId
-                        val startName = allPois.find { it.id == res.startPoiId }?.name ?: "-"
-                        val endName = allPois.find { it.id == res.endPoiId }?.name ?: "-"
+
                         Row(modifier = Modifier.fillMaxWidth()) {
                             Text(userName, modifier = Modifier.weight(1f))
                             Text(startName, modifier = Modifier.weight(1f))
