@@ -35,7 +35,13 @@ class BookingViewModel : ViewModel() {
         }
     }
 
-    fun reserveSeat(context: Context, routeId: String, date: Long): Boolean {
+    fun reserveSeat(
+        context: Context,
+        routeId: String,
+        date: Long,
+        startPoiId: String,
+        endPoiId: String
+    ): Boolean {
         val userId = auth.currentUser?.uid ?: return false
         val reservationId = UUID.randomUUID().toString()
         return try {
@@ -53,7 +59,14 @@ class BookingViewModel : ViewModel() {
                 if (existing.size() >= declaration.seats) {
                     return@runBlocking false
                 }
-                val reservation = SeatReservationEntity(reservationId, routeId, userId, date)
+                val reservation = SeatReservationEntity(
+                    reservationId,
+                    routeId,
+                    userId,
+                    date,
+                    startPoiId,
+                    endPoiId
+                )
                 db.collection("seat_reservations").document(reservationId)
                     .set(reservation.toFirestoreMap()).await()
                 viewModelScope.launch {

@@ -10,5 +10,9 @@ data class SeatReservationEntity(
     val routeId: String = "",
     val userId: String = "",
     /** Ημερομηνία κράτησης σε millis */
-    val date: Long = 0L
+    val date: Long = 0L,
+    /** Σημείο επιβίβασης */
+    val startPoiId: String = "",
+    /** Σημείο αποβίβασης */
+    val endPoiId: String = ""
 )
