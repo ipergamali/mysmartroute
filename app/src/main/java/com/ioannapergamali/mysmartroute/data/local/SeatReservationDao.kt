@@ -22,4 +22,14 @@ interface SeatReservationDao {
 
     @Query("SELECT * FROM seat_reservations WHERE declarationId = :declarationId")
     fun getReservationsForDeclaration(declarationId: String): Flow<List<SeatReservationEntity>>
+
+    /** Ελέγχει αν υπάρχει ήδη κράτηση για τον ίδιο χρήστη, διαδρομή και ημερομηνία */
+    @Query(
+        "SELECT * FROM seat_reservations WHERE userId = :userId AND routeId = :routeId AND date = :date LIMIT 1"
+    )
+    suspend fun findUserReservation(
+        userId: String,
+        routeId: String,
+        date: Long
+    ): SeatReservationEntity?
 }

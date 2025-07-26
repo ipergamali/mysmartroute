@@ -15,6 +15,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import java.util.UUID
 
 class BookingViewModel : ViewModel() {
@@ -52,11 +53,39 @@ class BookingViewModel : ViewModel() {
                     .get().await()
                     .documents.mapNotNull { it.toTransportDeclarationEntity() }
                 val declaration = declarations.firstOrNull() ?: return@runBlocking false
+
+                // Έλεγχος αν ο επιβάτης έχει ήδη κάνει κράτηση για τη συγκεκριμένη διαδρομή
+                val existingUserReservation = db.collection("seat_reservations")
+                    .whereEqualTo("routeId", routeId)
+                    .whereEqualTo("date", date)
+                    .whereEqualTo("userId", userId)
+                    .get().await()
+                if (existingUserReservation.size() > 0) {
+                    return@runBlocking false
+                }
+
+                // Έλεγχος διαθεσιμότητας θέσεων
                 val existing = db.collection("seat_reservations")
                     .whereEqualTo("routeId", routeId)
                     .whereEqualTo("date", date)
                     .get().await()
                 if (existing.size() >= declaration.seats) {
+                    return@runBlocking false
+                }
+
+                // Έλεγχος σειράς σημείων επιβίβασης και αποβίβασης
+                val dbInstance = MySmartRouteDatabase.getInstance(context)
+                val points = dbInstance.routePointDao().getPointsForRoute(routeId).first()
+                val startIndex = points.indexOfFirst { it.poiId == startPoiId }
+                val endIndex = points.indexOfFirst { it.poiId == endPoiId }
+                if (startIndex == -1 || endIndex == -1 || startIndex >= endIndex) {
+                    return@runBlocking false
+                }
+
+                // Έλεγχος τοπικής βάσης για τυχόν υπάρχουσα κράτηση
+                val localExisting = dbInstance.seatReservationDao()
+                    .findUserReservation(userId, routeId, date)
+                if (localExisting != null) {
                     return@runBlocking false
                 }
                 val reservation = SeatReservationEntity(
