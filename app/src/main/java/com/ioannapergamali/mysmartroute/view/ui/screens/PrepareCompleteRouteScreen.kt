@@ -68,7 +68,8 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
             pathPoints = path
             pois = routeViewModel.getRoutePois(context, route.id)
             if (date != null) {
-                reservationViewModel.loadReservations(context, route.id, date)
+                val declId = declarations.firstOrNull { it.routeId == route.id && it.date == date }?.id ?: ""
+                reservationViewModel.loadReservations(context, route.id, date, declId)
             }
             path.firstOrNull()?.let {
                 MapsInitializer.initialize(context)
