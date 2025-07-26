@@ -20,15 +20,16 @@ class ReservationViewModel : ViewModel() {
     private val _reservations = MutableStateFlow<List<SeatReservationEntity>>(emptyList())
     val reservations: StateFlow<List<SeatReservationEntity>> = _reservations
 
-    fun loadReservations(context: Context, routeId: String, date: Long) {
+    fun loadReservations(context: Context, routeId: String, date: Long, declarationId: String) {
         viewModelScope.launch {
             val dao = MySmartRouteDatabase.getInstance(context).seatReservationDao()
-            _reservations.value = dao.getReservationsForRouteAndDate(routeId, date).first()
+            _reservations.value = dao.getReservationsForDeclaration(declarationId).first()
 
             if (NetworkUtils.isInternetAvailable(context)) {
                 val remote = db.collection("seat_reservations")
                     .whereEqualTo("routeId", routeId)
                     .whereEqualTo("date", date)
+                    .whereEqualTo("declarationId", declarationId)
                     .get()
                     .await()
                 val list = remote.documents.mapNotNull { it.toSeatReservationEntity() }

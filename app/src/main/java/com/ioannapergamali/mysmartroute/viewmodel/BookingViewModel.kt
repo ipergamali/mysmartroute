@@ -61,6 +61,7 @@ class BookingViewModel : ViewModel() {
                 }
                 val reservation = SeatReservationEntity(
                     reservationId,
+                    declaration.id,
                     routeId,
                     userId,
                     date,
