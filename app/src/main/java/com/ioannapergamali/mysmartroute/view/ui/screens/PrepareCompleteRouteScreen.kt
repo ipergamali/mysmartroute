@@ -45,6 +45,7 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
     val declarations by declarationViewModel.declarations.collectAsState()
     val allPois by poiViewModel.pois.collectAsState()
     val userNames = remember { mutableStateMapOf<String, String>() }
+    val poiNames = remember { mutableStateMapOf<String, String>() }
     var selectedRoute by remember { mutableStateOf<RouteEntity?>(null) }
     var selectedDate by remember { mutableStateOf<Long?>(null) }
     var pois by remember { mutableStateOf<List<PoIEntity>>(emptyList()) }
@@ -72,6 +73,20 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
             path.firstOrNull()?.let {
                 MapsInitializer.initialize(context)
                 cameraPositionState.move(CameraUpdateFactory.newLatLngZoom(it, 13f))
+            }
+        }
+    }
+
+    LaunchedEffect(reservations) {
+        reservations.forEach { res ->
+            if (res.userId.isNotBlank() && userNames[res.userId] == null) {
+                userNames[res.userId] = userViewModel.getUserName(context, res.userId)
+            }
+            if (res.startPoiId.isNotBlank() && poiNames[res.startPoiId] == null) {
+                poiNames[res.startPoiId] = poiViewModel.getPoiName(context, res.startPoiId)
+            }
+            if (res.endPoiId.isNotBlank() && poiNames[res.endPoiId] == null) {
+                poiNames[res.endPoiId] = poiViewModel.getPoiName(context, res.endPoiId)
             }
         }
     }
@@ -174,6 +189,9 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                     }
                     Divider()
                     reservations.forEach { res ->
+                        val userName = userNames[res.userId] ?: ""
+                        val startName = poiNames[res.startPoiId] ?: ""
+                        val endName = poiNames[res.endPoiId] ?: ""
 
                         Row(modifier = Modifier.fillMaxWidth()) {
                             Text(userName, modifier = Modifier.weight(1f))
