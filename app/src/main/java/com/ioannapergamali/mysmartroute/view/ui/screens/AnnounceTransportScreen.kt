@@ -95,6 +95,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     var selectedVehicle by remember { mutableStateOf<VehicleType?>(null) }
     var selectedVehicleName by remember { mutableStateOf("") }
     var selectedVehicleDescription by remember { mutableStateOf("") }
+    var selectedVehicleSeats by remember { mutableStateOf(0) }
     var costText by remember { mutableStateOf("") }
     var duration by remember { mutableStateOf(0) }
     var calculating by remember { mutableStateOf(false) }
@@ -196,6 +197,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
             selectedVehicle = VehicleType.valueOf(first.type)
             selectedVehicleName = first.name
             selectedVehicleDescription = first.description
+            selectedVehicleSeats = first.seat
         }
     }
 
@@ -283,6 +285,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                             selectedVehicle = VehicleType.valueOf(vehicle.type)
                             selectedVehicleName = vehicle.name
                             selectedVehicleDescription = vehicle.description
+                            selectedVehicleSeats = vehicle.seat
                             expandedVehicle = false
                             refreshRoute()
                         })
@@ -414,7 +417,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     val date = datePickerState.selectedDateMillis ?: 0L
                     val driverId = selectedDriverId ?: ""
                     if (routeId != null && vehicle != null) {
-                        declarationViewModel.declareTransport(context, routeId, driverId, vehicle, cost, duration, date)
+                        declarationViewModel.declareTransport(context, routeId, driverId, vehicle, selectedVehicleSeats, cost, duration, date)
                         navController.popBackStack()
                     }
                 },

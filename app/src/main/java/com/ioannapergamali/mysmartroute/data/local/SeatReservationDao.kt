@@ -16,4 +16,7 @@ interface SeatReservationDao {
 
     @Query("SELECT * FROM seat_reservations WHERE routeId = :routeId")
     fun getReservationsForRoute(routeId: String): Flow<List<SeatReservationEntity>>
+
+    @Query("SELECT * FROM seat_reservations WHERE routeId = :routeId AND date = :date")
+    fun getReservationsForRouteAndDate(routeId: String, date: Long): Flow<List<SeatReservationEntity>>
 }
