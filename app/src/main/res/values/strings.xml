@@ -164,4 +164,5 @@
     <string name="select_dropoff">Set as drop-off stop</string>
     <string name="boarding_stop">Boarding stop</string>
     <string name="dropoff_stop">Drop-off stop</string>
+    <string name="passenger">Passenger</string>
 </resources>

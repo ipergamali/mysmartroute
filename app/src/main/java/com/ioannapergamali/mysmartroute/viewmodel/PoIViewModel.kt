@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import java.util.UUID
 
 /**
@@ -96,5 +97,18 @@ class PoIViewModel : ViewModel() {
             _pois.value = _pois.value.filterNot { it.id == id }
             db.collection("pois").document(id).delete()
         }
+    }
+
+    suspend fun getPoi(context: Context, id: String): PoIEntity? {
+        val dao = MySmartRouteDatabase.getInstance(context).poIDao()
+        val local = dao.findById(id)
+        if (local != null) return local
+        return runCatching {
+            db.collection("pois").document(id).get().await().toPoIEntity()
+        }.getOrNull()?.also { dao.insert(it) }
+    }
+
+    suspend fun getPoiName(context: Context, id: String): String {
+        return getPoi(context, id)?.name ?: ""
     }
 }

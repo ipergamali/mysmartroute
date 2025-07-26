@@ -28,6 +28,8 @@ import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.ReservationViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.TransportDeclarationViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.UserViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,6 +38,8 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
     val routeViewModel: RouteViewModel = viewModel()
     val reservationViewModel: ReservationViewModel = viewModel()
     val declarationViewModel: TransportDeclarationViewModel = viewModel()
+    val userViewModel: UserViewModel = viewModel()
+    val poiViewModel: PoIViewModel = viewModel()
     val routes by routeViewModel.routes.collectAsState()
     val reservations by reservationViewModel.reservations.collectAsState()
     val declarations by declarationViewModel.declarations.collectAsState()
@@ -51,6 +55,7 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
     LaunchedEffect(Unit) {
         routeViewModel.loadRoutes(context, includeAll = true)
         declarationViewModel.loadDeclarations(context)
+        poiViewModel.loadPois(context)
     }
 
     LaunchedEffect(selectedRoute, selectedDate) {
@@ -68,6 +73,8 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
             }
         }
     }
+
+
 
     Scaffold(
         topBar = {
@@ -160,14 +167,28 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                 Text(stringResource(R.string.print_list))
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Row(modifier = Modifier.fillMaxWidth()) {
-                        Text(stringResource(R.string.driver), modifier = Modifier.weight(1f), style = MaterialTheme.typography.labelMedium)
-                        Text(stringResource(R.string.cost), modifier = Modifier.weight(1f), style = MaterialTheme.typography.labelMedium)
+                        Text(stringResource(R.string.passenger), modifier = Modifier.weight(1f), style = MaterialTheme.typography.labelMedium)
+                        Text(stringResource(R.string.boarding_stop), modifier = Modifier.weight(1f), style = MaterialTheme.typography.labelMedium)
+                        Text(stringResource(R.string.dropoff_stop), modifier = Modifier.weight(1f), style = MaterialTheme.typography.labelMedium)
                     }
                     Divider()
                     reservations.forEach { res ->
+                        val userName by produceState(initialValue = res.userId, key1 = res.userId) {
+                            val name = userViewModel.getUserName(context, res.userId)
+                            value = if (name.isNotBlank()) name else res.userId
+                        }
+                        val startName by produceState(initialValue = "-", key1 = res.startPoiId) {
+                            val name = poiViewModel.getPoiName(context, res.startPoiId)
+                            value = if (name.isNotBlank()) name else "-"
+                        }
+                        val endName by produceState(initialValue = "-", key1 = res.endPoiId) {
+                            val name = poiViewModel.getPoiName(context, res.endPoiId)
+                            value = if (name.isNotBlank()) name else "-"
+                        }
                         Row(modifier = Modifier.fillMaxWidth()) {
-                            Text(res.userId, modifier = Modifier.weight(1f))
-                            Text("-", modifier = Modifier.weight(1f))
+                            Text(userName, modifier = Modifier.weight(1f))
+                            Text(startName, modifier = Modifier.weight(1f))
+                            Text(endName, modifier = Modifier.weight(1f))
                         }
                     }
                 }
