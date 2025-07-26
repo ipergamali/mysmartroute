@@ -317,7 +317,9 @@ fun SeatReservationEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     "id" to id,
     "routeId" to FirebaseFirestore.getInstance().collection("routes").document(routeId),
     "userId" to FirebaseFirestore.getInstance().collection("users").document(userId),
-    "date" to date
+    "date" to date,
+    "startPoiId" to FirebaseFirestore.getInstance().collection("pois").document(startPoiId),
+    "endPoiId" to FirebaseFirestore.getInstance().collection("pois").document(endPoiId)
 )
 
 fun DocumentSnapshot.toSeatReservationEntity(): SeatReservationEntity? {
@@ -333,5 +335,15 @@ fun DocumentSnapshot.toSeatReservationEntity(): SeatReservationEntity? {
         else -> getString("userId")
     } ?: return null
     val dateVal = getLong("date") ?: 0L
-    return SeatReservationEntity(resId, routeId, userId, dateVal)
+    val startPoiId = when (val s = get("startPoiId")) {
+        is DocumentReference -> s.id
+        is String -> s
+        else -> getString("startPoiId")
+    } ?: ""
+    val endPoiId = when (val e = get("endPoiId")) {
+        is DocumentReference -> e.id
+        is String -> e
+        else -> getString("endPoiId")
+    } ?: ""
+    return SeatReservationEntity(resId, routeId, userId, dateVal, startPoiId, endPoiId)
 }
