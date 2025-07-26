@@ -69,8 +69,16 @@ class BookingViewModel : ViewModel() {
                 )
                 db.collection("seat_reservations").document(reservationId)
                     .set(reservation.toFirestoreMap()).await()
+                // Ενημέρωση διαθέσιμων θέσεων στη δήλωση μεταφοράς
+                val newSeats = (declaration.seats - 1).coerceAtLeast(0)
+                db.collection("transport_declarations")
+                    .document(declaration.id)
+                    .update("seats", newSeats)
+                    .await()
                 viewModelScope.launch {
                     MySmartRouteDatabase.getInstance(context).seatReservationDao().insert(reservation)
+                    MySmartRouteDatabase.getInstance(context).transportDeclarationDao()
+                        .updateSeats(declaration.id, newSeats)
                 }
                 true
             }
