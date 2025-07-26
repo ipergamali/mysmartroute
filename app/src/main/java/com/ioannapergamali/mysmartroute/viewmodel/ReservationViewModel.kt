@@ -32,8 +32,10 @@ class ReservationViewModel : ViewModel() {
                     .get()
                     .await()
                 val list = remote.documents.mapNotNull { it.toSeatReservationEntity() }
-                _reservations.value = list
-                list.forEach { dao.insert(it) }
+                if (list.isNotEmpty()) {
+                    _reservations.value = list
+                    list.forEach { dao.insert(it) }
+                }
             }
         }
     }
