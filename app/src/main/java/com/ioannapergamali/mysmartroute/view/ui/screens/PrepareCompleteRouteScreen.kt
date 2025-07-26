@@ -200,6 +200,8 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                         }
                     }
                 }
+            } else if (selectedRoute != null && selectedDate != null) {
+                Text(stringResource(R.string.no_reservations))
             }
         }
     }
