@@ -13,4 +13,8 @@ interface TransportDeclarationDao {
 
     @Query("SELECT * FROM transport_declarations")
     fun getAll(): Flow<List<TransportDeclarationEntity>>
+
+    /** Ενημέρωση των διαθέσιμων θέσεων για μια δήλωση μεταφοράς */
+    @Query("UPDATE transport_declarations SET seats = :seats WHERE id = :id")
+    suspend fun updateSeats(id: String, seats: Int)
 }
