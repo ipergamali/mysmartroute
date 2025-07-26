@@ -153,4 +153,5 @@
     <string name="select_dropoff">Επιλογή ως στάση αποβίβασης</string>
     <string name="boarding_stop">Στάση εκκίνησης</string>
     <string name="dropoff_stop">Στάση αποβίβασης</string>
+    <string name="no_reservations">Δεν βρέθηκαν κρατήσεις</string>
 </resources>
