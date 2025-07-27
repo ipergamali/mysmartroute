@@ -378,10 +378,22 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
                             Text("${index + 1}. ${poi.name}", modifier = Modifier.weight(1f))
                             Text(poi.type.name, modifier = Modifier.weight(1f))
 
-                            IconButton(onClick = { startIndex = index }) {
+                            IconButton(onClick = {
+                                if (endIndex == null || index < endIndex!!) {
+                                    startIndex = index
+                                } else {
+                                    message = context.getString(R.string.invalid_stop_order)
+                                }
+                            }) {
                                 Text("\uD83C\uDD95")
                             }
-                            IconButton(onClick = { endIndex = index }) {
+                            IconButton(onClick = {
+                                if (startIndex == null || index > startIndex!!) {
+                                    endIndex = index
+                                } else {
+                                    message = context.getString(R.string.invalid_stop_order)
+                                }
+                            }) {
                                 Text("\uD83D\uDD1A")
                             }
 
