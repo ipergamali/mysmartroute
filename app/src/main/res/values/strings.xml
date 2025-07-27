@@ -165,6 +165,7 @@
     <string name="boarding_stop">Boarding stop</string>
     <string name="dropoff_stop">Drop-off stop</string>
     <string name="invalid_stop_order">Drop-off stop must be after boarding stop.</string>
+    <string name="clear_selection">Clear selection</string>
     <string name="passenger">Passenger</string>
     <string name="no_reservations">No reservations found</string>
 </resources>
