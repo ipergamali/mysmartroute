@@ -236,7 +236,11 @@ class DatabaseViewModel : ViewModel() {
             val availabilities = firestore.collection("availabilities").get().await()
                 .documents.mapNotNull { it.toAvailabilityEntity() }
 
-            val favorites = firestore.collection("favorites").get().await()
+            val favorites = firestore.collection("favorites")
+                .document("vehicles")
+                .collection("items")
+                .get()
+                .await()
                 .documents.mapNotNull { it.toFavoriteEntity() }
 
             Log.d(TAG, "Firebase data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} types:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size} routes:${routes.size} movings:${movings.size} declarations:${declarations.size} availabilities:${availabilities.size} favorites:${favorites.size}")
@@ -369,7 +373,11 @@ class DatabaseViewModel : ViewModel() {
 
                     val availabilities = firestore.collection("availabilities").get().await()
                         .documents.mapNotNull { it.toAvailabilityEntity() }
-                    val favorites = firestore.collection("favorites").get().await()
+                    val favorites = firestore.collection("favorites")
+                        .document("vehicles")
+                        .collection("items")
+                        .get()
+                        .await()
                         .documents.mapNotNull { it.toFavoriteEntity() }
 
                     Log.d(
@@ -495,6 +503,8 @@ class DatabaseViewModel : ViewModel() {
                     }
                     favorites.forEach {
                         firestore.collection("favorites")
+                            .document("vehicles")
+                            .collection("items")
                             .document(it.id)
                             .set(it.toFirestoreMap()).await()
                     }
