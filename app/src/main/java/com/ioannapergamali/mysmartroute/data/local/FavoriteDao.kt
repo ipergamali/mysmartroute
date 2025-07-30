@@ -19,4 +19,10 @@ interface FavoriteDao {
 
     @Query("SELECT * FROM favorites WHERE userId = :userId AND preferred = 0")
     fun getNonPreferred(userId: String): Flow<List<FavoriteEntity>>
+
+    @Query("DELETE FROM favorites WHERE userId = :userId AND vehicleType = :vehicleType")
+    suspend fun delete(userId: String, vehicleType: String)
+
+    @Query("SELECT * FROM favorites WHERE userId = :userId AND vehicleType = :vehicleType LIMIT 1")
+    suspend fun find(userId: String, vehicleType: String): FavoriteEntity?
 }
