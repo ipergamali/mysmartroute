@@ -76,6 +76,7 @@
     <string name="vehicle_name">Όνομα οχήματος</string>
     <string name="license_plate">Πινακίδα</string>
     <string name="seats_label">Θέσεις</string>
+    <string name="vehicle_type">Τύπος οχήματος</string>
     <string name="announce_availability">Δήλωση διαθεσιμότητας για μεταφορά</string>
     <string name="find_passengers">Εύρεση επιβατών</string>
     <string name="print_list">Εκτύπωση λίστας επιβατών</string>
@@ -154,6 +155,10 @@
     <string name="boarding_stop">Στάση εκκίνησης</string>
     <string name="dropoff_stop">Στάση αποβίβασης</string>
     <string name="invalid_stop_order">Η στάση αποβίβασης πρέπει να είναι μετά τη στάση εκκίνησης.</string>
+    <string name="favorites_preferred">Προτιμώμενα μέσα μεταφοράς</string>
+    <string name="favorites_non_preferred">Μη προτιμώμενα μέσα μεταφοράς</string>
+    <string name="add_favorite">Προσθήκη</string>
+    <string name="delete_favorite">Αφαίρεση</string>
     <string name="clear_selection">Καθαρισμός επιλογής</string>
     <string name="no_reservations">Δεν βρέθηκαν κρατήσεις</string>
 </resources>
