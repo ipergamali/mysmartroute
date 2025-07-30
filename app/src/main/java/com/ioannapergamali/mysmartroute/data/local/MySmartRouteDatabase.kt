@@ -47,7 +47,7 @@ import com.ioannapergamali.mysmartroute.data.local.Converters
         SeatReservationEntity::class,
         FavoriteEntity::class
     ],
-    version = 42
+    version = 43
 )
 @TypeConverters(Converters::class)
 abstract class MySmartRouteDatabase : RoomDatabase() {
@@ -583,6 +583,15 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_42_43 = object : Migration(42, 43) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "INSERT INTO `menu_options` (`id`, `menuId`, `titleResKey`, `route`) " +
+                        "VALUES ('opt_driver_9', 'menu_driver_main', 'view_transport_requests', 'viewTransportRequests')"
+                )
+            }
+        }
+
         private fun prepopulate(db: SupportSQLiteDatabase) {
             Log.d(TAG, "Prepopulating database")
             db.execSQL(
@@ -642,6 +651,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             insertOption("opt_driver_6", driverMenuId, "print_scheduled", "printScheduled")
             insertOption("opt_driver_7", driverMenuId, "print_completed", "printCompleted")
             insertOption("opt_driver_8", driverMenuId, "prepare_complete_route", "prepareCompleteRoute")
+            insertOption("opt_driver_9", driverMenuId, "view_transport_requests", "viewTransportRequests")
 
             val adminMenuId = "menu_admin_main"
             insertMenu(adminMenuId, "role_admin", "admin_menu_title")
@@ -701,7 +711,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_38_39,
                     MIGRATION_39_40,
                     MIGRATION_40_41,
-                    MIGRATION_41_42
+                    MIGRATION_41_42,
+                    MIGRATION_42_43
                 )
                     .addCallback(object : RoomDatabase.Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {

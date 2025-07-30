@@ -65,6 +65,7 @@
     <string name="book_seat">Book a Seat or Buy a Ticket</string>
     <string name="view_routes">View Interesting Routes</string>
     <string name="view_transports">View Transports</string>
+    <string name="view_transport_requests">View Transport Requests</string>
     <string name="print_ticket">Print Booked Seat or Ticket</string>
     <string name="cancel_seat">Cancel Booked Seat</string>
     <string name="rank_transports">View, Rank and Comment on Completed Transports</string>

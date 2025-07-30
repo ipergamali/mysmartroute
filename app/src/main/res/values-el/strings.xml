@@ -163,5 +163,7 @@
     <string name="no_reservations">Δεν βρέθηκαν κρατήσεις</string>
     <string name="max_cost">Μέγιστο κόστος</string>
     <string name="request_sent">Το αίτημα καταχωρήθηκε</string>
+    <string name="view_requests">Προβολή αιτημάτων</string>
+    <string name="view_transport_requests">Προβολή αιτημάτων μεταφοράς</string>
 
 </resources>

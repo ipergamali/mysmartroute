@@ -24,26 +24,33 @@ class VehicleRequestViewModel : ViewModel() {
     private val _requests = MutableStateFlow<List<MovingEntity>>(emptyList())
     val requests: StateFlow<List<MovingEntity>> = _requests
 
-    fun loadRequests(context: Context) {
+    fun loadRequests(context: Context, allUsers: Boolean = false) {
         viewModelScope.launch {
             val dao = MySmartRouteDatabase.getInstance(context).movingDao()
             val userId = FirebaseAuth.getInstance().currentUser?.uid
-            _requests.value = userId?.let { dao.getMovingsForUser(it).first() } ?: dao.getAll().first()
 
-            if (NetworkUtils.isInternetAvailable(context) && userId != null) {
-                val userRef = db.collection("users").document(userId)
-                val snapshot = runCatching {
-                    db.collection("movings")
-                        .whereEqualTo("userId", userRef)
-                        .get()
-                        .await()
+            _requests.value = if (allUsers) {
+                dao.getAll().first()
+            } else {
+                userId?.let { dao.getMovingsForUser(it).first() } ?: emptyList()
+            }
+
+            val snapshot = if (NetworkUtils.isInternetAvailable(context)) {
+                runCatching {
+                    if (allUsers) {
+                        db.collection("movings").get().await()
+                    } else if (userId != null) {
+                        val userRef = db.collection("users").document(userId)
+                        db.collection("movings").whereEqualTo("userId", userRef).get().await()
+                    } else null
                 }.getOrNull()
-                snapshot?.let { snap ->
-                    val list = snap.documents.mapNotNull { it.toMovingEntity() }
-                    if (list.isNotEmpty()) {
-                        _requests.value = list
-                        list.forEach { dao.insert(it) }
-                    }
+            } else null
+
+            snapshot?.let { snap ->
+                val list = snap.documents.mapNotNull { it.toMovingEntity() }
+                if (list.isNotEmpty()) {
+                    _requests.value = list
+                    list.forEach { dao.insert(it) }
                 }
             }
         }
