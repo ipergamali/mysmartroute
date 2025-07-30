@@ -36,7 +36,15 @@ class FavoritesViewModel : ViewModel() {
 
     fun addPreferred(context: Context, type: VehicleType) {
         viewModelScope.launch {
-
+            val uid = userId()
+            if (uid.isBlank()) return@launch
+            val db = MySmartRouteDatabase.getInstance(context)
+            val id = UUID.randomUUID().toString()
+            val fav = com.ioannapergamali.mysmartroute.data.local.FavoriteEntity(id, uid, type.name, true)
+            insertFavoriteSafely(db.favoriteDao(), db.userDao(), fav)
+            runCatching {
+                val userDoc = firestore.collection("users").document(uid)
+                userDoc.collection("favorites").document(id).set(fav.toFirestoreMap()).await()
                 firestore.collection("favorites").document(id).set(fav.toFirestoreMap()).await()
             }
         }
@@ -44,7 +52,15 @@ class FavoritesViewModel : ViewModel() {
 
     fun addNonPreferred(context: Context, type: VehicleType) {
         viewModelScope.launch {
-
+            val uid = userId()
+            if (uid.isBlank()) return@launch
+            val db = MySmartRouteDatabase.getInstance(context)
+            val id = UUID.randomUUID().toString()
+            val fav = com.ioannapergamali.mysmartroute.data.local.FavoriteEntity(id, uid, type.name, false)
+            insertFavoriteSafely(db.favoriteDao(), db.userDao(), fav)
+            runCatching {
+                val userDoc = firestore.collection("users").document(uid)
+                userDoc.collection("favorites").document(id).set(fav.toFirestoreMap()).await()
                 firestore.collection("favorites").document(id).set(fav.toFirestoreMap()).await()
             }
         }
@@ -52,24 +68,50 @@ class FavoritesViewModel : ViewModel() {
 
     fun removePreferred(context: Context, type: VehicleType) {
         viewModelScope.launch {
-
+            val uid = userId()
+            if (uid.isBlank()) return@launch
+            val db = MySmartRouteDatabase.getInstance(context)
+            db.favoriteDao().delete(uid, type.name)
+            runCatching {
+                val userDoc = firestore.collection("users").document(uid)
+                userDoc.collection("favorites")
                     .whereEqualTo("vehicleType", type.name)
                     .whereEqualTo("preferred", true)
                     .get()
                     .await()
-
+                    .documents.forEach { it.reference.delete().await() }
+                firestore.collection("favorites")
+                    .whereEqualTo("userId", uid)
+                    .whereEqualTo("vehicleType", type.name)
+                    .whereEqualTo("preferred", true)
+                    .get()
+                    .await()
+                    .documents.forEach { it.reference.delete().await() }
             }
         }
     }
 
     fun removeNonPreferred(context: Context, type: VehicleType) {
         viewModelScope.launch {
-
+            val uid = userId()
+            if (uid.isBlank()) return@launch
+            val db = MySmartRouteDatabase.getInstance(context)
+            db.favoriteDao().delete(uid, type.name)
+            runCatching {
+                val userDoc = firestore.collection("users").document(uid)
+                userDoc.collection("favorites")
                     .whereEqualTo("vehicleType", type.name)
                     .whereEqualTo("preferred", false)
                     .get()
                     .await()
-
+                    .documents.forEach { it.reference.delete().await() }
+                firestore.collection("favorites")
+                    .whereEqualTo("userId", uid)
+                    .whereEqualTo("vehicleType", type.name)
+                    .whereEqualTo("preferred", false)
+                    .get()
+                    .await()
+                    .documents.forEach { it.reference.delete().await() }
             }
         }
     }
