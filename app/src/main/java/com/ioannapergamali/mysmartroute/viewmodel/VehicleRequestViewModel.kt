@@ -1,6 +1,7 @@
 package com.ioannapergamali.mysmartroute.viewmodel
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
@@ -23,6 +24,10 @@ class VehicleRequestViewModel : ViewModel() {
 
     private val _requests = MutableStateFlow<List<MovingEntity>>(emptyList())
     val requests: StateFlow<List<MovingEntity>> = _requests
+
+    companion object {
+        private const val TAG = "VehicleRequestVM"
+    }
 
     fun loadRequests(context: Context, allUsers: Boolean = false) {
         viewModelScope.launch {
@@ -77,7 +82,8 @@ class VehicleRequestViewModel : ViewModel() {
                     .document(id)
                     .set(entity.toFirestoreMap())
                     .await()
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to store moving", e)
             }
         }
     }

@@ -228,15 +228,20 @@ fun DocumentSnapshot.toPoiTypeEntity(): PoiTypeEntity? {
     return PoiTypeEntity(typeId, typeName)
 }
 
-fun MovingEntity.toFirestoreMap(): Map<String, Any> = mapOf(
-    "id" to id,
-    "routeId" to FirebaseFirestore.getInstance().collection("routes").document(routeId),
-    "userId" to FirebaseFirestore.getInstance().collection("users").document(userId),
-    "date" to date,
-    "vehicleId" to FirebaseFirestore.getInstance().collection("vehicles").document(vehicleId),
-    "cost" to cost,
-    "durationMinutes" to durationMinutes
-)
+fun MovingEntity.toFirestoreMap(): Map<String, Any> {
+    val map = mutableMapOf<String, Any>(
+        "id" to id,
+        "routeId" to FirebaseFirestore.getInstance().collection("routes").document(routeId),
+        "userId" to FirebaseFirestore.getInstance().collection("users").document(userId),
+        "date" to date,
+        "cost" to cost,
+        "durationMinutes" to durationMinutes
+    )
+    if (vehicleId.isNotEmpty()) {
+        map["vehicleId"] = FirebaseFirestore.getInstance().collection("vehicles").document(vehicleId)
+    }
+    return map
+}
 
 fun DocumentSnapshot.toMovingEntity(): MovingEntity? {
     val movingId = getString("id") ?: id
