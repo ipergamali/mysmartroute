@@ -50,6 +50,11 @@ import kotlinx.coroutines.flow.first
 class DatabaseViewModel : ViewModel() {
     private val firestore = FirebaseFirestore.getInstance()
 
+    private val vehiclesFavorites
+        get() = firestore.collection("favorites")
+            .document("vehicles")
+            .collection("items")
+
     companion object {
         private const val TAG = "DatabaseViewModel"
     }
@@ -236,7 +241,9 @@ class DatabaseViewModel : ViewModel() {
             val availabilities = firestore.collection("availabilities").get().await()
                 .documents.mapNotNull { it.toAvailabilityEntity() }
 
-            val favorites = firestore.collection("favorites").get().await()
+            val favorites = vehiclesFavorites
+                .get()
+                .await()
                 .documents.mapNotNull { it.toFavoriteEntity() }
 
             Log.d(TAG, "Firebase data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} types:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size} routes:${routes.size} movings:${movings.size} declarations:${declarations.size} availabilities:${availabilities.size} favorites:${favorites.size}")
@@ -369,7 +376,9 @@ class DatabaseViewModel : ViewModel() {
 
                     val availabilities = firestore.collection("availabilities").get().await()
                         .documents.mapNotNull { it.toAvailabilityEntity() }
-                    val favorites = firestore.collection("favorites").get().await()
+                    val favorites = vehiclesFavorites
+                        .get()
+                        .await()
                         .documents.mapNotNull { it.toFavoriteEntity() }
 
                     Log.d(
@@ -494,7 +503,7 @@ class DatabaseViewModel : ViewModel() {
                             .set(it.toFirestoreMap()).await()
                     }
                     favorites.forEach {
-                        firestore.collection("favorites")
+                        vehiclesFavorites
                             .document(it.id)
                             .set(it.toFirestoreMap()).await()
                     }
