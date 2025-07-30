@@ -30,6 +30,9 @@ import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.TransportDeclarationViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.UserViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
+import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
+import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,9 +43,12 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
     val declarationViewModel: TransportDeclarationViewModel = viewModel()
     val userViewModel: UserViewModel = viewModel()
     val poiViewModel: PoIViewModel = viewModel()
+    val authViewModel: AuthenticationViewModel = viewModel()
     val routes by routeViewModel.routes.collectAsState()
     val reservations by reservationViewModel.reservations.collectAsState()
     val declarations by declarationViewModel.declarations.collectAsState()
+    val role by authViewModel.currentUserRole.collectAsState()
+    val drivers by userViewModel.drivers.collectAsState()
     val allPois by poiViewModel.pois.collectAsState()
     val userNames = remember { mutableStateMapOf<String, String>() }
     val poiNames = remember { mutableStateMapOf<String, String>() }
@@ -50,15 +56,51 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
     var selectedDate by remember { mutableStateOf<Long?>(null) }
     var pois by remember { mutableStateOf<List<PoIEntity>>(emptyList()) }
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
+    var expandedDriver by remember { mutableStateOf(false) }
+    var selectedDriverId by remember { mutableStateOf<String?>(null) }
+    var selectedDriverName by remember { mutableStateOf("") }
+    var displayRoutes by remember { mutableStateOf<List<RouteEntity>>(emptyList()) }
     var expanded by remember { mutableStateOf(false) }
     val cameraPositionState = rememberCameraPositionState()
     val apiKey = MapsUtils.getApiKey(context)
     val isKeyMissing = apiKey.isBlank()
 
     LaunchedEffect(Unit) {
-        routeViewModel.loadRoutes(context, includeAll = true)
+        authViewModel.loadCurrentUserRole(context)
         declarationViewModel.loadDeclarations(context)
         poiViewModel.loadPois(context)
+    }
+
+    LaunchedEffect(role) {
+        val admin = role == UserRole.ADMIN
+        routeViewModel.loadRoutes(context, includeAll = admin)
+        if (admin) {
+            userViewModel.loadDrivers(context)
+            selectedDriverId = null
+            selectedDriverName = ""
+        } else {
+            val uid = FirebaseAuth.getInstance().currentUser?.uid
+            if (uid != null) {
+                selectedDriverId = uid
+                selectedDriverName = userViewModel.getUserName(context, uid)
+            }
+        }
+    }
+
+    LaunchedEffect(role, drivers) {
+        if (role != UserRole.ADMIN && selectedDriverName.isBlank()) {
+            val uid = FirebaseAuth.getInstance().currentUser?.uid
+            if (uid != null) {
+                selectedDriverId = uid
+                selectedDriverName = userViewModel.getUserName(context, uid)
+            }
+        }
+    }
+
+    LaunchedEffect(routes, selectedDriverId) {
+        displayRoutes = selectedDriverId?.let { id ->
+            routes.filter { it.userId == id }
+        } ?: routes
     }
 
     LaunchedEffect(selectedRoute, selectedDate) {
@@ -104,12 +146,46 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
         }
     ) { padding ->
         ScreenContainer(modifier = Modifier.padding(padding)) {
+            if (role == UserRole.ADMIN) {
+                ExposedDropdownMenuBox(expanded = expandedDriver, onExpandedChange = { expandedDriver = !expandedDriver }) {
+                    OutlinedTextField(
+                        value = selectedDriverName,
+                        onValueChange = {},
+                        label = { Text(stringResource(R.string.driver)) },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedDriver) },
+                        modifier = Modifier.menuAnchor().fillMaxWidth(),
+                        readOnly = true
+                    )
+                    ExposedDropdownMenu(expanded = expandedDriver, onDismissRequest = { expandedDriver = false }) {
+                        drivers.forEach { driver ->
+                            DropdownMenuItem(text = { Text("${'$'}{driver.name} ${'$'}{driver.surname}") }, onClick = {
+                                selectedDriverId = driver.id
+                                selectedDriverName = "${'$'}{driver.name} ${'$'}{driver.surname}"
+                                expandedDriver = false
+                                selectedRoute = null
+                                selectedDate = null
+                            })
+                        }
+                    }
+                }
+                Spacer(Modifier.height(16.dp))
+            } else {
+                OutlinedTextField(
+                    value = selectedDriverName,
+                    onValueChange = {},
+                    label = { Text(stringResource(R.string.driver)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    readOnly = true
+                )
+                Spacer(Modifier.height(16.dp))
+            }
+
             Box {
                 Button(onClick = { expanded = true }) {
                     Text(selectedRoute?.name ?: stringResource(R.string.select_route))
                 }
                 DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                    routes.forEach { route ->
+                    displayRoutes.forEach { route ->
                         DropdownMenuItem(text = { Text(route.name) }, onClick = {
                             selectedRoute = route
                             expanded = false
