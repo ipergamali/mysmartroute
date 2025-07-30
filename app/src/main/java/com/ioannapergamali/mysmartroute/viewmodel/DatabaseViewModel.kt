@@ -241,9 +241,7 @@ class DatabaseViewModel : ViewModel() {
             val availabilities = firestore.collection("availabilities").get().await()
                 .documents.mapNotNull { it.toAvailabilityEntity() }
 
-            val favorites = vehiclesFavorites
-                .get()
-                .await()
+
                 .documents.mapNotNull { it.toFavoriteEntity() }
 
             Log.d(TAG, "Firebase data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} types:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size} routes:${routes.size} movings:${movings.size} declarations:${declarations.size} availabilities:${availabilities.size} favorites:${favorites.size}")
@@ -376,9 +374,7 @@ class DatabaseViewModel : ViewModel() {
 
                     val availabilities = firestore.collection("availabilities").get().await()
                         .documents.mapNotNull { it.toAvailabilityEntity() }
-                    val favorites = vehiclesFavorites
-                        .get()
-                        .await()
+
                         .documents.mapNotNull { it.toFavoriteEntity() }
 
                     Log.d(
@@ -503,7 +499,7 @@ class DatabaseViewModel : ViewModel() {
                             .set(it.toFirestoreMap()).await()
                     }
                     favorites.forEach {
-                        vehiclesFavorites
+
                             .document(it.id)
                             .set(it.toFirestoreMap()).await()
                     }
