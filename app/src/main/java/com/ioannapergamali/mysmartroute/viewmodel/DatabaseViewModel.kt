@@ -504,7 +504,7 @@ class DatabaseViewModel : ViewModel() {
                             .set(it.toFirestoreMap()).await()
                     }
                     favorites.forEach {
-
+                        firestore.collection("favorites")
                             .document(it.id)
                             .set(it.toFirestoreMap()).await()
                     }
