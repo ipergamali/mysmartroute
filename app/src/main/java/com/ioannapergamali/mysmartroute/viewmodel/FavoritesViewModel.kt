@@ -18,7 +18,16 @@ import java.util.UUID
 class FavoritesViewModel : ViewModel() {
     private val firestore = FirebaseFirestore.getInstance()
 
+    private val globalVehicles
+        get() = firestore.collection("favorites")
+            .document("vehicles")
+            .collection("items")
 
+    private fun userVehicles(userId: String) = firestore.collection("users")
+        .document(userId)
+        .collection("favorites")
+        .document("vehicles")
+        .collection("items")
 
     private fun userId() = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
@@ -44,9 +53,11 @@ class FavoritesViewModel : ViewModel() {
             val id = UUID.randomUUID().toString()
             val fav = com.ioannapergamali.mysmartroute.data.local.FavoriteEntity(id, uid, type.name, true)
             insertFavoriteSafely(db.favoriteDao(), db.userDao(), fav)
-            runCatching {
+            try {
                 userVehicles(uid).document(id).set(fav.toFirestoreMap()).await()
                 globalVehicles.document(id).set(fav.toFirestoreMap()).await()
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }
@@ -59,9 +70,11 @@ class FavoritesViewModel : ViewModel() {
             val id = UUID.randomUUID().toString()
             val fav = com.ioannapergamali.mysmartroute.data.local.FavoriteEntity(id, uid, type.name, false)
             insertFavoriteSafely(db.favoriteDao(), db.userDao(), fav)
-            runCatching {
+            try {
                 userVehicles(uid).document(id).set(fav.toFirestoreMap()).await()
                 globalVehicles.document(id).set(fav.toFirestoreMap()).await()
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }
@@ -72,7 +85,7 @@ class FavoritesViewModel : ViewModel() {
             if (uid.isBlank()) return@launch
             val db = MySmartRouteDatabase.getInstance(context)
             db.favoriteDao().delete(uid, type.name)
-            runCatching {
+            try {
                 userVehicles(uid)
                     .whereEqualTo("vehicleType", type.name)
                     .whereEqualTo("preferred", true)
@@ -86,6 +99,8 @@ class FavoritesViewModel : ViewModel() {
                     .get()
                     .await()
                     .documents.forEach { it.reference.delete().await() }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }
@@ -96,7 +111,7 @@ class FavoritesViewModel : ViewModel() {
             if (uid.isBlank()) return@launch
             val db = MySmartRouteDatabase.getInstance(context)
             db.favoriteDao().delete(uid, type.name)
-            runCatching {
+            try {
                 userVehicles(uid)
                     .whereEqualTo("vehicleType", type.name)
                     .whereEqualTo("preferred", false)
@@ -110,6 +125,8 @@ class FavoritesViewModel : ViewModel() {
                     .get()
                     .await()
                     .documents.forEach { it.reference.delete().await() }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }
