@@ -161,4 +161,6 @@
     <string name="delete_favorite">Αφαίρεση</string>
     <string name="clear_selection">Καθαρισμός επιλογής</string>
     <string name="no_reservations">Δεν βρέθηκαν κρατήσεις</string>
+    <string name="max_cost">Μέγιστο κόστος</string>
+    <string name="request_sent">Το αίτημα καταχωρήθηκε</string>
 </resources>
