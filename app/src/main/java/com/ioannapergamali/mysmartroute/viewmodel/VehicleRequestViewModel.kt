@@ -7,12 +7,47 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.MovingEntity
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
+import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
+import com.ioannapergamali.mysmartroute.utils.toMovingEntity
+import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.util.UUID
 
 class VehicleRequestViewModel : ViewModel() {
+    private val db = FirebaseFirestore.getInstance()
+
+    private val _requests = MutableStateFlow<List<MovingEntity>>(emptyList())
+    val requests: StateFlow<List<MovingEntity>> = _requests
+
+    fun loadRequests(context: Context) {
+        viewModelScope.launch {
+            val dao = MySmartRouteDatabase.getInstance(context).movingDao()
+            val userId = FirebaseAuth.getInstance().currentUser?.uid
+            _requests.value = userId?.let { dao.getMovingsForUser(it).first() } ?: dao.getAll().first()
+
+            if (NetworkUtils.isInternetAvailable(context) && userId != null) {
+                val userRef = db.collection("users").document(userId)
+                val snapshot = runCatching {
+                    db.collection("movings")
+                        .whereEqualTo("userId", userRef)
+                        .get()
+                        .await()
+                }.getOrNull()
+                snapshot?.let { snap ->
+                    val list = snap.documents.mapNotNull { it.toMovingEntity() }
+                    if (list.isNotEmpty()) {
+                        _requests.value = list
+                        list.forEach { dao.insert(it) }
+                    }
+                }
+            }
+        }
+    }
 
     fun requestTransport(context: Context, fromPoiId: String, toPoiId: String, maxCost: Double) {
         viewModelScope.launch {
