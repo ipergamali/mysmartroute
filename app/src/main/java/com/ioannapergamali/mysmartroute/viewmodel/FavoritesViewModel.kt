@@ -18,10 +18,7 @@ import java.util.UUID
 class FavoritesViewModel : ViewModel() {
     private val firestore = FirebaseFirestore.getInstance()
 
-    private val globalVehicles get() = firestore.collection("favorites/vehicles")
 
-    private fun userVehicles(uid: String) =
-        firestore.collection("users/$uid/favorites/vehicles")
 
     private fun userId() = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
