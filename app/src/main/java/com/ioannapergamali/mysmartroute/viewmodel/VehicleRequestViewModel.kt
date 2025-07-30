@@ -7,12 +7,13 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.MovingEntity
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
-import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
+
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.util.UUID
 
 class VehicleRequestViewModel : ViewModel() {
+
     fun requestTransport(context: Context, fromPoiId: String, toPoiId: String, maxCost: Double) {
         viewModelScope.launch {
             val dao = MySmartRouteDatabase.getInstance(context).movingDao()
@@ -38,4 +39,5 @@ class VehicleRequestViewModel : ViewModel() {
             }
         }
     }
+
 }

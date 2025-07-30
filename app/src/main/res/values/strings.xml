@@ -175,4 +175,5 @@
     <string name="no_reservations">No reservations found</string>
     <string name="max_cost">Maximum cost</string>
     <string name="request_sent">Request saved</string>
+
 </resources>
