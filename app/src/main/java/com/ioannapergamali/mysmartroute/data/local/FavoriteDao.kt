@@ -19,4 +19,5 @@ interface FavoriteDao {
 
     @Query("SELECT * FROM favorites WHERE userId = :userId AND preferred = 0")
     fun getNonPreferred(userId: String): Flow<List<FavoriteEntity>>
+
 }
