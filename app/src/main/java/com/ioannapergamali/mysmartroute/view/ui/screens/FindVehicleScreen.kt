@@ -58,6 +58,12 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
         }
     ) { padding ->
         ScreenContainer(modifier = Modifier.padding(padding)) {
+            Button(onClick = { navController.navigate("declareRoute") }) {
+                Text(stringResource(R.string.declare_route))
+            }
+
+            Spacer(Modifier.height(16.dp))
+
             ExposedDropdownMenuBox(expanded = routeExpanded, onExpandedChange = { routeExpanded = !routeExpanded }) {
                 val selectedRoute = routes.find { it.id == selectedRouteId }
                 OutlinedTextField(
