@@ -49,7 +49,7 @@ fun ViewRequestsScreen(navController: NavController, openDrawer: () -> Unit) {
             )
         }
     ) { padding ->
-        ScreenContainer(modifier = Modifier.padding(padding)) {
+        ScreenContainer(modifier = Modifier.padding(padding), scrollable = false) {
             if (requests.isEmpty()) {
                 Text(stringResource(R.string.no_requests))
             } else {
