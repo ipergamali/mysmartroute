@@ -16,6 +16,7 @@ import com.ioannapergamali.mysmartroute.data.local.MovingEntity
 import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationEntity
 import com.ioannapergamali.mysmartroute.data.local.AvailabilityEntity
 import com.ioannapergamali.mysmartroute.data.local.SeatReservationEntity
+import com.ioannapergamali.mysmartroute.data.local.FavoriteEntity
 
 /** Βοηθητικά extensions για μετατροπή οντοτήτων σε δομές κατάλληλες για το Firestore. */
 /** Μετατροπή ενός [UserEntity] σε Map. */
@@ -352,4 +353,22 @@ fun DocumentSnapshot.toSeatReservationEntity(): SeatReservationEntity? {
         else -> getString("endPoiId")
     } ?: ""
     return SeatReservationEntity(resId, declarationId, routeId, userId, dateVal, startPoiId, endPoiId)
+}
+
+fun FavoriteEntity.toFirestoreMap(): Map<String, Any> = mapOf(
+    "id" to id,
+    "userId" to userId,
+    "vehicleType" to vehicleType,
+    "preferred" to preferred
+)
+
+fun DocumentSnapshot.toFavoriteEntity(): FavoriteEntity? {
+    val favId = getString("id") ?: id
+    val userId = getString("userId")
+        ?: (get("userId") as? DocumentReference)?.id
+        ?: reference.parent.parent?.id
+        ?: return null
+    val type = getString("vehicleType") ?: return null
+    val preferred = getBoolean("preferred") ?: false
+    return FavoriteEntity(favId, userId, type, preferred)
 }
