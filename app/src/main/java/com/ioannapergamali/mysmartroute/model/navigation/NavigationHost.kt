@@ -35,6 +35,7 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.PrintScheduledScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.PrepareCompleteRouteScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.RouteModeScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.ViewVehiclesScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.ViewTransportRequestsScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.BookSeatScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.ViewRoutesScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.SelectRoutePoisScreen
@@ -191,6 +192,10 @@ fun NavigationHost(navController : NavHostController, openDrawer: () -> Unit) {
 
         composable("prepareCompleteRoute") {
             PrepareCompleteRouteScreen(navController = navController, openDrawer = openDrawer)
+        }
+
+        composable("viewTransportRequests") {
+            ViewTransportRequestsScreen(navController = navController, openDrawer = openDrawer)
         }
 
         composable("viewVehicles") {
