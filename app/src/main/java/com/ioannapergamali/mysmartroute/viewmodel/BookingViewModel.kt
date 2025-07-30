@@ -55,10 +55,12 @@ class BookingViewModel : ViewModel() {
                 val declaration = declarations.firstOrNull() ?: return@runBlocking false
 
                 // Έλεγχος αν ο επιβάτης έχει ήδη κάνει κράτηση για τη συγκεκριμένη διαδρομή
+                val routeRef = db.collection("routes").document(routeId)
+                val userRef = db.collection("users").document(userId)
                 val existingUserReservation = db.collection("seat_reservations")
-                    .whereEqualTo("routeId", routeId)
+                    .whereEqualTo("routeId", routeRef)
                     .whereEqualTo("date", date)
-                    .whereEqualTo("userId", userId)
+                    .whereEqualTo("userId", userRef)
                     .get().await()
                 if (existingUserReservation.size() > 0) {
                     return@runBlocking false
@@ -66,7 +68,7 @@ class BookingViewModel : ViewModel() {
 
                 // Έλεγχος διαθεσιμότητας θέσεων
                 val existing = db.collection("seat_reservations")
-                    .whereEqualTo("routeId", routeId)
+                    .whereEqualTo("routeId", routeRef)
                     .whereEqualTo("date", date)
                     .get().await()
                 if (existing.size() >= declaration.seats) {

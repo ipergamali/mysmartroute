@@ -26,10 +26,12 @@ class ReservationViewModel : ViewModel() {
             _reservations.value = dao.getReservationsForDeclaration(declarationId).first()
 
             if (NetworkUtils.isInternetAvailable(context)) {
+                val routeRef = db.collection("routes").document(routeId)
+                val declRef = db.collection("transport_declarations").document(declarationId)
                 val remote = db.collection("seat_reservations")
-                    .whereEqualTo("routeId", routeId)
+                    .whereEqualTo("routeId", routeRef)
                     .whereEqualTo("date", date)
-                    .whereEqualTo("declarationId", declarationId)
+                    .whereEqualTo("declarationId", declRef)
                     .get()
                     .await()
                 val list = remote.documents.mapNotNull { it.toSeatReservationEntity() }
