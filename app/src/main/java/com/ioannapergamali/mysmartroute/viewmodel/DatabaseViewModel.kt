@@ -50,6 +50,11 @@ import kotlinx.coroutines.flow.first
 class DatabaseViewModel : ViewModel() {
     private val firestore = FirebaseFirestore.getInstance()
 
+    private val vehiclesFavorites
+        get() = firestore.collection("favorites")
+            .document("vehicles")
+            .collection("items")
+
     companion object {
         private const val TAG = "DatabaseViewModel"
     }
@@ -235,6 +240,7 @@ class DatabaseViewModel : ViewModel() {
 
             val availabilities = firestore.collection("availabilities").get().await()
                 .documents.mapNotNull { it.toAvailabilityEntity() }
+
 
                 .documents.mapNotNull { it.toFavoriteEntity() }
 
