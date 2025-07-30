@@ -357,14 +357,18 @@ fun DocumentSnapshot.toSeatReservationEntity(): SeatReservationEntity? {
 
 fun FavoriteEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     "id" to id,
-
+    "userId" to FirebaseFirestore.getInstance().collection("users").document(userId),
     "vehicleType" to vehicleType,
     "preferred" to preferred
 )
 
 fun DocumentSnapshot.toFavoriteEntity(): FavoriteEntity? {
     val favId = getString("id") ?: id
-
+    val userId = when (val u = get("userId")) {
+        is DocumentReference -> u.id
+        is String -> u
+        else -> getString("userId")
+    } ?: return null
     val type = getString("vehicleType") ?: return null
     val preferred = getBoolean("preferred") ?: false
     return FavoriteEntity(favId, userId, type, preferred)
