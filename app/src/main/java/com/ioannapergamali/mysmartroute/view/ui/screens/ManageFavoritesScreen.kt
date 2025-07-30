@@ -3,6 +3,7 @@ package com.ioannapergamali.mysmartroute.view.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -16,6 +17,8 @@ import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
+import com.ioannapergamali.mysmartroute.view.ui.util.iconForVehicle
+import com.ioannapergamali.mysmartroute.view.ui.util.labelForVehicle
 import com.ioannapergamali.mysmartroute.viewmodel.FavoritesViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,18 +50,23 @@ fun ManageFavoritesScreen(navController: NavController, openDrawer: () -> Unit) 
                 ExposedDropdownMenuBox(expanded = prefExpanded, onExpandedChange = { prefExpanded = !prefExpanded }) {
                     OutlinedTextField(
                         readOnly = true,
-                        value = selectedPref.name,
+                        value = labelForVehicle(selectedPref),
                         onValueChange = {},
                         modifier = Modifier.menuAnchor().weight(1f),
                         label = { Text(stringResource(R.string.vehicle_type)) },
+                        leadingIcon = { Icon(iconForVehicle(selectedPref), contentDescription = null) },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = prefExpanded) }
                     )
                     DropdownMenu(expanded = prefExpanded, onDismissRequest = { prefExpanded = false }) {
                         VehicleType.values().forEach { type ->
-                            DropdownMenuItem(text = { Text(type.name) }, onClick = {
-                                selectedPref = type
-                                prefExpanded = false
-                            })
+                            DropdownMenuItem(
+                                text = { Text(labelForVehicle(type)) },
+                                leadingIcon = { Icon(iconForVehicle(type), contentDescription = null) },
+                                onClick = {
+                                    selectedPref = type
+                                    prefExpanded = false
+                                }
+                            )
                         }
                     }
                 }
@@ -72,7 +80,12 @@ fun ManageFavoritesScreen(navController: NavController, openDrawer: () -> Unit) 
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(type.name, modifier = Modifier.weight(1f))
+                    Icon(
+                        imageVector = iconForVehicle(type),
+                        contentDescription = null,
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                    Text(labelForVehicle(type), modifier = Modifier.weight(1f))
                     IconButton(onClick = { viewModel.removePreferred(context, type) }) {
                         Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete_favorite))
                     }
@@ -84,18 +97,23 @@ fun ManageFavoritesScreen(navController: NavController, openDrawer: () -> Unit) 
                 ExposedDropdownMenuBox(expanded = nonPrefExpanded, onExpandedChange = { nonPrefExpanded = !nonPrefExpanded }) {
                     OutlinedTextField(
                         readOnly = true,
-                        value = selectedNonPref.name,
+                        value = labelForVehicle(selectedNonPref),
                         onValueChange = {},
                         modifier = Modifier.menuAnchor().weight(1f),
                         label = { Text(stringResource(R.string.vehicle_type)) },
+                        leadingIcon = { Icon(iconForVehicle(selectedNonPref), contentDescription = null) },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = nonPrefExpanded) }
                     )
                     DropdownMenu(expanded = nonPrefExpanded, onDismissRequest = { nonPrefExpanded = false }) {
                         VehicleType.values().forEach { type ->
-                            DropdownMenuItem(text = { Text(type.name) }, onClick = {
-                                selectedNonPref = type
-                                nonPrefExpanded = false
-                            })
+                            DropdownMenuItem(
+                                text = { Text(labelForVehicle(type)) },
+                                leadingIcon = { Icon(iconForVehicle(type), contentDescription = null) },
+                                onClick = {
+                                    selectedNonPref = type
+                                    nonPrefExpanded = false
+                                }
+                            )
                         }
                     }
                 }
@@ -109,7 +127,12 @@ fun ManageFavoritesScreen(navController: NavController, openDrawer: () -> Unit) 
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(type.name, modifier = Modifier.weight(1f))
+                    Icon(
+                        imageVector = iconForVehicle(type),
+                        contentDescription = null,
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                    Text(labelForVehicle(type), modifier = Modifier.weight(1f))
                     IconButton(onClick = { viewModel.removeNonPreferred(context, type) }) {
                         Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete_favorite))
                     }
