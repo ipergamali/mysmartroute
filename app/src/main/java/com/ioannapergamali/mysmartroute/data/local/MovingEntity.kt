@@ -11,5 +11,9 @@ data class MovingEntity(
     val date: Int = 0,
     val vehicleId: String = "",
     val cost: Double = 0.0,
-    val durationMinutes: Int = 0
+    val durationMinutes: Int = 0,
+    /** Σημείο επιβίβασης */
+    val startPoiId: String = "",
+    /** Σημείο αποβίβασης */
+    val endPoiId: String = ""
 )

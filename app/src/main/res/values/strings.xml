@@ -179,4 +179,8 @@
     <string name="view_requests">View Requests</string>
     <string name="no_requests">No requests found</string>
 
+    <string name="find_now">Find now</string>
+    <string name="save_request">Save request</string>
+    <string name="available_transports">Available transports</string>
+    <string name="no_transports_found">No transports found</string>
 </resources>

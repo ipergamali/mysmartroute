@@ -55,9 +55,8 @@ fun ViewRequestsScreen(navController: NavController, openDrawer: () -> Unit) {
             } else {
                 LazyColumn {
                     items(requests) { req ->
-                        val parts = req.routeId.split("-")
-                        val fromName = poiNames[parts.getOrNull(0)] ?: ""
-                        val toName = poiNames[parts.getOrNull(1)] ?: ""
+                        val fromName = poiNames[req.startPoiId] ?: ""
+                        val toName = poiNames[req.endPoiId] ?: ""
                         Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
                             Text(fromName, modifier = Modifier.weight(1f))
                             Text(toName, modifier = Modifier.weight(1f))
