@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -16,6 +18,7 @@ import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
+import com.ioannapergamali.mysmartroute.view.ui.util.iconForVehicle
 import com.ioannapergamali.mysmartroute.view.ui.util.labelForVehicle
 import com.ioannapergamali.mysmartroute.viewmodel.FavoritesViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
@@ -40,6 +43,7 @@ fun AvailableTransportsScreen(
     val declarations by declarationViewModel.declarations.collectAsState()
     val drivers by userViewModel.drivers.collectAsState()
     val preferred by favoritesViewModel.preferredFlow(context).collectAsState(initial = emptySet())
+    val nonPreferred by favoritesViewModel.nonPreferredFlow(context).collectAsState(initial = emptySet())
 
     val pois = remember { mutableStateListOf<PoIEntity>() }
     var startIndex by remember { mutableStateOf(-1) }
@@ -61,9 +65,10 @@ fun AvailableTransportsScreen(
 
     val driverNames = drivers.associate { it.id to "${'$'}{it.name} ${'$'}{it.surname}" }
     val list = declarations.filter { decl ->
-        decl.routeId == routeId &&
-        preferred.contains(runCatching { VehicleType.valueOf(decl.vehicleType) }.getOrNull()) &&
-        startIndex >= 0 && endIndex >= 0 && startIndex < endIndex
+        if (decl.routeId != routeId) return@filter false
+        if (startIndex < 0 || endIndex < 0 || startIndex >= endIndex) return@filter false
+        val type = runCatching { VehicleType.valueOf(decl.vehicleType) }.getOrNull()
+        type == null || !nonPreferred.contains(type)
     }
 
     Scaffold(
@@ -84,7 +89,22 @@ fun AvailableTransportsScreen(
                     items(list) { decl ->
                         val driver = driverNames[decl.driverId] ?: ""
                         val type = runCatching { VehicleType.valueOf(decl.vehicleType) }.getOrNull()
+                        val preferredType = type != null && preferred.contains(type)
                         Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+                            if (preferredType) {
+                                Icon(
+                                    imageVector = Icons.Default.Star,
+                                    contentDescription = null,
+                                    modifier = Modifier.padding(end = 4.dp)
+                                )
+                            }
+                            type?.let {
+                                Icon(
+                                    imageVector = iconForVehicle(it),
+                                    contentDescription = null,
+                                    modifier = Modifier.padding(end = 8.dp)
+                                )
+                            }
                             Text(driver, modifier = Modifier.weight(1f))
                             Text(type?.let { labelForVehicle(it) } ?: "", modifier = Modifier.weight(1f))
                             Text(decl.cost.toString(), modifier = Modifier.weight(1f))
