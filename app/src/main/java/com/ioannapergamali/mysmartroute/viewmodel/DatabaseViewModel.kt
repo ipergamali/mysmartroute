@@ -50,10 +50,15 @@ import kotlinx.coroutines.flow.first
 class DatabaseViewModel : ViewModel() {
     private val firestore = FirebaseFirestore.getInstance()
 
-    private val vehiclesFavorites
-        get() = firestore.collection("favorites")
-            .document("vehicles")
-            .collection("items")
+    private val favoritesGroup
+        get() = firestore.collectionGroup("items")
+
+    private fun userVehicles(userId: String) = firestore
+        .collection("users")
+        .document(userId)
+        .collection("favorites")
+        .document("vehicles")
+        .collection("items")
 
     companion object {
         private const val TAG = "DatabaseViewModel"
@@ -241,7 +246,7 @@ class DatabaseViewModel : ViewModel() {
             val availabilities = firestore.collection("availabilities").get().await()
                 .documents.mapNotNull { it.toAvailabilityEntity() }
 
-            val favorites = vehiclesFavorites
+            val favorites = favoritesGroup
                 .get()
                 .await()
                 .documents.mapNotNull { it.toFavoriteEntity() }
@@ -377,7 +382,7 @@ class DatabaseViewModel : ViewModel() {
                     val availabilities = firestore.collection("availabilities").get().await()
                         .documents.mapNotNull { it.toAvailabilityEntity() }
 
-                    val favorites = vehiclesFavorites
+                    val favorites = favoritesGroup
                         .get()
                         .await()
                         .documents.mapNotNull { it.toFavoriteEntity() }
@@ -503,10 +508,10 @@ class DatabaseViewModel : ViewModel() {
                             .document(it.id)
                             .set(it.toFirestoreMap()).await()
                     }
-                    favorites.forEach {
-                        firestore.collection("favorites")
-                            .document(it.id)
-                            .set(it.toFirestoreMap()).await()
+                    favorites.forEach { fav ->
+                        userVehicles(fav.userId)
+                            .document(fav.id)
+                            .set(fav.toFirestoreMap()).await()
                     }
 
                     Log.d(TAG, "Uploaded local data to Firebase")
