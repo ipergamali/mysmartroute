@@ -29,6 +29,9 @@ import com.ioannapergamali.mysmartroute.viewmodel.UserViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleViewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.Dp
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 @Composable
 private fun TableCell(width: Dp, content: @Composable () -> Unit) {
@@ -117,11 +120,23 @@ fun AvailableTransportsScreen(
             if (sortedDecls.isEmpty()) {
                 Text(stringResource(R.string.no_transports_found))
             } else {
+                val formatter = remember { DateTimeFormatter.ofPattern("dd/MM/yyyy") }
+                val routeName = if (startIndex in pois.indices && endIndex in pois.indices) {
+                    "${pois[startIndex].name} - ${pois[endIndex].name}"
+                } else {
+                    ""
+                }
+
                 LazyColumn {
                     items(sortedDecls) { decl ->
                         val driver = driverNames[decl.driverId] ?: ""
                         val type = runCatching { VehicleType.valueOf(decl.vehicleType) }.getOrNull()
                         val preferredType = type != null && preferred.contains(type)
+                        val dateText = Instant.ofEpochMilli(decl.date)
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate()
+                            .format(formatter)
+
                         Row(modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 8.dp)) {
@@ -142,6 +157,8 @@ fun AvailableTransportsScreen(
                             Text(driver, modifier = Modifier.weight(1f))
                             Text(type?.let { labelForVehicle(it) } ?: "", modifier = Modifier.weight(1f))
                             Text(decl.cost.toString(), modifier = Modifier.weight(1f))
+                            Text(dateText, modifier = Modifier.weight(1f))
+                            Text(routeName, modifier = Modifier.weight(2f))
                         }
                         Divider()
                     }
