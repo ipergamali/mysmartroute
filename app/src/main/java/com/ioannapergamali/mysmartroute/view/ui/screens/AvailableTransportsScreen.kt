@@ -106,7 +106,12 @@ fun AvailableTransportsScreen(
         if (startIndex < 0 || endIndex < 0 || startIndex >= endIndex) return@filter false
         if (maxCost != null && decl.cost > maxCost) return@filter false
         val type = runCatching { VehicleType.valueOf(decl.vehicleType) }.getOrNull()
-        type == null || !nonPreferred.contains(type)
+        if (type != null) {
+            // Αν υπάρχουν προτιμώμενοι τύποι, εμφανίζονται μόνο αυτοί
+            if (preferred.isNotEmpty() && !preferred.contains(type)) return@filter false
+            if (nonPreferred.contains(type)) return@filter false
+        }
+        true
     }
         // ταξινόμηση βάσει κόστους ώστε οι φθηνότερες επιλογές να εμφανίζονται πρώτες
         .sortedBy { it.cost }
