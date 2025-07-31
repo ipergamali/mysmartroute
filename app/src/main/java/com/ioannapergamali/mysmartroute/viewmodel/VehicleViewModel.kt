@@ -115,7 +115,11 @@ class VehicleViewModel : ViewModel() {
             val remote = if (NetworkUtils.isInternetAvailable(context)) {
                 val query = when {
                     includeAll -> db.collection("vehicles")
-                    userId != null -> db.collection("vehicles").whereEqualTo("userId", userId)
+                    userId != null -> db.collection("vehicles")
+                        .whereEqualTo(
+                            "userId",
+                            db.collection("users").document(userId)
+                        )
                     else -> null
                 }
                 query?.let { runCatching { it.get().await() }.getOrNull() }
