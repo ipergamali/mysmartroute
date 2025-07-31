@@ -47,7 +47,7 @@ import com.ioannapergamali.mysmartroute.data.local.Converters
         SeatReservationEntity::class,
         FavoriteEntity::class
     ],
-    version = 44
+    version = 45
 )
 @TypeConverters(Converters::class)
 abstract class MySmartRouteDatabase : RoomDatabase() {
@@ -603,6 +603,14 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_44_45 = object : Migration(44, 45) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "ALTER TABLE `transport_declarations` ADD COLUMN `vehicleId` TEXT NOT NULL DEFAULT ''"
+                )
+            }
+        }
+
         private fun prepopulate(db: SupportSQLiteDatabase) {
             Log.d(TAG, "Prepopulating database")
             db.execSQL(
@@ -724,7 +732,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_40_41,
                     MIGRATION_41_42,
                     MIGRATION_42_43,
-                    MIGRATION_43_44
+                    MIGRATION_43_44,
+                    MIGRATION_44_45
                 )
                     .addCallback(object : RoomDatabase.Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {

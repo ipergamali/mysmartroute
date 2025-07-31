@@ -283,6 +283,7 @@ fun TransportDeclarationEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     // Αποθηκεύουμε απλά τα ids για ευκολότερη αναζήτηση
     "routeId" to routeId,
     "driverId" to driverId,
+    "vehicleId" to vehicleId,
     "vehicleType" to vehicleType,
     "cost" to cost,
     "durationMinutes" to durationMinutes,
@@ -302,12 +303,17 @@ fun DocumentSnapshot.toTransportDeclarationEntity(): TransportDeclarationEntity?
         is String -> d
         else -> getString("driverId")
     } ?: ""
+    val vehicleId = when (val v = get("vehicleId")) {
+        is DocumentReference -> v.id
+        is String -> v
+        else -> getString("vehicleId")
+    } ?: ""
     val type = getString("vehicleType") ?: return null
     val costVal = getDouble("cost") ?: 0.0
     val durVal = (getLong("durationMinutes") ?: 0L).toInt()
     val seatsVal = (getLong("seats") ?: 0L).toInt()
     val dateVal = getLong("date") ?: 0L
-    return TransportDeclarationEntity(declId, routeId, driverId, type, costVal, durVal, seatsVal, dateVal)
+    return TransportDeclarationEntity(declId, routeId, driverId, vehicleId, type, costVal, durVal, seatsVal, dateVal)
 }
 
 fun AvailabilityEntity.toFirestoreMap(): Map<String, Any> = mapOf(

@@ -90,7 +90,7 @@ fun AvailableTransportsScreen(
     }
 
     val driverNames = drivers.associate { it.id to "${it.name} ${it.surname}" }
-    val vehiclesByDriver = vehicles.groupBy { it.userId }
+    val vehiclesMap = vehicles.associateBy { it.id }
     val sortedDecls = declarations.filter { decl ->
         if (decl.routeId != routeId) return@filter false
         if (startIndex < 0 || endIndex < 0 || startIndex >= endIndex) return@filter false
@@ -125,9 +125,7 @@ fun AvailableTransportsScreen(
                         val type = runCatching { VehicleType.valueOf(decl.vehicleType) }.getOrNull()
                         val preferredType = type != null && preferred.contains(type)
 
-                        val vehicleName = vehiclesByDriver[decl.driverId]
-                            ?.firstOrNull { it.type == decl.vehicleType }
-                            ?.name ?: ""
+                        val vehicleName = vehiclesMap[decl.vehicleId]?.name ?: ""
 
                         val dateText = Instant.ofEpochMilli(decl.date)
                             .atZone(ZoneId.systemDefault())
