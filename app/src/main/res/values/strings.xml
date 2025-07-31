@@ -69,6 +69,7 @@
     <string name="print_ticket">Print Booked Seat or Ticket</string>
     <string name="cancel_seat">Cancel Booked Seat</string>
     <string name="rank_transports">View, Rank and Comment on Completed Transports</string>
+    <string name="notifications">Notifications</string>
     <string name="shutdown">Shut Down the System</string>
     <string name="register_vehicle">Register Vehicle</string>
     <string name="vehicle_color">Color</string>
@@ -178,7 +179,8 @@
     <string name="request_sent">Request saved</string>
     <string name="view_requests">View Requests</string>
     <string name="no_requests">No requests found</string>
-
+    <string name="no_notifications">No notifications</string>
+    
     <string name="find_now">Find now</string>
     <string name="save_request">Save request</string>
     <string name="available_transports">Available transports</string>
