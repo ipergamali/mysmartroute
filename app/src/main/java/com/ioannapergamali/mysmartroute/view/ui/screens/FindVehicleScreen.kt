@@ -179,7 +179,10 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
 
             if (selectedRouteId != null) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Button(onClick = { navController.navigate("definePoi?routeId=${'$'}selectedRouteId") }) {
+                    Button(onClick = {
+                        val rId = selectedRouteId ?: ""
+                        navController.navigate("definePoi?lat=&lng=&source=&view=false&routeId=$rId")
+                    }) {
                         Text(stringResource(R.string.add_poi_option))
                     }
                     Button(onClick = { refreshRoute() }, enabled = !calculating) {
