@@ -17,6 +17,7 @@
           {"titleKey": "print_ticket", "route": "printTicket"},
           {"titleKey": "cancel_seat", "route": "cancelSeat"},
           {"titleKey": "rank_transports", "route": "rankTransports"},
+          {"titleKey": "notifications", "route": "notifications"},
           {"titleKey": "shutdown", "route": "shutdown"}
         ]
       }

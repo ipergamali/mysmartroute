@@ -70,6 +70,7 @@
     <string name="print_ticket">Εκτύπωση κράτησης ή εισιτηρίου</string>
     <string name="cancel_seat">Ακύρωση κράτησης</string>
     <string name="rank_transports">Βαθμολόγηση και σχόλια μεταφορών</string>
+    <string name="notifications">Ειδοποιήσεις</string>
     <string name="shutdown">Τερματισμός συστήματος</string>
     <string name="register_vehicle">Καταχώρηση οχήματος</string>
     <string name="vehicle_color">Χρώμα</string>
@@ -165,6 +166,7 @@
     <string name="request_sent">Το αίτημα καταχωρήθηκε</string>
     <string name="view_requests">Προβολή αιτημάτων</string>
     <string name="view_transport_requests">Προβολή αιτημάτων μεταφοράς</string>
+    <string name="no_notifications">Καμία ειδοποίηση</string>
     <string name="available_transports">Διαθέσιμες μεταφορές</string>
     <string name="no_transports_found">Δεν βρέθηκαν μεταφορές</string>
 

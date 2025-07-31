@@ -42,6 +42,7 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.SelectRoutePoisScreen
 
 import com.ioannapergamali.mysmartroute.view.ui.screens.FindVehicleScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.AvailableTransportsScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.NotificationsScreen
 
 
 
@@ -193,6 +194,10 @@ fun NavigationHost(navController : NavHostController, openDrawer: () -> Unit) {
 
         composable("viewRoutes") {
             ViewRoutesScreen(navController = navController, openDrawer = openDrawer)
+        }
+
+        composable("notifications") {
+            NotificationsScreen(navController = navController, openDrawer = openDrawer)
         }
 
         composable("selectRoutePois") {
