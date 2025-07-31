@@ -2,9 +2,9 @@ package com.ioannapergamali.mysmartroute.view.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Refresh
@@ -20,7 +20,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.res.dimensionResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -79,16 +78,13 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
     var calculating by remember { mutableStateOf(false) }
     var pendingPoi by remember { mutableStateOf<Triple<String, Double, Double>?>(null) }
 
-    // Κατάσταση επιλογής ημερομηνίας για το DatePickerDialog
     val datePickerState = rememberDatePickerState()
     var showDatePicker by remember { mutableStateOf(false) }
     val dateFormatter = remember { DateTimeFormatter.ofPattern("dd/MM/yyyy") }
-    val selectedDateText = datePickerState.selectedDateMillis?.let { millis: Long ->
-        Instant.ofEpochMilli(millis)
-            .atZone(ZoneId.systemDefault())
-            .toLocalDate()
-            .format(dateFormatter)
+    val selectedDateText = datePickerState.selectedDateMillis?.let { millis ->
+        Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter)
     } ?: stringResource(R.string.select_date)
+
 
     val cameraPositionState = rememberCameraPositionState()
     val coroutineScope = rememberCoroutineScope()
@@ -245,7 +241,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                 GoogleMap(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(dimensionResource(id = R.dimen.map_height)),
+                        .height(200.dp),
                     cameraPositionState = cameraPositionState
                 ) {
                     Polyline(points = pathPoints)
@@ -375,9 +371,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
 
             Spacer(Modifier.height(16.dp))
 
-            Button(onClick = { showDatePicker = true }) {
-                Text(selectedDateText)
-            }
+            Button(onClick = { showDatePicker = true }) { Text(selectedDateText) }
 
             if (showDatePicker) {
                 DatePickerDialog(
@@ -387,12 +381,11 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                             Text(stringResource(android.R.string.ok))
                         }
                     }
-                ) {
-                    DatePicker(state = datePickerState)
-                }
+                ) { DatePicker(state = datePickerState) }
             }
 
             Spacer(Modifier.height(16.dp))
+
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(
@@ -407,8 +400,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                         val toId = routePois[toIdx].id
                         val cost = maxCostText.toDoubleOrNull() ?: Double.MAX_VALUE
                         val routeId = selectedRouteId ?: return@Button
-                        val dateMillis: Long = datePickerState.selectedDateMillis
-                            ?: System.currentTimeMillis()
+                        val dateMillis = datePickerState.selectedDateMillis ?: 0L
                         requestViewModel.requestTransport(context, routeId, fromId, toId, cost, dateMillis)
                         navController.navigate(
                             "availableTransports?routeId=" +
@@ -416,7 +408,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                                 "&startId=" + fromId +
                             "&endId=" + toId +
                             "&maxCost=" + cost +
-                            "&date=" + ""
+                            "&date=" + dateMillis
                         )
                     },
                     enabled = selectedRouteId != null && startIndex != null && endIndex != null,
@@ -435,8 +427,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                         val toId = routePois[toIdx].id
                         val cost = maxCostText.toDoubleOrNull() ?: Double.MAX_VALUE
                         val routeId = selectedRouteId ?: return@Button
-                        val dateMillis: Long = datePickerState.selectedDateMillis
-                            ?: System.currentTimeMillis()
+                        val dateMillis = datePickerState.selectedDateMillis ?: 0L
                         requestViewModel.requestTransport(context, routeId, fromId, toId, cost, dateMillis)
                         message = context.getString(R.string.request_sent)
                     },
