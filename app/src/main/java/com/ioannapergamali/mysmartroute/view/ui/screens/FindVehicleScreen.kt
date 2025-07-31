@@ -266,7 +266,8 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                     val fromId = routePois[fromIdx].id
                     val toId = routePois[toIdx].id
                     val cost = maxCostText.toDoubleOrNull() ?: Double.MAX_VALUE
-                    requestViewModel.requestTransport(context, fromId, toId, cost)
+                    val routeId = selectedRouteId ?: return@Button
+                    requestViewModel.requestTransport(context, routeId, fromId, toId, cost)
                     message = context.getString(R.string.request_sent)
                 },
                 enabled = selectedRouteId != null && selectedFromIndex != null && selectedToIndex != null
