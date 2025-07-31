@@ -41,6 +41,7 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.ViewRoutesScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.SelectRoutePoisScreen
 
 import com.ioannapergamali.mysmartroute.view.ui.screens.FindVehicleScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.AvailableTransportsScreen
 
 
 
@@ -164,6 +165,26 @@ fun NavigationHost(navController : NavHostController, openDrawer: () -> Unit) {
 
         composable("findVehicle") {
             FindVehicleScreen(navController = navController, openDrawer = openDrawer)
+        }
+
+        composable(
+            "availableTransports?routeId={routeId}&startId={startId}&endId={endId}",
+            arguments = listOf(
+                navArgument("routeId") { defaultValue = "" },
+                navArgument("startId") { defaultValue = "" },
+                navArgument("endId") { defaultValue = "" }
+            )
+        ) { backStackEntry ->
+            val rid = backStackEntry.arguments?.getString("routeId")
+            val sid = backStackEntry.arguments?.getString("startId")
+            val eid = backStackEntry.arguments?.getString("endId")
+            AvailableTransportsScreen(
+                navController = navController,
+                openDrawer = openDrawer,
+                routeId = rid,
+                startId = sid,
+                endId = eid
+            )
         }
 
         composable("bookSeat") {
