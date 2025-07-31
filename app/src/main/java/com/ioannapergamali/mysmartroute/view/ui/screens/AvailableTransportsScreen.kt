@@ -141,6 +141,9 @@ fun AvailableTransportsScreen(
                         val type = runCatching { VehicleType.valueOf(decl.vehicleType) }.getOrNull()
                         val preferredType = type != null && preferred.contains(type)
 
+                        if (vehiclesMap[decl.vehicleId] == null) {
+                            vehicleViewModel.loadVehicleById(context, decl.vehicleId)
+                        }
                         val vehicleName = vehiclesMap[decl.vehicleId]?.name ?: ""
 
                         val dateText = Instant.ofEpochMilli(decl.date)

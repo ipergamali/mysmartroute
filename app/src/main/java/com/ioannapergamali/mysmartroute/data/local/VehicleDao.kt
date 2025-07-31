@@ -15,4 +15,7 @@ interface VehicleDao {
 
     @Query("SELECT * FROM vehicles")
     fun getAllVehicles(): kotlinx.coroutines.flow.Flow<List<VehicleEntity>>
+
+    @Query("SELECT * FROM vehicles WHERE id = :id LIMIT 1")
+    suspend fun getVehicle(id: String): VehicleEntity?
 }
