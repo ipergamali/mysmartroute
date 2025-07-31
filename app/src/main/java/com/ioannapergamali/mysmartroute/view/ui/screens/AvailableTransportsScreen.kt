@@ -69,7 +69,7 @@ fun AvailableTransportsScreen(
         if (startIndex < 0 || endIndex < 0 || startIndex >= endIndex) return@filter false
         val type = runCatching { VehicleType.valueOf(decl.vehicleType) }.getOrNull()
         type == null || !nonPreferred.contains(type)
-    }
+
 
     Scaffold(
         topBar = {
