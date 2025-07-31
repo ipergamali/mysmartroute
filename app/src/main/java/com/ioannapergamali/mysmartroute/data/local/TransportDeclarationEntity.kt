@@ -10,6 +10,8 @@ data class TransportDeclarationEntity(
     val routeId: String = "",
     /** Ο οδηγός που αναλαμβάνει τη μεταφορά */
     val driverId: String = "",
+    /** Το όχημα που χρησιμοποιείται */
+    val vehicleId: String = "",
     val vehicleType: String = "",
     val cost: Double = 0.0,
     val durationMinutes: Int = 0,

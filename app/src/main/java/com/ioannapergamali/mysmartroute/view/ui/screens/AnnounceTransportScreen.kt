@@ -93,6 +93,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     var selectedRouteId by remember { mutableStateOf<String?>(null) }
     var expandedVehicle by remember { mutableStateOf(false) }
     var selectedVehicle by remember { mutableStateOf<VehicleType?>(null) }
+    var selectedVehicleId by remember { mutableStateOf("") }
     var selectedVehicleName by remember { mutableStateOf("") }
     var selectedVehicleDescription by remember { mutableStateOf("") }
     var selectedVehicleSeats by remember { mutableStateOf(0) }
@@ -195,6 +196,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         if (selectedVehicle == null && filteredVehicles.isNotEmpty()) {
             val first = filteredVehicles.first()
             selectedVehicle = VehicleType.valueOf(first.type)
+            selectedVehicleId = first.id
             selectedVehicleName = first.name
             selectedVehicleDescription = first.description
             selectedVehicleSeats = first.seat
@@ -284,6 +286,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     filteredVehicles.forEach { vehicle ->
                         DropdownMenuItem(text = { Text(vehicle.name) }, onClick = {
                             selectedVehicle = VehicleType.valueOf(vehicle.type)
+                            selectedVehicleId = vehicle.id
                             selectedVehicleName = vehicle.name
                             selectedVehicleDescription = vehicle.description
                             selectedVehicleSeats = vehicle.seat
@@ -418,7 +421,17 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     val date = datePickerState.selectedDateMillis ?: 0L
                     val driverId = selectedDriverId ?: ""
                     if (routeId != null && vehicle != null) {
-                        declarationViewModel.declareTransport(context, routeId, driverId, vehicle, selectedVehicleSeats, cost, duration, date)
+                        declarationViewModel.declareTransport(
+                            context,
+                            routeId,
+                            driverId,
+                            selectedVehicleId,
+                            vehicle,
+                            selectedVehicleSeats,
+                            cost,
+                            duration,
+                            date
+                        )
                         navController.popBackStack()
                     }
                 },
