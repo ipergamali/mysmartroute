@@ -262,7 +262,7 @@ fun DocumentSnapshot.toMovingEntity(): MovingEntity? {
         is String -> v
         else -> getString("vehicleId")
     } ?: ""
-    val dateVal = (getLong("date") ?: 0L).toInt()
+    val dateVal = getLong("date") ?: 0L
     val costVal = getDouble("cost") ?: 0.0
     val durVal = (getLong("durationMinutes") ?: 0L).toInt()
     val startPoiId = when (val s = get("startPoiId")) {
