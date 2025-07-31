@@ -60,7 +60,8 @@ fun AvailableTransportsScreen(
     routeId: String?,
     startId: String?,
     endId: String?,
-    maxCost: Double?
+    maxCost: Double?,
+    date: Long?
 ) {
     val context = LocalContext.current
     val routeViewModel: RouteViewModel = viewModel()
@@ -105,6 +106,7 @@ fun AvailableTransportsScreen(
         if (decl.routeId != routeId) return@filter false
         if (startIndex < 0 || endIndex < 0 || startIndex >= endIndex) return@filter false
         if (maxCost != null && decl.cost > maxCost) return@filter false
+        if (date != null && decl.date != date) return@filter false
         val type = runCatching { VehicleType.valueOf(decl.vehicleType) }.getOrNull()
         if (type != null) {
             // Αν υπάρχουν προτιμώμενοι τύποι, εμφανίζονται μόνο αυτοί
