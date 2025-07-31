@@ -3,6 +3,8 @@ package com.ioannapergamali.mysmartroute.view.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
@@ -24,6 +26,30 @@ import com.ioannapergamali.mysmartroute.viewmodel.FavoritesViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.TransportDeclarationViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.UserViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.VehicleViewModel
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.unit.Dp
+
+@Composable
+private fun TableCell(width: Dp, content: @Composable () -> Unit) {
+    Box(
+        modifier = Modifier
+            .width(width)
+            .padding(4.dp),
+        contentAlignment = Alignment.CenterStart
+    ) { content() }
+}
+
+@Composable
+private fun HeaderRow() {
+    Row {
+        TableCell(width = 40.dp) { Text("") }
+        TableCell(width = 140.dp) { Text(stringResource(R.string.driver)) }
+        TableCell(width = 120.dp) { Text(stringResource(R.string.vehicle_name)) }
+        TableCell(width = 120.dp) { Text(stringResource(R.string.vehicle_type)) }
+        TableCell(width = 80.dp) { Text(stringResource(R.string.cost)) }
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,10 +64,12 @@ fun AvailableTransportsScreen(
     val routeViewModel: RouteViewModel = viewModel()
     val declarationViewModel: TransportDeclarationViewModel = viewModel()
     val userViewModel: UserViewModel = viewModel()
+    val vehicleViewModel: VehicleViewModel = viewModel()
     val favoritesViewModel: FavoritesViewModel = viewModel()
 
     val declarations by declarationViewModel.declarations.collectAsState()
     val drivers by userViewModel.drivers.collectAsState()
+    val vehicles by vehicleViewModel.vehicles.collectAsState()
     val preferred by favoritesViewModel.preferredFlow(context).collectAsState(initial = emptySet())
     val nonPreferred by favoritesViewModel.nonPreferredFlow(context).collectAsState(initial = emptySet())
 
@@ -52,6 +80,7 @@ fun AvailableTransportsScreen(
     LaunchedEffect(Unit) {
         declarationViewModel.loadDeclarations(context)
         userViewModel.loadDrivers(context)
+        vehicleViewModel.loadRegisteredVehicles(context, includeAll = true)
     }
 
     LaunchedEffect(routeId) {
@@ -86,31 +115,10 @@ fun AvailableTransportsScreen(
             if (sortedDecls.isEmpty()) {
                 Text(stringResource(R.string.no_transports_found))
             } else {
-                LazyColumn {
-                    items(sortedDecls) { decl ->
-                        val driver = driverNames[decl.driverId] ?: ""
-                        val type = runCatching { VehicleType.valueOf(decl.vehicleType) }.getOrNull()
-                        val preferredType = type != null && preferred.contains(type)
-                        Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
-                            if (preferredType) {
-                                Icon(
-                                    imageVector = Icons.Default.Star,
-                                    contentDescription = null,
-                                    modifier = Modifier.padding(end = 4.dp)
-                                )
+
                             }
-                            type?.let {
-                                Icon(
-                                    imageVector = iconForVehicle(it),
-                                    contentDescription = null,
-                                    modifier = Modifier.padding(end = 8.dp)
-                                )
-                            }
-                            Text(driver, modifier = Modifier.weight(1f))
-                            Text(type?.let { labelForVehicle(it) } ?: "", modifier = Modifier.weight(1f))
-                            Text(decl.cost.toString(), modifier = Modifier.weight(1f))
+                            Divider()
                         }
-                        Divider()
                     }
                 }
             }
