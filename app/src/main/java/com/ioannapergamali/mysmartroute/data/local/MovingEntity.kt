@@ -8,7 +8,7 @@ data class MovingEntity(
     @PrimaryKey val id: String = "",
     val routeId: String = "",
     val userId: String = "",
-    val date: Int = 0,
+    val date: Long = 0L,
     val vehicleId: String = "",
     val cost: Double = 0.0,
     val durationMinutes: Int = 0,
