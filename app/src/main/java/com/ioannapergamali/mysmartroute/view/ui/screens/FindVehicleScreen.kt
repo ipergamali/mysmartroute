@@ -13,12 +13,22 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.MapsInitializer
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.Polyline
+import com.google.maps.android.compose.rememberCameraPositionState
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
+import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
+import com.ioannapergamali.mysmartroute.utils.MapsUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,6 +47,11 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
     var selectedToIndex by remember { mutableStateOf<Int?>(null) }
     var maxCostText by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
+    var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
+
+    val cameraPositionState = rememberCameraPositionState()
+    val apiKey = MapsUtils.getApiKey(context)
+    val isKeyMissing = apiKey.isBlank()
 
     LaunchedEffect(Unit) { routeViewModel.loadRoutes(context, includeAll = true) }
     LaunchedEffect(selectedRouteId) {
@@ -44,6 +59,18 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
             routePois = routeViewModel.getRoutePois(context, id)
             selectedFromIndex = null
             selectedToIndex = null
+            val (_, path) = routeViewModel.getRouteDirections(
+                context,
+                id,
+                VehicleType.CAR
+            )
+            pathPoints = path
+            path.firstOrNull()?.let {
+                MapsInitializer.initialize(context)
+                cameraPositionState.move(
+                    CameraUpdateFactory.newLatLngZoom(it, 13f)
+                )
+            }
         }
     }
 
@@ -123,6 +150,28 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                     }
                 }
 
+                Spacer(Modifier.height(16.dp))
+            }
+
+            if (routePois.isNotEmpty() && pathPoints.isNotEmpty() && !isKeyMissing) {
+                GoogleMap(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp),
+                    cameraPositionState = cameraPositionState
+                ) {
+                    Polyline(points = pathPoints)
+                    routePois.forEach { poi ->
+                        Marker(
+                            state = MarkerState(position = LatLng(poi.lat, poi.lng)),
+                            title = poi.name
+                        )
+                    }
+                }
+
+                Spacer(Modifier.height(16.dp))
+            } else if (isKeyMissing) {
+                Text(stringResource(R.string.map_api_key_missing))
                 Spacer(Modifier.height(16.dp))
             }
 
