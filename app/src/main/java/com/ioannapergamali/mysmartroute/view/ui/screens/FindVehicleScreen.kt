@@ -373,7 +373,13 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                         val cost = maxCostText.toDoubleOrNull() ?: Double.MAX_VALUE
                         val routeId = selectedRouteId ?: return@Button
                         requestViewModel.requestTransport(context, routeId, fromId, toId, cost)
-                        navController.navigate("availableTransports?routeId=" + routeId + "&startId=" + fromId + "&endId=" + toId)
+                        navController.navigate(
+                            "availableTransports?routeId=" +
+                                routeId +
+                                "&startId=" + fromId +
+                                "&endId=" + toId +
+                                "&maxCost=" + cost
+                        )
                     },
                     enabled = selectedRouteId != null && startIndex != null && endIndex != null,
                 ) {

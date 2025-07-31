@@ -59,7 +59,8 @@ fun AvailableTransportsScreen(
     openDrawer: () -> Unit,
     routeId: String?,
     startId: String?,
-    endId: String?
+    endId: String?,
+    maxCost: Double?
 ) {
     val context = LocalContext.current
     val routeViewModel: RouteViewModel = viewModel()
@@ -103,6 +104,7 @@ fun AvailableTransportsScreen(
     val sortedDecls = declarations.filter { decl ->
         if (decl.routeId != routeId) return@filter false
         if (startIndex < 0 || endIndex < 0 || startIndex >= endIndex) return@filter false
+        if (maxCost != null && decl.cost > maxCost) return@filter false
         val type = runCatching { VehicleType.valueOf(decl.vehicleType) }.getOrNull()
         type == null || !nonPreferred.contains(type)
     }
