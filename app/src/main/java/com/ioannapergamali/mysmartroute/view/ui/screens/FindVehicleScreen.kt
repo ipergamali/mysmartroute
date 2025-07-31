@@ -27,6 +27,10 @@ import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
+import androidx.compose.ui.Alignment
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
@@ -125,25 +129,6 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
             }
         } else {
             pathPoints = emptyList()
-        }
-    }
-
-
-    fun refreshRoute() {
-        selectedRouteId?.let { id ->
-            coroutineScope.launch {
-                val (_, path) = routeViewModel.getRouteDirections(
-                    context,
-                    id,
-                    VehicleType.CAR
-                )
-                pathPoints = path
-                path.firstOrNull()?.let {
-                    cameraPositionState.move(
-                        CameraUpdateFactory.newLatLngZoom(it, 13f)
-                    )
-                }
-            }
         }
     }
 
