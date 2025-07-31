@@ -25,6 +25,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.FavoritesViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.TransportDeclarationViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.ReservationViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.BookingViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.UserViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleViewModel
 import kotlin.math.max
@@ -67,6 +68,7 @@ fun AvailableTransportsScreen(
     val vehicleViewModel: VehicleViewModel = viewModel()
     val favoritesViewModel: FavoritesViewModel = viewModel()
     val reservationViewModel: ReservationViewModel = viewModel()
+    val bookingViewModel: BookingViewModel = viewModel()
 
     val declarations by declarationViewModel.declarations.collectAsState()
     val drivers by userViewModel.drivers.collectAsState()
@@ -75,6 +77,7 @@ fun AvailableTransportsScreen(
     val nonPreferred by favoritesViewModel.nonPreferredFlow(context).collectAsState(initial = emptySet())
 
     val reservationCounts = remember { mutableStateMapOf<String, Int>() }
+    var message by remember { mutableStateOf("") }
 
     val pois = remember { mutableStateListOf<PoIEntity>() }
     var startIndex by remember { mutableStateOf(-1) }
@@ -147,33 +150,61 @@ fun AvailableTransportsScreen(
 
                         val reserved = reservationCounts[decl.id] ?: 0
                         val availableSeats = max(0, decl.seats - reserved)
-                        Row(modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp)) {
-                            if (preferredType) {
-                                Icon(
-                                    imageVector = Icons.Default.Star,
-                                    contentDescription = null,
-                                    modifier = Modifier.padding(end = 4.dp),
-                                )
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp)
+                        ) {
+                            Row(modifier = Modifier.fillMaxWidth()) {
+                                if (preferredType) {
+                                    Icon(
+                                        imageVector = Icons.Default.Star,
+                                        contentDescription = null,
+                                        modifier = Modifier.padding(end = 4.dp),
+                                    )
+                                }
+                                type?.let {
+                                    Icon(
+                                        imageVector = iconForVehicle(it),
+                                        contentDescription = null,
+                                        modifier = Modifier.padding(end = 8.dp),
+                                    )
+                                }
+                                Text(driver, modifier = Modifier.weight(1f))
+                                Text(vehicleName, modifier = Modifier.weight(1f))
+                                Text(type?.let { labelForVehicle(it) } ?: "", modifier = Modifier.weight(1f))
+                                Text(decl.cost.toString(), modifier = Modifier.weight(1f))
+                                Text(availableSeats.toString(), modifier = Modifier.weight(1f))
+                                Text(dateText, modifier = Modifier.weight(1f))
                             }
-                            type?.let {
-                                Icon(
-                                    imageVector = iconForVehicle(it),
-                                    contentDescription = null,
-                                    modifier = Modifier.padding(end = 8.dp),
-                                )
+                            Spacer(Modifier.height(4.dp))
+                            Button(
+                                onClick = {
+                                    val success = bookingViewModel.reserveSeat(
+                                        context,
+                                        decl.routeId,
+                                        decl.date,
+                                        startId ?: "",
+                                        endId ?: ""
+                                    )
+                                    message = if (success) {
+                                        reservationCounts[decl.id] = reserved + 1
+                                        context.getString(R.string.seat_booked)
+                                    } else {
+                                        context.getString(R.string.seat_unavailable)
+                                    }
+                                },
+                                enabled = startId != null && endId != null && availableSeats > 0
+                            ) {
+                                Text(stringResource(R.string.reserve_seat))
                             }
-                            Text(driver, modifier = Modifier.weight(1f))
-                            Text(vehicleName, modifier = Modifier.weight(1f))
-                            Text(type?.let { labelForVehicle(it) } ?: "", modifier = Modifier.weight(1f))
-                            Text(decl.cost.toString(), modifier = Modifier.weight(1f))
-                            Text(availableSeats.toString(), modifier = Modifier.weight(1f))
-                            Text(dateText, modifier = Modifier.weight(1f))
-
                         }
                         Divider()
                     }
+                }
+                if (message.isNotBlank()) {
+                    Spacer(Modifier.height(8.dp))
+                    Text(message)
                 }
             }
         }

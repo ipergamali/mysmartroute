@@ -165,5 +165,7 @@
     <string name="request_sent">Το αίτημα καταχωρήθηκε</string>
     <string name="view_requests">Προβολή αιτημάτων</string>
     <string name="view_transport_requests">Προβολή αιτημάτων μεταφοράς</string>
+    <string name="available_transports">Διαθέσιμες μεταφορές</string>
+    <string name="no_transports_found">Δεν βρέθηκαν μεταφορές</string>
 
 </resources>
