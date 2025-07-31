@@ -39,6 +39,7 @@ import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 
@@ -48,7 +49,9 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
     val context = LocalContext.current
     val routeViewModel: RouteViewModel = viewModel()
     val requestViewModel: VehicleRequestViewModel = viewModel()
+    val poiViewModel: PoIViewModel = viewModel()
     val routes by routeViewModel.routes.collectAsState()
+    val allPois by poiViewModel.pois.collectAsState()
 
     var routeExpanded by remember { mutableStateOf(false) }
     var selectedRouteId by remember { mutableStateOf<String?>(null) }
@@ -59,6 +62,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
     var message by remember { mutableStateOf("") }
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     var calculating by remember { mutableStateOf(false) }
+    var pendingPoiId by remember { mutableStateOf<String?>(null) }
 
     val cameraPositionState = rememberCameraPositionState()
     val coroutineScope = rememberCoroutineScope()
@@ -94,7 +98,10 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
     }
 
 
-    LaunchedEffect(Unit) { routeViewModel.loadRoutes(context, includeAll = true) }
+    LaunchedEffect(Unit) {
+        routeViewModel.loadRoutes(context, includeAll = true)
+        poiViewModel.loadPois(context)
+    }
     LaunchedEffect(selectedRouteId) {
         selectedRouteId?.let { id ->
             routePois.clear()
@@ -117,24 +124,28 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                     refreshRoute()
                 }
 
-                if (savedStateHandle?.contains("poiName") == true &&
-                    savedStateHandle.contains("poiLat") &&
-                    savedStateHandle.contains("poiLng") &&
-                    selectedRouteId != null
-                ) {
-                    savedStateHandle.remove<String>("poiName")
-                    savedStateHandle.remove<Double>("poiLat")
-                    savedStateHandle.remove<Double>("poiLng")
-                    coroutineScope.launch {
-                        routePois.clear()
-                        routePois.addAll(routeViewModel.getRoutePois(context, selectedRouteId!!))
-                        refreshRoute()
-                    }
+                val newId = savedStateHandle?.get<String>("poiId")
+                if (newId != null) {
+                    pendingPoiId = newId
+                    poiViewModel.loadPois(context)
                 }
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
+    LaunchedEffect(allPois, pendingPoiId) {
+        pendingPoiId?.let { id ->
+            allPois.find { it.id == id }?.let { poi ->
+                if (routePois.none { it.id == poi.id }) {
+                    savedStateHandle?.remove<String>("poiId")
+                    routePois.add(poi)
+                    refreshRoute()
+                }
+            }
+            pendingPoiId = null
+        }
     }
 
 
@@ -179,7 +190,10 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
 
             if (selectedRouteId != null) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Button(onClick = { navController.navigate("definePoi?routeId=${'$'}selectedRouteId") }) {
+                    Button(onClick = {
+                        val rId = selectedRouteId ?: ""
+                        navController.navigate("definePoi?lat=&lng=&source=&view=false&routeId=$rId")
+                    }) {
                         Text(stringResource(R.string.add_poi_option))
                     }
                     Button(onClick = { refreshRoute() }, enabled = !calculating) {
