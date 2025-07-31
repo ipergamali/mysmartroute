@@ -232,6 +232,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                 selectedVehicle = null
                                 selectedVehicleName = ""
                                 selectedVehicleDescription = ""
+                                vehicleViewModel.loadRegisteredVehicles(context, includeAll = true)
                             })
                         }
                     }
