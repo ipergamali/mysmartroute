@@ -63,7 +63,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
     var message by remember { mutableStateOf("") }
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     var calculating by remember { mutableStateOf(false) }
-    var pendingPoi by remember { mutableStateOf<Triple<String, Double, Double>?>(null) }
+
 
     val cameraPositionState = rememberCameraPositionState()
     val coroutineScope = rememberCoroutineScope()
@@ -125,11 +125,6 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                     refreshRoute()
                 }
 
-                val newName = savedStateHandle?.get<String>("poiName")
-                val lat = savedStateHandle?.get<Double>("poiLat")
-                val lng = savedStateHandle?.get<Double>("poiLng")
-                if (newName != null && lat != null && lng != null) {
-                    pendingPoi = Triple(newName, lat, lng)
                     poiViewModel.loadPois(context)
                 }
             }
@@ -138,22 +133,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
-    LaunchedEffect(allPois, pendingPoi) {
-        pendingPoi?.let { (name, lat, lng) ->
-            allPois.find { poi ->
-                poi.name == name &&
-                    abs(poi.lat - lat) < 0.00001 &&
-                    abs(poi.lng - lng) < 0.00001
-            }?.let { poi ->
-                if (routePois.none { it.id == poi.id }) {
-                    savedStateHandle?.remove<String>("poiName")
-                    savedStateHandle?.remove<Double>("poiLat")
-                    savedStateHandle?.remove<Double>("poiLng")
-                    routePois.add(poi)
-                    refreshRoute()
-                    pendingPoi = null
-                }
-            }
+
         }
     }
 

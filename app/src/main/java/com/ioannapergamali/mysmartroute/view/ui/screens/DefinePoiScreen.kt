@@ -119,11 +119,12 @@ fun DefinePoiScreen(
 
 
     LaunchedEffect(addState) {
-        when (addState) {
-            PoIViewModel.AddPoiState.Success -> {
+        when (val state = addState) {
+            is PoIViewModel.AddPoiState.Success -> {
                 Toast.makeText(context, context.getString(R.string.poi_saved), Toast.LENGTH_SHORT).show()
                 selectedLatLng?.let { latLng ->
                     navController.previousBackStackEntry?.savedStateHandle?.let { handle ->
+                        handle["poiId"] = state.id
                         handle["poiName"] = name
                         handle["poiLat"] = latLng.latitude
                         handle["poiLng"] = latLng.longitude
