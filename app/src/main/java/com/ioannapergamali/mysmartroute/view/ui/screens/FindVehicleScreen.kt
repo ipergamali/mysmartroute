@@ -350,4 +350,4 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                 Text(message)
             }
         }
-    }
+    } }

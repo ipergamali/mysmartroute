@@ -124,7 +124,7 @@ class VehicleViewModel : ViewModel() {
 
             val local = if (includeAll) {
                 vehicleDao.getAllVehicles().first()
-            } else {
+            }  else {
                 userId?.let { vehicleDao.getVehiclesForUser(it) } ?: emptyList()
             }
 
