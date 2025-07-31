@@ -63,13 +63,13 @@ fun AvailableTransportsScreen(
         }
     }
 
-    val driverNames = drivers.associate { it.id to "${it.name} ${it.surname}" }
-    val list = declarations.filter { decl ->
         if (decl.routeId != routeId) return@filter false
         if (startIndex < 0 || endIndex < 0 || startIndex >= endIndex) return@filter false
         val type = runCatching { VehicleType.valueOf(decl.vehicleType) }.getOrNull()
         type == null || !nonPreferred.contains(type)
     }
+        // ταξινόμηση βάσει κόστους ώστε οι φθηνότερες επιλογές να εμφανίζονται πρώτες
+        .sortedBy { it.cost }
 
 
     Scaffold(
@@ -83,11 +83,11 @@ fun AvailableTransportsScreen(
         }
     ) { padding ->
         ScreenContainer(modifier = Modifier.padding(padding), scrollable = false) {
-            if (list.isEmpty()) {
+            if (sortedDecls.isEmpty()) {
                 Text(stringResource(R.string.no_transports_found))
             } else {
                 LazyColumn {
-                    items(list) { decl ->
+                    items(sortedDecls) { decl ->
                         val driver = driverNames[decl.driverId] ?: ""
                         val type = runCatching { VehicleType.valueOf(decl.vehicleType) }.getOrNull()
                         val preferredType = type != null && preferred.contains(type)
