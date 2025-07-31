@@ -61,14 +61,20 @@ class VehicleRequestViewModel : ViewModel() {
         }
     }
 
-    fun requestTransport(context: Context, fromPoiId: String, toPoiId: String, maxCost: Double) {
+    fun requestTransport(
+        context: Context,
+        routeId: String,
+        fromPoiId: String,
+        toPoiId: String,
+        maxCost: Double
+    ) {
         viewModelScope.launch {
             val dao = MySmartRouteDatabase.getInstance(context).movingDao()
             val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
             val id = UUID.randomUUID().toString()
             val entity = MovingEntity(
                 id = id,
-                routeId = "${'$'}fromPoiId-${'$'}toPoiId",
+                routeId = routeId,
                 userId = userId,
                 date = 0,
                 vehicleId = "",
