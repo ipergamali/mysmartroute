@@ -66,7 +66,8 @@ class VehicleRequestViewModel : ViewModel() {
         routeId: String,
         fromPoiId: String,
         toPoiId: String,
-        maxCost: Double
+        maxCost: Double,
+        date: Long
     ) {
         viewModelScope.launch {
             val dao = MySmartRouteDatabase.getInstance(context).movingDao()
@@ -76,7 +77,7 @@ class VehicleRequestViewModel : ViewModel() {
                 id = id,
                 routeId = routeId,
                 userId = userId,
-                date = 0,
+                date = date,
                 vehicleId = "",
                 cost = maxCost,
                 durationMinutes = 0,
