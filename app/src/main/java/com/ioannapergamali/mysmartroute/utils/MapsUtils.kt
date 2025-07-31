@@ -10,12 +10,19 @@ import kotlinx.coroutines.withContext
 import java.net.URLEncoder
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import java.io.IOException
+import java.util.concurrent.TimeUnit
 import org.json.JSONObject
 import org.json.JSONArray
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 
 object MapsUtils {
-    private val client = OkHttpClient()
+    private val client = OkHttpClient.Builder()
+        .callTimeout(30, TimeUnit.SECONDS)
+        .connectTimeout(15, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
+        .writeTimeout(30, TimeUnit.SECONDS)
+        .build()
     private const val TAG = "MapsUtils"
 
     fun getApiKey(context: Context): String {
@@ -127,10 +134,15 @@ object MapsUtils {
         val request = Request.Builder().url(
             buildDirectionsUrl(origin, destination, apiKey, vehicleType, waypoints)
         ).build()
-        client.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) return@withContext 0
-            val body = response.body?.string() ?: return@withContext 0
-            return@withContext parseDuration(body)
+        try {
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) return@withContext 0
+                val body = response.body?.string() ?: return@withContext 0
+                return@withContext parseDuration(body)
+            }
+        } catch (e: IOException) {
+            Log.e(TAG, "Duration request failed", e)
+            return@withContext 0
         }
     }
 
@@ -144,10 +156,15 @@ object MapsUtils {
         val request = Request.Builder().url(
             buildDirectionsUrl(origin, destination, apiKey, vehicleType, waypoints)
         ).build()
-        client.newCall(request).execute().use { response ->
-            val body = response.body?.string() ?: return@withContext DirectionsData(0, emptyList(), "NO_RESPONSE")
-            if (!response.isSuccessful) return@withContext DirectionsData(0, emptyList(), "HTTP_${response.code}")
-            return@withContext parseDirections(body)
+        try {
+            client.newCall(request).execute().use { response ->
+                val body = response.body?.string() ?: return@withContext DirectionsData(0, emptyList(), "NO_RESPONSE")
+                if (!response.isSuccessful) return@withContext DirectionsData(0, emptyList(), "HTTP_${response.code}")
+                return@withContext parseDirections(body)
+            }
+        } catch (e: IOException) {
+            Log.e(TAG, "Directions request failed", e)
+            return@withContext DirectionsData(0, emptyList(), "EXCEPTION")
         }
     }
 
