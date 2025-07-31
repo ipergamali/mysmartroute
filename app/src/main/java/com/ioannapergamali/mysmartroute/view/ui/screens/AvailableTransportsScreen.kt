@@ -3,8 +3,7 @@ package com.ioannapergamali.mysmartroute.view.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.rememberScrollState
+
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
@@ -27,31 +26,25 @@ import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.TransportDeclarationViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.UserViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleViewModel
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.unit.Dp
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 @Composable
-private fun TableCell(width: Dp, content: @Composable () -> Unit) {
-    Box(
-        modifier = Modifier
-            .width(width)
-            .padding(4.dp),
-        contentAlignment = Alignment.CenterStart
-    ) { content() }
-}
-
-@Composable
 private fun HeaderRow() {
-    Row {
-        TableCell(width = 40.dp) { Text("") }
-        TableCell(width = 140.dp) { Text(stringResource(R.string.driver)) }
-        TableCell(width = 120.dp) { Text(stringResource(R.string.vehicle_name)) }
-        TableCell(width = 120.dp) { Text(stringResource(R.string.vehicle_type)) }
-        TableCell(width = 80.dp) { Text(stringResource(R.string.cost)) }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+    ) {
+        Spacer(modifier = Modifier.width(40.dp))
+        Text(stringResource(R.string.driver), modifier = Modifier.weight(1f))
+        Text(stringResource(R.string.vehicle_name), modifier = Modifier.weight(1f))
+        Text(stringResource(R.string.vehicle_type), modifier = Modifier.weight(1f))
+        Text(stringResource(R.string.cost), modifier = Modifier.weight(1f))
+        Text(stringResource(R.string.date), modifier = Modifier.weight(1f))
     }
+    Divider()
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -96,6 +89,7 @@ fun AvailableTransportsScreen(
     }
 
     val driverNames = drivers.associate { it.id to "${it.name} ${it.surname}" }
+    val vehiclesByDriver = vehicles.groupBy { it.userId }
     val sortedDecls = declarations.filter { decl ->
         if (decl.routeId != routeId) return@filter false
         if (startIndex < 0 || endIndex < 0 || startIndex >= endIndex) return@filter false
@@ -121,17 +115,16 @@ fun AvailableTransportsScreen(
                 Text(stringResource(R.string.no_transports_found))
             } else {
                 val formatter = remember { DateTimeFormatter.ofPattern("dd/MM/yyyy") }
-                val routeName = if (startIndex in pois.indices && endIndex in pois.indices) {
-                    "${pois[startIndex].name} - ${pois[endIndex].name}"
-                } else {
-                    ""
-                }
 
                 LazyColumn {
+                    item { HeaderRow() }
                     items(sortedDecls) { decl ->
                         val driver = driverNames[decl.driverId] ?: ""
                         val type = runCatching { VehicleType.valueOf(decl.vehicleType) }.getOrNull()
                         val preferredType = type != null && preferred.contains(type)
+                        val vehicleName = vehiclesByDriver[decl.driverId]
+                            ?.firstOrNull { runCatching { VehicleType.valueOf(it.type) }.getOrNull() == type }
+                            ?.name ?: ""
                         val dateText = Instant.ofEpochMilli(decl.date)
                             .atZone(ZoneId.systemDefault())
                             .toLocalDate()
@@ -155,10 +148,10 @@ fun AvailableTransportsScreen(
                                 )
                             }
                             Text(driver, modifier = Modifier.weight(1f))
+                            Text(vehicleName, modifier = Modifier.weight(1f))
                             Text(type?.let { labelForVehicle(it) } ?: "", modifier = Modifier.weight(1f))
                             Text(decl.cost.toString(), modifier = Modifier.weight(1f))
                             Text(dateText, modifier = Modifier.weight(1f))
-                            Text(routeName, modifier = Modifier.weight(2f))
                         }
                         Divider()
                     }
