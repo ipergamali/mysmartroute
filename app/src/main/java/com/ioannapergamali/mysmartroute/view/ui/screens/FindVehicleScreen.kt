@@ -23,6 +23,8 @@ import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
+
+
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
@@ -76,6 +78,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
             }
         }
     }
+
 
     fun refreshRoute() {
         selectedRouteId?.let { id ->
