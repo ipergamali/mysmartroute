@@ -26,6 +26,9 @@ import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.TransportDeclarationViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.UserViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleViewModel
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 
 @Composable
@@ -121,6 +124,10 @@ fun AvailableTransportsScreen(
                         val driver = driverNames[decl.driverId] ?: ""
                         val type = runCatching { VehicleType.valueOf(decl.vehicleType) }.getOrNull()
                         val preferredType = type != null && preferred.contains(type)
+
+                        val vehicleName = vehiclesByDriver[decl.driverId]
+                            ?.firstOrNull { it.type == decl.vehicleType }
+                            ?.name ?: ""
 
                         val dateText = Instant.ofEpochMilli(decl.date)
                             .atZone(ZoneId.systemDefault())
