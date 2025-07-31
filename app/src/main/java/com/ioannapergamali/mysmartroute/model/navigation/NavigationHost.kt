@@ -169,22 +169,25 @@ fun NavigationHost(navController : NavHostController, openDrawer: () -> Unit) {
         }
 
         composable(
-            "availableTransports?routeId={routeId}&startId={startId}&endId={endId}",
+            "availableTransports?routeId={routeId}&startId={startId}&endId={endId}&maxCost={maxCost}",
             arguments = listOf(
                 navArgument("routeId") { defaultValue = "" },
                 navArgument("startId") { defaultValue = "" },
-                navArgument("endId") { defaultValue = "" }
+                navArgument("endId") { defaultValue = "" },
+                navArgument("maxCost") { defaultValue = "" }
             )
         ) { backStackEntry ->
             val rid = backStackEntry.arguments?.getString("routeId")
             val sid = backStackEntry.arguments?.getString("startId")
             val eid = backStackEntry.arguments?.getString("endId")
+            val maxCost = backStackEntry.arguments?.getString("maxCost")?.toDoubleOrNull()
             AvailableTransportsScreen(
                 navController = navController,
                 openDrawer = openDrawer,
                 routeId = rid,
                 startId = sid,
-                endId = eid
+                endId = eid,
+                maxCost = maxCost
             )
         }
 
