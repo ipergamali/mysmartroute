@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
@@ -80,6 +81,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                 )
                 pathPoints = data.points
                 data.points.firstOrNull()?.let {
+                    MapsInitializer.initialize(context)
                     cameraPositionState.move(
                         CameraUpdateFactory.newLatLngZoom(it, 13f)
                     )
