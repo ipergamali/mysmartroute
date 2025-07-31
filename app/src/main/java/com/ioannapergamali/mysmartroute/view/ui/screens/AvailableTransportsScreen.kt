@@ -63,7 +63,7 @@ fun AvailableTransportsScreen(
         }
     }
 
-    val driverNames = drivers.associate { it.id to "${'$'}{it.name} ${'$'}{it.surname}" }
+    val driverNames = drivers.associate { it.id to "${it.name} ${it.surname}" }
     val list = declarations.filter { decl ->
         if (decl.routeId != routeId) return@filter false
         if (startIndex < 0 || endIndex < 0 || startIndex >= endIndex) return@filter false
