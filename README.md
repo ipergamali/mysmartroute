@@ -124,3 +124,18 @@ Google Places API. Αν στο logcat βλέπεις μηνύματα όπως
 Μετά τις αλλαγές κάνε επανεκκίνηση της εφαρμογής ώστε να χρησιμοποιήσει το σωστό κλειδί.
 
 
+
+### Εικονίδιο ειδοποίησης
+
+Για να εμφανιστεί σωστά το εικονίδιο στις ειδοποιήσεις, χρησιμοποίησε τον builder του `NotificationCompat` δίνοντας ένα λευκό εικονίδιο vector στο `setSmallIcon`:
+
+```kotlin
+val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+    .setSmallIcon(R.drawable.ic_notification)
+    .setContentTitle("Τίτλος ειδοποίησης")
+    .setContentText("Κείμενο ειδοποίησης")
+    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+    .build()
+```
+
+Το αρχείο `ic_notification.xml` πρέπει να βρίσκεται στο `res/drawable` και να έχει απλή λευκή μορφή ώστε να προβάλλεται σωστά στη γραμμή ειδοποιήσεων.
