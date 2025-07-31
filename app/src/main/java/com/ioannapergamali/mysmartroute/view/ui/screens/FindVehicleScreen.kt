@@ -377,8 +377,9 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                             "availableTransports?routeId=" +
                                 routeId +
                                 "&startId=" + fromId +
-                                "&endId=" + toId +
-                                "&maxCost=" + cost
+                            "&endId=" + toId +
+                            "&maxCost=" + cost +
+                            "&date="
                         )
                     },
                     enabled = selectedRouteId != null && startIndex != null && endIndex != null,
