@@ -48,8 +48,24 @@ class ReservationViewModel : ViewModel() {
     /** Επιστρέφει τον αριθμό κρατήσεων για μια δήλωση μεταφοράς. */
     suspend fun getReservationCount(context: Context, declarationId: String): Int {
         val dao = MySmartRouteDatabase.getInstance(context).seatReservationDao()
-        return withContext(Dispatchers.IO) {
+
+        val localCount = withContext(Dispatchers.IO) {
             dao.getReservationsForDeclaration(declarationId).first().size
         }
+
+        if (NetworkUtils.isInternetAvailable(context)) {
+            val declRef = db.collection("transport_declarations").document(declarationId)
+            val remote = db.collection("seat_reservations")
+                .whereEqualTo("declarationId", declRef)
+                .get()
+                .await()
+            val list = remote.documents.mapNotNull { it.toSeatReservationEntity() }
+            if (list.isNotEmpty()) {
+                withContext(Dispatchers.IO) { list.forEach { dao.insert(it) } }
+                return list.size
+            }
+        }
+
+        return localCount
     }
 }

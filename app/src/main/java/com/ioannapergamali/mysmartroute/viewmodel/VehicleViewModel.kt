@@ -136,6 +136,13 @@ class VehicleViewModel : ViewModel() {
 
             _vehicles.value = list
             list.forEach { insertVehicleSafely(vehicleDao, userDao, it) }
+
+            // Reload from local DB to ensure names are fetched for all vehicles
+            _vehicles.value = if (includeAll) {
+                vehicleDao.getAllVehicles().first()
+            } else {
+                userId?.let { vehicleDao.getVehiclesForUser(it) } ?: emptyList()
+            }
         }
     }
 
