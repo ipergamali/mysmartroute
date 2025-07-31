@@ -26,9 +26,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.TransportDeclarationViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.UserViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleViewModel
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
+
 
 @Composable
 private fun HeaderRow() {
@@ -116,15 +114,14 @@ fun AvailableTransportsScreen(
             } else {
                 val formatter = remember { DateTimeFormatter.ofPattern("dd/MM/yyyy") }
 
+
                 LazyColumn {
                     item { HeaderRow() }
                     items(sortedDecls) { decl ->
                         val driver = driverNames[decl.driverId] ?: ""
                         val type = runCatching { VehicleType.valueOf(decl.vehicleType) }.getOrNull()
                         val preferredType = type != null && preferred.contains(type)
-                        val vehicleName = vehiclesByDriver[decl.driverId]
-                            ?.firstOrNull { runCatching { VehicleType.valueOf(it.type) }.getOrNull() == type }
-                            ?.name ?: ""
+
                         val dateText = Instant.ofEpochMilli(decl.date)
                             .atZone(ZoneId.systemDefault())
                             .toLocalDate()
@@ -152,6 +149,7 @@ fun AvailableTransportsScreen(
                             Text(type?.let { labelForVehicle(it) } ?: "", modifier = Modifier.weight(1f))
                             Text(decl.cost.toString(), modifier = Modifier.weight(1f))
                             Text(dateText, modifier = Modifier.weight(1f))
+
                         }
                         Divider()
                     }
