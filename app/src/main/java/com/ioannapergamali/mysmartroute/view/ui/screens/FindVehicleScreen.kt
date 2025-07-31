@@ -78,9 +78,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
     var calculating by remember { mutableStateOf(false) }
     var pendingPoi by remember { mutableStateOf<Triple<String, Double, Double>?>(null) }
 
-    val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = System.currentTimeMillis()
-    )
+
     var showDatePicker by remember { mutableStateOf(false) }
     val dateFormatter = remember { DateTimeFormatter.ofPattern("dd/MM/yyyy") }
     val selectedDateText = datePickerState.selectedDateMillis?.let { millis ->
