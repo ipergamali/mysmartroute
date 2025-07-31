@@ -117,10 +117,33 @@ fun AvailableTransportsScreen(
             if (sortedDecls.isEmpty()) {
                 Text(stringResource(R.string.no_transports_found))
             } else {
-
+                LazyColumn {
+                    items(sortedDecls) { decl ->
+                        val driver = driverNames[decl.driverId] ?: ""
+                        val type = runCatching { VehicleType.valueOf(decl.vehicleType) }.getOrNull()
+                        val preferredType = type != null && preferred.contains(type)
+                        Row(modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp)) {
+                            if (preferredType) {
+                                Icon(
+                                    imageVector = Icons.Default.Star,
+                                    contentDescription = null,
+                                    modifier = Modifier.padding(end = 4.dp),
+                                )
                             }
-                            Divider()
+                            type?.let {
+                                Icon(
+                                    imageVector = iconForVehicle(it),
+                                    contentDescription = null,
+                                    modifier = Modifier.padding(end = 8.dp),
+                                )
+                            }
+                            Text(driver, modifier = Modifier.weight(1f))
+                            Text(type?.let { labelForVehicle(it) } ?: "", modifier = Modifier.weight(1f))
+                            Text(decl.cost.toString(), modifier = Modifier.weight(1f))
                         }
+                        Divider()
                     }
                 }
             }
