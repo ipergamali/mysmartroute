@@ -18,11 +18,6 @@ import java.util.UUID
 class FavoritesViewModel : ViewModel() {
     private val firestore = FirebaseFirestore.getInstance()
 
-    private val globalVehicles
-        get() = firestore.collection("favorites")
-            .document("vehicles")
-            .collection("items")
-
     private fun userVehicles(userId: String) = firestore.collection("users")
         .document(userId)
         .collection("favorites")
@@ -55,7 +50,6 @@ class FavoritesViewModel : ViewModel() {
             insertFavoriteSafely(db.favoriteDao(), db.userDao(), fav)
             try {
                 userVehicles(uid).document(id).set(fav.toFirestoreMap()).await()
-                globalVehicles.document(id).set(fav.toFirestoreMap()).await()
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -72,7 +66,6 @@ class FavoritesViewModel : ViewModel() {
             insertFavoriteSafely(db.favoriteDao(), db.userDao(), fav)
             try {
                 userVehicles(uid).document(id).set(fav.toFirestoreMap()).await()
-                globalVehicles.document(id).set(fav.toFirestoreMap()).await()
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -92,13 +85,6 @@ class FavoritesViewModel : ViewModel() {
                     .get()
                     .await()
                     .documents.forEach { it.reference.delete().await() }
-                globalVehicles
-                    .whereEqualTo("userId", uid)
-                    .whereEqualTo("vehicleType", type.name)
-                    .whereEqualTo("preferred", true)
-                    .get()
-                    .await()
-                    .documents.forEach { it.reference.delete().await() }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -113,13 +99,6 @@ class FavoritesViewModel : ViewModel() {
             db.favoriteDao().delete(uid, type.name)
             try {
                 userVehicles(uid)
-                    .whereEqualTo("vehicleType", type.name)
-                    .whereEqualTo("preferred", false)
-                    .get()
-                    .await()
-                    .documents.forEach { it.reference.delete().await() }
-                globalVehicles
-                    .whereEqualTo("userId", uid)
                     .whereEqualTo("vehicleType", type.name)
                     .whereEqualTo("preferred", false)
                     .get()
