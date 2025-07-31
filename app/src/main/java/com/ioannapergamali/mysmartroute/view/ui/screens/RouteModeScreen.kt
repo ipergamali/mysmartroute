@@ -31,9 +31,6 @@ import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -57,12 +54,6 @@ fun RouteModeScreen(navController: NavController, openDrawer: () -> Unit) {
     var endIndex by rememberSaveable { mutableStateOf<Int?>(null) }
     var message by remember { mutableStateOf("") }
 
-    val datePickerState = rememberDatePickerState()
-    var showDatePicker by remember { mutableStateOf(false) }
-    val dateFormatter = remember { DateTimeFormatter.ofPattern("dd/MM/yyyy") }
-    val selectedDateText = datePickerState.selectedDateMillis?.let { millis ->
-        Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter)
-    } ?: stringResource(R.string.select_date)
 
     Scaffold(
         topBar = {
@@ -172,23 +163,8 @@ fun RouteModeScreen(navController: NavController, openDrawer: () -> Unit) {
                 Spacer(Modifier.height(16.dp))
             }
 
-            Button(onClick = { showDatePicker = true }) { Text(selectedDateText) }
-
-            if (showDatePicker) {
-                DatePickerDialog(
-                    onDismissRequest = { showDatePicker = false },
-                    confirmButton = {
-                        TextButton(onClick = { showDatePicker = false }) {
-                            Text(stringResource(android.R.string.ok))
-                        }
-                    }
-                ) { DatePicker(state = datePickerState) }
-            }
-
-            Spacer(Modifier.height(16.dp))
-
             Button(
-                enabled = selectedRouteId != null && startIndex != null && endIndex != null && datePickerState.selectedDateMillis != null,
+                enabled = selectedRouteId != null && startIndex != null && endIndex != null,
                 onClick = {
                     val fromIdx = startIndex ?: return@Button
                     val toIdx = endIndex ?: return@Button
@@ -199,13 +175,12 @@ fun RouteModeScreen(navController: NavController, openDrawer: () -> Unit) {
                     val fromId = routePois[fromIdx].id
                     val toId = routePois[toIdx].id
                     val routeId = selectedRouteId ?: return@Button
-                    val dateMillis = datePickerState.selectedDateMillis ?: 0L
                     navController.navigate(
                         "availableTransports?routeId=" +
                                 routeId +
                                 "&startId=" + fromId +
                                 "&endId=" + toId +
-                                "&maxCost=&date=" + dateMillis
+                                "&maxCost=&date="
                     )
                 }
             ) { Text(stringResource(R.string.find_now)) }
