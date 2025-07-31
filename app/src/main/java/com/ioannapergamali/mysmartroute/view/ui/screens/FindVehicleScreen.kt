@@ -21,6 +21,8 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
@@ -50,6 +52,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
 
     val cameraPositionState = rememberCameraPositionState()
+    val coroutineScope = rememberCoroutineScope()
     val apiKey = MapsUtils.getApiKey(context)
     val isKeyMissing = apiKey.isBlank()
 
@@ -70,6 +73,24 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                 cameraPositionState.move(
                     CameraUpdateFactory.newLatLngZoom(it, 13f)
                 )
+            }
+        }
+    }
+
+    fun refreshRoute() {
+        selectedRouteId?.let { id ->
+            coroutineScope.launch {
+                val (_, path) = routeViewModel.getRouteDirections(
+                    context,
+                    id,
+                    VehicleType.CAR
+                )
+                pathPoints = path
+                path.firstOrNull()?.let {
+                    cameraPositionState.move(
+                        CameraUpdateFactory.newLatLngZoom(it, 13f)
+                    )
+                }
             }
         }
     }
@@ -181,6 +202,33 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                 Spacer(Modifier.height(16.dp))
             }
 
+            if (routePois.isNotEmpty()) {
+                Text(stringResource(R.string.stops_header))
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            stringResource(R.string.poi_name),
+                            modifier = Modifier.weight(1f),
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                        Text(
+                            stringResource(R.string.poi_type),
+                            modifier = Modifier.weight(1f),
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                    }
+                    Divider()
+                    routePois.forEachIndexed { index, poi ->
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            Text("${'$'}{index + 1}. ${'$'}{poi.name}", modifier = Modifier.weight(1f))
+                            Text(poi.type.name, modifier = Modifier.weight(1f))
+                        }
+                    }
+                }
+
+                Spacer(Modifier.height(16.dp))
+            }
+
             OutlinedTextField(
                 value = maxCostText,
                 onValueChange = { maxCostText = it },
@@ -190,6 +238,19 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
             )
 
             Spacer(Modifier.height(16.dp))
+
+            if (selectedRouteId != null) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(onClick = { navController.navigate("definePoi?routeId=${'$'}selectedRouteId") }) {
+                        Text(stringResource(R.string.add_poi_option))
+                    }
+                    Button(onClick = { refreshRoute() }) {
+                        Text(stringResource(R.string.recalculate_route))
+                    }
+                }
+
+                Spacer(Modifier.height(16.dp))
+            }
 
             Button(
                 onClick = {
