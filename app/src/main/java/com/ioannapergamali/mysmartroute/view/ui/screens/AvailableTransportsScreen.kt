@@ -64,7 +64,7 @@ fun AvailableTransportsScreen(
     }
 
     val driverNames = drivers.associate { it.id to "${'$'}{it.name} ${'$'}{it.surname}" }
-    val sortedDecls = declarations.filter { decl ->
+
         if (decl.routeId != routeId) return@filter false
         if (startIndex < 0 || endIndex < 0 || startIndex >= endIndex) return@filter false
         val type = runCatching { VehicleType.valueOf(decl.vehicleType) }.getOrNull()
@@ -72,6 +72,7 @@ fun AvailableTransportsScreen(
     }
         // ταξινόμηση βάσει κόστους ώστε οι φθηνότερες επιλογές να εμφανίζονται πρώτες
         .sortedBy { it.cost }
+
 
     Scaffold(
         topBar = {
