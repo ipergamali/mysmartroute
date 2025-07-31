@@ -24,8 +24,10 @@ import com.ioannapergamali.mysmartroute.view.ui.util.labelForVehicle
 import com.ioannapergamali.mysmartroute.viewmodel.FavoritesViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.TransportDeclarationViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.ReservationViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.UserViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleViewModel
+import kotlin.math.max
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -43,6 +45,7 @@ private fun HeaderRow() {
         Text(stringResource(R.string.vehicle_name), modifier = Modifier.weight(1f))
         Text(stringResource(R.string.vehicle_type), modifier = Modifier.weight(1f))
         Text(stringResource(R.string.cost), modifier = Modifier.weight(1f))
+        Text(stringResource(R.string.seats_label), modifier = Modifier.weight(1f))
         Text(stringResource(R.string.date), modifier = Modifier.weight(1f))
     }
     Divider()
@@ -63,12 +66,15 @@ fun AvailableTransportsScreen(
     val userViewModel: UserViewModel = viewModel()
     val vehicleViewModel: VehicleViewModel = viewModel()
     val favoritesViewModel: FavoritesViewModel = viewModel()
+    val reservationViewModel: ReservationViewModel = viewModel()
 
     val declarations by declarationViewModel.declarations.collectAsState()
     val drivers by userViewModel.drivers.collectAsState()
     val vehicles by vehicleViewModel.vehicles.collectAsState()
     val preferred by favoritesViewModel.preferredFlow(context).collectAsState(initial = emptySet())
     val nonPreferred by favoritesViewModel.nonPreferredFlow(context).collectAsState(initial = emptySet())
+
+    val reservationCounts = remember { mutableStateMapOf<String, Int>() }
 
     val pois = remember { mutableStateListOf<PoIEntity>() }
     var startIndex by remember { mutableStateOf(-1) }
@@ -99,6 +105,13 @@ fun AvailableTransportsScreen(
     }
         // ταξινόμηση βάσει κόστους ώστε οι φθηνότερες επιλογές να εμφανίζονται πρώτες
         .sortedBy { it.cost }
+
+    LaunchedEffect(sortedDecls) {
+        sortedDecls.forEach { decl ->
+            val count = reservationViewModel.getReservationCount(context, decl.id)
+            reservationCounts[decl.id] = count
+        }
+    }
 
 
     Scaffold(
@@ -132,6 +145,8 @@ fun AvailableTransportsScreen(
                             .toLocalDate()
                             .format(formatter)
 
+                        val reserved = reservationCounts[decl.id] ?: 0
+                        val availableSeats = max(0, decl.seats - reserved)
                         Row(modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 8.dp)) {
@@ -153,6 +168,7 @@ fun AvailableTransportsScreen(
                             Text(vehicleName, modifier = Modifier.weight(1f))
                             Text(type?.let { labelForVehicle(it) } ?: "", modifier = Modifier.weight(1f))
                             Text(decl.cost.toString(), modifier = Modifier.weight(1f))
+                            Text(availableSeats.toString(), modifier = Modifier.weight(1f))
                             Text(dateText, modifier = Modifier.weight(1f))
 
                         }

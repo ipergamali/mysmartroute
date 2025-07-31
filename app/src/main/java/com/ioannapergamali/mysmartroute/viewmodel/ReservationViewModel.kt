@@ -13,6 +13,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class ReservationViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
@@ -40,6 +42,14 @@ class ReservationViewModel : ViewModel() {
                     list.forEach { dao.insert(it) }
                 }
             }
+        }
+    }
+
+    /** Επιστρέφει τον αριθμό κρατήσεων για μια δήλωση μεταφοράς. */
+    suspend fun getReservationCount(context: Context, declarationId: String): Int {
+        val dao = MySmartRouteDatabase.getInstance(context).seatReservationDao()
+        return withContext(Dispatchers.IO) {
+            dao.getReservationsForDeclaration(declarationId).first().size
         }
     }
 }
