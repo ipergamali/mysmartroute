@@ -18,7 +18,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
@@ -31,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
 
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
@@ -64,47 +64,6 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
     val apiKey = MapsUtils.getApiKey(context)
     val isKeyMissing = apiKey.isBlank()
 
-    LaunchedEffect(Unit) { routeViewModel.loadRoutes(context, includeAll = true) }
-    LaunchedEffect(selectedRouteId) {
-        selectedRouteId?.let { id ->
-            routePois.clear()
-            routePois.addAll(routeViewModel.getRoutePois(context, id))
-            startIndex = null
-            endIndex = null
-            refreshRoute()
-        }
-    }
-
-    val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
-    val lifecycleOwner = LocalLifecycleOwner.current
-    DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) {
-                savedStateHandle?.get<String>("newRouteId")?.let { newId ->
-                    savedStateHandle.remove<String>("newRouteId")
-                    selectedRouteId = newId
-                    routeViewModel.loadRoutes(context, includeAll = true)
-                    refreshRoute()
-                }
-
-                if (savedStateHandle?.contains("poiName") == true &&
-                    savedStateHandle.contains("poiLat") &&
-                    savedStateHandle.contains("poiLng") &&
-                    selectedRouteId != null
-                ) {
-                    savedStateHandle.remove<String>("poiName")
-                    savedStateHandle.remove<Double>("poiLat")
-                    savedStateHandle.remove<Double>("poiLng")
-                    routePois.clear()
-                    routePois.addAll(routeViewModel.getRoutePois(context, selectedRouteId!!))
-                    refreshRoute()
-                }
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
-    }
-
     fun refreshRoute() {
         if (routePois.size >= 2) {
             coroutineScope.launch {
@@ -131,6 +90,51 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
             pathPoints = emptyList()
         }
     }
+
+
+    LaunchedEffect(Unit) { routeViewModel.loadRoutes(context, includeAll = true) }
+    LaunchedEffect(selectedRouteId) {
+        selectedRouteId?.let { id ->
+            routePois.clear()
+            routePois.addAll(routeViewModel.getRoutePois(context, id))
+            startIndex = null
+            endIndex = null
+            refreshRoute()
+        }
+    }
+
+    val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _: LifecycleOwner, event: Lifecycle.Event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                savedStateHandle?.get<String>("newRouteId")?.let { newId ->
+                    savedStateHandle.remove<String>("newRouteId")
+                    selectedRouteId = newId
+                    routeViewModel.loadRoutes(context, includeAll = true)
+                    refreshRoute()
+                }
+
+                if (savedStateHandle?.contains("poiName") == true &&
+                    savedStateHandle.contains("poiLat") &&
+                    savedStateHandle.contains("poiLng") &&
+                    selectedRouteId != null
+                ) {
+                    savedStateHandle.remove<String>("poiName")
+                    savedStateHandle.remove<Double>("poiLat")
+                    savedStateHandle.remove<Double>("poiLng")
+                    coroutineScope.launch {
+                        routePois.clear()
+                        routePois.addAll(routeViewModel.getRoutePois(context, selectedRouteId!!))
+                        refreshRoute()
+                    }
+                }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
 
     Scaffold(
         topBar = {
