@@ -12,10 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.LifecycleOwner
+
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -28,14 +25,12 @@ import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
-import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
-import com.ioannapergamali.mysmartroute.utils.MapsUtils
+
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
-import kotlinx.coroutines.launch
-import kotlin.math.abs
+
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -62,108 +57,6 @@ fun RouteModeScreen(navController: NavController, openDrawer: () -> Unit) {
     var endIndex by rememberSaveable { mutableStateOf<Int?>(null) }
     var message by remember { mutableStateOf("") }
 
-    var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
-    var calculating by remember { mutableStateOf(false) }
-    var pendingPoi by remember { mutableStateOf<Triple<String, Double, Double>?>(null) }
-
-    val cameraPositionState = rememberCameraPositionState()
-    val coroutineScope = rememberCoroutineScope()
-    val apiKey = MapsUtils.getApiKey(context)
-    val isKeyMissing = apiKey.isBlank()
-
-    val datePickerState = rememberDatePickerState()
-    var showDatePicker by remember { mutableStateOf(false) }
-    val dateFormatter = remember { DateTimeFormatter.ofPattern("dd/MM/yyyy") }
-    val selectedDateText = datePickerState.selectedDateMillis?.let { millis ->
-        Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter)
-    } ?: stringResource(R.string.select_date)
-
-    fun refreshRoute() {
-        if (routePois.size >= 2) {
-            coroutineScope.launch {
-                calculating = true
-                val origin = LatLng(routePois.first().lat, routePois.first().lng)
-                val destination = LatLng(routePois.last().lat, routePois.last().lng)
-                val waypoints = routePois.drop(1).dropLast(1).map { LatLng(it.lat, it.lng) }
-                val data = MapsUtils.fetchDurationAndPath(
-                    origin,
-                    destination,
-                    apiKey,
-                    VehicleType.CAR,
-                    waypoints
-                )
-                pathPoints = data.points
-                data.points.firstOrNull()?.let {
-                    MapsInitializer.initialize(context)
-                    cameraPositionState.move(
-                        CameraUpdateFactory.newLatLngZoom(it, 13f)
-                    )
-                }
-                calculating = false
-            }
-        } else {
-            pathPoints = emptyList()
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        routeViewModel.loadRoutes(context, includeAll = true)
-        poiViewModel.loadPois(context)
-    }
-    LaunchedEffect(selectedRouteId) {
-        selectedRouteId?.let { id ->
-            routePoiIds.clear()
-            routePoiIds.addAll(routeViewModel.getRoutePois(context, id).map { it.id })
-            startIndex = null
-            endIndex = null
-            refreshRoute()
-        }
-    }
-
-    val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
-    val lifecycleOwner = LocalLifecycleOwner.current
-    DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _: LifecycleOwner, event: Lifecycle.Event ->
-            if (event == Lifecycle.Event.ON_RESUME) {
-                savedStateHandle?.get<String>("poiName")?.let { newName ->
-                    val lat = savedStateHandle.get<Double>("poiLat")
-                    val lng = savedStateHandle.get<Double>("poiLng")
-                    if (lat != null && lng != null) {
-                        pendingPoi = Triple(newName, lat, lng)
-                        poiViewModel.loadPois(context)
-                    }
-                }
-
-                savedStateHandle?.get<String>("newRouteId")?.let { newId ->
-                    savedStateHandle.remove<String>("newRouteId")
-                    selectedRouteId = newId
-                    routeViewModel.loadRoutes(context, includeAll = true)
-                    refreshRoute()
-                }
-
-                poiViewModel.loadPois(context)
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
-    }
-
-    LaunchedEffect(allPois, pendingPoi) {
-        pendingPoi?.let { (name, lat, lng) ->
-            allPois.find { poi ->
-                poi.name == name &&
-                    abs(poi.lat - lat) < 0.00001 &&
-                    abs(poi.lng - lng) < 0.00001
-            }?.let { poi ->
-                if (routePoiIds.none { it == poi.id }) {
-                    savedStateHandle?.remove<String>("poiName")
-                    savedStateHandle?.remove<Double>("poiLat")
-                    savedStateHandle?.remove<Double>("poiLng")
-                    routePoiIds.add(poi.id)
-                    refreshRoute()
-                    pendingPoi = null
-                }
-            }
         }
     }
 
@@ -178,11 +71,6 @@ fun RouteModeScreen(navController: NavController, openDrawer: () -> Unit) {
         }
     ) { padding ->
         ScreenContainer(modifier = Modifier.padding(padding)) {
-            Button(onClick = { navController.navigate("declareRoute") }) {
-                Text(stringResource(R.string.declare_route))
-            }
-
-            Spacer(Modifier.height(16.dp))
 
             ExposedDropdownMenuBox(expanded = routeExpanded, onExpandedChange = { routeExpanded = !routeExpanded }) {
                 OutlinedTextField(
@@ -204,44 +92,6 @@ fun RouteModeScreen(navController: NavController, openDrawer: () -> Unit) {
             }
 
             Spacer(Modifier.height(16.dp))
-
-            if (selectedRouteId != null) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Button(onClick = {
-                        val rId = selectedRouteId ?: ""
-                        navController.navigate("definePoi?lat=&lng=&source=&view=false&routeId=$rId")
-                    }) {
-                        Text(stringResource(R.string.add_poi_option))
-                    }
-                    Button(onClick = { refreshRoute() }, enabled = !calculating) {
-                        Text(stringResource(R.string.recalculate_route))
-                    }
-                }
-
-                Spacer(Modifier.height(16.dp))
-
-                if (routePois.isNotEmpty() && pathPoints.isNotEmpty() && !isKeyMissing) {
-                    GoogleMap(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(200.dp),
-                        cameraPositionState = cameraPositionState
-                    ) {
-                        Polyline(points = pathPoints)
-                        routePois.forEach { poi ->
-                            Marker(
-                                state = MarkerState(position = LatLng(poi.lat, poi.lng)),
-                                title = poi.name
-                            )
-                        }
-                    }
-
-                    Spacer(Modifier.height(16.dp))
-                } else if (isKeyMissing) {
-                    Text(stringResource(R.string.map_api_key_missing))
-                    Spacer(Modifier.height(16.dp))
-                }
-            }
 
             if (routePois.isNotEmpty()) {
                 Text(stringResource(R.string.stops_header))

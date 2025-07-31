@@ -155,6 +155,7 @@ class VehicleViewModel : ViewModel() {
 
     fun loadVehicleById(context: Context, vehicleId: String) {
         viewModelScope.launch {
+            if (vehicleId.isBlank()) return@launch
             if (_vehicles.value.any { it.id == vehicleId }) return@launch
 
             val dbLocal = MySmartRouteDatabase.getInstance(context)
