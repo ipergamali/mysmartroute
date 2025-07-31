@@ -92,14 +92,13 @@ fun AvailableTransportsScreen(
         }
     }
 
-    val driverNames = drivers.associate { it.id to "${'$'}{it.name} ${'$'}{it.surname}" }
-    val vehiclesByDriver = vehicles.groupBy { it.userId }
-    val list = declarations.filter { decl ->
         if (decl.routeId != routeId) return@filter false
         if (startIndex < 0 || endIndex < 0 || startIndex >= endIndex) return@filter false
         val type = runCatching { VehicleType.valueOf(decl.vehicleType) }.getOrNull()
         type == null || !nonPreferred.contains(type)
     }
+        // ταξινόμηση βάσει κόστους ώστε οι φθηνότερες επιλογές να εμφανίζονται πρώτες
+        .sortedBy { it.cost }
 
 
     Scaffold(
@@ -113,42 +112,10 @@ fun AvailableTransportsScreen(
         }
     ) { padding ->
         ScreenContainer(modifier = Modifier.padding(padding), scrollable = false) {
-            if (list.isEmpty()) {
+            if (sortedDecls.isEmpty()) {
                 Text(stringResource(R.string.no_transports_found))
             } else {
-                val scrollState = rememberScrollState()
-                Box(modifier = Modifier.horizontalScroll(scrollState)) {
-                    LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                        item { HeaderRow() }
-                        items(list) { decl ->
-                            val driver = driverNames[decl.driverId] ?: ""
-                            val type = runCatching { VehicleType.valueOf(decl.vehicleType) }.getOrNull()
-                            val preferredType = type != null && preferred.contains(type)
-                            val vehicleName = vehiclesByDriver[decl.driverId]
-                                ?.firstOrNull { runCatching { VehicleType.valueOf(it.type) }.getOrNull() == type }
-                                ?.name ?: ""
-                            Row(modifier = Modifier.padding(vertical = 8.dp)) {
-                                TableCell(width = 40.dp) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        if (preferredType) {
-                                            Icon(
-                                                imageVector = Icons.Default.Star,
-                                                contentDescription = null,
-                                                modifier = Modifier.padding(end = 4.dp)
-                                            )
-                                        }
-                                        type?.let {
-                                            Icon(
-                                                imageVector = iconForVehicle(it),
-                                                contentDescription = null
-                                            )
-                                        }
-                                    }
-                                }
-                                TableCell(width = 140.dp) { Text(driver, softWrap = false) }
-                                TableCell(width = 120.dp) { Text(vehicleName, softWrap = false) }
-                                TableCell(width = 120.dp) { Text(type?.let { labelForVehicle(it) } ?: "", softWrap = false) }
-                                TableCell(width = 80.dp) { Text(decl.cost.toString(), softWrap = false) }
+
                             }
                             Divider()
                         }
