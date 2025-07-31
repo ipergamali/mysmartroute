@@ -2,6 +2,10 @@ package com.ioannapergamali.mysmartroute.view.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.menuAnchor
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -21,6 +25,11 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
@@ -40,37 +49,84 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
 
     var routeExpanded by remember { mutableStateOf(false) }
     var selectedRouteId by remember { mutableStateOf<String?>(null) }
-    var routePois by remember { mutableStateOf<List<PoIEntity>>(emptyList()) }
-    var fromExpanded by remember { mutableStateOf(false) }
-    var toExpanded by remember { mutableStateOf(false) }
-    var selectedFromIndex by remember { mutableStateOf<Int?>(null) }
-    var selectedToIndex by remember { mutableStateOf<Int?>(null) }
+    val routePois = remember { mutableStateListOf<PoIEntity>() }
+    var startIndex by remember { mutableStateOf<Int?>(null) }
+    var endIndex by remember { mutableStateOf<Int?>(null) }
     var maxCostText by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
+    var calculating by remember { mutableStateOf(false) }
 
     val cameraPositionState = rememberCameraPositionState()
+    val coroutineScope = rememberCoroutineScope()
     val apiKey = MapsUtils.getApiKey(context)
     val isKeyMissing = apiKey.isBlank()
 
     LaunchedEffect(Unit) { routeViewModel.loadRoutes(context, includeAll = true) }
     LaunchedEffect(selectedRouteId) {
         selectedRouteId?.let { id ->
-            routePois = routeViewModel.getRoutePois(context, id)
-            selectedFromIndex = null
-            selectedToIndex = null
-            val (_, path) = routeViewModel.getRouteDirections(
-                context,
-                id,
-                VehicleType.CAR
-            )
-            pathPoints = path
-            path.firstOrNull()?.let {
-                MapsInitializer.initialize(context)
-                cameraPositionState.move(
-                    CameraUpdateFactory.newLatLngZoom(it, 13f)
-                )
+            routePois.clear()
+            routePois.addAll(routeViewModel.getRoutePois(context, id))
+            startIndex = null
+            endIndex = null
+            refreshRoute()
+        }
+    }
+
+    val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                savedStateHandle?.get<String>("newRouteId")?.let { newId ->
+                    savedStateHandle.remove<String>("newRouteId")
+                    selectedRouteId = newId
+                    routeViewModel.loadRoutes(context, includeAll = true)
+                    refreshRoute()
+                }
+
+                if (savedStateHandle?.contains("poiName") == true &&
+                    savedStateHandle.contains("poiLat") &&
+                    savedStateHandle.contains("poiLng") &&
+                    selectedRouteId != null
+                ) {
+                    savedStateHandle.remove<String>("poiName")
+                    savedStateHandle.remove<Double>("poiLat")
+                    savedStateHandle.remove<Double>("poiLng")
+                    routePois.clear()
+                    routePois.addAll(routeViewModel.getRoutePois(context, selectedRouteId!!))
+                    refreshRoute()
+                }
             }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
+    fun refreshRoute() {
+        if (routePois.size >= 2) {
+            coroutineScope.launch {
+                calculating = true
+                val origin = LatLng(routePois.first().lat, routePois.first().lng)
+                val destination = LatLng(routePois.last().lat, routePois.last().lng)
+                val waypoints = routePois.drop(1).dropLast(1).map { LatLng(it.lat, it.lng) }
+                val data = MapsUtils.fetchDurationAndPath(
+                    origin,
+                    destination,
+                    apiKey,
+                    VehicleType.CAR,
+                    waypoints
+                )
+                pathPoints = data.points
+                data.points.firstOrNull()?.let {
+                    cameraPositionState.move(
+                        CameraUpdateFactory.newLatLngZoom(it, 13f)
+                    )
+                }
+                calculating = false
+            }
+        } else {
+            pathPoints = emptyList()
         }
     }
 
@@ -114,47 +170,103 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
             Spacer(Modifier.height(16.dp))
 
             if (routePois.isNotEmpty()) {
-                ExposedDropdownMenuBox(expanded = fromExpanded, onExpandedChange = { fromExpanded = !fromExpanded }) {
-                    val startText = selectedFromIndex?.let { "${it + 1}. ${routePois[it].name}" } ?: ""
-                    OutlinedTextField(
-                        value = startText,
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text(stringResource(R.string.boarding_stop)) },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = fromExpanded) },
-                        modifier = Modifier.menuAnchor().fillMaxWidth()
-                    )
-                    DropdownMenu(expanded = fromExpanded, onDismissRequest = { fromExpanded = false }) {
-                        routePois.forEachIndexed { index, poi ->
-                            DropdownMenuItem(text = { Text(poi.name) }, onClick = {
-                                selectedFromIndex = index
-                                fromExpanded = false
-                            })
+                Text(stringResource(R.string.stops_header))
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            stringResource(R.string.poi_name),
+                            modifier = Modifier.weight(1f),
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                        Text(
+                            stringResource(R.string.poi_type),
+                            modifier = Modifier.weight(1f),
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                    }
+                    Divider()
+                    routePois.forEachIndexed { index, poi ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("${index + 1}. ${poi.name}", modifier = Modifier.weight(1f))
+                            Text(poi.type.name, modifier = Modifier.weight(1f))
+                            IconButton(onClick = {
+                                if (endIndex == null || index < endIndex!!) {
+                                    startIndex = index
+                                } else {
+                                    message = context.getString(R.string.invalid_stop_order)
+                                }
+                            }) {
+                                Text("\uD83C\uDD95")
+                            }
+                            IconButton(onClick = {
+                                if (startIndex == null || index > startIndex!!) {
+                                    endIndex = index
+                                } else {
+                                    message = context.getString(R.string.invalid_stop_order)
+                                }
+                            }) {
+                                Text("\uD83D\uDD1A")
+                            }
+                            IconButton(onClick = {
+                                routePois.removeAt(index)
+                                if (startIndex != null) {
+                                    if (index == startIndex) startIndex = null else if (index < startIndex!!) startIndex = startIndex!! - 1
+                                }
+                                if (endIndex != null) {
+                                    if (index == endIndex) endIndex = null else if (index < endIndex!!) endIndex = endIndex!! - 1
+                                }
+                                refreshRoute()
+                            }) {
+                                Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.remove_point))
+                            }
                         }
                     }
                 }
+
+                Spacer(Modifier.height(16.dp))
+
+                OutlinedTextField(
+                    value = startIndex?.let { "${it + 1}. ${routePois[it].name}" } ?: "",
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text(stringResource(R.string.boarding_stop)) },
+                    leadingIcon = { Text("\uD83C\uDD95") },
+                    trailingIcon = {
+                        IconButton(onClick = { startIndex = null }) {
+                            Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.clear_selection))
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.small,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                    )
+                )
 
                 Spacer(Modifier.height(8.dp))
 
-                ExposedDropdownMenuBox(expanded = toExpanded, onExpandedChange = { toExpanded = !toExpanded }) {
-                    val endText = selectedToIndex?.let { "${it + 1}. ${routePois[it].name}" } ?: ""
-                    OutlinedTextField(
-                        value = endText,
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text(stringResource(R.string.dropoff_stop)) },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = toExpanded) },
-                        modifier = Modifier.menuAnchor().fillMaxWidth()
-                    )
-                    DropdownMenu(expanded = toExpanded, onDismissRequest = { toExpanded = false }) {
-                        routePois.forEachIndexed { index, poi ->
-                            DropdownMenuItem(text = { Text(poi.name) }, onClick = {
-                                selectedToIndex = index
-                                toExpanded = false
-                            })
+                OutlinedTextField(
+                    value = endIndex?.let { "${it + 1}. ${routePois[it].name}" } ?: "",
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text(stringResource(R.string.dropoff_stop)) },
+                    leadingIcon = { Text("\uD83D\uDD1A") },
+                    trailingIcon = {
+                        IconButton(onClick = { endIndex = null }) {
+                            Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.clear_selection))
                         }
-                    }
-                }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.small,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                    )
+                )
 
                 Spacer(Modifier.height(16.dp))
             }
@@ -181,6 +293,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                 Spacer(Modifier.height(16.dp))
             }
 
+
             OutlinedTextField(
                 value = maxCostText,
                 onValueChange = { maxCostText = it },
@@ -191,10 +304,25 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
 
             Spacer(Modifier.height(16.dp))
 
+            if (selectedRouteId != null) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(onClick = { navController.navigate("definePoi?routeId=${'$'}selectedRouteId") }) {
+                        Text(stringResource(R.string.add_poi_option))
+                    }
+                    Button(onClick = { refreshRoute() }, enabled = !calculating) {
+                        Icon(Icons.Default.Refresh, contentDescription = null)
+                        Spacer(Modifier.width(8.dp))
+                        Text(stringResource(R.string.recalculate_route))
+                    }
+                }
+
+                Spacer(Modifier.height(16.dp))
+            }
+
             Button(
                 onClick = {
-                    val fromIdx = selectedFromIndex ?: return@Button
-                    val toIdx = selectedToIndex ?: return@Button
+                    val fromIdx = startIndex ?: return@Button
+                    val toIdx = endIndex ?: return@Button
                     if (fromIdx >= toIdx) {
                         message = context.getString(R.string.invalid_stop_order)
                         return@Button
@@ -205,7 +333,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                     requestViewModel.requestTransport(context, fromId, toId, cost)
                     message = context.getString(R.string.request_sent)
                 },
-                enabled = selectedRouteId != null && selectedFromIndex != null && selectedToIndex != null
+                enabled = selectedRouteId != null && startIndex != null && endIndex != null
             ) {
                 Text(stringResource(R.string.find_vehicle))
             }
