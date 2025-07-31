@@ -177,6 +177,41 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
 
             Spacer(Modifier.height(16.dp))
 
+            if (selectedRouteId != null) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(onClick = { navController.navigate("definePoi?routeId=${'$'}selectedRouteId") }) {
+                        Text(stringResource(R.string.add_poi_option))
+                    }
+                    Button(onClick = { refreshRoute() }, enabled = !calculating) {
+                        Text(stringResource(R.string.recalculate_route))
+                    }
+                }
+
+                Spacer(Modifier.height(16.dp))
+            }
+
+            if (routePois.isNotEmpty() && pathPoints.isNotEmpty() && !isKeyMissing) {
+                GoogleMap(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp),
+                    cameraPositionState = cameraPositionState
+                ) {
+                    Polyline(points = pathPoints)
+                    routePois.forEach { poi ->
+                        Marker(
+                            state = MarkerState(position = LatLng(poi.lat, poi.lng)),
+                            title = poi.name
+                        )
+                    }
+                }
+
+                Spacer(Modifier.height(16.dp))
+            } else if (isKeyMissing) {
+                Text(stringResource(R.string.map_api_key_missing))
+                Spacer(Modifier.height(16.dp))
+            }
+
             if (routePois.isNotEmpty()) {
                 Text(stringResource(R.string.stops_header))
                 Column(modifier = Modifier.fillMaxWidth()) {
@@ -279,29 +314,6 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                 Spacer(Modifier.height(16.dp))
             }
 
-            if (routePois.isNotEmpty() && pathPoints.isNotEmpty() && !isKeyMissing) {
-                GoogleMap(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp),
-                    cameraPositionState = cameraPositionState
-                ) {
-                    Polyline(points = pathPoints)
-                    routePois.forEach { poi ->
-                        Marker(
-                            state = MarkerState(position = LatLng(poi.lat, poi.lng)),
-                            title = poi.name
-                        )
-                    }
-                }
-
-                Spacer(Modifier.height(16.dp))
-            } else if (isKeyMissing) {
-                Text(stringResource(R.string.map_api_key_missing))
-                Spacer(Modifier.height(16.dp))
-            }
-
-
             OutlinedTextField(
                 value = maxCostText,
                 onValueChange = { maxCostText = it },
@@ -312,18 +324,6 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
 
             Spacer(Modifier.height(16.dp))
 
-            if (selectedRouteId != null) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Button(onClick = { navController.navigate("definePoi?routeId=${'$'}selectedRouteId") }) {
-                        Text(stringResource(R.string.add_poi_option))
-                    }
-
-                        Text(stringResource(R.string.recalculate_route))
-                    }
-                }
-
-                Spacer(Modifier.height(16.dp))
-            }
 
             Button(
                 onClick = {
