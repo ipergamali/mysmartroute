@@ -12,14 +12,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.MapsInitializer
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.Polyline
+import com.google.maps.android.compose.rememberCameraPositionState
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
+
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
+
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -46,23 +57,6 @@ fun RouteModeScreen(navController: NavController, openDrawer: () -> Unit) {
     var endIndex by rememberSaveable { mutableStateOf<Int?>(null) }
     var message by remember { mutableStateOf("") }
 
-    val datePickerState = rememberDatePickerState()
-    var showDatePicker by remember { mutableStateOf(false) }
-    val dateFormatter = remember { DateTimeFormatter.ofPattern("dd/MM/yyyy") }
-    val selectedDateText = datePickerState.selectedDateMillis?.let { millis ->
-        Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter)
-    } ?: stringResource(R.string.select_date)
-
-    LaunchedEffect(Unit) {
-        routeViewModel.loadRoutes(context, includeAll = true)
-        poiViewModel.loadPois(context)
-    }
-    LaunchedEffect(selectedRouteId) {
-        selectedRouteId?.let { id ->
-            routePoiIds.clear()
-            routePoiIds.addAll(routeViewModel.getRoutePois(context, id).map { it.id })
-            startIndex = null
-            endIndex = null
         }
     }
 
@@ -77,6 +71,7 @@ fun RouteModeScreen(navController: NavController, openDrawer: () -> Unit) {
         }
     ) { padding ->
         ScreenContainer(modifier = Modifier.padding(padding)) {
+
             ExposedDropdownMenuBox(expanded = routeExpanded, onExpandedChange = { routeExpanded = !routeExpanded }) {
                 OutlinedTextField(
                     value = routes.find { it.id == selectedRouteId }?.name ?: "",
