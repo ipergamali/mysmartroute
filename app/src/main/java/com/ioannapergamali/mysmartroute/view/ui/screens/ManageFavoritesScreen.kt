@@ -2,7 +2,9 @@ package com.ioannapergamali.mysmartroute.view.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -81,6 +83,11 @@ fun ManageFavoritesScreen(navController: NavController, openDrawer: () -> Unit) 
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = null,
+                        modifier = Modifier.padding(end = 4.dp)
+                    )
+                    Icon(
                         imageVector = iconForVehicle(type),
                         contentDescription = null,
                         modifier = Modifier.padding(end = 8.dp)
@@ -127,6 +134,11 @@ fun ManageFavoritesScreen(navController: NavController, openDrawer: () -> Unit) 
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
+                    Icon(
+                        imageVector = Icons.Default.Block,
+                        contentDescription = null,
+                        modifier = Modifier.padding(end = 4.dp)
+                    )
                     Icon(
                         imageVector = iconForVehicle(type),
                         contentDescription = null,
