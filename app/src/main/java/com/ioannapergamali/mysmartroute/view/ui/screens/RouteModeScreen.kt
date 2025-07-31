@@ -57,6 +57,13 @@ fun RouteModeScreen(navController: NavController, openDrawer: () -> Unit) {
     var endIndex by rememberSaveable { mutableStateOf<Int?>(null) }
     var message by remember { mutableStateOf("") }
 
+    val datePickerState = rememberDatePickerState()
+    var showDatePicker by remember { mutableStateOf(false) }
+    val dateFormatter = remember { DateTimeFormatter.ofPattern("dd/MM/yyyy") }
+    val selectedDateText = datePickerState.selectedDateMillis?.let { millis ->
+        Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter)
+    } ?: stringResource(R.string.select_date)
+
     Scaffold(
         topBar = {
             TopBar(
