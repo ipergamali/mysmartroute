@@ -30,6 +30,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.SettingsViewModel
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.utils.LanguagePreferenceManager
 import com.ioannapergamali.mysmartroute.utils.LocaleUtils
+import com.ioannapergamali.mysmartroute.utils.NotificationUtils
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.launch
 import com.ioannapergamali.mysmartroute.model.interfaces.ThemeOption
@@ -64,6 +65,11 @@ class MainActivity : ComponentActivity() {
         // Έλεγχος φόρτωσης του Maps API key
         val apiKey = MapsUtils.getApiKey(this)
         Log.d("Maps", "API key loaded? ${apiKey.isNotEmpty()}")
+        NotificationUtils.showNotification(
+            this,
+            getString(R.string.welcome),
+            getString(R.string.app_started_notification)
+        )
         // Initialize the soundtrack and start playback based on saved preferences.
         SoundManager.initialize(applicationContext)
         lifecycleScope.launch {

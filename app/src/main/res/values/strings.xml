@@ -180,6 +180,9 @@
     <string name="view_requests">View Requests</string>
     <string name="no_requests">No requests found</string>
     <string name="no_notifications">No notifications</string>
+
+    <!-- Notification text -->
+    <string name="app_started_notification">App started successfully</string>
     
     <string name="find_now">Find now</string>
     <string name="save_request">Save request</string>
