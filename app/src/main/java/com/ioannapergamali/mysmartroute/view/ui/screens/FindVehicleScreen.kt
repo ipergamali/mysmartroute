@@ -8,6 +8,8 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.menuAnchor
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -35,7 +37,6 @@ import androidx.lifecycle.LifecycleOwner
 import kotlin.math.abs
 
 import com.ioannapergamali.mysmartroute.R
-import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
@@ -55,14 +56,21 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
     val allPois by poiViewModel.pois.collectAsState()
 
     var routeExpanded by remember { mutableStateOf(false) }
-    var selectedRouteId by remember { mutableStateOf<String?>(null) }
-    val routePois = remember { mutableStateListOf<PoIEntity>() }
-    var startIndex by remember { mutableStateOf<Int?>(null) }
-    var endIndex by remember { mutableStateOf<Int?>(null) }
-    var maxCostText by remember { mutableStateOf("") }
+    var selectedRouteId by rememberSaveable { mutableStateOf<String?>(null) }
+    val routePoiIds = rememberSaveable(
+        saver = listSaver(
+            save = { it.toList() },
+            restore = { mutableStateListOf<String>().apply { addAll(it) } }
+        )
+    ) { mutableStateListOf<String>() }
+    val routePois = routePoiIds.mapNotNull { id -> allPois.find { it.id == id } }
+    var startIndex by rememberSaveable { mutableStateOf<Int?>(null) }
+    var endIndex by rememberSaveable { mutableStateOf<Int?>(null) }
+    var maxCostText by rememberSaveable { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     var calculating by remember { mutableStateOf(false) }
+    var pendingPoi by remember { mutableStateOf<Triple<String, Double, Double>?>(null) }
 
 
     val cameraPositionState = rememberCameraPositionState()
@@ -105,8 +113,8 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
     }
     LaunchedEffect(selectedRouteId) {
         selectedRouteId?.let { id ->
-            routePois.clear()
-            routePois.addAll(routeViewModel.getRoutePois(context, id))
+            routePoiIds.clear()
+            routePoiIds.addAll(routeViewModel.getRoutePois(context, id).map { it.id })
             startIndex = null
             endIndex = null
             refreshRoute()
@@ -118,6 +126,15 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _: LifecycleOwner, event: Lifecycle.Event ->
             if (event == Lifecycle.Event.ON_RESUME) {
+                savedStateHandle?.get<String>("poiName")?.let { newName ->
+                    val lat = savedStateHandle.get<Double>("poiLat")
+                    val lng = savedStateHandle.get<Double>("poiLng")
+                    if (lat != null && lng != null) {
+                        pendingPoi = Triple(newName, lat, lng)
+                        poiViewModel.loadPois(context)
+                    }
+                }
+
                 savedStateHandle?.get<String>("newRouteId")?.let { newId ->
                     savedStateHandle.remove<String>("newRouteId")
                     selectedRouteId = newId
@@ -130,6 +147,25 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
         }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
+    LaunchedEffect(allPois, pendingPoi) {
+        pendingPoi?.let { (name, lat, lng) ->
+            allPois.find { poi ->
+                poi.name == name &&
+                    abs(poi.lat - lat) < 0.00001 &&
+                    abs(poi.lng - lng) < 0.00001
+            }?.let { poi ->
+                if (routePoiIds.none { it == poi.id }) {
+                    savedStateHandle?.remove<String>("poiName")
+                    savedStateHandle?.remove<Double>("poiLat")
+                    savedStateHandle?.remove<Double>("poiLng")
+                    routePoiIds.add(poi.id)
+                    refreshRoute()
+                    pendingPoi = null
+                }
+            }
+        }
     }
 
 
@@ -252,7 +288,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                                 Text("\uD83D\uDD1A")
                             }
                             IconButton(onClick = {
-                                routePois.removeAt(index)
+                                routePoiIds.removeAt(index)
                                 if (startIndex != null) {
                                     if (index == startIndex) startIndex = null else if (index < startIndex!!) startIndex = startIndex!! - 1
                                 }
