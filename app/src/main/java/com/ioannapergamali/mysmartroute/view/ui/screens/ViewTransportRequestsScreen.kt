@@ -89,9 +89,8 @@ fun ViewTransportRequestsScreen(navController: NavController, openDrawer: () -> 
                         Divider()
                     }
                     items(requests) { req ->
-                        val parts = req.routeId.split("-")
-                        val fromName = poiNames[parts.getOrNull(0)] ?: ""
-                        val toName = poiNames[parts.getOrNull(1)] ?: ""
+                        val fromName = poiNames[req.startPoiId] ?: ""
+                        val toName = poiNames[req.endPoiId] ?: ""
                         val routeName = if (fromName.isNotBlank() && toName.isNotBlank()) "$fromName - $toName" else ""
                         val userName = userNames[req.userId] ?: ""
                         Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {

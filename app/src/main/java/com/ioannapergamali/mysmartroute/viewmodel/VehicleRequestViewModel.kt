@@ -79,7 +79,9 @@ class VehicleRequestViewModel : ViewModel() {
                 date = 0,
                 vehicleId = "",
                 cost = maxCost,
-                durationMinutes = 0
+                durationMinutes = 0,
+                startPoiId = fromPoiId,
+                endPoiId = toPoiId
             )
             dao.insert(entity)
             try {
