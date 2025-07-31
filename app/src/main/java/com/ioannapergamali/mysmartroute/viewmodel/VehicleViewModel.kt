@@ -153,6 +153,31 @@ class VehicleViewModel : ViewModel() {
         }
     }
 
+    fun loadVehicleById(context: Context, vehicleId: String) {
+        viewModelScope.launch {
+            if (_vehicles.value.any { it.id == vehicleId }) return@launch
+
+            val dbLocal = MySmartRouteDatabase.getInstance(context)
+            val vehicleDao = dbLocal.vehicleDao()
+            val userDao = dbLocal.userDao()
+
+            val local = vehicleDao.getVehicle(vehicleId)
+            if (local != null) {
+                _vehicles.value = _vehicles.value + local
+                return@launch
+            }
+
+            if (NetworkUtils.isInternetAvailable(context)) {
+                val doc = db.collection("vehicles").document(vehicleId).get().await()
+                val entity = doc.toVehicleEntity()
+                if (entity != null) {
+                    insertVehicleSafely(vehicleDao, userDao, entity)
+                    _vehicles.value = _vehicles.value + entity
+                }
+            }
+        }
+    }
+
     sealed class RegisterState {
         object Idle : RegisterState()
         object Loading : RegisterState()
