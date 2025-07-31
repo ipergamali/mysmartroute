@@ -75,13 +75,13 @@ class PoIViewModel : ViewModel() {
             db.collection("pois")
                 .document(id)
                 .set(poi.toFirestoreMap())
-            _addState.value = AddPoiState.Success
+            _addState.value = AddPoiState.Success(id)
         }
     }
 
     sealed class AddPoiState {
         object Idle : AddPoiState()
-        object Success : AddPoiState()
+        data class Success(val id: String) : AddPoiState()
         object Exists : AddPoiState()
         data class Error(val message: String) : AddPoiState()
     }
