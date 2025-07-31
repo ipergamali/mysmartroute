@@ -125,16 +125,11 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                     refreshRoute()
                 }
 
-                    poiViewModel.loadPois(context)
-                }
+                poiViewModel.loadPois(context)
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
-    }
-
-
-        }
     }
 
 
