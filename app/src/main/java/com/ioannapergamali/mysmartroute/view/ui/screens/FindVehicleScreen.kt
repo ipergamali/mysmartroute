@@ -348,26 +348,46 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
             Spacer(Modifier.height(16.dp))
 
 
-            Button(
-                onClick = {
-                    val fromIdx = startIndex ?: return@Button
-                    val toIdx = endIndex ?: return@Button
-                    if (fromIdx >= toIdx) {
-                        message = context.getString(R.string.invalid_stop_order)
-                        return@Button
-                    }
-                    val fromId = routePois[fromIdx].id
-                    val toId = routePois[toIdx].id
-                    val cost = maxCostText.toDoubleOrNull() ?: Double.MAX_VALUE
-                    val routeId = selectedRouteId ?: return@Button
-                    requestViewModel.requestTransport(context, routeId, fromId, toId, cost)
-                    message = context.getString(R.string.request_sent)
-                },
-                enabled = selectedRouteId != null && startIndex != null && endIndex != null
-            ) {
-                Text(stringResource(R.string.find_vehicle))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(
+                    onClick = {
+                        val fromIdx = startIndex ?: return@Button
+                        val toIdx = endIndex ?: return@Button
+                        if (fromIdx >= toIdx) {
+                            message = context.getString(R.string.invalid_stop_order)
+                            return@Button
+                        }
+                        val fromId = routePois[fromIdx].id
+                        val toId = routePois[toIdx].id
+                        val cost = maxCostText.toDoubleOrNull() ?: Double.MAX_VALUE
+                        val routeId = selectedRouteId ?: return@Button
+                        requestViewModel.requestTransport(context, routeId, fromId, toId, cost)
+                        navController.navigate("availableTransports?routeId=" + routeId + "&startId=" + fromId + "&endId=" + toId)
+                    },
+                    enabled = selectedRouteId != null && startIndex != null && endIndex != null,
+                ) {
+                    Text(stringResource(R.string.find_now))
+                }
+                Button(
+                    onClick = {
+                        val fromIdx = startIndex ?: return@Button
+                        val toIdx = endIndex ?: return@Button
+                        if (fromIdx >= toIdx) {
+                            message = context.getString(R.string.invalid_stop_order)
+                            return@Button
+                        }
+                        val fromId = routePois[fromIdx].id
+                        val toId = routePois[toIdx].id
+                        val cost = maxCostText.toDoubleOrNull() ?: Double.MAX_VALUE
+                        val routeId = selectedRouteId ?: return@Button
+                        requestViewModel.requestTransport(context, routeId, fromId, toId, cost)
+                        message = context.getString(R.string.request_sent)
+                    },
+                    enabled = selectedRouteId != null && startIndex != null && endIndex != null,
+                ) {
+                    Text(stringResource(R.string.save_request))
+                }
             }
-
             if (message.isNotBlank()) {
                 Spacer(Modifier.height(8.dp))
                 Text(message)
