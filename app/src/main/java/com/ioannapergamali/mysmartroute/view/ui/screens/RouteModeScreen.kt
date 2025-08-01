@@ -58,7 +58,7 @@ fun RouteModeScreen(navController: NavController, openDrawer: () -> Unit) {
 
     var routeExpanded by remember { mutableStateOf(false) }
     var selectedRouteId by rememberSaveable { mutableStateOf<String?>(null) }
-    // Keep the POI IDs in a mutable list so we can update the route dynamically.
+    // Store POI IDs so that the route can update dynamically
     val routePoiIds = remember { mutableStateListOf<String>() }
     // Derive the POI objects from the stored IDs.
     val routePois = routePoiIds.mapNotNull { id ->
