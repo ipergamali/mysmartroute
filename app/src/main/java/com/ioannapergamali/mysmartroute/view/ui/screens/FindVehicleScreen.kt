@@ -83,8 +83,11 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
     val datePickerState = rememberDatePickerState()
     var showDatePicker by remember { mutableStateOf(false) }
     val dateFormatter = remember { DateTimeFormatter.ofPattern("dd/MM/yyyy") }
-    val selectedDateText = datePickerState.selectedDateMillis?.let { millis ->
-        Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter)
+    val selectedDateText = datePickerState.selectedDateMillis?.let { millis: Long ->
+        Instant.ofEpochMilli(millis)
+            .atZone(ZoneId.systemDefault())
+            .toLocalDate()
+            .format(dateFormatter)
     } ?: stringResource(R.string.select_date)
 
     val cameraPositionState = rememberCameraPositionState()
@@ -404,7 +407,8 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                         val toId = routePois[toIdx].id
                         val cost = maxCostText.toDoubleOrNull() ?: Double.MAX_VALUE
                         val routeId = selectedRouteId ?: return@Button
-                        val dateMillis = datePickerState.selectedDateMillis ?: System.currentTimeMillis()
+                        val dateMillis: Long = datePickerState.selectedDateMillis
+                            ?: System.currentTimeMillis()
                         requestViewModel.requestTransport(context, routeId, fromId, toId, cost, dateMillis)
                         navController.navigate(
                             "availableTransports?routeId=" +
@@ -431,7 +435,8 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                         val toId = routePois[toIdx].id
                         val cost = maxCostText.toDoubleOrNull() ?: Double.MAX_VALUE
                         val routeId = selectedRouteId ?: return@Button
-                        val dateMillis = datePickerState.selectedDateMillis ?: System.currentTimeMillis()
+                        val dateMillis: Long = datePickerState.selectedDateMillis
+                            ?: System.currentTimeMillis()
                         requestViewModel.requestTransport(context, routeId, fromId, toId, cost, dateMillis)
                         message = context.getString(R.string.request_sent)
                     },
