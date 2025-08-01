@@ -33,14 +33,11 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.PrintCompletedScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.PrintListScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.PrintScheduledScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.PrepareCompleteRouteScreen
-import com.ioannapergamali.mysmartroute.view.ui.screens.RouteModeScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.ViewVehiclesScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.ViewTransportRequestsScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.BookSeatScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.ViewRoutesScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.SelectRoutePoisScreen
-
-import com.ioannapergamali.mysmartroute.view.ui.screens.FindVehicleScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.AvailableTransportsScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.NotificationsScreen
 
@@ -161,12 +158,12 @@ fun NavigationHost(navController : NavHostController, openDrawer: () -> Unit) {
         }
 
         composable("routeMode") {
-            RouteModeScreen(navController = navController, openDrawer = openDrawer)
+            BookSeatScreen(navController = navController, openDrawer = openDrawer)
         }
 
-        // Χρησιμοποιούμε την ίδια οθόνη με την επιλογή "Τρόπος μεταφοράς για συγκεκριμένη διαδρομή"
+        // Χρησιμοποιούμε την ίδια οθόνη κράτησης θέσης
         composable("findVehicle") {
-            RouteModeScreen(navController = navController, openDrawer = openDrawer)
+            BookSeatScreen(navController = navController, openDrawer = openDrawer)
         }
 
         composable(
