@@ -57,13 +57,13 @@ fun RouteModeScreen(navController: NavController, openDrawer: () -> Unit) {
     var endIndex by rememberSaveable { mutableStateOf<Int?>(null) }
     var message by remember { mutableStateOf("") }
 
-        }
-
 
     ) { padding ->
         ScreenContainer(modifier = Modifier.padding(padding)) {
 
-            ExposedDropdownMenuBox(expanded = routeExpanded, onExpandedChange = { routeExpanded = !routeExpanded }) {
+            ExposedDropdownMenuBox(
+                expanded = routeExpanded,
+                onExpandedChange = { routeExpanded = !routeExpanded }) {
                 OutlinedTextField(
                     value = routes.find { it.id == selectedRouteId }?.name ?: "",
                     onValueChange = {},
@@ -72,7 +72,9 @@ fun RouteModeScreen(navController: NavController, openDrawer: () -> Unit) {
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = routeExpanded) },
                     modifier = Modifier.menuAnchor().fillMaxWidth()
                 )
-                DropdownMenu(expanded = routeExpanded, onDismissRequest = { routeExpanded = false }) {
+                DropdownMenu(
+                    expanded = routeExpanded,
+                    onDismissRequest = { routeExpanded = false }) {
                     routes.forEach { route ->
                         DropdownMenuItem(text = { Text(route.name) }, onClick = {
                             selectedRouteId = route.id
@@ -88,12 +90,23 @@ fun RouteModeScreen(navController: NavController, openDrawer: () -> Unit) {
                 Text(stringResource(R.string.stops_header))
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Row(modifier = Modifier.fillMaxWidth()) {
-                        Text(stringResource(R.string.poi_name), modifier = Modifier.weight(1f), style = MaterialTheme.typography.labelMedium)
-                        Text(stringResource(R.string.poi_type), modifier = Modifier.weight(1f), style = MaterialTheme.typography.labelMedium)
+                        Text(
+                            stringResource(R.string.poi_name),
+                            modifier = Modifier.weight(1f),
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                        Text(
+                            stringResource(R.string.poi_type),
+                            modifier = Modifier.weight(1f),
+                            style = MaterialTheme.typography.labelMedium
+                        )
                     }
                     Divider()
                     routePois.forEachIndexed { index, poi ->
-                        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
                             Text("${index + 1}. ${poi.name}", modifier = Modifier.weight(1f))
                             Text(poi.type.name, modifier = Modifier.weight(1f))
                             IconButton(onClick = {
@@ -124,7 +137,10 @@ fun RouteModeScreen(navController: NavController, openDrawer: () -> Unit) {
                     leadingIcon = { Text("\uD83C\uDD95") },
                     trailingIcon = {
                         IconButton(onClick = { startIndex = null }) {
-                            Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.clear_selection))
+                            Icon(
+                                Icons.Default.Refresh,
+                                contentDescription = stringResource(R.string.clear_selection)
+                            )
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
@@ -145,7 +161,10 @@ fun RouteModeScreen(navController: NavController, openDrawer: () -> Unit) {
                     leadingIcon = { Text("\uD83D\uDD1A") },
                     trailingIcon = {
                         IconButton(onClick = { endIndex = null }) {
-                            Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.clear_selection))
+                            Icon(
+                                Icons.Default.Refresh,
+                                contentDescription = stringResource(R.string.clear_selection)
+                            )
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
@@ -170,7 +189,8 @@ fun RouteModeScreen(navController: NavController, openDrawer: () -> Unit) {
                         }
                     }
                 ) { DatePicker(state = datePickerState) }
-            }
+
+        }
 
             Spacer(Modifier.height(16.dp))
 
@@ -203,6 +223,8 @@ fun RouteModeScreen(navController: NavController, openDrawer: () -> Unit) {
             }
         }
     }
+}
+}
 
 
 
