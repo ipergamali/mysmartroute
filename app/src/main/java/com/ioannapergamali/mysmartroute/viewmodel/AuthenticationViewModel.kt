@@ -472,8 +472,6 @@ class AuthenticationViewModel : ViewModel() {
                     )
                 }
             }
-        }
-
         if (commitNeeded) {
             batch.commit().await()
         }
