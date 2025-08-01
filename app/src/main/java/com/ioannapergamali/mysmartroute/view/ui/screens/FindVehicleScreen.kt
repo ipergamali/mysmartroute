@@ -75,9 +75,8 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
     var pendingPoi by remember { mutableStateOf<Triple<String, Double, Double>?>(null) }
 
     // Κατάσταση επιλογής ημερομηνίας για το DatePickerDialog
-    val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = System.currentTimeMillis()
-    )
+    // Χρησιμοποιούμε την προεπιλεγμένη ημερομηνία (σήμερα)
+    val datePickerState = rememberDatePickerState()
 
     val cameraPositionState = rememberCameraPositionState()
     val coroutineScope = rememberCoroutineScope()
