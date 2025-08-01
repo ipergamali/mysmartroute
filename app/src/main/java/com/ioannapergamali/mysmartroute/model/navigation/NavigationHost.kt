@@ -164,8 +164,9 @@ fun NavigationHost(navController : NavHostController, openDrawer: () -> Unit) {
             RouteModeScreen(navController = navController, openDrawer = openDrawer)
         }
 
+        // Χρησιμοποιούμε την ίδια οθόνη με την επιλογή "Τρόπος μεταφοράς για συγκεκριμένη διαδρομή"
         composable("findVehicle") {
-            FindVehicleScreen(navController = navController, openDrawer = openDrawer)
+            RouteModeScreen(navController = navController, openDrawer = openDrawer)
         }
 
         composable(
