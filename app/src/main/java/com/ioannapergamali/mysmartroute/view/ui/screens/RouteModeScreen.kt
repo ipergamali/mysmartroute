@@ -4,6 +4,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -30,6 +33,9 @@ import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -53,6 +59,12 @@ fun RouteModeScreen(navController: NavController, openDrawer: () -> Unit) {
     var startIndex by rememberSaveable { mutableStateOf<Int?>(null) }
     var endIndex by rememberSaveable { mutableStateOf<Int?>(null) }
     var message by remember { mutableStateOf("") }
+    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = System.currentTimeMillis())
+    var showDatePicker by remember { mutableStateOf(false) }
+    val dateFormatter = remember { DateTimeFormatter.ofPattern("dd/MM/yyyy") }
+    val selectedDateText = datePickerState.selectedDateMillis?.let { millis ->
+        Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter)
+    } ?: stringResource(R.string.select_date)
 
     Scaffold(
         topBar = {
@@ -162,6 +174,23 @@ fun RouteModeScreen(navController: NavController, openDrawer: () -> Unit) {
                 Spacer(Modifier.height(16.dp))
             }
 
+            Button(onClick = { showDatePicker = true }) { Text(selectedDateText) }
+
+            if (showDatePicker) {
+                DatePickerDialog(
+                    onDismissRequest = { showDatePicker = false },
+                    confirmButton = {
+                        TextButton(onClick = { showDatePicker = false }) {
+                            Text(stringResource(android.R.string.ok))
+                        }
+                    }
+                ) {
+                    DatePicker(state = datePickerState)
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+
             Button(
                 enabled = selectedRouteId != null && startIndex != null && endIndex != null,
                 onClick = {
@@ -174,12 +203,13 @@ fun RouteModeScreen(navController: NavController, openDrawer: () -> Unit) {
                     val fromId = routePois[fromIdx].id
                     val toId = routePois[toIdx].id
                     val routeId = selectedRouteId ?: return@Button
+                    val dateMillis = datePickerState.selectedDateMillis ?: 0L
                     navController.navigate(
                         "availableTransports?routeId=" +
                                 routeId +
                                 "&startId=" + fromId +
                                 "&endId=" + toId +
-                                "&maxCost=&date="
+                                "&maxCost=&date=" + dateMillis
                     )
                 }
             ) { Text(stringResource(R.string.find_now)) }
