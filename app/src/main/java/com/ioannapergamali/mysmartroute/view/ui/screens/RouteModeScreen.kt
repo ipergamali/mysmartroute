@@ -58,10 +58,10 @@ fun RouteModeScreen(navController: NavController, openDrawer: () -> Unit) {
 
     var routeExpanded by remember { mutableStateOf(false) }
     var selectedRouteId by rememberSaveable { mutableStateOf<String?>(null) }
-    val routePoiIds = remember {
-        mutableStateListOf<String>()
+    val routePoiIds = remember { mutableStateListOf<String>() }
+    val routePois = routePoiIds.mapNotNull { id ->
+        allPois.find { it.id == id }
     }
-    val routePois = routePoiIds.mapNotNull { id -> allPois.find { it.id == id } }
     var startIndex by rememberSaveable { mutableStateOf<Int?>(null) }
     var endIndex by rememberSaveable { mutableStateOf<Int?>(null) }
     var message by remember { mutableStateOf("") }
