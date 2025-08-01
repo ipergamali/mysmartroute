@@ -7,6 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.dimensionResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -93,7 +94,7 @@ fun ViewRoutesScreen(navController: NavController, openDrawer: () -> Unit) {
                 GoogleMap(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(200.dp),
+                        .height(dimensionResource(id = R.dimen.map_height)),
                     cameraPositionState = cameraPositionState
                 ) {
                     Polyline(points = pathPoints)

@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.foundation.clickable
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -215,7 +216,7 @@ fun DeclareRouteScreen(navController: NavController, openDrawer: () -> Unit) {
                 GoogleMap(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(300.dp),
+                        .height(dimensionResource(id = R.dimen.map_height)),
                     cameraPositionState = cameraPositionState,
                     properties = mapProperties,
                     onMapClick = { latLng ->
