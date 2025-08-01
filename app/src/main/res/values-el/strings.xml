@@ -61,7 +61,7 @@
     <!-- Επιλογές μενού -->
     <string name="sign_out">Αποσύνδεση</string>
     <string name="manage_favorites">Διαχείριση αγαπημένων μέσων μεταφοράς</string>
-    <string name="route_mode">ΤΡΟΠΟΣ ΜΕΤΑΦΟΡΑΣ ΓΙΑ ΣΥΓΚΕΚΡΙΜΕΝΗ ΔΙΑΔΡΟΜΗ</string>
+    <string name="route_mode">Τρόπος μεταφοράς με ημερομηνία</string>
     <string name="find_vehicle">Εύρεση οχήματος για συγκεκριμένη μεταφορά</string>
     <string name="find_way">Εύρεση μέσου μεταφοράς</string>
     <string name="book_seat">Κράτηση θέσης ή αγορά εισιτηρίου</string>
@@ -171,5 +171,8 @@
     <string name="app_started_notification">Η εφαρμογή ξεκίνησε</string>
     <string name="available_transports">Διαθέσιμες μεταφορές</string>
     <string name="no_transports_found">Δεν βρέθηκαν μεταφορές</string>
+    <string name="find_now">Εύρεση τώρα</string>
+    <string name="save_request">Αποθήκευση αιτήματος</string>
+    <string name="departure_date">Επιθυμητή ημερομηνία</string>
 
 </resources>
