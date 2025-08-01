@@ -80,11 +80,11 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
 
     // Jetpack Compose
-    implementation(platform("androidx.compose:compose-bom:2025.08.00"))
-    androidTestImplementation(platform("androidx.compose:compose-bom:2025.08.00"))
+    implementation(platform("androidx.compose:compose-bom:2025.07.00"))
+    androidTestImplementation(platform("androidx.compose:compose-bom:2025.07.00"))
 
     // Χρήση της σταθερής έκδοσης Material3
-    implementation("androidx.compose.material3:material3:1.4.0")
+    implementation("androidx.compose.material3:material3:1.3.2")
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-text")
     implementation("androidx.compose.ui:ui-tooling-preview")
