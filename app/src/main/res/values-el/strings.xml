@@ -61,7 +61,7 @@
     <!-- Επιλογές μενού -->
     <string name="sign_out">Αποσύνδεση</string>
     <string name="manage_favorites">Διαχείριση αγαπημένων μέσων μεταφοράς</string>
-    <string name="route_mode">Τρόπος μεταφοράς με ημερομηνία</string>
+
     <string name="find_vehicle">Εύρεση οχήματος για συγκεκριμένη μεταφορά</string>
     <string name="find_way">Εύρεση μέσου μεταφοράς</string>
     <string name="book_seat">Κράτηση θέσης ή αγορά εισιτηρίου</string>
