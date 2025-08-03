@@ -242,6 +242,10 @@ fun MovingEntity.toFirestoreMap(): Map<String, Any> {
     if (vehicleId.isNotEmpty()) {
         map["vehicleId"] = FirebaseFirestore.getInstance().collection("vehicles").document(vehicleId)
     }
+    if (createdById.isNotEmpty()) {
+        map["createdById"] = FirebaseFirestore.getInstance().collection("users").document(createdById)
+        map["createdByName"] = createdByName
+    }
     return map
 }
 
@@ -275,7 +279,25 @@ fun DocumentSnapshot.toMovingEntity(): MovingEntity? {
         is String -> e
         else -> getString("endPoiId")
     } ?: ""
-    return MovingEntity(movingId, routeId, userId, dateVal, vehicleId, costVal, durVal, startPoiId, endPoiId)
+    val createdById = when (val c = get("createdById")) {
+        is DocumentReference -> c.id
+        is String -> c
+        else -> getString("createdById")
+    } ?: ""
+    val createdByName = getString("createdByName") ?: ""
+    return MovingEntity(
+        movingId,
+        routeId,
+        userId,
+        dateVal,
+        vehicleId,
+        costVal,
+        durVal,
+        startPoiId,
+        endPoiId,
+        createdById,
+        createdByName
+    )
 }
 
 fun TransportDeclarationEntity.toFirestoreMap(): Map<String, Any> = mapOf(
