@@ -79,11 +79,15 @@ class VehicleRequestViewModel : ViewModel() {
         fromPoiId: String,
         toPoiId: String,
         maxCost: Double,
-        date: Long
+        date: Long,
+        targetUserId: String? = null
     ) {
         viewModelScope.launch {
             val dao = MySmartRouteDatabase.getInstance(context).movingDao()
-            val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+            val creator = FirebaseAuth.getInstance().currentUser
+            val creatorId = creator?.uid ?: ""
+            val creatorName = UserViewModel().getUserName(context, creatorId)
+            val userId = targetUserId ?: creatorId
             val id = UUID.randomUUID().toString()
             val entity = MovingEntity(
                 id = id,
@@ -94,7 +98,9 @@ class VehicleRequestViewModel : ViewModel() {
                 cost = maxCost,
                 durationMinutes = 0,
                 startPoiId = fromPoiId,
-                endPoiId = toPoiId
+                endPoiId = toPoiId,
+                createdById = creatorId,
+                createdByName = creatorName
             )
             dao.insert(entity)
             try {
