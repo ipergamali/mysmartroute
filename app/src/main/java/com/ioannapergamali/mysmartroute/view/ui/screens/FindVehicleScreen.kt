@@ -2,13 +2,9 @@ package com.ioannapergamali.mysmartroute.view.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.menuAnchor
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -38,9 +34,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import kotlin.math.abs
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
@@ -78,13 +71,6 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
     var calculating by remember { mutableStateOf(false) }
     var pendingPoi by remember { mutableStateOf<Triple<String, Double, Double>?>(null) }
 
-    val datePickerState = rememberDatePickerState(System.currentTimeMillis())
-    var showDatePicker by remember { mutableStateOf(false) }
-    val datePickerState = rememberDatePickerState()
-    val dateFormatter = remember { DateTimeFormatter.ofPattern("dd/MM/yyyy") }
-    val selectedDateText = datePickerState.selectedDateMillis?.let { millis ->
-        Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter)
-    } ?: stringResource(R.string.select_date)
     val cameraPositionState = rememberCameraPositionState()
     val coroutineScope = rememberCoroutineScope()
     val apiKey = MapsUtils.getApiKey(context)
@@ -363,25 +349,10 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
             OutlinedTextField(
                 value = maxCostText,
                 onValueChange = { maxCostText = it },
-                label = { Text(stringResource(R.string.max_cost)) },
+                label = { Text(stringResource(R.string.cost)) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth()
             )
-
-            Spacer(Modifier.height(16.dp))
-
-            Button(onClick = { showDatePicker = true }) { Text(selectedDateText) }
-
-            if (showDatePicker) {
-                DatePickerDialog(
-                    onDismissRequest = { showDatePicker = false },
-                    confirmButton = {
-                        TextButton(onClick = { showDatePicker = false }) {
-                            Text(stringResource(android.R.string.ok))
-                        }
-                    }
-                ) { DatePicker(state = datePickerState) }
-            }
 
             Spacer(Modifier.height(16.dp))
 
@@ -399,15 +370,14 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                         val toId = routePois[toIdx].id
                         val cost = maxCostText.toDoubleOrNull() ?: Double.MAX_VALUE
                         val routeId = selectedRouteId ?: return@Button
-                        val dateMillis = datePickerState.selectedDateMillis ?: 0L
-                        requestViewModel.requestTransport(context, routeId, fromId, toId, cost, dateMillis)
+                        requestViewModel.requestTransport(context, routeId, fromId, toId, cost, 0L)
                         navController.navigate(
                             "availableTransports?routeId=" +
                                 routeId +
                                 "&startId=" + fromId +
-                            "&endId=" + toId +
-                            "&maxCost=" + cost +
-                            "&date=" + dateMillis
+                                "&endId=" + toId +
+                                "&maxCost=" + cost +
+                                "&date="
                         )
                     },
                     enabled = selectedRouteId != null && startIndex != null && endIndex != null,
@@ -426,8 +396,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                         val toId = routePois[toIdx].id
                         val cost = maxCostText.toDoubleOrNull() ?: Double.MAX_VALUE
                         val routeId = selectedRouteId ?: return@Button
-                        val dateMillis = datePickerState.selectedDateMillis ?: 0L
-                        requestViewModel.requestTransport(context, routeId, fromId, toId, cost, dateMillis)
+                        requestViewModel.requestTransport(context, routeId, fromId, toId, cost, 0L)
                         message = context.getString(R.string.request_sent)
                     },
                     enabled = selectedRouteId != null && startIndex != null && endIndex != null,
