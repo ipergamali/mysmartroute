@@ -8,6 +8,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.MovingEntity
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
+import kotlinx.coroutines.Dispatchers
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.utils.toMovingEntity
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
@@ -57,6 +58,17 @@ class VehicleRequestViewModel : ViewModel() {
                     _requests.value = list
                     list.forEach { dao.insert(it) }
                 }
+            }
+        }
+    }
+
+    fun deleteRequests(context: Context, ids: Set<String>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val dao = MySmartRouteDatabase.getInstance(context).movingDao()
+            dao.deleteByIds(ids.toList())
+            _requests.value = _requests.value.filterNot { it.id in ids }
+            ids.forEach { id ->
+                db.collection("movings").document(id).delete()
             }
         }
     }

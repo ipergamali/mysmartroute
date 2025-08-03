@@ -162,6 +162,7 @@
     <string name="favorites_non_preferred">Μη προτιμώμενα μέσα μεταφοράς</string>
     <string name="add_favorite">Προσθήκη</string>
     <string name="delete_favorite">Αφαίρεση</string>
+    <string name="delete_selected">Διαγραφή επιλεγμένων</string>
     <string name="clear_selection">Καθαρισμός επιλογής</string>
     <string name="no_reservations">Δεν βρέθηκαν κρατήσεις</string>
     <string name="max_cost">Μέγιστο κόστος</string>

@@ -15,4 +15,7 @@ interface MovingDao {
 
     @Query("SELECT * FROM movings")
     fun getAll(): kotlinx.coroutines.flow.Flow<List<MovingEntity>>
+
+    @Query("DELETE FROM movings WHERE id IN (:ids)")
+    suspend fun deleteByIds(ids: List<String>)
 }

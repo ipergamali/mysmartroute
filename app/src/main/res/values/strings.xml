@@ -175,6 +175,7 @@
     <string name="favorites_non_preferred">Non-preferred transport modes</string>
     <string name="add_favorite">Add</string>
     <string name="delete_favorite">Delete</string>
+    <string name="delete_selected">Delete selected</string>
     <string name="no_reservations">No reservations found</string>
     <string name="max_cost">Maximum cost</string>
     <string name="request_sent">Request saved</string>
