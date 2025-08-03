@@ -36,6 +36,7 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.PrepareCompleteRouteScre
 import com.ioannapergamali.mysmartroute.view.ui.screens.ViewVehiclesScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.ViewTransportRequestsScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.BookSeatScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.FindVehicleScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.ViewRoutesScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.SelectRoutePoisScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.AvailableTransportsScreen
@@ -161,9 +162,8 @@ fun NavigationHost(navController : NavHostController, openDrawer: () -> Unit) {
             BookSeatScreen(navController = navController, openDrawer = openDrawer)
         }
 
-        // Χρησιμοποιούμε την ίδια οθόνη κράτησης θέσης
         composable("findVehicle") {
-            BookSeatScreen(navController = navController, openDrawer = openDrawer)
+            FindVehicleScreen(navController = navController, openDrawer = openDrawer)
         }
 
         composable(
