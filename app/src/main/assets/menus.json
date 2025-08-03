@@ -14,6 +14,7 @@
           {"titleKey": "view_routes", "route": "viewRoutes"},
           {"titleKey": "select_pois_screen_title", "route": "selectRoutePois"},
           {"titleKey": "view_transports", "route": "viewTransports"},
+          {"titleKey": "view_requests", "route": "viewRequests"},
           {"titleKey": "print_ticket", "route": "printTicket"},
           {"titleKey": "cancel_seat", "route": "cancelSeat"},
           {"titleKey": "rank_transports", "route": "rankTransports"},

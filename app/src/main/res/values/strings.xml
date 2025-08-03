@@ -181,6 +181,9 @@
     <string name="request_sent">Request saved</string>
     <string name="view_requests">View Requests</string>
     <string name="no_requests">No requests found</string>
+    <string name="sort_by_cost">Sort by cost</string>
+    <string name="sort_by_date">Sort by date</string>
+    <string name="cancel_request">Cancel request</string>
     <string name="no_notifications">No notifications</string>
 
     <!-- Notification text -->
