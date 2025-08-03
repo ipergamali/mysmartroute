@@ -89,7 +89,33 @@ fun ViewTransportRequestsScreen(navController: NavController, openDrawer: () -> 
                     Text(stringResource(R.string.delete_selected))
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-
+                Row(modifier = Modifier.horizontalScroll(scrollState)) {
+                    LazyColumn {
+                        item {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Spacer(modifier = Modifier.width(40.dp))
+                                Text(
+                                    stringResource(R.string.passenger),
+                                    modifier = Modifier.width(columnWidth),
+                                    style = MaterialTheme.typography.labelMedium
+                                )
+                                Text(
+                                    stringResource(R.string.route_name),
+                                    modifier = Modifier.width(columnWidth),
+                                    style = MaterialTheme.typography.labelMedium
+                                )
+                                Text(
+                                    stringResource(R.string.cost),
+                                    modifier = Modifier.width(columnWidth),
+                                    style = MaterialTheme.typography.labelMedium
+                                )
+                                Text(
+                                    stringResource(R.string.date),
+                                    modifier = Modifier.width(columnWidth),
+                                    style = MaterialTheme.typography.labelMedium
+                                )
+                            }
+                            Divider()
                         }
                         items(requests) { req ->
                             val fromName = poiNames[req.startPoiId] ?: ""
