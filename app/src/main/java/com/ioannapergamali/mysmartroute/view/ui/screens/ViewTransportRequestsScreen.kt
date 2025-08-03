@@ -78,6 +78,7 @@ fun ViewTransportRequestsScreen(navController: NavController, openDrawer: () -> 
                 Text(stringResource(R.string.no_requests))
             } else {
                 val hasSelection = selectedRequests.values.any { it }
+                val allSelected = requests.isNotEmpty() && requests.all { selectedRequests[it.id] == true }
                 Button(
                     onClick = {
                         val ids = selectedRequests.filterValues { it }.keys
@@ -93,7 +94,17 @@ fun ViewTransportRequestsScreen(navController: NavController, openDrawer: () -> 
                     LazyColumn {
                         item {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Spacer(modifier = Modifier.width(40.dp))
+                                Checkbox(
+                                    checked = allSelected,
+                                    onCheckedChange = { checked ->
+                                        if (checked) {
+                                            requests.forEach { selectedRequests[it.id] = true }
+                                        } else {
+                                            selectedRequests.clear()
+                                        }
+                                    },
+                                    modifier = Modifier.width(40.dp)
+                                )
                                 Text(
                                     stringResource(R.string.passenger),
                                     modifier = Modifier.width(columnWidth),
@@ -132,7 +143,13 @@ fun ViewTransportRequestsScreen(navController: NavController, openDrawer: () -> 
                             ) {
                                 Checkbox(
                                     checked = isChecked,
-                                    onCheckedChange = { checked -> selectedRequests[req.id] = checked },
+                                    onCheckedChange = { checked ->
+                                        if (checked) {
+                                            selectedRequests[req.id] = true
+                                        } else {
+                                            selectedRequests.remove(req.id)
+                                        }
+                                    },
                                     modifier = Modifier.width(40.dp)
                                 )
                                 Text(userName, modifier = Modifier.width(columnWidth))
