@@ -69,13 +69,19 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import kotlin.math.abs
 import androidx.compose.ui.graphics.Color
+import androidx.annotation.StringRes
 
 private const val MARKER_ORANGE = BitmapDescriptorFactory.HUE_ORANGE
 private const val MARKER_BLUE = BitmapDescriptorFactory.HUE_BLUE
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
+fun BookSeatScreen(
+    navController: NavController,
+    openDrawer: () -> Unit,
+    @StringRes titleRes: Int = R.string.book_seat,
+    restrictToAvailableDates: Boolean = true
+) {
     val viewModel: BookingViewModel = viewModel()
     val routeViewModel: RouteViewModel = viewModel()
     val poiViewModel: PoIViewModel = viewModel()
@@ -107,20 +113,28 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
     var calculating by remember { mutableStateOf(false) }
     var pendingPoi by remember { mutableStateOf<Triple<String, Double, Double>?>(null) }
 
-    val availableDates = remember(declarations, selectedRouteId) {
-        declarations.filter { it.routeId == selectedRouteId }.map {
-            Instant.ofEpochMilli(it.date).atZone(ZoneId.systemDefault()).toLocalDate()
-        }.toSet()
-    }
-
-    val datePickerState = rememberDatePickerState(
-        selectableDates = object : SelectableDates {
-            override fun isSelectableDate(dateMillis: Long): Boolean {
-                val date = Instant.ofEpochMilli(dateMillis).atZone(ZoneId.systemDefault()).toLocalDate()
-                return availableDates.contains(date)
-            }
+    val availableDates = if (restrictToAvailableDates) {
+        remember(declarations, selectedRouteId) {
+            declarations.filter { it.routeId == selectedRouteId }
+                .map {
+                    Instant.ofEpochMilli(it.date).atZone(ZoneId.systemDefault()).toLocalDate()
+                }
+                .toSet()
         }
-    )
+    } else emptySet()
+
+    val datePickerState = if (restrictToAvailableDates) {
+        rememberDatePickerState(
+            selectableDates = object : SelectableDates {
+                override fun isSelectableDate(dateMillis: Long): Boolean {
+                    val date = Instant.ofEpochMilli(dateMillis).atZone(ZoneId.systemDefault()).toLocalDate()
+                    return availableDates.contains(date)
+                }
+            }
+        )
+    } else {
+        rememberDatePickerState()
+    }
     var showDatePicker by remember { mutableStateOf(false) }
     val dateFormatter = remember { DateTimeFormatter.ofPattern("dd/MM/yyyy") }
     val selectedDateText = datePickerState.selectedDateMillis?.let { millis ->
@@ -239,7 +253,7 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
     Scaffold(
         topBar = {
             TopBar(
-                title = stringResource(R.string.reserve_seat_title),
+                title = stringResource(titleRes),
                 navController = navController,
                 showMenu = true,
                 onMenuClick = openDrawer
