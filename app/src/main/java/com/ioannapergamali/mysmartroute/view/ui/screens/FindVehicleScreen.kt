@@ -34,6 +34,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import kotlin.math.abs
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
@@ -70,6 +73,13 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     var calculating by remember { mutableStateOf(false) }
     var pendingPoi by remember { mutableStateOf<Triple<String, Double, Double>?>(null) }
+
+    val datePickerState = rememberDatePickerState()
+    var showDatePicker by remember { mutableStateOf(false) }
+    val dateFormatter = remember { DateTimeFormatter.ofPattern("dd/MM/yyyy") }
+    val selectedDateText = datePickerState.selectedDateMillis?.let { millis ->
+        Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter)
+    } ?: stringResource(R.string.select_date)
 
 
     val cameraPositionState = rememberCameraPositionState()
@@ -356,7 +366,22 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
             )
 
             Spacer(Modifier.height(16.dp))
+            Text(stringResource(R.string.departure_date))
+            Button(onClick = { showDatePicker = true }) { Text(selectedDateText) }
+            if (showDatePicker) {
+                DatePickerDialog(
+                    onDismissRequest = { showDatePicker = false },
+                    confirmButton = {
+                        TextButton(onClick = { showDatePicker = false }) {
+                            Text(stringResource(android.R.string.ok))
+                        }
+                    }
+                ) {
+                    DatePicker(state = datePickerState)
+                }
+            }
 
+            Spacer(Modifier.height(16.dp))
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(
@@ -371,17 +396,18 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                         val toId = routePois[toIdx].id
                         val cost = maxCostText.toDoubleOrNull() ?: Double.MAX_VALUE
                         val routeId = selectedRouteId ?: return@Button
-                        requestViewModel.requestTransport(context, routeId, fromId, toId, cost, 0L)
+                        val dateMillis = datePickerState.selectedDateMillis ?: return@Button
+                        requestViewModel.requestTransport(context, routeId, fromId, toId, cost, dateMillis)
                         navController.navigate(
                             "availableTransports?routeId=" +
                                 routeId +
                                 "&startId=" + fromId +
                                 "&endId=" + toId +
                                 "&maxCost=" + cost +
-                                "&date="
+                                "&date=" + dateMillis
                         )
                     },
-                    enabled = selectedRouteId != null && startIndex != null && endIndex != null,
+                    enabled = selectedRouteId != null && startIndex != null && endIndex != null && datePickerState.selectedDateMillis != null,
                 ) {
                     Text(stringResource(R.string.find_now))
                 }
@@ -397,10 +423,11 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                         val toId = routePois[toIdx].id
                         val cost = maxCostText.toDoubleOrNull() ?: Double.MAX_VALUE
                         val routeId = selectedRouteId ?: return@Button
-                        requestViewModel.requestTransport(context, routeId, fromId, toId, cost, 0L)
+                        val dateMillis = datePickerState.selectedDateMillis ?: return@Button
+                        requestViewModel.requestTransport(context, routeId, fromId, toId, cost, dateMillis)
                         message = context.getString(R.string.request_sent)
                     },
-                    enabled = selectedRouteId != null && startIndex != null && endIndex != null,
+                    enabled = selectedRouteId != null && startIndex != null && endIndex != null && datePickerState.selectedDateMillis != null,
                 ) {
                     Text(stringResource(R.string.save_request))
                 }
