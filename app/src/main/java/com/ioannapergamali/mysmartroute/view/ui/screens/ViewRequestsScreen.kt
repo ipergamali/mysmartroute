@@ -63,6 +63,7 @@ fun ViewRequestsScreen(navController: NavController, openDrawer: () -> Unit) {
                             val fromName = poiNames[req.startPoiId] ?: ""
                             val toName = poiNames[req.endPoiId] ?: ""
                             Row(modifier = Modifier.padding(vertical = 8.dp)) {
+                                Text(req.createdByName, modifier = Modifier.width(columnWidth))
                                 Text(fromName, modifier = Modifier.width(columnWidth))
                                 Text(toName, modifier = Modifier.width(columnWidth))
                                 val costText = if (req.cost == Double.MAX_VALUE) "∞" else req.cost.toString()
