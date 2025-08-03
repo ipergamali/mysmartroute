@@ -85,13 +85,14 @@ fun ViewTransportRequestsScreen(navController: NavController, openDrawer: () -> 
                     Text(stringResource(R.string.delete_selected))
                 }
                 Spacer(modifier = Modifier.height(8.dp))
+
                 LazyColumn {
                     item {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Spacer(modifier = Modifier.width(40.dp))
+
                             Text(
                                 stringResource(R.string.passenger),
                                 modifier = Modifier.weight(1f),
