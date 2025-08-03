@@ -509,13 +509,15 @@ fun BookSeatScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            Button(
-                enabled = selectedRoute != null && startIndex != null && endIndex != null,
-                onClick = {
-                    selectedRoute?.let { r ->
-                        val dateMillis = datePickerState.selectedDateMillis ?: 0L
-                        val startId = startIndex?.let { pois[it].id } ?: ""
-                        val endId = endIndex?.let { pois[it].id } ?: ""
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(
+                    enabled = selectedRoute != null && startIndex != null && endIndex != null &&
+                            datePickerState.selectedDateMillis != null,
+                    onClick = {
+                        val r = selectedRoute ?: return@Button
+                        val dateMillis = datePickerState.selectedDateMillis ?: return@Button
+                        val startId = startIndex?.let { pois[it].id } ?: return@Button
+                        val endId = endIndex?.let { pois[it].id } ?: return@Button
                         requestViewModel.requestTransport(
                             context,
                             r.id,
@@ -532,9 +534,30 @@ fun BookSeatScreen(
                                     "&maxCost=&date=" + dateMillis
                         )
                     }
+                ) {
+                    Text(stringResource(R.string.find_now))
                 }
-            ) {
-                Text(stringResource(R.string.find_now))
+                Button(
+                    enabled = selectedRoute != null && startIndex != null && endIndex != null &&
+                            datePickerState.selectedDateMillis != null,
+                    onClick = {
+                        val r = selectedRoute ?: return@Button
+                        val dateMillis = datePickerState.selectedDateMillis ?: return@Button
+                        val startId = startIndex?.let { pois[it].id } ?: return@Button
+                        val endId = endIndex?.let { pois[it].id } ?: return@Button
+                        requestViewModel.requestTransport(
+                            context,
+                            r.id,
+                            startId,
+                            endId,
+                            Double.MAX_VALUE,
+                            dateMillis
+                        )
+                        message = context.getString(R.string.request_sent)
+                    }
+                ) {
+                    Text(stringResource(R.string.save_request))
+                }
             }
 
             if (message.isNotBlank()) {
