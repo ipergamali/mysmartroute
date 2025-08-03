@@ -196,35 +196,29 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                 }
             }
 
-            val availableDates = declarations.filter { it.routeId == selectedRoute?.id }
-                .sortedBy { it.date }
-                .map { it.date }
+            val datePickerState = rememberDatePickerState()
+            var showDatePicker by remember { mutableStateOf(false) }
+            val dateFormatter = remember { java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy") }
+            val selectedDateText = selectedDate?.let { millis ->
+                java.time.Instant.ofEpochMilli(millis).atZone(java.time.ZoneId.systemDefault()).toLocalDate().format(dateFormatter)
+            } ?: stringResource(R.string.select_date)
 
             if (selectedRoute != null) {
-                var dateMenuExpanded by remember { mutableStateOf(false) }
-                val formatter = remember { java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy") }
-
-                ExposedDropdownMenuBox(expanded = dateMenuExpanded, onExpandedChange = { dateMenuExpanded = !dateMenuExpanded }) {
-                    val text = selectedDate?.let { millis ->
-                        java.time.Instant.ofEpochMilli(millis).atZone(java.time.ZoneId.systemDefault()).toLocalDate().format(formatter)
-                    } ?: stringResource(R.string.select_date)
-                    OutlinedTextField(
-                        value = text,
-                        onValueChange = {},
-                        readOnly = true,
-                        enabled = availableDates.isNotEmpty(),
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = dateMenuExpanded) },
-                        modifier = Modifier.menuAnchor().fillMaxWidth(),
-                        label = { Text(stringResource(R.string.departure_date)) }
-                    )
-                    ExposedDropdownMenu(expanded = dateMenuExpanded, onDismissRequest = { dateMenuExpanded = false }) {
-                        availableDates.forEach { millis ->
-                            val textDate = java.time.Instant.ofEpochMilli(millis).atZone(java.time.ZoneId.systemDefault()).toLocalDate().format(formatter)
-                            DropdownMenuItem(text = { Text(textDate) }, onClick = {
-                                selectedDate = millis
-                                dateMenuExpanded = false
-                            })
+                Text(stringResource(R.string.departure_date))
+                Button(onClick = { showDatePicker = true }) { Text(selectedDateText) }
+                if (showDatePicker) {
+                    DatePickerDialog(
+                        onDismissRequest = { showDatePicker = false },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                selectedDate = datePickerState.selectedDateMillis
+                                showDatePicker = false
+                            }) {
+                                Text(stringResource(android.R.string.ok))
+                            }
                         }
+                    ) {
+                        DatePicker(state = datePickerState)
                     }
                 }
                 Spacer(Modifier.height(16.dp))

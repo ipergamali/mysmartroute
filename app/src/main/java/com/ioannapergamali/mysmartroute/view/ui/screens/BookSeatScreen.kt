@@ -16,6 +16,9 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -103,6 +106,7 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
     var calculating by remember { mutableStateOf(false) }
     var pendingPoi by remember { mutableStateOf<Triple<String, Double, Double>?>(null) }
     val datePickerState = rememberDatePickerState()
+    var showDatePicker by remember { mutableStateOf(false) }
     val dateFormatter = remember { DateTimeFormatter.ofPattern("dd/MM/yyyy") }
     val selectedDateText = datePickerState.selectedDateMillis?.let { millis ->
         Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter)
@@ -111,9 +115,6 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
     val context = LocalContext.current
     val apiKey = MapsUtils.getApiKey(context)
     val isKeyMissing = apiKey.isBlank()
-    val availableDates = declarations.filter { it.routeId == selectedRouteId }
-        .sortedBy { it.date }
-        .map { it.date to Instant.ofEpochMilli(it.date).atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) }
 
     fun refreshRoute() {
         val currentPois = poiIds.mapNotNull { id -> allPois.find { it.id == id } }
@@ -462,46 +463,19 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
                 Spacer(Modifier.height(16.dp))
             }
 
-            var dateMenuExpanded by remember { mutableStateOf(false) }
-            ExposedDropdownMenuBox(
-                expanded = dateMenuExpanded,
-                onExpandedChange = { dateMenuExpanded = !dateMenuExpanded }
-            ) {
-                OutlinedTextField(
-                    value = selectedDateText,
-                    onValueChange = {},
-                    readOnly = true,
-                    enabled = availableDates.isNotEmpty(),
-                    label = { Text(stringResource(R.string.departure_date)) },
-                    trailingIcon = {
-                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = dateMenuExpanded)
-                    },
-                    modifier = Modifier
-                        .menuAnchor()
-                        .fillMaxWidth(),
-                    shape = MaterialTheme.shapes.small,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.primary
-                    )
-                )
-                DropdownMenu(
-                    expanded = dateMenuExpanded,
-                    onDismissRequest = { dateMenuExpanded = false }
-                ) {
-                    availableDates.forEach { (millis, text) ->
-                        DropdownMenuItem(
-                            text = { Text(text) },
-                            onClick = {
-                                datePickerState.selectedDateMillis = millis
-                                dateMenuExpanded = false
-                            }
-                        )
+            Text(stringResource(R.string.departure_date))
+            Button(onClick = { showDatePicker = true }) { Text(selectedDateText) }
+            if (showDatePicker) {
+                DatePickerDialog(
+                    onDismissRequest = { showDatePicker = false },
+                    confirmButton = {
+                        TextButton(onClick = { showDatePicker = false }) {
+                            Text(stringResource(android.R.string.ok))
+                        }
                     }
+                ) {
+                    DatePicker(state = datePickerState)
                 }
-            }
-            if (availableDates.isEmpty()) {
-                Text(stringResource(R.string.no_departures))
             }
 
             Spacer(Modifier.height(16.dp))
