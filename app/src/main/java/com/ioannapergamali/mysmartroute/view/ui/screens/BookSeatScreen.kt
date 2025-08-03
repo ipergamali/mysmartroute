@@ -223,7 +223,7 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
     Scaffold(
         topBar = {
             TopBar(
-                title = stringResource(R.string.book_seat),
+                title = stringResource(R.string.route_mode),
                 navController = navController,
                 showMenu = true,
                 onMenuClick = openDrawer
