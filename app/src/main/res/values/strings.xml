@@ -153,6 +153,7 @@
     <string name="seat_booked">Seat booked!</string>
     <string name="seat_unavailable">No available seats.</string>
     <string name="reserve_seat">Reserve Seat</string>
+    <string name="reserve_seat_title">Seat reservation</string>
     <string name="available_seats">Available seats: %1$d</string>
     <string name="select_route">Select route</string>
     <string name="add_poi_option">Add POI</string>
