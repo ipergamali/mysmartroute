@@ -18,6 +18,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.OutlinedTextField
@@ -105,7 +106,21 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     var calculating by remember { mutableStateOf(false) }
     var pendingPoi by remember { mutableStateOf<Triple<String, Double, Double>?>(null) }
-    val datePickerState = rememberDatePickerState()
+
+    val availableDates = remember(declarations, selectedRouteId) {
+        declarations.filter { it.routeId == selectedRouteId }.map {
+            Instant.ofEpochMilli(it.date).atZone(ZoneId.systemDefault()).toLocalDate()
+        }.toSet()
+    }
+
+    val datePickerState = rememberDatePickerState(
+        selectableDates = object : SelectableDates {
+            override fun isSelectableDate(dateMillis: Long): Boolean {
+                val date = Instant.ofEpochMilli(dateMillis).atZone(ZoneId.systemDefault()).toLocalDate()
+                return availableDates.contains(date)
+            }
+        }
+    )
     var showDatePicker by remember { mutableStateOf(false) }
     val dateFormatter = remember { DateTimeFormatter.ofPattern("dd/MM/yyyy") }
     val selectedDateText = datePickerState.selectedDateMillis?.let { millis ->
@@ -224,7 +239,7 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
     Scaffold(
         topBar = {
             TopBar(
-                title = stringResource(R.string.route_mode),
+                title = stringResource(R.string.reserve_seat_title),
                 navController = navController,
                 showMenu = true,
                 onMenuClick = openDrawer
