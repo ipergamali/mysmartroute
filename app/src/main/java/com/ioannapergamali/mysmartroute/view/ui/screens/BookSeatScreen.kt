@@ -58,6 +58,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.BookingViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.TransportDeclarationViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
@@ -75,6 +76,7 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
     val routeViewModel: RouteViewModel = viewModel()
     val poiViewModel: PoIViewModel = viewModel()
     val declarationViewModel: TransportDeclarationViewModel = viewModel()
+    val requestViewModel: VehicleRequestViewModel = viewModel()
     val routes by viewModel.availableRoutes.collectAsState()
     val allPois by poiViewModel.pois.collectAsState()
     val declarations by declarationViewModel.declarations.collectAsState()
@@ -221,7 +223,7 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
     Scaffold(
         topBar = {
             TopBar(
-                title = stringResource(R.string.book_seat),
+                title = stringResource(R.string.route_mode),
                 navController = navController,
                 showMenu = true,
                 onMenuClick = openDrawer
@@ -511,16 +513,25 @@ fun BookSeatScreen(navController: NavController, openDrawer: () -> Unit) {
                         val dateMillis = datePickerState.selectedDateMillis ?: 0L
                         val startId = startIndex?.let { pois[it].id } ?: ""
                         val endId = endIndex?.let { pois[it].id } ?: ""
-                        val success = viewModel.reserveSeat(context, r.id, dateMillis, startId, endId)
-                        message = if (success) {
-                            context.getString(R.string.seat_booked)
-                        } else {
-                            context.getString(R.string.seat_unavailable)
-                        }
+                        requestViewModel.requestTransport(
+                            context,
+                            r.id,
+                            startId,
+                            endId,
+                            Double.MAX_VALUE,
+                            dateMillis
+                        )
+                        navController.navigate(
+                            "availableTransports?routeId=" +
+                                    r.id +
+                                    "&startId=" + startId +
+                                    "&endId=" + endId +
+                                    "&maxCost=&date=" + dateMillis
+                        )
                     }
                 }
             ) {
-                Text(stringResource(R.string.reserve_seat))
+                Text(stringResource(R.string.find_now))
             }
 
             if (message.isNotBlank()) {
