@@ -1,8 +1,10 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Divider
@@ -43,6 +45,8 @@ fun ViewTransportRequestsScreen(navController: NavController, openDrawer: () -> 
     val pois by poiViewModel.pois.collectAsState()
     val userNames = remember { mutableStateMapOf<String, String>() }
     val selectedRequests = remember { mutableStateMapOf<String, Boolean>() }
+    val scrollState = rememberScrollState()
+    val columnWidth = 150.dp
 
     LaunchedEffect(Unit) {
         poiViewModel.loadPois(context)
@@ -85,63 +89,60 @@ fun ViewTransportRequestsScreen(navController: NavController, openDrawer: () -> 
                     Text(stringResource(R.string.delete_selected))
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                LazyColumn {
-                    item {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Spacer(modifier = Modifier.width(40.dp))
-                            Text(
-                                stringResource(R.string.passenger),
-                                modifier = Modifier.weight(1f),
-                                style = MaterialTheme.typography.labelMedium
-                            )
-                            Text(
-                                stringResource(R.string.route_name),
-                                modifier = Modifier.weight(1f),
-                                style = MaterialTheme.typography.labelMedium
-                            )
-                            Text(
-                                stringResource(R.string.cost),
-                                modifier = Modifier.weight(1f),
-                                style = MaterialTheme.typography.labelMedium
-                            )
-                            Text(
-                                stringResource(R.string.date),
-                                modifier = Modifier.weight(1f),
-                                style = MaterialTheme.typography.labelMedium
-                            )
+                Row(modifier = Modifier.horizontalScroll(scrollState)) {
+                    LazyColumn {
+                        item {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Spacer(modifier = Modifier.width(40.dp))
+                                Text(
+                                    stringResource(R.string.passenger),
+                                    modifier = Modifier.width(columnWidth),
+                                    style = MaterialTheme.typography.labelMedium
+                                )
+                                Text(
+                                    stringResource(R.string.route_name),
+                                    modifier = Modifier.width(columnWidth),
+                                    style = MaterialTheme.typography.labelMedium
+                                )
+                                Text(
+                                    stringResource(R.string.cost),
+                                    modifier = Modifier.width(columnWidth),
+                                    style = MaterialTheme.typography.labelMedium
+                                )
+                                Text(
+                                    stringResource(R.string.date),
+                                    modifier = Modifier.width(columnWidth),
+                                    style = MaterialTheme.typography.labelMedium
+                                )
+                            }
+                            Divider()
                         }
-                        Divider()
-                    }
-                    items(requests) { req ->
-                        val fromName = poiNames[req.startPoiId] ?: ""
-                        val toName = poiNames[req.endPoiId] ?: ""
-                        val routeName = if (fromName.isNotBlank() && toName.isNotBlank()) "$fromName - $toName" else ""
-                        val userName = userNames[req.userId] ?: ""
-                        val isChecked = selectedRequests[req.id] ?: false
-                        val dateText = if (req.date > 0L) {
-                            DateFormat.getDateFormat(context).format(Date(req.date))
-                        } else ""
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Checkbox(
-                                checked = isChecked,
-                                onCheckedChange = { checked -> selectedRequests[req.id] = checked },
-                                modifier = Modifier.width(40.dp)
-                            )
-                            Text(userName, modifier = Modifier.weight(1f))
-                            Text(routeName, modifier = Modifier.weight(1f))
-                            val costText = if (req.cost == Double.MAX_VALUE) "∞" else req.cost.toString()
-                            Text(costText, modifier = Modifier.weight(1f))
-                            Text(dateText, modifier = Modifier.weight(1f))
+                        items(requests) { req ->
+                            val fromName = poiNames[req.startPoiId] ?: ""
+                            val toName = poiNames[req.endPoiId] ?: ""
+                            val routeName = if (fromName.isNotBlank() && toName.isNotBlank()) "$fromName - $toName" else ""
+                            val userName = userNames[req.userId] ?: ""
+                            val isChecked = selectedRequests[req.id] ?: false
+                            val dateText = if (req.date > 0L) {
+                                DateFormat.getDateFormat(context).format(Date(req.date))
+                            } else ""
+                            Row(
+                                modifier = Modifier.padding(vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Checkbox(
+                                    checked = isChecked,
+                                    onCheckedChange = { checked -> selectedRequests[req.id] = checked },
+                                    modifier = Modifier.width(40.dp)
+                                )
+                                Text(userName, modifier = Modifier.width(columnWidth))
+                                Text(routeName, modifier = Modifier.width(columnWidth))
+                                val costText = if (req.cost == Double.MAX_VALUE) "∞" else req.cost.toString()
+                                Text(costText, modifier = Modifier.width(columnWidth))
+                                Text(dateText, modifier = Modifier.width(columnWidth))
+                            }
+                            Divider()
                         }
-                        Divider()
                     }
                 }
             }

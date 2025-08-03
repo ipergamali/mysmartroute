@@ -1,8 +1,10 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
@@ -31,6 +33,8 @@ fun ViewRequestsScreen(navController: NavController, openDrawer: () -> Unit) {
     val poiViewModel: PoIViewModel = viewModel()
     val requests by viewModel.requests.collectAsState()
     val pois by poiViewModel.pois.collectAsState()
+    val scrollState = rememberScrollState()
+    val columnWidth = 150.dp
 
     LaunchedEffect(Unit) {
         poiViewModel.loadPois(context)
@@ -53,17 +57,19 @@ fun ViewRequestsScreen(navController: NavController, openDrawer: () -> Unit) {
             if (requests.isEmpty()) {
                 Text(stringResource(R.string.no_requests))
             } else {
-                LazyColumn {
-                    items(requests) { req ->
-                        val fromName = poiNames[req.startPoiId] ?: ""
-                        val toName = poiNames[req.endPoiId] ?: ""
-                        Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
-                            Text(fromName, modifier = Modifier.weight(1f))
-                            Text(toName, modifier = Modifier.weight(1f))
-                            val costText = if (req.cost == Double.MAX_VALUE) "∞" else req.cost.toString()
-                            Text(costText, modifier = Modifier.weight(1f))
+                Row(modifier = Modifier.horizontalScroll(scrollState)) {
+                    LazyColumn {
+                        items(requests) { req ->
+                            val fromName = poiNames[req.startPoiId] ?: ""
+                            val toName = poiNames[req.endPoiId] ?: ""
+                            Row(modifier = Modifier.padding(vertical = 8.dp)) {
+                                Text(fromName, modifier = Modifier.width(columnWidth))
+                                Text(toName, modifier = Modifier.width(columnWidth))
+                                val costText = if (req.cost == Double.MAX_VALUE) "∞" else req.cost.toString()
+                                Text(costText, modifier = Modifier.width(columnWidth))
+                            }
+                            Divider()
                         }
-                        Divider()
                     }
                 }
             }
