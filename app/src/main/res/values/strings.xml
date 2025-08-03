@@ -59,7 +59,7 @@
     <!-- Menu options -->
     <string name="sign_out">Sign out</string>
     <string name="manage_favorites">Manage Favorite Means of Transport</string>
-    <string name="route_mode">Transportation mode with date</string>
+    <string name="route_mode">Find a Vehicle Based on Date</string>
     <string name="find_vehicle">Find a Vehicle based on Cost</string>
     <string name="find_way">Find Way of Transport</string>
     <string name="book_seat">Book a Seat or Buy a Ticket</string>

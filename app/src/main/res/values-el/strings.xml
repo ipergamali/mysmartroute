@@ -61,6 +61,7 @@
     <!-- Επιλογές μενού -->
     <string name="sign_out">Αποσύνδεση</string>
     <string name="manage_favorites">Διαχείριση αγαπημένων μέσων μεταφοράς</string>
+    <string name="route_mode">Εύρεση οχήματος βάσει ημερομηνίας</string>
 
     <string name="find_vehicle">Εύρεση οχήματος βάσει κόστους</string>
     <string name="find_way">Εύρεση μέσου μεταφοράς</string>
