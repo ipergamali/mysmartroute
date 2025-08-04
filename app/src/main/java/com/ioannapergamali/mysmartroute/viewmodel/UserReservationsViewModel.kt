@@ -22,14 +22,11 @@ class UserReservationsViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
-    private val _reservations = MutableStateFlow<List<SeatReservationEntity>>(emptyList())
-    val reservations: StateFlow<List<SeatReservationEntity>> = _reservations
 
     fun load(context: Context) {
         viewModelScope.launch {
             val userId = auth.currentUser?.uid ?: return@launch
-            val dao = MySmartRouteDatabase.getInstance(context).seatReservationDao()
-            _reservations.value = dao.getReservationsForUser(userId).first()
+
 
             if (NetworkUtils.isInternetAvailable(context)) {
                 val userRef = db.collection("users").document(userId)
@@ -39,11 +36,6 @@ class UserReservationsViewModel : ViewModel() {
                     .await()
                 val list = remote.documents.mapNotNull { it.toSeatReservationEntity() }
                 if (list.isNotEmpty()) {
-                    _reservations.value = list
-                    list.forEach { dao.insert(it) }
-                }
-            }
-        }
-    }
+
 }
 

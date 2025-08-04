@@ -4,8 +4,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -49,7 +48,7 @@ fun PrintTicketScreen(navController: NavController, openDrawer: () -> Unit) {
             )
         }
     ) { paddingValues ->
-        ScreenContainer(modifier = Modifier.padding(paddingValues), scrollable = false) {
+
             if (reservations.isEmpty()) {
                 Text(text = stringResource(R.string.no_reservations))
             } else {
@@ -65,7 +64,7 @@ fun PrintTicketScreen(navController: NavController, openDrawer: () -> Unit) {
 }
 
 @Composable
-private fun ReservationItem(reservation: com.ioannapergamali.mysmartroute.data.local.SeatReservationEntity) {
+
     val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     val dateText = formatter.format(Date(reservation.date))
     Card(
@@ -73,11 +72,7 @@ private fun ReservationItem(reservation: com.ioannapergamali.mysmartroute.data.l
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Text(
-            text = "${reservation.routeId} - $dateText",
-            modifier = Modifier.padding(16.dp),
-            style = MaterialTheme.typography.bodyLarge
-        )
+
     }
 }
 
