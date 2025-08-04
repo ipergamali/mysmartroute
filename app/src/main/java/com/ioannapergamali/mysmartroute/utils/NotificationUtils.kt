@@ -11,7 +11,7 @@ import com.ioannapergamali.mysmartroute.R
 object NotificationUtils {
     private const val CHANNEL_ID = "default_channel"
 
-    fun showNotification(context: Context, title: String, text: String) {
+    fun showNotification(context: Context, title: String, text: String, id: Int = 0) {
         // Δημιουργία καναλιού ειδοποίησης για Android 8+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
@@ -30,6 +30,6 @@ object NotificationUtils {
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .build()
 
-        NotificationManagerCompat.from(context).notify(0, notification)
+        NotificationManagerCompat.from(context).notify(id, notification)
     }
 }

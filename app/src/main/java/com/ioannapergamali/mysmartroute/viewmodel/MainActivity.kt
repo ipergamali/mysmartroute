@@ -27,6 +27,7 @@ import com.ioannapergamali.mysmartroute.utils.ThemePreferenceManager
 import com.ioannapergamali.mysmartroute.utils.SoundPreferenceManager
 import com.ioannapergamali.mysmartroute.utils.SoundManager
 import com.ioannapergamali.mysmartroute.viewmodel.SettingsViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.utils.LanguagePreferenceManager
 import com.ioannapergamali.mysmartroute.utils.LocaleUtils
@@ -40,6 +41,7 @@ import android.view.WindowManager
 
 class MainActivity : ComponentActivity() {
     private val settingsViewModel: SettingsViewModel by viewModels()
+    private val requestViewModel: VehicleRequestViewModel by viewModels()
     private val locationPermissions = arrayOf(
         Manifest.permission.ACCESS_COARSE_LOCATION,
         Manifest.permission.ACCESS_FINE_LOCATION
@@ -62,6 +64,7 @@ class MainActivity : ComponentActivity() {
         MiuiUtils.callServiceDelivery(this, "ping")
         // Συγχρονισμός ρυθμίσεων από τη βάση
         settingsViewModel.syncSettings(this)
+        requestViewModel.loadRequests(this)
         // Έλεγχος φόρτωσης του Maps API key
         val apiKey = MapsUtils.getApiKey(this)
         Log.d("Maps", "API key loaded? ${apiKey.isNotEmpty()}")

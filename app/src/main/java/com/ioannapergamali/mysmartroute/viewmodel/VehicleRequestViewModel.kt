@@ -12,6 +12,8 @@ import kotlinx.coroutines.Dispatchers
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.utils.toMovingEntity
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
+import com.ioannapergamali.mysmartroute.utils.NotificationUtils
+import com.ioannapergamali.mysmartroute.R
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,6 +27,7 @@ class VehicleRequestViewModel : ViewModel() {
 
     private val _requests = MutableStateFlow<List<MovingEntity>>(emptyList())
     val requests: StateFlow<List<MovingEntity>> = _requests
+    private val notifiedRequests = mutableSetOf<String>()
 
     companion object {
         private const val TAG = "VehicleRequestVM"
@@ -59,6 +62,8 @@ class VehicleRequestViewModel : ViewModel() {
                     list.forEach { dao.insert(it) }
                 }
             }
+
+            showPendingNotifications(context)
         }
     }
 
@@ -184,5 +189,20 @@ class VehicleRequestViewModel : ViewModel() {
             }
         }
     }
-
+    private suspend fun showPendingNotifications(context: Context) {
+        _requests.value.filter { it.status == "pending" && it.id !in notifiedRequests }.forEach { req ->
+            val driverName = if (req.driverName.isNotBlank()) {
+                req.driverName
+            } else {
+                UserViewModel().getUserName(context, req.driverId)
+            }
+            NotificationUtils.showNotification(
+                context,
+                context.getString(R.string.notifications),
+                context.getString(R.string.driver_offer_notification, driverName),
+                req.id.hashCode()
+            )
+            notifiedRequests.add(req.id)
+        }
+    }
 }
