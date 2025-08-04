@@ -37,6 +37,7 @@ import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -61,6 +62,7 @@ fun RouteModeScreen(
     val context = LocalContext.current
     val routeViewModel: RouteViewModel = viewModel()
     val poiViewModel: PoIViewModel = viewModel()
+    val requestViewModel: VehicleRequestViewModel = viewModel()
     val routes by routeViewModel.routes.collectAsState()
     val allPois by poiViewModel.pois.collectAsState()
 
@@ -192,6 +194,12 @@ fun RouteModeScreen(
         }
     ) { padding ->
         ScreenContainer(modifier = Modifier.padding(padding)) {
+
+            Button(onClick = { navController.navigate("declareRoute") }) {
+                Text(stringResource(R.string.declare_route))
+            }
+
+            Spacer(Modifier.height(16.dp))
 
             ExposedDropdownMenuBox(expanded = routeExpanded, onExpandedChange = { routeExpanded = !routeExpanded }) {
                 OutlinedTextField(
@@ -375,29 +383,6 @@ fun RouteModeScreen(
                 Spacer(Modifier.height(16.dp))
             }
 
-            Button(
-                enabled = selectedRouteId != null && startIndex != null && endIndex != null,
-                onClick = {
-                    val fromIdx = startIndex ?: return@Button
-                    val toIdx = endIndex ?: return@Button
-                    if (fromIdx >= toIdx) {
-                        message = context.getString(R.string.invalid_stop_order)
-                        return@Button
-                    }
-                    val fromId = routePois[fromIdx].id
-                    val toId = routePois[toIdx].id
-                    val routeId = selectedRouteId ?: return@Button
-                    val dateMillis = datePickerState.selectedDateMillis ?: 0L
-                    navController.navigate(
-                        "availableTransports?routeId=" +
-                                routeId +
-                                "&startId=" + fromId +
-                                "&endId=" + toId +
-                                "&maxCost=" + if (includeCost) maxCostText else "" +
-                                "&date=" + dateMillis
-                    )
-                }
-            ) { Text(stringResource(R.string.find_now)) }
 
             if (message.isNotBlank()) {
                 Spacer(Modifier.height(8.dp))
