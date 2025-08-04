@@ -193,4 +193,7 @@
     <string name="save_request">Save request</string>
     <string name="available_transports">Available transports</string>
     <string name="no_transports_found">No transports found</string>
+    <string name="view_details">View details</string>
+    <string name="reservation_details">Reservation details</string>
+    <string name="no_reservation_found">No reservation found</string>
 </resources>
