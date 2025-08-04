@@ -63,7 +63,6 @@ fun PrintTicketScreen(navController: NavController, openDrawer: () -> Unit) {
             }
         }
     }
-}
 
 @Composable
 fun ReservationItem(reservation: SeatReservationEntity) {
