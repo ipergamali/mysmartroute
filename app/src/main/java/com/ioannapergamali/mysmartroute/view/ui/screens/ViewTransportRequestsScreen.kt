@@ -157,6 +157,16 @@ fun ViewTransportRequestsScreen(navController: NavController, openDrawer: () -> 
                                 val costText = if (req.cost == Double.MAX_VALUE) "∞" else req.cost.toString()
                                 Text(costText, modifier = Modifier.width(columnWidth))
                                 Text(dateText, modifier = Modifier.width(columnWidth))
+                                if (req.status == "open") {
+                                    Button(
+                                        onClick = { viewModel.notifyPassenger(context, req.id) },
+                                        modifier = Modifier.width(columnWidth)
+                                    ) {
+                                        Text(stringResource(R.string.notify_passenger))
+                                    }
+                                } else {
+                                    Text(req.status, modifier = Modifier.width(columnWidth))
+                                }
                             }
                             Divider()
                         }
