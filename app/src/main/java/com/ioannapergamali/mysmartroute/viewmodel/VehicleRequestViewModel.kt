@@ -27,6 +27,7 @@ class VehicleRequestViewModel : ViewModel() {
 
     private val _requests = MutableStateFlow<List<MovingEntity>>(emptyList())
     val requests: StateFlow<List<MovingEntity>> = _requests
+    private val notifiedRequests = mutableSetOf<String>()
 
     companion object {
         private const val TAG = "VehicleRequestVM"
@@ -61,6 +62,8 @@ class VehicleRequestViewModel : ViewModel() {
                     list.forEach { dao.insert(it) }
                 }
             }
+
+            showPendingNotifications(context)
         }
     }
 
@@ -166,11 +169,7 @@ class VehicleRequestViewModel : ViewModel() {
                         Log.e(TAG, "Seat reservation failed")
                         return@launch
                     }
-                    NotificationUtils.showNotification(
-                        context,
-                        context.getString(R.string.reserve_seat_title),
-                        context.getString(R.string.seat_booked)
-                    )
+
                 }
 
                 val status = if (accept) "accepted" else "rejected"
@@ -191,5 +190,20 @@ class VehicleRequestViewModel : ViewModel() {
             }
         }
     }
-
+    private suspend fun showPendingNotifications(context: Context) {
+        _requests.value.filter { it.status == "pending" && it.id !in notifiedRequests }.forEach { req ->
+            val driverName = if (req.driverName.isNotBlank()) {
+                req.driverName
+            } else {
+                UserViewModel().getUserName(context, req.driverId)
+            }
+            NotificationUtils.showNotification(
+                context,
+                context.getString(R.string.notifications),
+                context.getString(R.string.driver_offer_notification, driverName),
+                req.id.hashCode()
+            )
+            notifiedRequests.add(req.id)
+        }
+    }
 }
