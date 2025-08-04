@@ -383,52 +383,6 @@ fun RouteModeScreen(
                 Spacer(Modifier.height(16.dp))
             }
 
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(
-                    enabled = selectedRouteId != null && startIndex != null && endIndex != null,
-                    onClick = {
-                        val fromIdx = startIndex ?: return@Button
-                        val toIdx = endIndex ?: return@Button
-                        if (fromIdx >= toIdx) {
-                            message = context.getString(R.string.invalid_stop_order)
-                            return@Button
-                        }
-                        val fromId = routePois[fromIdx].id
-                        val toId = routePois[toIdx].id
-                        val routeId = selectedRouteId ?: return@Button
-                        val dateMillis = datePickerState.selectedDateMillis ?: 0L
-                        val cost = if (includeCost) maxCostText.toDoubleOrNull() ?: Double.MAX_VALUE else Double.MAX_VALUE
-                        requestViewModel.requestTransport(context, routeId, fromId, toId, cost, dateMillis)
-                        navController.navigate(
-                            "availableTransports?routeId=" +
-                                    routeId +
-                                    "&startId=" + fromId +
-                                    "&endId=" + toId +
-                                    "&maxCost=" + if (includeCost) maxCostText else "" +
-                                    "&date=" + dateMillis
-                        )
-                    }
-                ) { Text(stringResource(R.string.find_now)) }
-
-                Button(
-                    enabled = selectedRouteId != null && startIndex != null && endIndex != null,
-                    onClick = {
-                        val fromIdx = startIndex ?: return@Button
-                        val toIdx = endIndex ?: return@Button
-                        if (fromIdx >= toIdx) {
-                            message = context.getString(R.string.invalid_stop_order)
-                            return@Button
-                        }
-                        val fromId = routePois[fromIdx].id
-                        val toId = routePois[toIdx].id
-                        val routeId = selectedRouteId ?: return@Button
-                        val cost = if (includeCost) maxCostText.toDoubleOrNull() ?: Double.MAX_VALUE else Double.MAX_VALUE
-                        val dateMillis = datePickerState.selectedDateMillis ?: 0L
-                        requestViewModel.requestTransport(context, routeId, fromId, toId, cost, dateMillis)
-                        message = context.getString(R.string.request_sent)
-                    }
-                ) { Text(stringResource(R.string.save_request)) }
-            }
 
             if (message.isNotBlank()) {
                 Spacer(Modifier.height(8.dp))
