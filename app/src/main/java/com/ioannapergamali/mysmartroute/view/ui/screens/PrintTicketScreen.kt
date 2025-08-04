@@ -50,15 +50,20 @@ fun PrintTicketScreen(navController: NavController, openDrawer: () -> Unit) {
             )
         }
     ) { paddingValues ->
-
-            if (reservations.isEmpty()) {
-                Text(text = stringResource(R.string.no_reservations))
-            } else {
-                LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                    items(reservations) { res ->
-                        ReservationItem(res)
-                        Spacer(modifier = Modifier.height(8.dp))
-                    }
+        if (reservations.isEmpty()) {
+            Text(
+                text = stringResource(R.string.no_reservations),
+                modifier = Modifier.padding(paddingValues)
+            )
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(paddingValues)
+            ) {
+                items(reservations) { res ->
+                    ReservationItem(res)
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
             }
         }
