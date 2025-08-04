@@ -115,4 +115,58 @@ class VehicleRequestViewModel : ViewModel() {
         }
     }
 
+    fun notifyPassenger(context: Context, requestId: String) {
+        viewModelScope.launch {
+            val dao = MySmartRouteDatabase.getInstance(context).movingDao()
+            val driver = FirebaseAuth.getInstance().currentUser ?: return@launch
+            val driverName = UserViewModel().getUserName(context, driver.uid)
+            val list = _requests.value.toMutableList()
+            val index = list.indexOfFirst { it.id == requestId }
+            if (index != -1) {
+                val updated = list[index].copy(driverId = driver.uid, status = "pending").also {
+                    it.driverName = driverName
+                }
+                list[index] = updated
+                _requests.value = list
+                dao.insert(updated)
+                try {
+                    db.collection("movings").document(requestId).update(
+                        mapOf(
+                            "driverId" to FirebaseFirestore.getInstance().collection("users").document(driver.uid),
+                            "driverName" to driverName,
+                            "status" to "pending"
+                        )
+                    ).await()
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to notify passenger", e)
+                }
+            }
+        }
+    }
+
+    fun respondToOffer(context: Context, requestId: String, accept: Boolean) {
+        viewModelScope.launch {
+            val dao = MySmartRouteDatabase.getInstance(context).movingDao()
+            val list = _requests.value.toMutableList()
+            val index = list.indexOfFirst { it.id == requestId }
+            if (index != -1) {
+                val status = if (accept) "accepted" else "rejected"
+                val updated = list[index].copy(status = status, driverId = if (accept) list[index].driverId else "")
+                list[index] = updated
+                _requests.value = list
+                dao.insert(updated)
+                try {
+                    db.collection("movings").document(requestId).update(
+                        mapOf(
+                            "status" to status,
+                            "driverId" to updated.driverId
+                        )
+                    ).await()
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to respond to offer", e)
+                }
+            }
+        }
+    }
+
 }
