@@ -44,6 +44,9 @@ import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationEntity
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.TransportDeclarationViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
+import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
+import com.google.firebase.auth.FirebaseAuth
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -51,12 +54,23 @@ import java.util.Locale
 @Composable
 fun PrintDeclarationsScreen(navController: NavController, openDrawer: () -> Unit) {
     val viewModel: TransportDeclarationViewModel = viewModel()
+    val authViewModel: AuthenticationViewModel = viewModel()
     val declarations by viewModel.declarations.collectAsState()
+    val role by authViewModel.currentUserRole.collectAsState()
     val context = LocalContext.current
     val selected = remember { mutableStateMapOf<String, Boolean>() }
 
     LaunchedEffect(Unit) {
-        viewModel.loadDeclarations(context)
+        authViewModel.loadCurrentUserRole(context)
+    }
+
+    LaunchedEffect(role) {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+        if (role == UserRole.ADMIN) {
+            viewModel.loadDeclarations(context)
+        } else if (role != null && uid != null) {
+            viewModel.loadDeclarations(context, uid)
+        }
     }
 
     Scaffold(
