@@ -1,5 +1,7 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -7,8 +9,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -22,6 +28,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import android.net.Uri
+import com.google.gson.Gson
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.data.local.SeatReservationEntity
@@ -62,7 +70,7 @@ fun PrintTicketScreen(navController: NavController, openDrawer: () -> Unit) {
                     .padding(paddingValues)
             ) {
                 items(reservations) { res ->
-                    ReservationItem(res)
+                    ReservationItem(res, navController)
                     Spacer(modifier = Modifier.height(8.dp))
                 }
             }
@@ -71,7 +79,7 @@ fun PrintTicketScreen(navController: NavController, openDrawer: () -> Unit) {
 }
 
 @Composable
-fun ReservationItem(reservation: SeatReservationEntity) {
+fun ReservationItem(reservation: SeatReservationEntity, navController: NavController) {
     val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     val dateText = formatter.format(Date(reservation.date))
     Card(
@@ -79,10 +87,20 @@ fun ReservationItem(reservation: SeatReservationEntity) {
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Text(
-            text = dateText,
-            modifier = Modifier.padding(16.dp)
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(text = dateText)
+            IconButton(onClick = {
+                val json = Uri.encode(Gson().toJson(reservation))
+                navController.navigate("reservationDetails/$json")
+            }) {
+                Icon(Icons.Filled.Info, contentDescription = stringResource(R.string.view_details))
+            }
+        }
     }
 }
 

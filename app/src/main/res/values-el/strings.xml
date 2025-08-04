@@ -180,5 +180,8 @@
     <string name="find_now">Εύρεση τώρα</string>
     <string name="save_request">Αποθήκευση αιτήματος</string>
     <string name="departure_date">Επιθυμητή ημερομηνία</string>
+    <string name="view_details">Προβολή λεπτομερειών</string>
+    <string name="reservation_details">Λεπτομέρειες κράτησης</string>
+    <string name="no_reservation_found">Δεν βρέθηκε η κράτηση</string>
 
 </resources>
