@@ -9,6 +9,8 @@ import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.menuAnchor
+import androidx.annotation.StringRes
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -16,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -49,7 +52,12 @@ import kotlin.math.abs
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RouteModeScreen(navController: NavController, openDrawer: () -> Unit) {
+fun RouteModeScreen(
+    navController: NavController,
+    openDrawer: () -> Unit,
+    @StringRes titleRes: Int = R.string.route_mode,
+    includeCost: Boolean = false
+) {
     val context = LocalContext.current
     val routeViewModel: RouteViewModel = viewModel()
     val poiViewModel: PoIViewModel = viewModel()
@@ -81,6 +89,7 @@ fun RouteModeScreen(navController: NavController, openDrawer: () -> Unit) {
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     var calculating by remember { mutableStateOf(false) }
     var pendingPoi by remember { mutableStateOf<Triple<String, Double, Double>?>(null) }
+    var maxCostText by rememberSaveable { mutableStateOf("") }
 
     fun refreshRoute() {
         if (routePois.size >= 2) {
@@ -175,7 +184,7 @@ fun RouteModeScreen(navController: NavController, openDrawer: () -> Unit) {
     Scaffold(
         topBar = {
             TopBar(
-                title = stringResource(R.string.route_mode),
+                title = stringResource(titleRes),
                 navController = navController,
                 showMenu = true,
                 onMenuClick = openDrawer
@@ -354,6 +363,18 @@ fun RouteModeScreen(navController: NavController, openDrawer: () -> Unit) {
 
             Spacer(Modifier.height(16.dp))
 
+            if (includeCost) {
+                OutlinedTextField(
+                    value = maxCostText,
+                    onValueChange = { maxCostText = it },
+                    label = { Text(stringResource(R.string.cost)) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(Modifier.height(16.dp))
+            }
+
             Button(
                 enabled = selectedRouteId != null && startIndex != null && endIndex != null,
                 onClick = {
@@ -372,7 +393,8 @@ fun RouteModeScreen(navController: NavController, openDrawer: () -> Unit) {
                                 routeId +
                                 "&startId=" + fromId +
                                 "&endId=" + toId +
-                                "&maxCost=&date=" + dateMillis
+                                "&maxCost=" + if (includeCost) maxCostText else "" +
+                                "&date=" + dateMillis
                     )
                 }
             ) { Text(stringResource(R.string.find_now)) }
