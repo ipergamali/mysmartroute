@@ -18,4 +18,7 @@ interface RouteDao {
 
     @Query("SELECT * FROM routes WHERE name = :name LIMIT 1")
     suspend fun findByName(name: String): RouteEntity?
+
+    @Query("SELECT * FROM routes WHERE id = :id LIMIT 1")
+    suspend fun findById(id: String): RouteEntity?
 }
