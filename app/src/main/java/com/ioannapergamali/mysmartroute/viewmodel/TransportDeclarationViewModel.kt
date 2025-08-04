@@ -25,10 +25,11 @@ class TransportDeclarationViewModel : ViewModel() {
         private const val TAG = "TransportDeclVM"
     }
 
-    fun loadDeclarations(context: Context) {
+    fun loadDeclarations(context: Context, driverId: String? = null) {
         viewModelScope.launch {
             val dao = MySmartRouteDatabase.getInstance(context).transportDeclarationDao()
-            dao.getAll().collect { list ->
+            val flow = if (driverId == null) dao.getAll() else dao.getForDriver(driverId)
+            flow.collect { list ->
                 _declarations.value = list
             }
         }
