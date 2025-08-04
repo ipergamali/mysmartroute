@@ -49,7 +49,7 @@ fun PrintTicketScreen(navController: NavController, openDrawer: () -> Unit) {
             )
         }
     ) { paddingValues ->
-        ScreenContainer(modifier = Modifier.padding(paddingValues)) {
+        ScreenContainer(modifier = Modifier.padding(paddingValues), scrollable = false) {
             if (reservations.isEmpty()) {
                 Text(text = stringResource(R.string.no_reservations))
             } else {
