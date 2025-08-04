@@ -169,6 +169,7 @@ class VehicleRequestViewModel : ViewModel() {
                         Log.e(TAG, "Seat reservation failed")
                         return@launch
                     }
+
                 }
 
                 val status = if (accept) "accepted" else "rejected"
