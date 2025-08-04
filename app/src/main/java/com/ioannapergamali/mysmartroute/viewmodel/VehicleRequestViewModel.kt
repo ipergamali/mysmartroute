@@ -150,8 +150,24 @@ class VehicleRequestViewModel : ViewModel() {
             val list = _requests.value.toMutableList()
             val index = list.indexOfFirst { it.id == requestId }
             if (index != -1) {
+                val current = list[index]
+
+                if (accept) {
+                    val booked = BookingViewModel().reserveSeat(
+                        context,
+                        current.routeId,
+                        current.date,
+                        current.startPoiId,
+                        current.endPoiId
+                    )
+                    if (!booked) {
+                        Log.e(TAG, "Seat reservation failed")
+                        return@launch
+                    }
+                }
+
                 val status = if (accept) "accepted" else "rejected"
-                val updated = list[index].copy(status = status, driverId = if (accept) list[index].driverId else "")
+                val updated = current.copy(status = status, driverId = if (accept) current.driverId else "")
                 list[index] = updated
                 _requests.value = list
                 dao.insert(updated)
