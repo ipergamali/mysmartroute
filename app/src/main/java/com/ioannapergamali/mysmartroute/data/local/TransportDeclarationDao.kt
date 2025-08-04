@@ -13,4 +13,7 @@ interface TransportDeclarationDao {
 
     @Query("SELECT * FROM transport_declarations")
     fun getAll(): Flow<List<TransportDeclarationEntity>>
+
+    @Query("SELECT * FROM transport_declarations WHERE id = :id LIMIT 1")
+    suspend fun getById(id: String): TransportDeclarationEntity?
 }
