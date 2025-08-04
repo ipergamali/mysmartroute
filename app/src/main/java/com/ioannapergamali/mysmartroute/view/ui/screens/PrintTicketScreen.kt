@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -21,8 +23,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.R
-import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
+import com.ioannapergamali.mysmartroute.data.local.SeatReservationEntity
 import com.ioannapergamali.mysmartroute.viewmodel.UserReservationsViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -31,7 +33,7 @@ import java.util.Locale
 @Composable
 fun PrintTicketScreen(navController: NavController, openDrawer: () -> Unit) {
     val viewModel: UserReservationsViewModel = viewModel()
-    val reservations by viewModel.reservations.collectAsState()
+    val reservations: List<SeatReservationEntity> by viewModel.reservations.collectAsState(initial = emptyList())
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
@@ -64,7 +66,7 @@ fun PrintTicketScreen(navController: NavController, openDrawer: () -> Unit) {
 }
 
 @Composable
-
+fun ReservationItem(reservation: SeatReservationEntity) {
     val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     val dateText = formatter.format(Date(reservation.date))
     Card(
@@ -72,7 +74,10 @@ fun PrintTicketScreen(navController: NavController, openDrawer: () -> Unit) {
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-
+        Text(
+            text = dateText,
+            modifier = Modifier.padding(16.dp)
+        )
     }
 }
 
