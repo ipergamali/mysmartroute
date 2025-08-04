@@ -10,8 +10,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -20,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -50,6 +53,7 @@ fun PrintDeclarationsScreen(navController: NavController, openDrawer: () -> Unit
     val viewModel: TransportDeclarationViewModel = viewModel()
     val declarations by viewModel.declarations.collectAsState()
     val context = LocalContext.current
+    val selected = remember { mutableStateMapOf<String, Boolean>() }
 
     LaunchedEffect(Unit) {
         viewModel.loadDeclarations(context)
@@ -71,14 +75,39 @@ fun PrintDeclarationsScreen(navController: NavController, openDrawer: () -> Unit
                 modifier = Modifier.padding(paddingValues)
             )
         } else {
-            LazyColumn(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(paddingValues)
             ) {
-                items(declarations) { decl ->
-                    DeclarationItem(decl)
-                    Spacer(modifier = Modifier.height(8.dp))
+                val hasSelection = selected.values.any { it }
+                Button(
+                    onClick = {
+                        val ids = selected.filterValues { it }.keys
+                        viewModel.deleteDeclarations(context, ids.toSet())
+                        ids.forEach { selected.remove(it) }
+                    },
+                    enabled = hasSelection
+                ) {
+                    Text(stringResource(R.string.delete_selected))
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                LazyColumn {
+                    items(declarations) { decl ->
+                        val isChecked = selected[decl.id] ?: false
+                        DeclarationItem(
+                            declaration = decl,
+                            isChecked = isChecked,
+                            onCheckedChange = { checked ->
+                                if (checked) {
+                                    selected[decl.id] = true
+                                } else {
+                                    selected.remove(decl.id)
+                                }
+                            }
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
                 }
             }
         }
@@ -86,7 +115,11 @@ fun PrintDeclarationsScreen(navController: NavController, openDrawer: () -> Unit
 }
 
 @Composable
-private fun DeclarationItem(declaration: TransportDeclarationEntity) {
+private fun DeclarationItem(
+    declaration: TransportDeclarationEntity,
+    isChecked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
     val context = LocalContext.current
     var routeName by remember { mutableStateOf("") }
     var driverName by remember { mutableStateOf("") }
@@ -115,20 +148,25 @@ private fun DeclarationItem(declaration: TransportDeclarationEntity) {
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Column(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = "${stringResource(R.string.route)}: ${routeName.ifBlank { declaration.routeId }}")
-            Text(text = "${stringResource(R.string.driver)}: ${driverName.ifBlank { declaration.driverId }}")
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(vehicleIcon, contentDescription = stringResource(R.string.vehicle))
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(text = vehicleName.ifBlank { declaration.vehicleType })
+            Checkbox(checked = isChecked, onCheckedChange = onCheckedChange)
+            Spacer(modifier = Modifier.width(8.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(text = "${stringResource(R.string.route)}: ${routeName.ifBlank { declaration.routeId }}")
+                Text(text = "${stringResource(R.string.driver)}: ${driverName.ifBlank { declaration.driverId }}")
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(vehicleIcon, contentDescription = stringResource(R.string.vehicle))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(text = vehicleName.ifBlank { declaration.vehicleType })
+                }
+                Text(text = "${stringResource(R.string.cost)}: ${declaration.cost}")
+                Text(text = "${stringResource(R.string.date)}: $dateText")
             }
-            Text(text = "${stringResource(R.string.date)}: $dateText")
         }
     }
 }

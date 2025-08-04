@@ -13,6 +13,7 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
 import java.util.UUID
 
 /** ViewModel για αποθήκευση δηλώσεων μεταφοράς. */
@@ -58,6 +59,17 @@ class TransportDeclarationViewModel : ViewModel() {
             } catch (e: Exception) {
                 Log.w(TAG, "Remote store failed", e)
                 // Σε περίπτωση αποτυχίας, θα αποσταλεί αργότερα μέσω συγχρονισμού
+            }
+        }
+    }
+
+    fun deleteDeclarations(context: Context, ids: Set<String>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val dao = MySmartRouteDatabase.getInstance(context).transportDeclarationDao()
+            dao.deleteByIds(ids.toList())
+            _declarations.value = _declarations.value.filterNot { it.id in ids }
+            ids.forEach { id ->
+                FirebaseFirestore.getInstance().collection("transport_declarations").document(id).delete()
             }
         }
     }
