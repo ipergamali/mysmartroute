@@ -22,23 +22,11 @@ class UserReservationsViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
-    /** Πληροφορίες που χρειάζονται για την εμφάνιση μιας κράτησης. */
-    data class ReservationInfo(
-        val passengerName: String,
-        val driverName: String,
-        val routeName: String,
-        val date: Long,
-        val cost: Double
-    )
-
-    private val _reservations = MutableStateFlow<List<ReservationInfo>>(emptyList())
-    val reservations: StateFlow<List<ReservationInfo>> = _reservations
 
     fun load(context: Context) {
         viewModelScope.launch {
             val userId = auth.currentUser?.uid ?: return@launch
-            val dbLocal = MySmartRouteDatabase.getInstance(context)
-            buildReservationInfo(dbLocal, userId)
+
 
             if (NetworkUtils.isInternetAvailable(context)) {
                 val userRef = db.collection("users").document(userId)
@@ -48,36 +36,6 @@ class UserReservationsViewModel : ViewModel() {
                     .await()
                 val list = remote.documents.mapNotNull { it.toSeatReservationEntity() }
                 if (list.isNotEmpty()) {
-                    val dao = dbLocal.seatReservationDao()
-                    list.forEach { dao.insert(it) }
-                    buildReservationInfo(dbLocal, userId)
-                }
-            }
-        }
-    }
 
-    private suspend fun buildReservationInfo(
-        dbLocal: MySmartRouteDatabase,
-        userId: String
-    ) {
-        val seatDao = dbLocal.seatReservationDao()
-        val declarations = dbLocal.transportDeclarationDao().getAll().first()
-        val routes = dbLocal.routeDao().getAll().first()
-        val users = dbLocal.userDao().getAllUsers().first()
-
-        val passenger = users.find { it.id == userId }
-        _reservations.value = seatDao.getReservationsForUser(userId).first().map { res ->
-            val declaration = declarations.find { it.id == res.declarationId }
-            val driver = users.find { it.id == declaration?.driverId }
-            val route = routes.find { it.id == res.routeId }
-            ReservationInfo(
-                passengerName = listOfNotNull(passenger?.name, passenger?.surname).joinToString(" "),
-                driverName = listOfNotNull(driver?.name, driver?.surname).joinToString(" "),
-                routeName = route?.name ?: res.routeId,
-                date = res.date,
-                cost = declaration?.cost ?: 0.0
-            )
-        }
-    }
 }
 

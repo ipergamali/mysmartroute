@@ -1,15 +1,10 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
+
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -53,7 +48,7 @@ fun PrintTicketScreen(navController: NavController, openDrawer: () -> Unit) {
             )
         }
     ) { paddingValues ->
-        ScreenContainer(modifier = Modifier.padding(paddingValues)) {
+
             if (reservations.isEmpty()) {
                 Text(text = stringResource(R.string.no_reservations))
             } else {
@@ -69,7 +64,7 @@ fun PrintTicketScreen(navController: NavController, openDrawer: () -> Unit) {
 }
 
 @Composable
-private fun ReservationItem(reservation: UserReservationsViewModel.ReservationInfo) {
+
     val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     val dateText = formatter.format(Date(reservation.date))
     Card(
@@ -77,21 +72,7 @@ private fun ReservationItem(reservation: UserReservationsViewModel.ReservationIn
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .horizontalScroll(rememberScrollState())
-                .padding(16.dp)
-        ) {
-            Text(text = "Επιβάτης: ${reservation.passengerName}")
-            Spacer(modifier = Modifier.width(16.dp))
-            Text(text = "Οδηγός: ${reservation.driverName}")
-            Spacer(modifier = Modifier.width(16.dp))
-            Text(text = "Διαδρομή: ${reservation.routeName}")
-            Spacer(modifier = Modifier.width(16.dp))
-            Text(text = "Ημ/νία: $dateText")
-            Spacer(modifier = Modifier.width(16.dp))
-            Text(text = "Κόστος: ${reservation.cost}€")
-        }
+
     }
 }
 

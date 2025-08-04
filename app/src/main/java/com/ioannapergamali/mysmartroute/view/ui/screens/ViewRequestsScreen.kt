@@ -80,32 +80,51 @@ fun ViewRequestsScreen(navController: NavController, openDrawer: () -> Unit) {
                     }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                LazyColumn {
-                    items(sortedRequests) { req ->
-                        val fromName = poiNames[req.startPoiId] ?: ""
-                        val toName = poiNames[req.endPoiId] ?: ""
-                        val dateText = if (req.date > 0L) {
-                            DateFormat.getDateFormat(context).format(Date(req.date))
-                        } else ""
-                        Row(
-                            modifier = Modifier
-                                .horizontalScroll(scrollState)
-                                .padding(vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(fromName, modifier = Modifier.width(columnWidth))
-                            Text(toName, modifier = Modifier.width(columnWidth))
-                            val costText = if (req.cost == Double.MAX_VALUE) "∞" else req.cost.toString()
-                            Text(costText, modifier = Modifier.width(columnWidth))
-                            Text(dateText, modifier = Modifier.width(columnWidth))
-                            Button(onClick = { viewModel.deleteRequests(context, setOf(req.id)) }) {
-                                Text(stringResource(R.string.cancel_request))
+                Row(modifier = Modifier.horizontalScroll(scrollState)) {
+                    LazyColumn {
+                        item {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    stringResource(R.string.route_name),
+                                    modifier = Modifier.width(columnWidth)
+                                )
+                                Text(
+                                    stringResource(R.string.cost),
+                                    modifier = Modifier.width(columnWidth)
+                                )
+                                Text(
+                                    stringResource(R.string.date),
+                                    modifier = Modifier.width(columnWidth)
+                                )
                             }
+                            Divider()
                         }
-                        Divider()
+                        items(sortedRequests) { req ->
+                            val fromName = poiNames[req.startPoiId] ?: ""
+                            val toName = poiNames[req.endPoiId] ?: ""
+                            val routeName = if (fromName.isNotBlank() && toName.isNotBlank())
+                                "$fromName → $toName" else ""
+                            val dateText = if (req.date > 0L) {
+                                DateFormat.getDateFormat(context).format(Date(req.date))
+                            } else ""
+                            val costText = if (req.cost == Double.MAX_VALUE) "-" else req.cost.toString()
+                            Row(
+                                modifier = Modifier.padding(vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(routeName, modifier = Modifier.width(columnWidth))
+                                Text(costText, modifier = Modifier.width(columnWidth))
+                                Text(dateText, modifier = Modifier.width(columnWidth))
+                                Button(onClick = { viewModel.deleteRequests(context, setOf(req.id)) }) {
+                                    Text(stringResource(R.string.cancel_request))
+                                }
+                            }
+                            Divider()
+                        }
                     }
                 }
             }
         }
     }
 }
+
