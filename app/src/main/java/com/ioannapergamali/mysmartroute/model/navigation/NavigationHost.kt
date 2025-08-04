@@ -32,6 +32,7 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.ManageFavoritesScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.PrintCompletedScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.PrintListScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.PrintScheduledScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.PrintDeclarationsScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.PrintTicketScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.PrepareCompleteRouteScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.ViewVehiclesScreen
@@ -248,6 +249,10 @@ fun NavigationHost(navController : NavHostController, openDrawer: () -> Unit) {
 
         composable("printCompleted") {
             PrintCompletedScreen(navController = navController, openDrawer = openDrawer)
+        }
+
+        composable("printDeclarations") {
+            PrintDeclarationsScreen(navController = navController, openDrawer = openDrawer)
         }
 
         composable("prepareCompleteRoute") {

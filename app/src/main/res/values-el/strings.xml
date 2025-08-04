@@ -84,6 +84,7 @@
     <string name="print_list">Εκτύπωση λίστας επιβατών</string>
     <string name="print_scheduled">Εκτύπωση λίστας για προγραμματισμένες μεταφορές</string>
     <string name="print_completed">Εκτύπωση λίστας για ολοκληρωμένες μεταφορές</string>
+    <string name="print_declarations">Εκτύπωση δηλώσεων διαθεσιμότητας</string>
     <string name="prepare_complete_route">Προετοιμασία ολοκλήρωσης διαδρομής</string>
     <string name="init_system">Αρχικοποίηση συστήματος</string>
     <string name="create_user">Δημιουργία λογαριασμού χρήστη</string>
@@ -165,6 +166,7 @@
     <string name="delete_selected">Διαγραφή επιλεγμένων</string>
     <string name="clear_selection">Καθαρισμός επιλογής</string>
     <string name="no_reservations">Δεν βρέθηκαν κρατήσεις</string>
+    <string name="no_declarations">Δεν βρέθηκαν δηλώσεις</string>
     <string name="max_cost">Μέγιστο κόστος</string>
     <string name="request_sent">Το αίτημα καταχωρήθηκε</string>
     <string name="view_requests">Προβολή αιτημάτων</string>

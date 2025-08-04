@@ -81,6 +81,7 @@
     <string name="print_list">Print Passenger List</string>
     <string name="print_scheduled">Print Passenger List for Scheduled Transports</string>
     <string name="print_completed">Print Passenger List for Completed Transports</string>
+    <string name="print_declarations">Print Transport Declarations</string>
     <string name="vehicle_type">Vehicle type</string>
     <string name="prepare_complete_route">Prepare Route Completion</string>
     <string name="init_system">Initialize System</string>
@@ -177,6 +178,7 @@
     <string name="delete_favorite">Delete</string>
     <string name="delete_selected">Delete selected</string>
     <string name="no_reservations">No reservations found</string>
+    <string name="no_declarations">No declarations found</string>
     <string name="max_cost">Maximum cost</string>
     <string name="request_sent">Request saved</string>
     <string name="view_requests">View Requests</string>
