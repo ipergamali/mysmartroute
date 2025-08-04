@@ -237,7 +237,8 @@ fun MovingEntity.toFirestoreMap(): Map<String, Any> {
         "cost" to cost,
         "durationMinutes" to durationMinutes,
         "startPoiId" to FirebaseFirestore.getInstance().collection("pois").document(startPoiId),
-        "endPoiId" to FirebaseFirestore.getInstance().collection("pois").document(endPoiId)
+        "endPoiId" to FirebaseFirestore.getInstance().collection("pois").document(endPoiId),
+        "status" to status
     )
     if (vehicleId.isNotEmpty()) {
         map["vehicleId"] = FirebaseFirestore.getInstance().collection("vehicles").document(vehicleId)
@@ -245,6 +246,12 @@ fun MovingEntity.toFirestoreMap(): Map<String, Any> {
     if (createdById.isNotEmpty()) {
         map["createdById"] = FirebaseFirestore.getInstance().collection("users").document(createdById)
         map["createdByName"] = createdByName
+    }
+    if (driverId.isNotEmpty()) {
+        map["driverId"] = FirebaseFirestore.getInstance().collection("users").document(driverId)
+        if (driverName.isNotEmpty()) {
+            map["driverName"] = driverName
+        }
     }
     return map
 }
@@ -285,6 +292,13 @@ fun DocumentSnapshot.toMovingEntity(): MovingEntity? {
         else -> getString("createdById")
     } ?: ""
     val createdByName = getString("createdByName") ?: ""
+    val driverId = when (val d = get("driverId")) {
+        is DocumentReference -> d.id
+        is String -> d
+        else -> getString("driverId")
+    } ?: ""
+    val status = getString("status") ?: "open"
+    val driverName = getString("driverName") ?: ""
     return MovingEntity(
         movingId,
         routeId,
@@ -296,7 +310,10 @@ fun DocumentSnapshot.toMovingEntity(): MovingEntity? {
         startPoiId,
         endPoiId,
         createdById,
-        createdByName
+        createdByName,
+        driverId,
+        status,
+        driverName
     )
 }
 
