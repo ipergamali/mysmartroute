@@ -15,6 +15,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,6 +29,7 @@ import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.UserViewModel
 import android.text.format.DateFormat
 import java.util.Date
 
@@ -39,8 +41,10 @@ fun ViewRequestsScreen(navController: NavController, openDrawer: () -> Unit) {
     val context = LocalContext.current
     val viewModel: VehicleRequestViewModel = viewModel()
     val poiViewModel: PoIViewModel = viewModel()
+    val userViewModel: UserViewModel = viewModel()
     val requests by viewModel.requests.collectAsState()
     val pois by poiViewModel.pois.collectAsState()
+    val driverNames = remember { mutableStateMapOf<String, String>() }
     val scrollState = rememberScrollState()
     val columnWidth = 150.dp
     val sortOption = remember { mutableStateOf(SortOption.COST) }
@@ -52,6 +56,14 @@ fun ViewRequestsScreen(navController: NavController, openDrawer: () -> Unit) {
     LaunchedEffect(Unit) {
         poiViewModel.loadPois(context)
         viewModel.loadRequests(context)
+    }
+
+    LaunchedEffect(requests) {
+        requests.forEach { req ->
+            if (req.driverId.isNotBlank() && driverNames[req.driverId] == null) {
+                driverNames[req.driverId] = userViewModel.getUserName(context, req.driverId)
+            }
+        }
     }
 
     val poiNames = pois.associate { it.id to it.name }
@@ -115,6 +127,17 @@ fun ViewRequestsScreen(navController: NavController, openDrawer: () -> Unit) {
                                 Text(routeName, modifier = Modifier.width(columnWidth))
                                 Text(costText, modifier = Modifier.width(columnWidth))
                                 Text(dateText, modifier = Modifier.width(columnWidth))
+                                if (req.status == "pending") {
+                                    val dName = driverNames[req.driverId] ?: ""
+                                    Text(dName, modifier = Modifier.width(columnWidth))
+                                    Button(onClick = { viewModel.respondToOffer(context, req.id, true) }) {
+                                        Text(stringResource(R.string.accept_offer))
+                                    }
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Button(onClick = { viewModel.respondToOffer(context, req.id, false) }) {
+                                        Text(stringResource(R.string.reject_offer))
+                                    }
+                                }
                                 Button(onClick = { viewModel.deleteRequests(context, setOf(req.id)) }) {
                                     Text(stringResource(R.string.cancel_request))
                                 }
