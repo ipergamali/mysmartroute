@@ -9,6 +9,8 @@ import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.menuAnchor
+import androidx.annotation.StringRes
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -16,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -34,6 +37,7 @@ import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -49,10 +53,16 @@ import kotlin.math.abs
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RouteModeScreen(navController: NavController, openDrawer: () -> Unit) {
+fun RouteModeScreen(
+    navController: NavController,
+    openDrawer: () -> Unit,
+    @StringRes titleRes: Int = R.string.route_mode,
+    includeCost: Boolean = false
+) {
     val context = LocalContext.current
     val routeViewModel: RouteViewModel = viewModel()
     val poiViewModel: PoIViewModel = viewModel()
+    val requestViewModel: VehicleRequestViewModel = viewModel()
     val routes by routeViewModel.routes.collectAsState()
     val allPois by poiViewModel.pois.collectAsState()
 
@@ -81,6 +91,7 @@ fun RouteModeScreen(navController: NavController, openDrawer: () -> Unit) {
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     var calculating by remember { mutableStateOf(false) }
     var pendingPoi by remember { mutableStateOf<Triple<String, Double, Double>?>(null) }
+    var maxCostText by rememberSaveable { mutableStateOf("") }
 
     fun refreshRoute() {
         if (routePois.size >= 2) {
@@ -175,7 +186,7 @@ fun RouteModeScreen(navController: NavController, openDrawer: () -> Unit) {
     Scaffold(
         topBar = {
             TopBar(
-                title = stringResource(R.string.route_mode),
+                title = stringResource(titleRes),
                 navController = navController,
                 showMenu = true,
                 onMenuClick = openDrawer
@@ -183,6 +194,12 @@ fun RouteModeScreen(navController: NavController, openDrawer: () -> Unit) {
         }
     ) { padding ->
         ScreenContainer(modifier = Modifier.padding(padding)) {
+
+            Button(onClick = { navController.navigate("declareRoute") }) {
+                Text(stringResource(R.string.declare_route))
+            }
+
+            Spacer(Modifier.height(16.dp))
 
             ExposedDropdownMenuBox(expanded = routeExpanded, onExpandedChange = { routeExpanded = !routeExpanded }) {
                 OutlinedTextField(
@@ -354,28 +371,64 @@ fun RouteModeScreen(navController: NavController, openDrawer: () -> Unit) {
 
             Spacer(Modifier.height(16.dp))
 
-            Button(
-                enabled = selectedRouteId != null && startIndex != null && endIndex != null,
-                onClick = {
-                    val fromIdx = startIndex ?: return@Button
-                    val toIdx = endIndex ?: return@Button
-                    if (fromIdx >= toIdx) {
-                        message = context.getString(R.string.invalid_stop_order)
-                        return@Button
+            if (includeCost) {
+                OutlinedTextField(
+                    value = maxCostText,
+                    onValueChange = { maxCostText = it },
+                    label = { Text(stringResource(R.string.cost)) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(Modifier.height(16.dp))
+            }
+
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(
+                    enabled = selectedRouteId != null && startIndex != null && endIndex != null,
+                    onClick = {
+                        val fromIdx = startIndex ?: return@Button
+                        val toIdx = endIndex ?: return@Button
+                        if (fromIdx >= toIdx) {
+                            message = context.getString(R.string.invalid_stop_order)
+                            return@Button
+                        }
+                        val fromId = routePois[fromIdx].id
+                        val toId = routePois[toIdx].id
+                        val routeId = selectedRouteId ?: return@Button
+                        val dateMillis = datePickerState.selectedDateMillis ?: 0L
+                        val cost = if (includeCost) maxCostText.toDoubleOrNull() ?: Double.MAX_VALUE else Double.MAX_VALUE
+                        requestViewModel.requestTransport(context, routeId, fromId, toId, cost, dateMillis)
+                        navController.navigate(
+                            "availableTransports?routeId=" +
+                                    routeId +
+                                    "&startId=" + fromId +
+                                    "&endId=" + toId +
+                                    "&maxCost=" + if (includeCost) maxCostText else "" +
+                                    "&date=" + dateMillis
+                        )
                     }
-                    val fromId = routePois[fromIdx].id
-                    val toId = routePois[toIdx].id
-                    val routeId = selectedRouteId ?: return@Button
-                    val dateMillis = datePickerState.selectedDateMillis ?: 0L
-                    navController.navigate(
-                        "availableTransports?routeId=" +
-                                routeId +
-                                "&startId=" + fromId +
-                                "&endId=" + toId +
-                                "&maxCost=&date=" + dateMillis
-                    )
-                }
-            ) { Text(stringResource(R.string.find_now)) }
+                ) { Text(stringResource(R.string.find_now)) }
+
+                Button(
+                    enabled = selectedRouteId != null && startIndex != null && endIndex != null,
+                    onClick = {
+                        val fromIdx = startIndex ?: return@Button
+                        val toIdx = endIndex ?: return@Button
+                        if (fromIdx >= toIdx) {
+                            message = context.getString(R.string.invalid_stop_order)
+                            return@Button
+                        }
+                        val fromId = routePois[fromIdx].id
+                        val toId = routePois[toIdx].id
+                        val routeId = selectedRouteId ?: return@Button
+                        val cost = if (includeCost) maxCostText.toDoubleOrNull() ?: Double.MAX_VALUE else Double.MAX_VALUE
+                        val dateMillis = datePickerState.selectedDateMillis ?: 0L
+                        requestViewModel.requestTransport(context, routeId, fromId, toId, cost, dateMillis)
+                        message = context.getString(R.string.request_sent)
+                    }
+                ) { Text(stringResource(R.string.save_request)) }
+            }
 
             if (message.isNotBlank()) {
                 Spacer(Modifier.height(8.dp))
