@@ -16,13 +16,20 @@ data class MovingEntity(
     /** Σημείο επιβίβασης */
     val startPoiId: String = "",
     /** Σημείο αποβίβασης */
-    val endPoiId: String = ""
+    val endPoiId: String = "",
+    /** Ο οδηγός που ενδιαφέρεται να πραγματοποιήσει τη μεταφορά */
+    val driverId: String = "",
+    /** Κατάσταση προσφοράς: open, pending, accepted, rejected */
+    val status: String = "open"
 ) {
     @Ignore
     var createdById: String = ""
 
     @Ignore
     var createdByName: String = ""
+
+    @Ignore
+    var driverName: String = ""
 
     constructor(
         id: String = "",
@@ -35,9 +42,25 @@ data class MovingEntity(
         startPoiId: String = "",
         endPoiId: String = "",
         createdById: String = "",
-        createdByName: String = ""
-    ) : this(id, routeId, userId, date, vehicleId, cost, durationMinutes, startPoiId, endPoiId) {
+        createdByName: String = "",
+        driverId: String = "",
+        status: String = "open",
+        driverName: String = ""
+    ) : this(
+        id,
+        routeId,
+        userId,
+        date,
+        vehicleId,
+        cost,
+        durationMinutes,
+        startPoiId,
+        endPoiId,
+        driverId,
+        status
+    ) {
         this.createdById = createdById
         this.createdByName = createdByName
+        this.driverName = driverName
     }
 }

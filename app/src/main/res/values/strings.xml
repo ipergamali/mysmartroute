@@ -186,6 +186,9 @@
     <string name="sort_by_cost">Sort by cost</string>
     <string name="sort_by_date">Sort by date</string>
     <string name="cancel_request">Cancel request</string>
+    <string name="notify_passenger">Notify passenger</string>
+    <string name="accept_offer">Accept</string>
+    <string name="reject_offer">Reject</string>
     <string name="no_notifications">No notifications</string>
 
     <!-- Notification text -->
