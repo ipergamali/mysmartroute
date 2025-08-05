@@ -22,12 +22,21 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.util.UUID
 
+data class PassengerRequest(
+    val passengerId: String,
+    val routeId: String,
+    val fromPoiId: String,
+    val toPoiId: String,
+    val date: Long
+)
+
 class VehicleRequestViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
 
     private val _requests = MutableStateFlow<List<MovingEntity>>(emptyList())
     val requests: StateFlow<List<MovingEntity>> = _requests
     private val notifiedRequests = mutableSetOf<String>()
+    private val passengerRequests = mutableSetOf<PassengerRequest>()
 
     companion object {
         private const val TAG = "VehicleRequestVM"
@@ -63,6 +72,19 @@ class VehicleRequestViewModel : ViewModel() {
                 }
             }
 
+            passengerRequests.clear()
+            _requests.value.forEach {
+                passengerRequests.add(
+                    PassengerRequest(
+                        it.userId,
+                        it.routeId,
+                        it.startPoiId,
+                        it.endPoiId,
+                        it.date
+                    )
+                )
+            }
+
             showPendingNotifications(context)
         }
     }
@@ -72,6 +94,18 @@ class VehicleRequestViewModel : ViewModel() {
             val dao = MySmartRouteDatabase.getInstance(context).movingDao()
             dao.deleteByIds(ids.toList())
             _requests.value = _requests.value.filterNot { it.id in ids }
+            passengerRequests.clear()
+            _requests.value.forEach {
+                passengerRequests.add(
+                    PassengerRequest(
+                        it.userId,
+                        it.routeId,
+                        it.startPoiId,
+                        it.endPoiId,
+                        it.date
+                    )
+                )
+            }
             ids.forEach { id ->
                 db.collection("movings").document(id).delete()
             }
@@ -93,6 +127,11 @@ class VehicleRequestViewModel : ViewModel() {
             val creatorId = creator?.uid ?: ""
             val creatorName = UserViewModel().getUserName(context, creatorId)
             val userId = targetUserId ?: creatorId
+            val requestKey = PassengerRequest(userId, routeId, fromPoiId, toPoiId, date)
+            if (!passengerRequests.add(requestKey)) {
+                Log.d(TAG, "Duplicate request ignored")
+                return@launch
+            }
             val id = UUID.randomUUID().toString()
             val entity = MovingEntity(
                 id = id,
