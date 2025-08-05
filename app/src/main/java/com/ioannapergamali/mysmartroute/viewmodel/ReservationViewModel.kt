@@ -24,6 +24,11 @@ class ReservationViewModel : ViewModel() {
 
     fun loadReservations(context: Context, routeId: String, date: Long, declarationId: String) {
         viewModelScope.launch {
+            if (declarationId.isBlank()) {
+                _reservations.value = emptyList()
+                return@launch
+            }
+
             val dao = MySmartRouteDatabase.getInstance(context).seatReservationDao()
             _reservations.value = dao.getReservationsForDeclaration(declarationId).first()
 
@@ -47,6 +52,8 @@ class ReservationViewModel : ViewModel() {
 
     /** Επιστρέφει τον αριθμό κρατήσεων για μια δήλωση μεταφοράς. */
     suspend fun getReservationCount(context: Context, declarationId: String): Int {
+        if (declarationId.isBlank()) return 0
+
         val dao = MySmartRouteDatabase.getInstance(context).seatReservationDao()
 
         val localCount = withContext(Dispatchers.IO) {
