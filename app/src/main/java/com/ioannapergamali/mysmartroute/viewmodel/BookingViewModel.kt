@@ -46,7 +46,34 @@ class BookingViewModel : ViewModel() {
         endPoiId: String
     ): Result<Unit> = withContext(Dispatchers.IO) {
         val userId = auth.currentUser?.uid
+            ?: return@withContext Result.failure(Exception("Απαιτείται σύνδεση"))
 
+        val dao = MySmartRouteDatabase.getInstance(context).seatReservationDao()
+
+        // Έλεγχος για ήδη υπάρχουσα κράτηση
+        val existing = dao.findUserReservation(userId, routeId, date)
+        if (existing != null) {
+            return@withContext Result.failure(Exception("Η θέση έχει ήδη κρατηθεί"))
+        }
+
+        val reservation = SeatReservationEntity(
+            id = UUID.randomUUID().toString(),
+            routeId = routeId,
+            userId = userId,
+            date = date,
+            startPoiId = startPoiId,
+            endPoiId = endPoiId
+        )
+
+        return@withContext try {
+            dao.insert(reservation)
+            db.collection("seat_reservations")
+                .document(reservation.id)
+                .set(reservation.toFirestoreMap())
+                .await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e(TAG, "Αποτυχία κράτησης", e)
             Result.failure(e)
         }
     }
