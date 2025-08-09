@@ -88,8 +88,12 @@ class VehicleRequestViewModel : ViewModel() {
                 )
             }
 
-            showPendingNotifications(context)
-            showAcceptedNotifications(context)
+            if (allUsers) {
+                showPassengerRequestNotifications(context)
+            } else {
+                showPendingNotifications(context)
+                showAcceptedNotifications(context)
+            }
         }
     }
 
@@ -236,6 +240,21 @@ class VehicleRequestViewModel : ViewModel() {
             }
         }
     }
+
+    private suspend fun showPassengerRequestNotifications(context: Context) {
+        _requests.value.filter { it.driverId.isBlank() && it.status.isBlank() && it.id !in notifiedRequests }
+            .forEach { req ->
+                val passengerName = UserViewModel().getUserName(context, req.userId)
+                NotificationUtils.showNotification(
+                    context,
+                    context.getString(R.string.notifications),
+                    context.getString(R.string.passenger_request_notification, passengerName),
+                    req.id.hashCode()
+                )
+                notifiedRequests.add(req.id)
+            }
+    }
+
     private suspend fun showPendingNotifications(context: Context) {
         _requests.value.filter { it.status == "pending" && it.id !in notifiedRequests }.forEach { req ->
             val driverName = if (req.driverName.isNotBlank()) {
