@@ -12,10 +12,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.gson.Gson
+import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.SeatReservationEntity
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
+import com.ioannapergamali.mysmartroute.utils.toUserEntity
+import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -47,8 +50,17 @@ fun ReservationDetailsScreen(
             endPoiName = db.poIDao().findById(res.endPoiId)?.name ?: res.endPoiId
             val decl = db.transportDeclarationDao().getById(res.declarationId)
             cost = decl?.cost
-            driverName = decl?.driverId?.let { db.userDao().getUser(it) }
-                ?.let { "${it.name} ${it.surname}" } ?: decl?.driverId.orEmpty()
+            driverName = decl?.driverId?.let { driverId ->
+                val user = db.userDao().getUser(driverId)
+                    ?: FirebaseFirestore.getInstance()
+                        .collection("users")
+                        .document(driverId)
+                        .get()
+                        .await()
+                        .toUserEntity()
+                        ?.also { db.userDao().insert(it) }
+                user?.let { "${it.name} ${it.surname}" } ?: driverId
+            }.orEmpty()
             passengerName = db.userDao().getUser(res.userId)
                 ?.let { "${it.name} ${it.surname}" } ?: res.userId
         }
