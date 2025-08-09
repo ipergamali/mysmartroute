@@ -2,7 +2,6 @@ package com.ioannapergamali.mysmartroute.viewmodel
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.RouteEntity
@@ -12,8 +11,8 @@ import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.utils.toRouteWithPoints
 import com.ioannapergamali.mysmartroute.utils.toTransportDeclarationEntity
 import kotlinx.coroutines.tasks.await
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -37,88 +36,85 @@ class BookingViewModel : ViewModel() {
         }
     }
 
-    fun reserveSeat(
+    suspend fun reserveSeat(
         context: Context,
         routeId: String,
         date: Long,
         startPoiId: String,
         endPoiId: String
-    ): Boolean {
-        val userId = auth.currentUser?.uid ?: return false
+    ): Result<Unit> = withContext(Dispatchers.IO) {
+        val userId = auth.currentUser?.uid
+            ?: return@withContext Result.failure(Exception("Ο χρήστης δεν είναι συνδεδεμένος"))
+
         val reservationId = UUID.randomUUID().toString()
-        return try {
-            runBlocking {
-                val declarations = db.collection("transport_declarations")
-                    .whereEqualTo("routeId", routeId)
-                    .whereEqualTo("date", date)
-                    .get().await()
-                    .documents.mapNotNull { it.toTransportDeclarationEntity() }
-                val declaration = declarations.firstOrNull() ?: return@runBlocking false
+        try {
+            val declarations = db.collection("transport_declarations")
+                .whereEqualTo("routeId", routeId)
+                .whereEqualTo("date", date)
+                .get().await()
+                .documents.mapNotNull { it.toTransportDeclarationEntity() }
+            val declaration = declarations.firstOrNull()
+                ?: return@withContext Result.failure(Exception("Δεν βρέθηκε δήλωση μεταφοράς"))
 
-                // Έλεγχος αν ο επιβάτης έχει ήδη κάνει κράτηση για τη συγκεκριμένη διαδρομή
-                val routeRef = db.collection("routes").document(routeId)
-                val userRef = db.collection("users").document(userId)
-                val existingUserReservation = db.collection("seat_reservations")
-                    .whereEqualTo("routeId", routeRef)
-                    .whereEqualTo("date", date)
-                    .whereEqualTo("userId", userRef)
-                    .get().await()
-                if (existingUserReservation.size() > 0) {
-                    return@runBlocking false
-                }
-
-                // Έλεγχος διαθεσιμότητας θέσεων
-                val existing = db.collection("seat_reservations")
-                    .whereEqualTo("routeId", routeRef)
-                    .whereEqualTo("date", date)
-                    .get().await()
-                if (existing.size() >= declaration.seats) {
-                    return@runBlocking false
-                }
-
-                // Έλεγχος σειράς σημείων επιβίβασης και αποβίβασης
-                val dbInstance = MySmartRouteDatabase.getInstance(context)
-                var points = dbInstance.routePointDao().getPointsForRoute(routeId).first()
-                if (points.isEmpty()) {
-                    val snap = FirebaseFirestore.getInstance()
-                        .collection("routes")
-                        .document(routeId)
-                        .get()
-                        .await()
-                    val (_, remotePoints) = snap.toRouteWithPoints() ?: return@runBlocking false
-                    remotePoints.forEach { dbInstance.routePointDao().insert(it) }
-                    points = remotePoints
-                }
-                val startIndex = points.indexOfFirst { it.poiId == startPoiId }
-                val endIndex = points.indexOfFirst { it.poiId == endPoiId }
-                if (startIndex == -1 || endIndex == -1 || startIndex >= endIndex) {
-                    return@runBlocking false
-                }
-
-                // Έλεγχος τοπικής βάσης για τυχόν υπάρχουσα κράτηση
-                val localExisting = dbInstance.seatReservationDao()
-                    .findUserReservation(userId, routeId, date)
-                if (localExisting != null) {
-                    return@runBlocking false
-                }
-                val reservation = SeatReservationEntity(
-                    reservationId,
-                    declaration.id,
-                    routeId,
-                    userId,
-                    date,
-                    startPoiId,
-                    endPoiId
-                )
-                db.collection("seat_reservations").document(reservationId)
-                    .set(reservation.toFirestoreMap()).await()
-                viewModelScope.launch {
-                    MySmartRouteDatabase.getInstance(context).seatReservationDao().insert(reservation)
-                }
-                true
+            val routeRef = db.collection("routes").document(routeId)
+            val userRef = db.collection("users").document(userId)
+            val existingUserReservation = db.collection("seat_reservations")
+                .whereEqualTo("routeId", routeRef)
+                .whereEqualTo("date", date)
+                .whereEqualTo("userId", userRef)
+                .get().await()
+            if (existingUserReservation.size() > 0) {
+                return@withContext Result.failure(Exception("Έχεις ήδη κράτηση"))
             }
+
+            val existing = db.collection("seat_reservations")
+                .whereEqualTo("routeId", routeRef)
+                .whereEqualTo("date", date)
+                .get().await()
+            if (existing.size() >= declaration.seats) {
+                return@withContext Result.failure(Exception("Δεν υπάρχουν διαθέσιμες θέσεις"))
+            }
+
+            val dbInstance = MySmartRouteDatabase.getInstance(context)
+            var points = dbInstance.routePointDao().getPointsForRoute(routeId).first()
+            if (points.isEmpty()) {
+                val snap = FirebaseFirestore.getInstance()
+                    .collection("routes")
+                    .document(routeId)
+                    .get()
+                    .await()
+                val (_, remotePoints) = snap.toRouteWithPoints()
+                    ?: return@withContext Result.failure(Exception("Αδυναμία φόρτωσης σημείων"))
+                remotePoints.forEach { dbInstance.routePointDao().insert(it) }
+                points = remotePoints
+            }
+            val startIndex = points.indexOfFirst { it.poiId == startPoiId }
+            val endIndex = points.indexOfFirst { it.poiId == endPoiId }
+            if (startIndex == -1 || endIndex == -1 || startIndex >= endIndex) {
+                return@withContext Result.failure(Exception("Μη έγκυρα σημεία διαδρομής"))
+            }
+
+            val localExisting = dbInstance.seatReservationDao()
+                .findUserReservation(userId, routeId, date)
+            if (localExisting != null) {
+                return@withContext Result.failure(Exception("Υπάρχει ήδη τοπική κράτηση"))
+            }
+
+            val reservation = SeatReservationEntity(
+                reservationId,
+                declaration.id,
+                routeId,
+                userId,
+                date,
+                startPoiId,
+                endPoiId
+            )
+            db.collection("seat_reservations").document(reservationId)
+                .set(reservation.toFirestoreMap()).await()
+            dbInstance.seatReservationDao().insert(reservation)
+            Result.success(Unit)
         } catch (e: Exception) {
-            false
+            Result.failure(e)
         }
     }
 }
