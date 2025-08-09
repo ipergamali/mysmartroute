@@ -203,11 +203,12 @@ class VehicleRequestViewModel : ViewModel() {
                 if (accept) {
 
                     val result = bookingViewModel.reserveSeat(
-                        context,
-                        current.routeId,
-                        current.date,
-                        current.startPoiId,
-                        current.endPoiId
+                        context = context,
+                        routeId = current.routeId,
+                        date = current.date,
+                        startPoiId = current.startPoiId,
+                        endPoiId = current.endPoiId,
+                        declarationId = current.id
                     )
                     result.fold(
                         onSuccess = { },

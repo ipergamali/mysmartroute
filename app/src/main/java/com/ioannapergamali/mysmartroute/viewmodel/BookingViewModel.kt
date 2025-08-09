@@ -43,7 +43,8 @@ class BookingViewModel : ViewModel() {
         routeId: String,
         date: Long,
         startPoiId: String,
-        endPoiId: String
+        endPoiId: String,
+        declarationId: String = ""
     ): Result<Unit> = withContext(Dispatchers.IO) {
         val userId = auth.currentUser?.uid
             ?: return@withContext Result.failure(Exception("Απαιτείται σύνδεση"))
@@ -58,6 +59,7 @@ class BookingViewModel : ViewModel() {
 
         val reservation = SeatReservationEntity(
             id = UUID.randomUUID().toString(),
+            declarationId = declarationId,
             routeId = routeId,
             userId = userId,
             date = date,

@@ -376,15 +376,22 @@ fun DocumentSnapshot.toAvailabilityEntity(): AvailabilityEntity? {
     return AvailabilityEntity(availId, userId, dateVal, fromVal, toVal)
 }
 
-fun SeatReservationEntity.toFirestoreMap(): Map<String, Any> = mapOf(
-    "id" to id,
-    "declarationId" to FirebaseFirestore.getInstance().collection("transport_declarations").document(declarationId),
-    "routeId" to FirebaseFirestore.getInstance().collection("routes").document(routeId),
-    "userId" to FirebaseFirestore.getInstance().collection("users").document(userId),
-    "date" to date,
-    "startPoiId" to FirebaseFirestore.getInstance().collection("pois").document(startPoiId),
-    "endPoiId" to FirebaseFirestore.getInstance().collection("pois").document(endPoiId)
-)
+fun SeatReservationEntity.toFirestoreMap(): Map<String, Any> {
+    val map = mutableMapOf<String, Any>(
+        "id" to id,
+        "routeId" to FirebaseFirestore.getInstance().collection("routes").document(routeId),
+        "userId" to FirebaseFirestore.getInstance().collection("users").document(userId),
+        "date" to date,
+        "startPoiId" to FirebaseFirestore.getInstance().collection("pois").document(startPoiId),
+        "endPoiId" to FirebaseFirestore.getInstance().collection("pois").document(endPoiId)
+    )
+    if (declarationId.isNotBlank()) {
+        map["declarationId"] = FirebaseFirestore.getInstance()
+            .collection("transport_declarations")
+            .document(declarationId)
+    }
+    return map
+}
 
 fun DocumentSnapshot.toSeatReservationEntity(): SeatReservationEntity? {
     val resId = getString("id") ?: id
