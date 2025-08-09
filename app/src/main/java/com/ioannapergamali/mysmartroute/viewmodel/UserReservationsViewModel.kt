@@ -45,5 +45,14 @@ class UserReservationsViewModel : ViewModel() {
             }
         }
     }
+
+    fun delete(context: Context, reservation: SeatReservationEntity) {
+        viewModelScope.launch {
+            val dao = MySmartRouteDatabase.getInstance(context).seatReservationDao()
+            dao.deleteById(reservation.id)
+            db.collection("seat_reservations").document(reservation.id).delete().await()
+            _reservations.value = _reservations.value.filterNot { it.id == reservation.id }
+        }
+    }
 }
 
