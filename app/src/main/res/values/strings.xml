@@ -195,6 +195,8 @@
     <!-- Notification text -->
     <string name="app_started_notification">App started successfully</string>
     <string name="driver_offer_notification">Ο οδηγός %1$s προσφέρθηκε να σας μεταφέρει</string>
+    <string name="request_accepted">Request accepted</string>
+    <string name="request_accepted_notification">The request was accepted</string>
     
     <string name="find_now">Find now</string>
     <string name="save_request">Save request</string>
