@@ -1,6 +1,5 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,16 +12,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -70,7 +68,7 @@ fun PrintTicketScreen(navController: NavController, openDrawer: () -> Unit) {
                     .padding(paddingValues)
             ) {
                 items(reservations) { res ->
-                    ReservationItem(res, navController)
+                    ReservationItem(res, navController) { viewModel.delete(context, it) }
                     Spacer(modifier = Modifier.height(8.dp))
                 }
             }
@@ -79,9 +77,14 @@ fun PrintTicketScreen(navController: NavController, openDrawer: () -> Unit) {
 }
 
 @Composable
-fun ReservationItem(reservation: SeatReservationEntity, navController: NavController) {
+fun ReservationItem(
+    reservation: SeatReservationEntity,
+    navController: NavController,
+    onDelete: (SeatReservationEntity) -> Unit
+) {
     val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     val dateText = formatter.format(Date(reservation.date))
+    var checked by remember { mutableStateOf(false) }
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -91,8 +94,16 @@ fun ReservationItem(reservation: SeatReservationEntity, navController: NavContro
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
+            verticalAlignment = Alignment.CenterVertically
         ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(checked = checked, onCheckedChange = { isChecked ->
+                    checked = isChecked
+                    if (isChecked) onDelete(reservation)
+                })
+                Text(stringResource(R.string.delete_reservation))
+            }
+            Spacer(Modifier.weight(1f))
             Text(text = dateText)
             IconButton(onClick = {
                 val json = Uri.encode(Gson().toJson(reservation))

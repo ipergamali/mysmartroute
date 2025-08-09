@@ -11,6 +11,9 @@ interface SeatReservationDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(reservation: SeatReservationEntity)
 
+    @Query("DELETE FROM seat_reservations WHERE id = :id")
+    suspend fun deleteById(id: String)
+
     @Query("SELECT * FROM seat_reservations WHERE userId = :userId")
     fun getReservationsForUser(userId: String): Flow<List<SeatReservationEntity>>
 
