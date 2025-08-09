@@ -46,45 +46,7 @@ class BookingViewModel : ViewModel() {
         endPoiId: String
     ): Result<Unit> = withContext(Dispatchers.IO) {
         val userId = auth.currentUser?.uid
-            ?: return@withContext Result.failure(IllegalStateException("Δεν έχει γίνει σύνδεση"))
 
-        try {
-            // Αναζήτηση δήλωσης μεταφοράς για τη συγκεκριμένη διαδρομή και ημερομηνία
-            val routeRef = db.collection("routes").document(routeId)
-            val declaration = db.collection("transport_declarations")
-                .whereEqualTo("routeId", routeRef)
-                .whereEqualTo("date", date)
-                .limit(1)
-                .get()
-                .await()
-                .documents
-                .firstOrNull()
-                ?: return@withContext Result.failure(Exception("Δεν βρέθηκε διαθέσιμη δήλωση"))
-
-            val reservationId = UUID.randomUUID().toString()
-            val entity = SeatReservationEntity(
-                id = reservationId,
-                declarationId = declaration.id,
-                routeId = routeId,
-                userId = userId,
-                date = date,
-                startPoiId = startPoiId,
-                endPoiId = endPoiId
-            )
-
-            // Αποθήκευση τοπικά
-            val dao = MySmartRouteDatabase.getInstance(context).seatReservationDao()
-            dao.insert(entity)
-
-            // Αποθήκευση στο Firestore
-            db.collection("seat_reservations")
-                .document(reservationId)
-                .set(entity.toFirestoreMap())
-                .await()
-
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Log.e(TAG, "Αποτυχία κράτησης", e)
             Result.failure(e)
         }
     }

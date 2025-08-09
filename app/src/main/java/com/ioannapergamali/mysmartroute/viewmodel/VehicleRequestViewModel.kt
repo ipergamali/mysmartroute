@@ -212,13 +212,7 @@ class VehicleRequestViewModel : ViewModel() {
                     result.fold(
                         onSuccess = { },
                         onFailure = {
-                            Toast.makeText(
-                                context,
-                                context.getString(R.string.request_accept_failed),
-                                Toast.LENGTH_SHORT
-                            ).show()
-
-                            return@launch
+           return@launch
                         }
                     )
                 }
