@@ -2,6 +2,7 @@ package com.ioannapergamali.mysmartroute.viewmodel
 
 import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
@@ -86,6 +87,7 @@ class VehicleRequestViewModel : ViewModel() {
             }
 
             showPendingNotifications(context)
+            showAcceptedNotifications(context)
         }
     }
 
@@ -205,10 +207,14 @@ class VehicleRequestViewModel : ViewModel() {
                         current.endPoiId
                     )
                     if (!booked) {
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.request_accept_failed),
+                            Toast.LENGTH_SHORT
+                        ).show()
                         Log.e(TAG, "Seat reservation failed")
                         return@launch
                     }
-
                 }
 
                 val status = if (accept) "accepted" else "rejected"
@@ -225,6 +231,14 @@ class VehicleRequestViewModel : ViewModel() {
                     ).await()
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to respond to offer", e)
+                }
+
+                if (accept) {
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.request_accepted),
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         }
@@ -244,5 +258,19 @@ class VehicleRequestViewModel : ViewModel() {
             )
             notifiedRequests.add(req.id)
         }
+    }
+
+    private suspend fun showAcceptedNotifications(context: Context) {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        _requests.value.filter { it.status == "accepted" && it.driverId == userId && it.id !in notifiedRequests }
+            .forEach { req ->
+                NotificationUtils.showNotification(
+                    context,
+                    context.getString(R.string.notifications),
+                    context.getString(R.string.request_accepted_notification),
+                    req.id.hashCode()
+                )
+                notifiedRequests.add(req.id)
+            }
     }
 }
