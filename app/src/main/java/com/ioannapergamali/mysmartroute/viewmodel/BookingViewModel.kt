@@ -9,6 +9,7 @@ import com.ioannapergamali.mysmartroute.data.local.RouteEntity
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.SeatReservationEntity
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
+import com.ioannapergamali.mysmartroute.utils.toRouteWithPoints
 import com.ioannapergamali.mysmartroute.utils.toTransportDeclarationEntity
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.runBlocking
@@ -77,7 +78,17 @@ class BookingViewModel : ViewModel() {
 
                 // Έλεγχος σειράς σημείων επιβίβασης και αποβίβασης
                 val dbInstance = MySmartRouteDatabase.getInstance(context)
-                val points = dbInstance.routePointDao().getPointsForRoute(routeId).first()
+                var points = dbInstance.routePointDao().getPointsForRoute(routeId).first()
+                if (points.isEmpty()) {
+                    val snap = FirebaseFirestore.getInstance()
+                        .collection("routes")
+                        .document(routeId)
+                        .get()
+                        .await()
+                    val (_, remotePoints) = snap.toRouteWithPoints() ?: return@runBlocking false
+                    remotePoints.forEach { dbInstance.routePointDao().insert(it) }
+                    points = remotePoints
+                }
                 val startIndex = points.indexOfFirst { it.poiId == startPoiId }
                 val endIndex = points.indexOfFirst { it.poiId == endPoiId }
                 if (startIndex == -1 || endIndex == -1 || startIndex >= endIndex) {
