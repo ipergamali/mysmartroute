@@ -183,6 +183,7 @@
     <string name="app_started_notification">Η εφαρμογή ξεκίνησε</string>
     <string name="request_accepted">Το αίτημα έγινε αποδεκτό</string>
     <string name="request_accepted_notification">Το αίτημά σας έγινε αποδεκτό</string>
+
     <string name="available_transports">Διαθέσιμες μεταφορές</string>
     <string name="no_transports_found">Δεν βρέθηκαν μεταφορές</string>
     <string name="find_now">Εύρεση τώρα</string>

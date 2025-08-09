@@ -207,6 +207,11 @@ class VehicleRequestViewModel : ViewModel() {
                         current.endPoiId
                     )
                     if (!booked) {
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.request_accept_failed),
+                            Toast.LENGTH_SHORT
+                        ).show()
                         Log.e(TAG, "Seat reservation failed")
                         return@launch
                     }
@@ -229,7 +234,7 @@ class VehicleRequestViewModel : ViewModel() {
                 }
 
                 if (accept) {
-                    Toast.makeText(context, context.getString(R.string.request_accepted), Toast.LENGTH_SHORT).show()
+
                 }
             }
         }
