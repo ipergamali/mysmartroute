@@ -201,7 +201,7 @@ class VehicleRequestViewModel : ViewModel() {
                 val current = list[index]
 
                 if (accept) {
-                    Log.d(TAG, "Προσπάθεια κράτησης για αίτημα $requestId")
+
                     val result = bookingViewModel.reserveSeat(
                         context,
                         current.routeId,
@@ -212,14 +212,7 @@ class VehicleRequestViewModel : ViewModel() {
                     result.fold(
                         onSuccess = { },
                         onFailure = {
-                            val msg = it.message ?: context.getString(R.string.request_accept_failed)
-                            Toast.makeText(
-                                context,
-                                msg,
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            Log.e(TAG, "Seat reservation failed: $msg", it)
-                            return@launch
+           return@launch
                         }
                     )
                 }
