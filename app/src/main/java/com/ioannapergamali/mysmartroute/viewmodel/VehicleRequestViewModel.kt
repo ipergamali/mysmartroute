@@ -234,11 +234,7 @@ class VehicleRequestViewModel : ViewModel() {
                 }
 
                 if (accept) {
-                    Toast.makeText(
-                        context,
-                        context.getString(R.string.request_accepted),
-                        Toast.LENGTH_SHORT
-                    ).show()
+
                 }
             }
         }
