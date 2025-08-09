@@ -164,6 +164,7 @@
     <string name="add_favorite">Προσθήκη</string>
     <string name="delete_favorite">Αφαίρεση</string>
     <string name="delete_selected">Διαγραφή επιλεγμένων</string>
+    <string name="delete_reservation">Διαγραφή</string>
     <string name="clear_selection">Καθαρισμός επιλογής</string>
     <string name="no_reservations">Δεν βρέθηκαν κρατήσεις</string>
     <string name="no_declarations">Δεν βρέθηκαν δηλώσεις</string>
@@ -185,7 +186,6 @@
     <string name="request_accepted_notification">Το αίτημά σας έγινε αποδεκτό</string>
     <string name="passenger_request_notification">Ο επιβάτης %1$s ζήτησε μεταφορά</string>
     <string name="driver_offer_notification">Ο οδηγός %1$s προσφέρθηκε να σας μεταφέρει</string>
-
     <string name="available_transports">Διαθέσιμες μεταφορές</string>
     <string name="no_transports_found">Δεν βρέθηκαν μεταφορές</string>
     <string name="find_now">Εύρεση τώρα</string>

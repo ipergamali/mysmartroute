@@ -177,6 +177,7 @@
     <string name="add_favorite">Add</string>
     <string name="delete_favorite">Delete</string>
     <string name="delete_selected">Delete selected</string>
+    <string name="delete_reservation">Delete</string>
     <string name="no_reservations">No reservations found</string>
     <string name="no_declarations">No declarations found</string>
     <string name="max_cost">Maximum cost</string>
