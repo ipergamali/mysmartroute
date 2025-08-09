@@ -15,6 +15,7 @@ import com.ioannapergamali.mysmartroute.utils.toMovingEntity
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import com.ioannapergamali.mysmartroute.utils.NotificationUtils
 import com.ioannapergamali.mysmartroute.R
+import com.ioannapergamali.mysmartroute.viewmodel.BookingViewModel
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -33,6 +34,7 @@ data class PassengerRequest(
 
 class VehicleRequestViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
+    private val bookingViewModel = BookingViewModel()
 
     private val _requests = MutableStateFlow<List<MovingEntity>>(emptyList())
     val requests: StateFlow<List<MovingEntity>> = _requests
@@ -199,22 +201,25 @@ class VehicleRequestViewModel : ViewModel() {
                 val current = list[index]
 
                 if (accept) {
-                    val booked = BookingViewModel().reserveSeat(
+                    val result = bookingViewModel.reserveSeat(
                         context,
                         current.routeId,
                         current.date,
                         current.startPoiId,
                         current.endPoiId
                     )
-                    if (!booked) {
-                        Toast.makeText(
-                            context,
-                            context.getString(R.string.request_accept_failed),
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        Log.e(TAG, "Seat reservation failed")
-                        return@launch
-                    }
+                    result.fold(
+                        onSuccess = { },
+                        onFailure = {
+                            Toast.makeText(
+                                context,
+                                context.getString(R.string.request_accept_failed),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            Log.e(TAG, "Seat reservation failed", it)
+                            return@launch
+                        }
+                    )
                 }
 
                 val status = if (accept) "accepted" else "rejected"
@@ -231,10 +236,6 @@ class VehicleRequestViewModel : ViewModel() {
                     ).await()
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to respond to offer", e)
-                }
-
-                if (accept) {
-
                 }
             }
         }

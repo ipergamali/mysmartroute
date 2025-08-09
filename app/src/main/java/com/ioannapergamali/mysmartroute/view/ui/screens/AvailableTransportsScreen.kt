@@ -29,6 +29,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.BookingViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.UserViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleViewModel
 import com.ioannapergamali.mysmartroute.utils.matchesFavorites
+import kotlinx.coroutines.launch
 import kotlin.math.max
 import java.time.Instant
 import java.time.ZoneId
@@ -72,6 +73,7 @@ fun AvailableTransportsScreen(
     val favoritesViewModel: FavoritesViewModel = viewModel()
     val reservationViewModel: ReservationViewModel = viewModel()
     val bookingViewModel: BookingViewModel = viewModel()
+    val scope = rememberCoroutineScope()
 
     val declarations by declarationViewModel.declarations.collectAsState()
     val drivers by userViewModel.drivers.collectAsState()
@@ -188,18 +190,23 @@ fun AvailableTransportsScreen(
                             Spacer(Modifier.height(4.dp))
                             Button(
                                 onClick = {
-                                    val success = bookingViewModel.reserveSeat(
-                                        context,
-                                        decl.routeId,
-                                        decl.date,
-                                        startId ?: "",
-                                        endId ?: ""
-                                    )
-                                    message = if (success) {
-                                        reservationCounts[decl.id] = reserved + 1
-                                        context.getString(R.string.seat_booked)
-                                    } else {
-                                        context.getString(R.string.seat_unavailable)
+                                    scope.launch {
+                                        val result = bookingViewModel.reserveSeat(
+                                            context,
+                                            decl.routeId,
+                                            decl.date,
+                                            startId ?: "",
+                                            endId ?: ""
+                                        )
+                                        message = result.fold(
+                                            onSuccess = {
+                                                reservationCounts[decl.id] = reserved + 1
+                                                context.getString(R.string.seat_booked)
+                                            },
+                                            onFailure = {
+                                                context.getString(R.string.seat_unavailable)
+                                            }
+                                        )
                                     }
                                 },
                                 enabled = startId != null && endId != null && availableSeats > 0
