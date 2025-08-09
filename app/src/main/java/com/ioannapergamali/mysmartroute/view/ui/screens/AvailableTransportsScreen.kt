@@ -191,13 +191,14 @@ fun AvailableTransportsScreen(
                             Button(
                                 onClick = {
                                     scope.launch {
-                                        val result = bookingViewModel.reserveSeat(
-                                            context,
-                                            decl.routeId,
-                                            decl.date,
-                                            startId ?: "",
-                                            endId ?: ""
-                                        )
+                                          val result = bookingViewModel.reserveSeat(
+                                              context = context,
+                                              routeId = decl.routeId,
+                                              date = decl.date,
+                                              startPoiId = startId ?: "",
+                                              endPoiId = endId ?: "",
+                                              declarationId = decl.id
+                                          )
                                         message = result.fold(
                                             onSuccess = {
                                                 reservationCounts[decl.id] = reserved + 1
