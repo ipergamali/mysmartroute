@@ -51,9 +51,13 @@ import com.ioannapergamali.mysmartroute.R
 
 
 @Composable
-fun NavigationHost(navController : NavHostController, openDrawer: () -> Unit) {
+fun NavigationHost(
+    navController: NavHostController,
+    openDrawer: () -> Unit,
+    startDestination: String = "home"
+) {
 
-    NavHost(navController = navController , startDestination = "home") {
+    NavHost(navController = navController, startDestination = startDestination) {
 
         composable("home") {
             HomeScreen(
