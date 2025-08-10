@@ -52,6 +52,8 @@ import java.time.format.DateTimeFormatter
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.rememberTimePickerState
 
 private fun iconForVehicle(type: VehicleType): ImageVector = when (type) {
     VehicleType.CAR, VehicleType.TAXI -> Icons.Default.DirectionsCar
@@ -403,16 +405,17 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
             }
 
             if (showTimePicker) {
-                TimePickerDialog(
+                AlertDialog(
                     onDismissRequest = { showTimePicker = false },
                     confirmButton = {
                         TextButton(onClick = { showTimePicker = false }) {
                             Text(stringResource(android.R.string.ok))
                         }
+                    },
+                    text = {
+                        TimePicker(state = timePickerState)
                     }
-                ) {
-                    TimePicker(state = timePickerState)
-                }
+                )
             }
 
             Spacer(Modifier.height(16.dp))
