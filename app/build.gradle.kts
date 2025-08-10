@@ -115,9 +115,9 @@ dependencies {
     implementation("com.google.android.libraries.places:places:3.4.0")
 
     // Coroutines
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3") // ✅ downgrade
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3") // ✅ downgrade
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3") // ✅ downgrade
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0")
 
     // HTTP Networking
     implementation("com.squareup.okhttp3:okhttp:4.12.0")

@@ -54,10 +54,6 @@ class VehicleRequestViewModel : ViewModel() {
         private const val TAG = "VehicleRequestVM"
     }
 
-        }
-        return list
-    }
-
     private fun getNextRequestNumber(context: Context): Int {
         val prefs = context.getSharedPreferences("vehicle_requests", Context.MODE_PRIVATE)
         val next = prefs.getInt("next_request_number", 1)
@@ -93,9 +89,8 @@ class VehicleRequestViewModel : ViewModel() {
             snapshot?.let { snap ->
                 val list = snap.documents.mapNotNull { it.toMovingEntity() }
                 if (list.isNotEmpty()) {
-
-                    _requests.value = enriched
-                    enriched.forEach { dao.insert(it) }
+                    _requests.value = list
+                    list.forEach { dao.insert(it) }
                 }
             }
 
