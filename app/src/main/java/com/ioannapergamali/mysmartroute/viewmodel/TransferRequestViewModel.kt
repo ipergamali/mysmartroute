@@ -41,14 +41,14 @@ class TransferRequestViewModel : ViewModel() {
             val dao = MySmartRouteDatabase.getInstance(context).transferRequestDao()
             try {
                 Log.d(TAG, "Εισαγωγή αιτήματος: $entity")
-                val id = dao.insert(entity)
+                val id = dao.insert(entity).toInt()
                 Log.d(TAG, "Το αίτημα αποθηκεύτηκε τοπικά με id=$id")
-                val saved = entity.copy(requestNumber = id.toInt())
-                db.collection("transfer_requests")
-                    .document(id.toString())
-                    .set(saved.toFirestoreMap())
+                val saved = entity.copy(requestNumber = id)
+                val docRef = db.collection("transfer_requests")
+                    .add(saved.toFirestoreMap())
                     .await()
-                Log.d(TAG, "Το αίτημα αποθηκεύτηκε στο Firestore με id=$id")
+                dao.setFirebaseId(id, docRef.id)
+                Log.d(TAG, "Το αίτημα αποθηκεύτηκε στο Firestore με id=${docRef.id}")
             } catch (e: Exception) {
                 Log.e(TAG, "Αποτυχία υποβολής αιτήματος", e)
             }
@@ -59,17 +59,20 @@ class TransferRequestViewModel : ViewModel() {
         val driverId = auth.currentUser?.uid ?: return
         viewModelScope.launch(Dispatchers.IO) {
             val dao = MySmartRouteDatabase.getInstance(context).transferRequestDao()
+            val request = dao.getRequestByNumber(requestNumber) ?: return@launch
             dao.assignDriver(requestNumber, driverId, RequestStatus.PENDING)
             try {
-                db.collection("transfer_requests")
-                    .document(requestNumber.toString())
-                    .update(
-                        mapOf(
-                            "driverId" to driverId,
-                            "status" to RequestStatus.PENDING.name
+                if (request.firebaseId.isNotBlank()) {
+                    db.collection("transfer_requests")
+                        .document(request.firebaseId)
+                        .update(
+                            mapOf(
+                                "driverId" to driverId,
+                                "status" to RequestStatus.PENDING.name
+                            )
                         )
-                    )
-                    .await()
+                        .await()
+                }
             } catch (e: Exception) {
                 Log.e(TAG, "Αποτυχία ενημέρωσης οδηγού", e)
             }
@@ -79,12 +82,15 @@ class TransferRequestViewModel : ViewModel() {
     fun updateStatus(context: Context, requestNumber: Int, status: RequestStatus) {
         viewModelScope.launch(Dispatchers.IO) {
             val dao = MySmartRouteDatabase.getInstance(context).transferRequestDao()
+            val request = dao.getRequestByNumber(requestNumber) ?: return@launch
             dao.updateStatus(requestNumber, status)
             try {
-                db.collection("transfer_requests")
-                    .document(requestNumber.toString())
-                    .update("status", status.name)
-                    .await()
+                if (request.firebaseId.isNotBlank()) {
+                    db.collection("transfer_requests")
+                        .document(request.firebaseId)
+                        .update("status", status.name)
+                        .await()
+                }
             } catch (e: Exception) {
                 Log.e(TAG, "Αποτυχία ενημέρωσης κατάστασης", e)
             }
