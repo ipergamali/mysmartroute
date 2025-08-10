@@ -39,9 +39,7 @@ class TransferRequestViewModel : ViewModel() {
             status = RequestStatus.PENDING
         )
         viewModelScope.launch(Dispatchers.IO) {
-            val dao = MySmartRouteDatabase
-                .getInstance(context.applicationContext)
-                .transferRequestDao()
+
             val id = dao.insert(entity)
             val saved = entity.copy(requestNumber = id.toInt())
             try {
