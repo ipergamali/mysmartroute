@@ -11,6 +11,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.MovingEntity
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
+import com.ioannapergamali.mysmartroute.data.local.RouteDao
 import kotlinx.coroutines.Dispatchers
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.utils.toMovingEntity
@@ -53,6 +54,13 @@ class VehicleRequestViewModel : ViewModel() {
         private const val TAG = "VehicleRequestVM"
     }
 
+    private suspend fun attachRouteNames(list: List<MovingEntity>, routeDao: RouteDao): List<MovingEntity> {
+        for (m in list) {
+            m.routeName = routeDao.findById(m.routeId)?.name ?: ""
+        }
+        return list
+    }
+
     private fun getNextRequestNumber(context: Context): Int {
         val prefs = context.getSharedPreferences("vehicle_requests", Context.MODE_PRIVATE)
         val next = prefs.getInt("next_request_number", 1)
@@ -62,7 +70,9 @@ class VehicleRequestViewModel : ViewModel() {
 
     fun loadRequests(context: Context, allUsers: Boolean = false) {
         viewModelScope.launch {
-            val dao = MySmartRouteDatabase.getInstance(context).movingDao()
+            val dbInstance = MySmartRouteDatabase.getInstance(context)
+            val dao = dbInstance.movingDao()
+            val routeDao = dbInstance.routeDao()
             val userId = FirebaseAuth.getInstance().currentUser?.uid
 
             _requests.value = if (allUsers) {
@@ -70,6 +80,8 @@ class VehicleRequestViewModel : ViewModel() {
             } else {
                 userId?.let { dao.getMovingsForUser(it).first() } ?: emptyList()
             }
+
+            _requests.value = attachRouteNames(_requests.value, routeDao)
 
             val snapshot = if (NetworkUtils.isInternetAvailable(context)) {
                 runCatching {
@@ -85,8 +97,9 @@ class VehicleRequestViewModel : ViewModel() {
             snapshot?.let { snap ->
                 val list = snap.documents.mapNotNull { it.toMovingEntity() }
                 if (list.isNotEmpty()) {
-                    _requests.value = list
-                    list.forEach { dao.insert(it) }
+                    val enriched = attachRouteNames(list, routeDao)
+                    _requests.value = enriched
+                    enriched.forEach { dao.insert(it) }
                 }
             }
 
@@ -170,7 +183,9 @@ class VehicleRequestViewModel : ViewModel() {
         targetUserId: String? = null
     ) {
         viewModelScope.launch {
-            val dao = MySmartRouteDatabase.getInstance(context).movingDao()
+            val dbInstance = MySmartRouteDatabase.getInstance(context)
+            val dao = dbInstance.movingDao()
+            val routeName = dbInstance.routeDao().findById(routeId)?.name ?: ""
             val creator = FirebaseAuth.getInstance().currentUser
             val creatorId = creator?.uid ?: ""
             val creatorName = UserViewModel().getUserName(context, creatorId)
@@ -194,7 +209,8 @@ class VehicleRequestViewModel : ViewModel() {
                 endPoiId = toPoiId,
                 createdById = creatorId,
                 createdByName = creatorName,
-                requestNumber = requestNumber
+                requestNumber = requestNumber,
+                routeName = routeName
             )
             dao.insert(entity)
             try {
