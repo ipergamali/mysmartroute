@@ -29,6 +29,8 @@ import com.ioannapergamali.mysmartroute.data.local.TransferRequestEntity
 import com.ioannapergamali.mysmartroute.data.local.TransferRequestDao
 import androidx.room.TypeConverters
 import com.ioannapergamali.mysmartroute.data.local.Converters
+import com.ioannapergamali.mysmartroute.data.local.TripRatingEntity
+import com.ioannapergamali.mysmartroute.data.local.TripRatingDao
 
 @Database(
     entities = [
@@ -48,7 +50,8 @@ import com.ioannapergamali.mysmartroute.data.local.Converters
         AvailabilityEntity::class,
         SeatReservationEntity::class,
         FavoriteEntity::class,
-        TransferRequestEntity::class
+        TransferRequestEntity::class,
+        TripRatingEntity::class
     ],
     version = 50
 )
@@ -71,6 +74,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
     abstract fun seatReservationDao(): SeatReservationDao
     abstract fun favoriteDao(): FavoriteDao
     abstract fun transferRequestDao(): TransferRequestDao
+    abstract fun tripRatingDao(): TripRatingDao
 
     companion object {
         @Volatile
@@ -659,8 +663,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
 
         private val MIGRATION_49_50 = object : Migration(49, 50) {
             override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("ALTER TABLE `transport_declarations` ADD COLUMN `startTime` INTEGER NOT NULL DEFAULT 0")
-                database.execSQL("ALTER TABLE `seat_reservations` ADD COLUMN `startTime` INTEGER NOT NULL DEFAULT 0")
+
             }
         }
 
