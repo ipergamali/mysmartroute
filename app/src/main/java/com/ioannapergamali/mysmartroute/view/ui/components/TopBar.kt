@@ -81,6 +81,7 @@ fun TopBar(
     }
 
     val userId = FirebaseAuth.getInstance().currentUser?.uid
+    val isLoggedIn = userId != null
     val hasNotifications = remember(role, requests) {
         when (role) {
             UserRole.DRIVER -> requests.any {
@@ -141,7 +142,7 @@ fun TopBar(
             }
         },
         actions = {
-            if (showNotifications) {
+            if (showNotifications && isLoggedIn) {
                 IconButton(onClick = { navController.navigate("notifications") }) {
                     BadgedBox(badge = {
                         if (hasNotifications) {
