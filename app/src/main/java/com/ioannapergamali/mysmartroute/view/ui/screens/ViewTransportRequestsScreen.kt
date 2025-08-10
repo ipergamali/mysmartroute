@@ -31,6 +31,7 @@ import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.UserViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.TransferRequestViewModel
 import android.text.format.DateFormat
 import java.util.Date
 
@@ -39,6 +40,7 @@ import java.util.Date
 fun ViewTransportRequestsScreen(navController: NavController, openDrawer: () -> Unit) {
     val context = LocalContext.current
     val viewModel: VehicleRequestViewModel = viewModel()
+    val transferViewModel: TransferRequestViewModel = viewModel()
     val poiViewModel: PoIViewModel = viewModel()
     val userViewModel: UserViewModel = viewModel()
     val requests by viewModel.requests.collectAsState()
@@ -159,7 +161,10 @@ fun ViewTransportRequestsScreen(navController: NavController, openDrawer: () -> 
                                 Text(dateText, modifier = Modifier.width(columnWidth))
                                 if (req.status == "open") {
                                     Button(
-                                        onClick = { viewModel.notifyPassenger(context, req.id) },
+                                        onClick = {
+                                            viewModel.notifyPassenger(context, req.id)
+                                            transferViewModel.notifyDriver(context, req.requestNumber)
+                                        },
                                         modifier = Modifier.width(columnWidth)
                                     ) {
                                         Text(stringResource(R.string.notify_passenger))

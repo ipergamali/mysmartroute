@@ -25,15 +25,14 @@ class TransferRequestViewModel : ViewModel() {
     fun submitRequest(
         context: Context,
         routeId: String,
-        passengerId: String,
-        driverId: String,
         date: Long,
         cost: Double,
     ) {
+        val passengerId = auth.currentUser?.uid ?: return
         val entity = TransferRequestEntity(
             routeId = routeId,
             passengerId = passengerId,
-            driverId = driverId,
+            driverId = "",
             date = date,
             cost = cost,
             status = RequestStatus.PENDING
@@ -56,7 +55,8 @@ class TransferRequestViewModel : ViewModel() {
         }
     }
 
-    fun notifyDriver(context: Context, requestNumber: Int, driverId: String) {
+    fun notifyDriver(context: Context, requestNumber: Int) {
+        val driverId = auth.currentUser?.uid ?: return
         viewModelScope.launch(Dispatchers.IO) {
             val dao = MySmartRouteDatabase.getInstance(context).transferRequestDao()
             dao.assignDriver(requestNumber, driverId, RequestStatus.PENDING)
@@ -65,7 +65,7 @@ class TransferRequestViewModel : ViewModel() {
                     .document(requestNumber.toString())
                     .update(
                         mapOf(
-
+                            "driverId" to driverId,
                             "status" to RequestStatus.PENDING.name
                         )
                     )

@@ -63,6 +63,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.TransportDeclarationViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.TransferRequestViewModel
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
@@ -87,6 +88,7 @@ fun BookSeatScreen(
     val poiViewModel: PoIViewModel = viewModel()
     val declarationViewModel: TransportDeclarationViewModel = viewModel()
     val requestViewModel: VehicleRequestViewModel = viewModel()
+    val transferRequestViewModel: TransferRequestViewModel = viewModel()
     val routes by viewModel.availableRoutes.collectAsState()
     val allPois by poiViewModel.pois.collectAsState()
     val declarations by declarationViewModel.declarations.collectAsState()
@@ -552,6 +554,12 @@ fun BookSeatScreen(
                             endId,
                             Double.MAX_VALUE,
                             dateMillis
+                        )
+                        transferRequestViewModel.submitRequest(
+                            context,
+                            r.id,
+                            dateMillis,
+                            Double.MAX_VALUE
                         )
                         message = context.getString(R.string.request_sent)
                     }

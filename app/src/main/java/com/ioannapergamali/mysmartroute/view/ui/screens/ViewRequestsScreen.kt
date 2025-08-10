@@ -30,6 +30,8 @@ import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.UserViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.TransferRequestViewModel
+import com.ioannapergamali.mysmartroute.model.enumerations.RequestStatus
 import android.text.format.DateFormat
 import java.util.Date
 
@@ -42,6 +44,7 @@ fun ViewRequestsScreen(navController: NavController, openDrawer: () -> Unit) {
     val viewModel: VehicleRequestViewModel = viewModel()
     val poiViewModel: PoIViewModel = viewModel()
     val userViewModel: UserViewModel = viewModel()
+    val transferViewModel: TransferRequestViewModel = viewModel()
     val requests by viewModel.requests.collectAsState()
     val pois by poiViewModel.pois.collectAsState()
     val driverNames = remember { mutableStateMapOf<String, String>() }
@@ -130,15 +133,36 @@ fun ViewRequestsScreen(navController: NavController, openDrawer: () -> Unit) {
                                 if (req.status == "pending") {
                                     val dName = driverNames[req.driverId] ?: ""
                                     Text(dName, modifier = Modifier.width(columnWidth))
-                                    Button(onClick = { viewModel.respondToOffer(context, req.id, true) }) {
+                                    Button(onClick = {
+                                        viewModel.respondToOffer(context, req.id, true)
+                                        transferViewModel.updateStatus(
+                                            context,
+                                            req.requestNumber,
+                                            RequestStatus.ACCEPTED
+                                        )
+                                    }) {
                                         Text(stringResource(R.string.accept_offer))
                                     }
                                     Spacer(modifier = Modifier.width(4.dp))
-                                    Button(onClick = { viewModel.respondToOffer(context, req.id, false) }) {
+                                    Button(onClick = {
+                                        viewModel.respondToOffer(context, req.id, false)
+                                        transferViewModel.updateStatus(
+                                            context,
+                                            req.requestNumber,
+                                            RequestStatus.REJECTED
+                                        )
+                                    }) {
                                         Text(stringResource(R.string.reject_offer))
                                     }
                                 }
-                                Button(onClick = { viewModel.deleteRequests(context, setOf(req.id)) }) {
+                                Button(onClick = {
+                                    transferViewModel.updateStatus(
+                                        context,
+                                        req.requestNumber,
+                                        RequestStatus.CANCELED
+                                    )
+                                    viewModel.deleteRequests(context, setOf(req.id))
+                                }) {
                                     Text(stringResource(R.string.cancel_request))
                                 }
                             }

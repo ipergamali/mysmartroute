@@ -39,6 +39,7 @@ import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.TransferRequestViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
@@ -50,6 +51,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
     val context = LocalContext.current
     val routeViewModel: RouteViewModel = viewModel()
     val requestViewModel: VehicleRequestViewModel = viewModel()
+    val transferRequestViewModel: TransferRequestViewModel = viewModel()
     val poiViewModel: PoIViewModel = viewModel()
     val routes by routeViewModel.routes.collectAsState()
     val allPois by poiViewModel.pois.collectAsState()
@@ -398,6 +400,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                         val routeId = selectedRouteId ?: return@Button
                         val dateMillis = System.currentTimeMillis()
                         requestViewModel.requestTransport(context, routeId, fromId, toId, cost, dateMillis)
+                        transferRequestViewModel.submitRequest(context, routeId, dateMillis, cost)
                         message = context.getString(R.string.request_sent)
                     },
                     enabled = selectedRouteId != null && startIndex != null && endIndex != null,
