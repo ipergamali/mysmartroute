@@ -93,6 +93,7 @@ class VehicleRequestViewModel : ViewModel() {
             } else {
                 showPendingNotifications(context)
                 showAcceptedNotifications(context)
+                showRejectedNotifications(context)
             }
         }
     }
@@ -280,6 +281,20 @@ class VehicleRequestViewModel : ViewModel() {
                     context,
                     context.getString(R.string.notifications),
                     context.getString(R.string.request_accepted_notification),
+                    req.id.hashCode()
+                )
+                notifiedRequests.add(req.id)
+            }
+    }
+
+    private suspend fun showRejectedNotifications(context: Context) {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        _requests.value.filter { it.status == "rejected" && it.driverId == userId && it.id !in notifiedRequests }
+            .forEach { req ->
+                NotificationUtils.showNotification(
+                    context,
+                    context.getString(R.string.notifications),
+                    context.getString(R.string.request_rejected_notification),
                     req.id.hashCode()
                 )
                 notifiedRequests.add(req.id)
