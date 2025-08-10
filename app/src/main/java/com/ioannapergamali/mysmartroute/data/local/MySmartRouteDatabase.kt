@@ -29,6 +29,8 @@ import com.ioannapergamali.mysmartroute.data.local.TransferRequestEntity
 import com.ioannapergamali.mysmartroute.data.local.TransferRequestDao
 import androidx.room.TypeConverters
 import com.ioannapergamali.mysmartroute.data.local.Converters
+import com.ioannapergamali.mysmartroute.data.local.TripRatingEntity
+import com.ioannapergamali.mysmartroute.data.local.TripRatingDao
 
 @Database(
     entities = [
@@ -48,9 +50,10 @@ import com.ioannapergamali.mysmartroute.data.local.Converters
         AvailabilityEntity::class,
         SeatReservationEntity::class,
         FavoriteEntity::class,
-        TransferRequestEntity::class
+        TransferRequestEntity::class,
+        TripRatingEntity::class
     ],
-    version = 49
+    version = 50
 )
 @TypeConverters(Converters::class)
 abstract class MySmartRouteDatabase : RoomDatabase() {
@@ -71,6 +74,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
     abstract fun seatReservationDao(): SeatReservationDao
     abstract fun favoriteDao(): FavoriteDao
     abstract fun transferRequestDao(): TransferRequestDao
+    abstract fun tripRatingDao(): TripRatingDao
 
     companion object {
         @Volatile
@@ -657,6 +661,18 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_49_50 = object : Migration(49, 50) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `trip_ratings` (" +
+                        "`movingId` TEXT NOT NULL, " +
+                        "`rating` INTEGER NOT NULL, " +
+                        "`comment` TEXT NOT NULL, " +
+                        "PRIMARY KEY(`movingId`))"
+                )
+            }
+        }
+
         private fun prepopulate(db: SupportSQLiteDatabase) {
             Log.d(TAG, "Prepopulating database")
             db.execSQL(
@@ -784,7 +800,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_45_46,
                     MIGRATION_46_47,
                     MIGRATION_47_48,
-                    MIGRATION_48_49
+                    MIGRATION_48_49,
+                    MIGRATION_49_50
                 )
                     .addCallback(object : RoomDatabase.Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {
