@@ -289,6 +289,7 @@ class VehicleRequestViewModel : ViewModel() {
                 val passengerName = UserViewModel().getUserName(context, req.userId)
                 val intent = Intent(context, MainActivity::class.java).apply {
                     putExtra("startDestination", "viewTransportRequests")
+                    putExtra("requestId", req.id)
                 }
                 val pending = PendingIntent.getActivity(
                     context,
@@ -320,6 +321,7 @@ class VehicleRequestViewModel : ViewModel() {
             }
             val intent = Intent(context, MainActivity::class.java).apply {
                 putExtra("startDestination", "viewRequests")
+                putExtra("requestId", req.id)
             }
             val pending = PendingIntent.getActivity(
                 context,
@@ -348,6 +350,7 @@ class VehicleRequestViewModel : ViewModel() {
             .forEach { req ->
                 val intent = Intent(context, MainActivity::class.java).apply {
                     putExtra("startDestination", "viewTransportRequests")
+                    putExtra("requestId", req.id)
                 }
                 val pending = PendingIntent.getActivity(
                     context,
@@ -372,6 +375,7 @@ class VehicleRequestViewModel : ViewModel() {
             .forEach { req ->
                 val intent = Intent(context, MainActivity::class.java).apply {
                     putExtra("startDestination", "viewTransportRequests")
+                    putExtra("requestId", req.id)
                 }
                 val pending = PendingIntent.getActivity(
                     context,

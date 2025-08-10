@@ -3,6 +3,7 @@ package com.ioannapergamali.mysmartroute.viewmodel
 import android.os.Bundle
 import android.util.Log
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -82,6 +83,7 @@ class MainActivity : ComponentActivity() {
             if (enabled) SoundManager.play()
         }
         val startDestination = intent?.getStringExtra("startDestination") ?: "home"
+        val requestId = intent?.getStringExtra("requestId")
 
         setContent {
             val context = LocalContext.current
@@ -111,11 +113,18 @@ class MainActivity : ComponentActivity() {
                     NavigationHost(
                         navController = navController,
                         openDrawer = openDrawer,
-                        startDestination = startDestination
+                        startDestination = startDestination,
+                        requestId = requestId
                     )
                 }
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        recreate()
     }
 
     override fun onBackPressed() {

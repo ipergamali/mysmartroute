@@ -55,7 +55,8 @@ import com.ioannapergamali.mysmartroute.R
 fun NavigationHost(
     navController: NavHostController,
     openDrawer: () -> Unit,
-    startDestination: String = "home"
+    startDestination: String = "home",
+    requestId: String? = null
 ) {
 
     NavHost(navController = navController, startDestination = startDestination) {
@@ -239,7 +240,11 @@ fun NavigationHost(
         }
 
         composable("viewRequests") {
-            ViewRequestsScreen(navController = navController, openDrawer = openDrawer)
+            ViewRequestsScreen(
+                navController = navController,
+                openDrawer = openDrawer,
+                initialRequestId = requestId
+            )
         }
 
         composable("viewMovings") {
@@ -279,7 +284,11 @@ fun NavigationHost(
         }
 
         composable("viewTransportRequests") {
-            ViewTransportRequestsScreen(navController = navController, openDrawer = openDrawer)
+            ViewTransportRequestsScreen(
+                navController = navController,
+                openDrawer = openDrawer,
+                initialRequestId = requestId
+            )
         }
 
         composable("viewVehicles") {

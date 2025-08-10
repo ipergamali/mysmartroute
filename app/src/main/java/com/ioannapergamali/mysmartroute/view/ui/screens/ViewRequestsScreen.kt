@@ -4,6 +4,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
@@ -39,7 +40,11 @@ private enum class SortOption { COST, DATE }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ViewRequestsScreen(navController: NavController, openDrawer: () -> Unit) {
+fun ViewRequestsScreen(
+    navController: NavController,
+    openDrawer: () -> Unit,
+    initialRequestId: String? = null
+) {
     val context = LocalContext.current
     val viewModel: VehicleRequestViewModel = viewModel()
     val poiViewModel: PoIViewModel = viewModel()
@@ -49,6 +54,7 @@ fun ViewRequestsScreen(navController: NavController, openDrawer: () -> Unit) {
     val pois by poiViewModel.pois.collectAsState()
     val driverNames = remember { mutableStateMapOf<String, String>() }
     val scrollState = rememberScrollState()
+    val listState = rememberLazyListState()
     val columnWidth = 150.dp
     val sortOption = remember { mutableStateOf(SortOption.COST) }
     val sortedRequests = when (sortOption.value) {
@@ -65,6 +71,15 @@ fun ViewRequestsScreen(navController: NavController, openDrawer: () -> Unit) {
         requests.forEach { req ->
             if (req.driverId.isNotBlank() && driverNames[req.driverId] == null) {
                 driverNames[req.driverId] = userViewModel.getUserName(context, req.driverId)
+            }
+        }
+    }
+
+    LaunchedEffect(sortedRequests) {
+        initialRequestId?.let { id ->
+            val index = sortedRequests.indexOfFirst { it.id == id }
+            if (index >= 0) {
+                listState.animateScrollToItem(index + 1)
             }
         }
     }
@@ -96,7 +111,7 @@ fun ViewRequestsScreen(navController: NavController, openDrawer: () -> Unit) {
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(modifier = Modifier.horizontalScroll(scrollState)) {
-                    LazyColumn {
+                    LazyColumn(state = listState) {
                         item {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
