@@ -663,13 +663,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
 
         private val MIGRATION_49_50 = object : Migration(49, 50) {
             override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL(
-                    "CREATE TABLE IF NOT EXISTS `trip_ratings` (" +
-                        "`movingId` TEXT NOT NULL, " +
-                        "`rating` INTEGER NOT NULL, " +
-                        "`comment` TEXT NOT NULL, " +
-                        "PRIMARY KEY(`movingId`))"
-                )
+
             }
         }
 

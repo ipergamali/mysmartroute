@@ -26,7 +26,7 @@ class ReservationViewModel : ViewModel() {
     private val _reservations = MutableStateFlow<List<SeatReservationEntity>>(emptyList())
     val reservations: StateFlow<List<SeatReservationEntity>> = _reservations
 
-    fun loadReservations(context: Context, routeId: String, date: Long, declarationId: String) {
+    fun loadReservations(context: Context, routeId: String, date: Long, startTime: Long, declarationId: String) {
         viewModelScope.launch {
             if (declarationId.isBlank()) {
                 _reservations.value = emptyList()
@@ -42,6 +42,7 @@ class ReservationViewModel : ViewModel() {
                 val remote = db.collection("seat_reservations")
                     .whereEqualTo("routeId", routeRef)
                     .whereEqualTo("date", date)
+                    .whereEqualTo("startTime", startTime)
                     .whereEqualTo("declarationId", declRef)
                     .get()
                     .await()
@@ -84,13 +85,14 @@ class ReservationViewModel : ViewModel() {
         context: Context,
         routeId: String,
         date: Long,
+        startTime: Long,
         declaration: TransportDeclarationEntity
     ) {
         viewModelScope.launch {
             val db = MySmartRouteDatabase.getInstance(context)
             val resDao = db.seatReservationDao()
             val movingDao = db.movingDao()
-            val reservations = resDao.getReservationsForRouteAndDate(routeId, date).first()
+            val reservations = resDao.getReservationsForRouteAndDateTime(routeId, date, startTime).first()
             reservations.forEach { res ->
                 val moving = MovingEntity(
                     id = UUID.randomUUID().toString(),

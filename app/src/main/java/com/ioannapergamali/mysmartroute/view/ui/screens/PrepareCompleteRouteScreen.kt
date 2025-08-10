@@ -23,6 +23,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.data.local.RouteEntity
+import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationEntity
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
@@ -56,6 +57,7 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
     val poiNames = remember { mutableStateMapOf<String, String>() }
     var selectedRoute by remember { mutableStateOf<RouteEntity?>(null) }
     var selectedDate by remember { mutableStateOf<Long?>(null) }
+    var selectedDeclaration by remember { mutableStateOf<TransportDeclarationEntity?>(null) }
     var pois by remember { mutableStateOf<List<PoIEntity>>(emptyList()) }
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     var expandedDriver by remember { mutableStateOf(false) }
@@ -112,8 +114,11 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
             pathPoints = path
             pois = routeViewModel.getRoutePois(context, route.id)
             if (date != null) {
-                val declId = declarations.firstOrNull { it.routeId == route.id && it.date == date }?.id ?: ""
-                reservationViewModel.loadReservations(context, route.id, date, declId)
+                val decl = declarations.firstOrNull { it.routeId == route.id && it.date == date }
+                selectedDeclaration = decl
+                val declId = decl?.id ?: ""
+                val startTime = decl?.startTime ?: 0L
+                reservationViewModel.loadReservations(context, route.id, date, startTime, declId)
             }
             path.firstOrNull()?.let {
                 MapsInitializer.initialize(context)
@@ -227,7 +232,7 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
 
             Spacer(Modifier.height(16.dp))
 
-            val seats = declarations.firstOrNull { it.routeId == selectedRoute?.id && it.date == selectedDate }?.seats ?: 0
+            val seats = selectedDeclaration?.seats ?: 0
 
             if (selectedRoute != null && pathPoints.isNotEmpty() && !isKeyMissing) {
                 GoogleMap(
@@ -280,9 +285,15 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
             Spacer(Modifier.height(16.dp))
             if (selectedRoute != null && selectedDate != null) {
                 Button(onClick = {
-                    val decl = declarations.firstOrNull { it.routeId == selectedRoute!!.id && it.date == selectedDate }
+                    val decl = selectedDeclaration
                     if (decl != null) {
-                        reservationViewModel.completeRoute(context, selectedRoute!!.id, selectedDate!!, decl)
+                        reservationViewModel.completeRoute(
+                            context,
+                            selectedRoute!!.id,
+                            selectedDate!!,
+                            decl.startTime,
+                            decl
+                        )
                         Toast.makeText(context, R.string.route_completed, Toast.LENGTH_SHORT).show()
                     }
                 }) {
