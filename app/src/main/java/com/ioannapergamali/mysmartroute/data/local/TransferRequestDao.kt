@@ -10,7 +10,7 @@ import com.ioannapergamali.mysmartroute.model.enumerations.RequestStatus
 @Dao
 interface TransferRequestDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(request: TransferRequestEntity)
+    suspend fun insert(request: TransferRequestEntity): Long
 
     @Query("UPDATE transfer_requests SET status = :status WHERE requestNumber = :requestNumber")
     suspend fun updateStatus(requestNumber: Int, status: RequestStatus)
