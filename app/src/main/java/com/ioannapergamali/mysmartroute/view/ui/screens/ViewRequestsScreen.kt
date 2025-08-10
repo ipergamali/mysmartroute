@@ -138,8 +138,11 @@ fun ViewRequestsScreen(
                             val toName = poiNames[req.endPoiId] ?: ""
                             val routeName = if (fromName.isNotBlank() && toName.isNotBlank())
                                 "$fromName → $toName" else ""
-                            val dateText = if (req.date > 0L) {
-                                DateFormat.getDateFormat(context).format(Date(req.date))
+                            val dateTimeText = if (req.date > 0L) {
+                                val date = Date(req.date)
+                                val dateStr = DateFormat.getDateFormat(context).format(date)
+                                val timeStr = DateFormat.format("HH:mm", date).toString()
+                                "$dateStr $timeStr"
                             } else ""
                             val costText = if (req.cost == Double.MAX_VALUE) "-" else req.cost.toString()
                             Row(
@@ -149,7 +152,7 @@ fun ViewRequestsScreen(
                                 Text(req.requestNumber.toString(), modifier = Modifier.width(columnWidth))
                                 Text(routeName, modifier = Modifier.width(columnWidth))
                                 Text(costText, modifier = Modifier.width(columnWidth))
-                                Text(dateText, modifier = Modifier.width(columnWidth))
+                                Text(dateTimeText, modifier = Modifier.width(columnWidth))
                                 if (req.status == "pending") {
                                     val dName = driverNames[req.driverId] ?: ""
                                     Text(dName, modifier = Modifier.width(columnWidth))
