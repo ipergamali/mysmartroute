@@ -17,6 +17,11 @@ import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationEntity
 import com.ioannapergamali.mysmartroute.data.local.AvailabilityEntity
 import com.ioannapergamali.mysmartroute.data.local.SeatReservationEntity
 import com.ioannapergamali.mysmartroute.data.local.FavoriteEntity
+import com.ioannapergamali.mysmartroute.data.local.TransferRequestEntity
+import com.ioannapergamali.mysmartroute.model.enumerations.RequestStatus
+
+/** Όνομα συλλογής αιτημάτων στη Firebase */
+const val TRANSFER_REQUESTS_COLLECTION = "transfer_requests"
 
 /** Βοηθητικά extensions για μετατροπή οντοτήτων σε δομές κατάλληλες για το Firestore. */
 /** Μετατροπή ενός [UserEntity] σε Map. */
@@ -444,4 +449,40 @@ fun DocumentSnapshot.toFavoriteEntity(): FavoriteEntity? {
     val type = getString("vehicleType") ?: return null
     val preferred = getBoolean("preferred") ?: false
     return FavoriteEntity(favId, userId, type, preferred)
+}
+
+fun TransferRequestEntity.toFirestoreMap(): Map<String, Any> = buildMap {
+    put("requestNumber", requestNumber)
+    put("routeId", FirebaseFirestore.getInstance().collection("routes").document(routeId))
+    put("passengerId", FirebaseFirestore.getInstance().collection("users").document(passengerId))
+    driverId?.takeIf { it.isNotBlank() }?.let {
+        put("driverId", FirebaseFirestore.getInstance().collection("users").document(it))
+    }
+    put("date", date)
+    put("cost", cost)
+    put("status", status.name)
+}
+
+fun DocumentSnapshot.toTransferRequestEntity(): TransferRequestEntity? {
+    val number = (getLong("requestNumber") ?: return null).toInt()
+    val routeId = when (val r = get("routeId")) {
+        is DocumentReference -> r.id
+        is String -> r
+        else -> getString("routeId")
+    } ?: return null
+    val passengerId = when (val p = get("passengerId")) {
+        is DocumentReference -> p.id
+        is String -> p
+        else -> getString("passengerId")
+    } ?: return null
+    val driverId = when (val d = get("driverId")) {
+        is DocumentReference -> d.id
+        is String -> d
+        null -> null
+        else -> getString("driverId")
+    }
+    val dateVal = getLong("date") ?: 0L
+    val costVal = getDouble("cost") ?: 0.0
+    val statusStr = getString("status") ?: RequestStatus.PENDING.name
+    return TransferRequestEntity(number, routeId, passengerId, driverId, dateVal, costVal, enumValueOf(statusStr))
 }
