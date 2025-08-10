@@ -199,7 +199,7 @@
     <string name="passenger_request_notification">Ο επιβάτης %1$s ζήτησε μεταφορά</string>
     <string name="request_accepted">Request accepted</string>
     <string name="request_accept_failed">Αποτυχία αποδοχής αιτήματος</string>
-    <string name="request_accepted_notification">The request was accepted</string>
+    <string name="request_accepted_notification">Your request with number %1$d was accepted</string>
 
     
     <string name="find_now">Find now</string>

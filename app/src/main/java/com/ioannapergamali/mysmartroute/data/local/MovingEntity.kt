@@ -20,7 +20,9 @@ data class MovingEntity(
     /** Ο οδηγός που ενδιαφέρεται να πραγματοποιήσει τη μεταφορά */
     val driverId: String = "",
     /** Κατάσταση προσφοράς: open, pending, accepted, rejected */
-    val status: String = "open"
+    val status: String = "open",
+    /** Μοναδικός αριθμός αιτήματος */
+    val requestNumber: Int = 0
 ) {
     @Ignore
     var createdById: String = ""
@@ -45,6 +47,7 @@ data class MovingEntity(
         createdByName: String = "",
         driverId: String = "",
         status: String = "open",
+        requestNumber: Int = 0,
         driverName: String = ""
     ) : this(
         id,
@@ -57,7 +60,8 @@ data class MovingEntity(
         startPoiId,
         endPoiId,
         driverId,
-        status
+        status,
+        requestNumber
     ) {
         this.createdById = createdById
         this.createdByName = createdByName

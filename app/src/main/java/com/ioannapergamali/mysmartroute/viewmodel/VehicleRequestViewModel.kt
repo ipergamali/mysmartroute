@@ -45,6 +45,13 @@ class VehicleRequestViewModel : ViewModel() {
         private const val TAG = "VehicleRequestVM"
     }
 
+    private fun getNextRequestNumber(context: Context): Int {
+        val prefs = context.getSharedPreferences("vehicle_requests", Context.MODE_PRIVATE)
+        val next = prefs.getInt("next_request_number", 1)
+        prefs.edit().putInt("next_request_number", next + 1).apply()
+        return next
+    }
+
     fun loadRequests(context: Context, allUsers: Boolean = false) {
         viewModelScope.launch {
             val dao = MySmartRouteDatabase.getInstance(context).movingDao()
@@ -141,6 +148,7 @@ class VehicleRequestViewModel : ViewModel() {
                 return@launch
             }
             val id = UUID.randomUUID().toString()
+            val requestNumber = getNextRequestNumber(context)
             val entity = MovingEntity(
                 id = id,
                 routeId = routeId,
@@ -152,7 +160,8 @@ class VehicleRequestViewModel : ViewModel() {
                 startPoiId = fromPoiId,
                 endPoiId = toPoiId,
                 createdById = creatorId,
-                createdByName = creatorName
+                createdByName = creatorName,
+                requestNumber = requestNumber
             )
             dao.insert(entity)
             try {
@@ -276,13 +285,13 @@ class VehicleRequestViewModel : ViewModel() {
         val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
         _requests.value.filter { it.status == "accepted" && it.driverId == userId && it.id !in notifiedRequests }
             .forEach { req ->
-                NotificationUtils.showNotification(
-                    context,
-                    context.getString(R.string.notifications),
-                    context.getString(R.string.request_accepted_notification),
-                    req.id.hashCode()
-                )
-                notifiedRequests.add(req.id)
-            }
+            NotificationUtils.showNotification(
+                context,
+                context.getString(R.string.notifications),
+                context.getString(R.string.request_accepted_notification, req.requestNumber),
+                req.id.hashCode()
+            )
+            notifiedRequests.add(req.id)
+        }
     }
 }
