@@ -78,13 +78,19 @@ fun PassengerMovingsScreen(navController: NavController, openDrawer: () -> Unit)
 
 @Composable
 private fun MovingCategory(title: String, list: List<MovingEntity>) {
+    val context = LocalContext.current
     if (list.isNotEmpty()) {
         Text(title, style = MaterialTheme.typography.titleMedium)
         list.forEach { m ->
             val dateText = if (m.date > 0L) {
-                DateFormat.getDateFormat(LocalContext.current).format(Date(m.date))
+                DateFormat.getDateFormat(context).format(Date(m.date))
             } else ""
-
+            val info = buildString {
+                append(m.routeName)
+                if (dateText.isNotBlank()) {
+                    append(" - ")
+                    append(dateText)
+                }
             }
             Text(info)
         }
