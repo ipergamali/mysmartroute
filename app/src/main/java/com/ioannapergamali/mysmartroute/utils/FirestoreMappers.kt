@@ -304,6 +304,7 @@ fun DocumentSnapshot.toMovingEntity(): MovingEntity? {
     val status = getString("status") ?: "open"
     val requestNumber = (getLong("requestNumber") ?: 0L).toInt()
     val driverName = getString("driverName") ?: ""
+    val routeName = getString("routeName") ?: ""
     return MovingEntity(
         movingId,
         routeId,
@@ -319,7 +320,8 @@ fun DocumentSnapshot.toMovingEntity(): MovingEntity? {
         driverId,
         status,
         requestNumber,
-        driverName
+        driverName,
+        routeName
     )
 }
 

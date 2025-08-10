@@ -33,6 +33,9 @@ data class MovingEntity(
     @Ignore
     var driverName: String = ""
 
+    @Ignore
+    var routeName: String = ""
+
     constructor(
         id: String = "",
         routeId: String = "",
@@ -48,7 +51,8 @@ data class MovingEntity(
         driverId: String = "",
         status: String = "open",
         requestNumber: Int = 0,
-        driverName: String = ""
+        driverName: String = "",
+        routeName: String = ""
     ) : this(
         id,
         routeId,
@@ -66,5 +70,6 @@ data class MovingEntity(
         this.createdById = createdById
         this.createdByName = createdByName
         this.driverName = driverName
+        this.routeName = routeName
     }
 }
