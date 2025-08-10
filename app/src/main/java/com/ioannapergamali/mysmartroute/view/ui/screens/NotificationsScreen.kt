@@ -82,6 +82,16 @@ fun NotificationsScreen(navController: NavController, openDrawer: () -> Unit) {
                                     req.createdByName
                                 )
 
+                                req.status == "accepted" -> stringResource(
+                                    R.string.request_accepted_notification,
+                                    req.requestNumber
+                                )
+
+                                req.status == "rejected" -> stringResource(
+                                    R.string.request_rejected_notification
+                                )
+
+                                else -> ""
                             }
 
                             UserRole.PASSENGER -> stringResource(
