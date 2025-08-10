@@ -43,6 +43,12 @@ fun NotificationsScreen(navController: NavController, openDrawer: () -> Unit) {
         }
     }
 
+    LaunchedEffect(role, requests) {
+        role?.let {
+            requestViewModel.markNotificationsRead(allUsers = it == UserRole.DRIVER)
+        }
+    }
+
     val userId = FirebaseAuth.getInstance().currentUser?.uid
     val notifications = when (role) {
         UserRole.DRIVER -> requests.filter {

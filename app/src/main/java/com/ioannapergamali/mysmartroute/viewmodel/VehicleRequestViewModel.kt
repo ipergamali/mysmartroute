@@ -40,6 +40,9 @@ class VehicleRequestViewModel : ViewModel() {
     val requests: StateFlow<List<MovingEntity>> = _requests
     private val notifiedRequests = mutableSetOf<String>()
     private val passengerRequests = mutableSetOf<PassengerRequest>()
+    private val _hasUnreadNotifications = MutableStateFlow(false)
+    val hasUnreadNotifications: StateFlow<Boolean> = _hasUnreadNotifications
+    private val readNotificationIds = mutableSetOf<String>()
 
     companion object {
         private const val TAG = "VehicleRequestVM"
@@ -95,6 +98,16 @@ class VehicleRequestViewModel : ViewModel() {
                 )
             }
 
+            val notifications = if (allUsers) {
+                _requests.value.filter {
+                    (it.driverId.isBlank() && it.status.isBlank()) ||
+                        (it.driverId == userId && it.status == "accepted")
+                }
+            } else {
+                _requests.value.filter { it.status == "pending" }
+            }
+            _hasUnreadNotifications.value = notifications.any { it.id !in readNotificationIds }
+
             if (allUsers) {
                 showPassengerRequestNotifications(context)
             } else {
@@ -102,6 +115,20 @@ class VehicleRequestViewModel : ViewModel() {
                 showAcceptedNotifications(context)
             }
         }
+    }
+
+    fun markNotificationsRead(allUsers: Boolean) {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid
+        val notifications = if (allUsers) {
+            _requests.value.filter {
+                (it.driverId.isBlank() && it.status.isBlank()) ||
+                    (it.driverId == userId && it.status == "accepted")
+            }
+        } else {
+            _requests.value.filter { it.status == "pending" }
+        }
+        readNotificationIds.addAll(notifications.map { it.id })
+        _hasUnreadNotifications.value = false
     }
 
     fun deleteRequests(context: Context, ids: Set<String>) {
