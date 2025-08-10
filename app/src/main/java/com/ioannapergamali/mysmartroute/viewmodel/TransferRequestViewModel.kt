@@ -22,13 +22,6 @@ class TransferRequestViewModel : ViewModel() {
         private const val TAG = "TransferRequestVM"
     }
 
-    private fun getNextRequestNumber(context: Context): Int {
-        val prefs = context.getSharedPreferences("transfer_requests", Context.MODE_PRIVATE)
-        val next = prefs.getInt("next_request_number", 1)
-        prefs.edit().putInt("next_request_number", next + 1).apply()
-        return next
-    }
-
     fun submitRequest(
         context: Context,
         routeId: String,
@@ -37,9 +30,7 @@ class TransferRequestViewModel : ViewModel() {
         date: Long,
         cost: Double,
     ) {
-        val number = getNextRequestNumber(context)
         val entity = TransferRequestEntity(
-            requestNumber = number,
             routeId = routeId,
             passengerId = passengerId,
             driverId = driverId,
@@ -49,11 +40,12 @@ class TransferRequestViewModel : ViewModel() {
         )
         viewModelScope.launch(Dispatchers.IO) {
             val dao = MySmartRouteDatabase.getInstance(context).transferRequestDao()
-            dao.insert(entity)
+            val id = dao.insert(entity)
+            val saved = entity.copy(requestNumber = id.toInt())
             try {
                 db.collection("transfer_requests")
-                    .document(number.toString())
-                    .set(entity.toFirestoreMap())
+                    .document(id.toString())
+                    .set(saved.toFirestoreMap())
                     .await()
             } catch (e: Exception) {
                 Log.e(TAG, "Αποτυχία υποβολής αιτήματος", e)
