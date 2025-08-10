@@ -100,6 +100,10 @@ fun ViewRequestsScreen(navController: NavController, openDrawer: () -> Unit) {
                         item {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
+                                    stringResource(R.string.request_number),
+                                    modifier = Modifier.width(columnWidth)
+                                )
+                                Text(
                                     stringResource(R.string.route_name),
                                     modifier = Modifier.width(columnWidth)
                                 )
@@ -127,6 +131,7 @@ fun ViewRequestsScreen(navController: NavController, openDrawer: () -> Unit) {
                                 modifier = Modifier.padding(vertical = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
+                                Text(req.requestNumber.toString(), modifier = Modifier.width(columnWidth))
                                 Text(routeName, modifier = Modifier.width(columnWidth))
                                 Text(costText, modifier = Modifier.width(columnWidth))
                                 Text(dateText, modifier = Modifier.width(columnWidth))
