@@ -25,35 +25,38 @@ class TransferRequestViewModel : ViewModel() {
     fun submitRequest(
         context: Context,
         routeId: String,
-        passengerId: String,
-        driverId: String,
         date: Long,
         cost: Double,
     ) {
+        val passengerId = auth.currentUser?.uid ?: return
         val entity = TransferRequestEntity(
             routeId = routeId,
             passengerId = passengerId,
-            driverId = driverId,
+            driverId = "",
             date = date,
             cost = cost,
             status = RequestStatus.PENDING
         )
         viewModelScope.launch(Dispatchers.IO) {
             val dao = MySmartRouteDatabase.getInstance(context).transferRequestDao()
-            val id = dao.insert(entity)
-            val saved = entity.copy(requestNumber = id.toInt())
             try {
+                Log.d(TAG, "Εισαγωγή αιτήματος: $entity")
+                val id = dao.insert(entity)
+                Log.d(TAG, "Το αίτημα αποθηκεύτηκε τοπικά με id=$id")
+                val saved = entity.copy(requestNumber = id.toInt())
                 db.collection("transfer_requests")
                     .document(id.toString())
                     .set(saved.toFirestoreMap())
                     .await()
+                Log.d(TAG, "Το αίτημα αποθηκεύτηκε στο Firestore με id=$id")
             } catch (e: Exception) {
                 Log.e(TAG, "Αποτυχία υποβολής αιτήματος", e)
             }
         }
     }
 
-    fun notifyDriver(context: Context, requestNumber: Int, driverId: String) {
+    fun notifyDriver(context: Context, requestNumber: Int) {
+        val driverId = auth.currentUser?.uid ?: return
         viewModelScope.launch(Dispatchers.IO) {
             val dao = MySmartRouteDatabase.getInstance(context).transferRequestDao()
             dao.assignDriver(requestNumber, driverId, RequestStatus.PENDING)
@@ -62,7 +65,7 @@ class TransferRequestViewModel : ViewModel() {
                     .document(requestNumber.toString())
                     .update(
                         mapOf(
-
+                            "driverId" to driverId,
                             "status" to RequestStatus.PENDING.name
                         )
                     )
