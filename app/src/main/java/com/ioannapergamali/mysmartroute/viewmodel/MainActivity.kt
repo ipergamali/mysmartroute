@@ -82,6 +82,7 @@ class MainActivity : ComponentActivity() {
             if (enabled) SoundManager.play()
         }
         val startDestination = intent?.getStringExtra("startDestination") ?: "home"
+        val requestId = intent?.getStringExtra("requestId")
 
         setContent {
             val context = LocalContext.current
@@ -111,7 +112,8 @@ class MainActivity : ComponentActivity() {
                     NavigationHost(
                         navController = navController,
                         openDrawer = openDrawer,
-                        startDestination = startDestination
+                        startDestination = startDestination,
+                        requestId = requestId
                     )
                 }
             }
