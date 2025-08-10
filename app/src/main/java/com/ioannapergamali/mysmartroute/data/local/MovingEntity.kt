@@ -19,7 +19,7 @@ data class MovingEntity(
     val endPoiId: String = "",
     /** Ο οδηγός που ενδιαφέρεται να πραγματοποιήσει τη μεταφορά */
     val driverId: String = "",
-    /** Κατάσταση προσφοράς: open, pending, accepted, rejected */
+    /** Κατάσταση προσφοράς: open, pending, accepted, rejected, completed */
     val status: String = "open",
     /** Μοναδικός αριθμός αιτήματος */
     val requestNumber: Int = 0
