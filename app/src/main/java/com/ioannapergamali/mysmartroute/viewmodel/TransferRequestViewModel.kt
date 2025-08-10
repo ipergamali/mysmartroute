@@ -32,28 +32,30 @@ class TransferRequestViewModel : ViewModel() {
     fun submitRequest(
         context: Context,
         routeId: String,
+        passengerId: String,
         driverId: String,
+        date: Long,
         cost: Double,
-
-            val number = getNextRequestNumber(context)
-            val entity = TransferRequestEntity(
-                requestNumber = number,
-                routeId = routeId,
-                passengerId = passengerId,
-                driverId = driverId,
-                date = date,
-                cost = cost,
-                status = RequestStatus.PENDING
-            )
-            val dao = MySmartRouteDatabase.getInstance(context).transferRequestDao()
-            dao.insert(entity)
-            try {
-                db.collection("transfer_requests")
-                    .document(number.toString())
-                    .set(entity.toFirestoreMap())
-                    .await()
-
-            }
+    ) {
+        val number = getNextRequestNumber(context)
+        val entity = TransferRequestEntity(
+            requestNumber = number,
+            routeId = routeId,
+            passengerId = passengerId,
+            driverId = driverId,
+            date = date,
+            cost = cost,
+            status = RequestStatus.PENDING
+        )
+        val dao = MySmartRouteDatabase.getInstance(context).transferRequestDao()
+        dao.insert(entity)
+        try {
+            db.collection("transfer_requests")
+                .document(number.toString())
+                .set(entity.toFirestoreMap())
+                .await()
+        } catch (e: Exception) {
+            Log.e(TAG, "Αποτυχία υποβολής αιτήματος", e)
         }
     }
 
