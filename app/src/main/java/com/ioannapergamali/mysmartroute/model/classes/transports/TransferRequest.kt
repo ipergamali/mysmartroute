@@ -7,8 +7,7 @@ data class TransferRequest(
     val requestNumber: Int,
     val routeId: String,
     val passengerId: String,
-    /** Το id του οδηγού συμπληρώνεται όταν κάποιος το αναλάβει */
-    val driverId: String? = null,
+
     val date: Long,
     val cost: Double,
     val status: RequestStatus

@@ -641,7 +641,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                         "`requestNumber` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
                         "`routeId` TEXT NOT NULL, " +
                         "`passengerId` TEXT NOT NULL, " +
-                        "`driverId` TEXT, " +
+
                         "`date` INTEGER NOT NULL, " +
                         "`cost` REAL NOT NULL, " +
                         "`status` TEXT NOT NULL" +
