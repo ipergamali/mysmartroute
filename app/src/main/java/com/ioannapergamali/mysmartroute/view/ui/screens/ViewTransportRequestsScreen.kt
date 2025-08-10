@@ -4,6 +4,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
@@ -37,7 +38,11 @@ import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ViewTransportRequestsScreen(navController: NavController, openDrawer: () -> Unit) {
+fun ViewTransportRequestsScreen(
+    navController: NavController,
+    openDrawer: () -> Unit,
+    initialRequestId: String? = null
+) {
     val context = LocalContext.current
     val viewModel: VehicleRequestViewModel = viewModel()
     val transferViewModel: TransferRequestViewModel = viewModel()
@@ -48,6 +53,7 @@ fun ViewTransportRequestsScreen(navController: NavController, openDrawer: () -> 
     val userNames = remember { mutableStateMapOf<String, String>() }
     val selectedRequests = remember { mutableStateMapOf<String, Boolean>() }
     val scrollState = rememberScrollState()
+    val listState = rememberLazyListState()
     val columnWidth = 150.dp
 
     LaunchedEffect(Unit) {
@@ -59,6 +65,12 @@ fun ViewTransportRequestsScreen(navController: NavController, openDrawer: () -> 
         requests.forEach { req ->
             if (req.userId.isNotBlank() && userNames[req.userId] == null) {
                 userNames[req.userId] = userViewModel.getUserName(context, req.userId)
+            }
+        }
+        initialRequestId?.let { id ->
+            val index = requests.indexOfFirst { it.id == id }
+            if (index >= 0) {
+                listState.animateScrollToItem(index + 1)
             }
         }
     }
@@ -93,7 +105,7 @@ fun ViewTransportRequestsScreen(navController: NavController, openDrawer: () -> 
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(modifier = Modifier.horizontalScroll(scrollState)) {
-                    LazyColumn {
+                    LazyColumn(state = listState) {
                         item {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Checkbox(
