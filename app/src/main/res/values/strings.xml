@@ -204,6 +204,7 @@
     <string name="app_started_notification">App started successfully</string>
     <string name="driver_offer_notification">Ο οδηγός %1$s προσφέρθηκε να σας μεταφέρει. Αίτημα αριθμός %2$d</string>
     <string name="passenger_request_notification">Ο επιβάτης %1$s ζήτησε μεταφορά. Αίτημα αριθμός %2$d</string>
+    <string name="request_pending_notification">Driver %1$s responded to your request. Request number %2$d</string>
     <string name="request_accepted">Request accepted</string>
     <string name="request_accept_failed">Αποτυχία αποδοχής αιτήματος</string>
 
