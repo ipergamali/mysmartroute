@@ -451,9 +451,7 @@ fun DocumentSnapshot.toFavoriteEntity(): FavoriteEntity? {
 
 fun TransferRequestEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     "requestNumber" to requestNumber,
-    "routeId" to FirebaseFirestore.getInstance().collection("routes").document(routeId),
-    "passengerId" to FirebaseFirestore.getInstance().collection("users").document(passengerId),
-    "driverId" to FirebaseFirestore.getInstance().collection("users").document(driverId),
+
     "date" to date,
     "cost" to cost,
     "status" to status.name
