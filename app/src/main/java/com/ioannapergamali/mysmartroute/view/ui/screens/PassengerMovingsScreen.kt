@@ -20,6 +20,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.data.local.MovingEntity
+import com.ioannapergamali.mysmartroute.data.local.MovingStatus
+import com.ioannapergamali.mysmartroute.data.local.movingStatus
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
@@ -37,10 +39,7 @@ fun PassengerMovingsScreen(navController: NavController, openDrawer: () -> Unit)
     }
 
     val now = System.currentTimeMillis()
-    val active = movings.filter { it.status == "accepted" && it.date > now }
-    val pending = movings.filter { it.status != "accepted" && it.date > now }
-    val unsuccessful = movings.filter { it.status != "accepted" && it.date <= now }
-    val completed = movings.filter { it.status == "accepted" && it.date <= now }
+    val grouped = movings.groupBy { it.movingStatus(now) }
 
     Scaffold(
         topBar = {
@@ -56,10 +55,22 @@ fun PassengerMovingsScreen(navController: NavController, openDrawer: () -> Unit)
             if (movings.isEmpty()) {
                 Text(stringResource(R.string.no_movings))
             } else {
-                MovingCategory(stringResource(R.string.active_movings), active)
-                MovingCategory(stringResource(R.string.pending_movings), pending)
-                MovingCategory(stringResource(R.string.unsuccessful_movings), unsuccessful)
-                MovingCategory(stringResource(R.string.completed_movings), completed)
+                MovingCategory(
+                    stringResource(R.string.active_movings),
+                    grouped[MovingStatus.ACTIVE].orEmpty()
+                )
+                MovingCategory(
+                    stringResource(R.string.pending_movings),
+                    grouped[MovingStatus.PENDING].orEmpty()
+                )
+                MovingCategory(
+                    stringResource(R.string.unsuccessful_movings),
+                    grouped[MovingStatus.UNSUCCESSFUL].orEmpty()
+                )
+                MovingCategory(
+                    stringResource(R.string.completed_movings),
+                    grouped[MovingStatus.COMPLETED].orEmpty()
+                )
             }
         }
     }
