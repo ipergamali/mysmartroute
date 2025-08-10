@@ -105,7 +105,7 @@ class ReservationViewModel : ViewModel() {
                     startPoiId = res.startPoiId,
                     endPoiId = res.endPoiId,
                     driverId = declaration.driverId,
-                    status = "accepted"
+                    status = "completed"
                 )
                 movingDao.insert(moving)
                 if (NetworkUtils.isInternetAvailable(context)) {
