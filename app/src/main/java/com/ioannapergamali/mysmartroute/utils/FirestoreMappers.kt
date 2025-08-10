@@ -465,7 +465,9 @@ fun DocumentSnapshot.toTransferRequestEntity(): TransferRequestEntity? {
     val driverId = when (val d = get("driverId")) {
         is DocumentReference -> d.id
         is String -> d
+        else -> getString("driverId")
 
+    } ?: return null
     val dateVal = getLong("date") ?: 0L
     val costVal = getDouble("cost") ?: 0.0
     val statusStr = getString("status") ?: RequestStatus.PENDING.name
