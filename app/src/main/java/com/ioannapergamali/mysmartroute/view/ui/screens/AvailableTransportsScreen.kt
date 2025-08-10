@@ -33,6 +33,7 @@ import kotlinx.coroutines.launch
 import kotlin.math.max
 import java.time.Instant
 import java.time.ZoneId
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 
@@ -50,6 +51,7 @@ private fun HeaderRow() {
         Text(stringResource(R.string.cost), modifier = Modifier.weight(1f))
         Text(stringResource(R.string.seats_label), modifier = Modifier.weight(1f))
         Text(stringResource(R.string.date), modifier = Modifier.weight(1f))
+        Text(stringResource(R.string.time), modifier = Modifier.weight(1f))
     }
     Divider()
 }
@@ -139,6 +141,7 @@ fun AvailableTransportsScreen(
                 Text(stringResource(R.string.no_transports_found))
             } else {
                 val formatter = remember { DateTimeFormatter.ofPattern("dd/MM/yyyy") }
+                val timeFormatter = remember { DateTimeFormatter.ofPattern("HH:mm") }
 
 
                 LazyColumn {
@@ -157,6 +160,8 @@ fun AvailableTransportsScreen(
                             .atZone(ZoneId.systemDefault())
                             .toLocalDate()
                             .format(formatter)
+                        val timeText = LocalTime.ofSecondOfDay(decl.startTime / 1000)
+                            .format(timeFormatter)
 
                         val reserved = reservationCounts[decl.id] ?: 0
                         val availableSeats = max(0, decl.seats - reserved)
@@ -186,6 +191,7 @@ fun AvailableTransportsScreen(
                                 Text(decl.cost.toString(), modifier = Modifier.weight(1f))
                                 Text(availableSeats.toString(), modifier = Modifier.weight(1f))
                                 Text(dateText, modifier = Modifier.weight(1f))
+                                Text(timeText, modifier = Modifier.weight(1f))
                             }
                             Spacer(Modifier.height(4.dp))
                             Button(
