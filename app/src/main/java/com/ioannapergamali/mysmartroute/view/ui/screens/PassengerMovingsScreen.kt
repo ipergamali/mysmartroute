@@ -84,15 +84,7 @@ private fun MovingCategory(title: String, list: List<MovingEntity>) {
             val dateText = if (m.date > 0L) {
                 DateFormat.getDateFormat(LocalContext.current).format(Date(m.date))
             } else ""
-            val info = buildString {
-                append("• ")
-                if (m.routeName.isNotBlank()) {
-                    append(m.routeName).append(' ')
-                }
-                if (m.createdByName.isNotBlank()) {
-                    append(m.createdByName).append(' ')
-                }
-                append(dateText)
+
             }
             Text(info)
         }

@@ -3,6 +3,7 @@ package com.ioannapergamali.mysmartroute.viewmodel
 import android.os.Bundle
 import android.util.Log
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -118,6 +119,12 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        recreate()
     }
 
     override fun onBackPressed() {

@@ -54,16 +54,6 @@ class VehicleRequestViewModel : ViewModel() {
         private const val TAG = "VehicleRequestVM"
     }
 
-    private suspend fun attachRouteNames(
-        list: List<MovingEntity>,
-        routeDao: RouteDao,
-        context: Context
-    ): List<MovingEntity> {
-        for (m in list) {
-            m.routeName = routeDao.findById(m.routeId)?.name ?: ""
-            if (m.createdByName.isBlank()) {
-                m.createdByName = UserViewModel().getUserName(context, m.userId)
-            }
         }
         return list
     }
@@ -88,7 +78,6 @@ class VehicleRequestViewModel : ViewModel() {
                 userId?.let { dao.getMovingsForUser(it).first() } ?: emptyList()
             }
 
-            _requests.value = attachRouteNames(_requests.value, routeDao, context)
 
             val snapshot = if (NetworkUtils.isInternetAvailable(context)) {
                 runCatching {
@@ -104,7 +93,7 @@ class VehicleRequestViewModel : ViewModel() {
             snapshot?.let { snap ->
                 val list = snap.documents.mapNotNull { it.toMovingEntity() }
                 if (list.isNotEmpty()) {
-                    val enriched = attachRouteNames(list, routeDao, context)
+
                     _requests.value = enriched
                     enriched.forEach { dao.insert(it) }
                 }
