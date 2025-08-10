@@ -6,6 +6,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Notifications
 import android.util.Log
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -14,6 +15,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.runtime.*
 import androidx.navigation.NavController
 import androidx.compose.foundation.border
@@ -23,6 +26,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import com.ioannapergamali.mysmartroute.utils.LanguagePreferenceManager
 import com.ioannapergamali.mysmartroute.utils.LocaleUtils
@@ -31,6 +35,9 @@ import kotlinx.coroutines.launch
 import com.google.firebase.auth.FirebaseAuth
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ioannapergamali.mysmartroute.viewmodel.SettingsViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
+import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 
 private const val TAG = "TopBar"
 
@@ -46,6 +53,7 @@ fun TopBar(
     showBack: Boolean = true,
     showHomeIcon: Boolean = true,
     showLanguageToggle: Boolean = true,
+    showNotifications: Boolean = true,
     onMenuClick: () -> Unit = {},
     onLogout: () -> Unit = {
         FirebaseAuth.getInstance().signOut()
@@ -57,7 +65,32 @@ fun TopBar(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val settingsViewModel: SettingsViewModel = viewModel()
+    val authViewModel: AuthenticationViewModel = viewModel()
+    val requestViewModel: VehicleRequestViewModel = viewModel()
     val currentLanguage by LanguagePreferenceManager.languageFlow(context).collectAsState(initial = AppLanguage.Greek.code)
+    val role by authViewModel.currentUserRole.collectAsState()
+    val requests by requestViewModel.requests.collectAsState()
+
+    LaunchedEffect(Unit) {
+        authViewModel.loadCurrentUserRole(context)
+    }
+    LaunchedEffect(role) {
+        role?.let {
+            requestViewModel.loadRequests(context, allUsers = it == UserRole.DRIVER)
+        }
+    }
+
+    val userId = FirebaseAuth.getInstance().currentUser?.uid
+    val hasNotifications = remember(role, requests) {
+        when (role) {
+            UserRole.DRIVER -> requests.any {
+                (it.driverId.isBlank() && it.status.isBlank()) ||
+                    (it.driverId == userId && it.status == "accepted")
+            }
+            UserRole.PASSENGER -> requests.any { it.status == "pending" }
+            else -> false
+        }
+    }
 
     Box(modifier = Modifier.statusBarsPadding()) {
         TopAppBar(
@@ -108,6 +141,21 @@ fun TopBar(
             }
         },
         actions = {
+            if (showNotifications) {
+                IconButton(onClick = { navController.navigate("notifications") }) {
+                    BadgedBox(badge = {
+                        if (hasNotifications) {
+                            Badge(containerColor = Color.Red)
+                        }
+                    }) {
+                        Icon(
+                            Icons.Filled.Notifications,
+                            contentDescription = "notifications",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+            }
             if (showLanguageToggle) {
                 IconButton(onClick = {
                     val newLang = if (currentLanguage == AppLanguage.Greek.code) AppLanguage.English.code else AppLanguage.Greek.code
