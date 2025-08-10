@@ -187,6 +187,7 @@
     <string name="sort_by_cost">Sort by cost</string>
     <string name="sort_by_date">Sort by date</string>
     <string name="cancel_request">Cancel request</string>
+    <string name="request_number">Request number</string>
     <string name="notify_passenger">Notify passenger</string>
     <string name="accept_offer">Accept</string>
     <string name="reject_offer">Reject</string>
@@ -195,12 +196,12 @@
 
     <!-- Notification text -->
     <string name="app_started_notification">App started successfully</string>
-    <string name="driver_offer_notification">Ο οδηγός %1$s προσφέρθηκε να σας μεταφέρει</string>
-    <string name="passenger_request_notification">Ο επιβάτης %1$s ζήτησε μεταφορά</string>
+    <string name="driver_offer_notification">Ο οδηγός %1$s προσφέρθηκε να σας μεταφέρει. Αίτημα αριθμός %2$d</string>
+    <string name="passenger_request_notification">Ο επιβάτης %1$s ζήτησε μεταφορά. Αίτημα αριθμός %2$d</string>
     <string name="request_accepted">Request accepted</string>
     <string name="request_accept_failed">Αποτυχία αποδοχής αιτήματος</string>
 
-    <string name="request_rejected_notification">The request was rejected</string>
+    <string name="request_rejected_notification">Your request with number %1$d was rejected</string>
 
     <string name="request_accepted_notification">Your request with number %1$d was accepted</string>
 
