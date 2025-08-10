@@ -81,6 +81,8 @@ class MainActivity : ComponentActivity() {
             SoundManager.setVolume(volume)
             if (enabled) SoundManager.play()
         }
+        val startDestination = intent?.getStringExtra("startDestination") ?: "home"
+
         setContent {
             val context = LocalContext.current
             val theme by ThemePreferenceManager.themeFlow(context).collectAsState(initial = AppTheme.Ocean)
@@ -106,7 +108,11 @@ class MainActivity : ComponentActivity() {
             MysmartrouteTheme(theme = theme, darkTheme = dark, font = font.fontFamily) {
                 val navController = rememberNavController()
                 DrawerWrapper(navController = navController) { openDrawer ->
-                    NavigationHost(navController = navController, openDrawer = openDrawer)
+                    NavigationHost(
+                        navController = navController,
+                        openDrawer = openDrawer,
+                        startDestination = startDestination
+                    )
                 }
             }
         }
