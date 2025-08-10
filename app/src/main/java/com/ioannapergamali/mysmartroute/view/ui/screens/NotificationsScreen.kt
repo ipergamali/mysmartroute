@@ -43,6 +43,12 @@ fun NotificationsScreen(navController: NavController, openDrawer: () -> Unit) {
         }
     }
 
+    LaunchedEffect(role, requests) {
+        role?.let {
+            requestViewModel.markNotificationsRead(allUsers = it == UserRole.DRIVER)
+        }
+    }
+
     val userId = FirebaseAuth.getInstance().currentUser?.uid
     val notifications = when (role) {
         UserRole.DRIVER -> requests.filter {
@@ -75,8 +81,7 @@ fun NotificationsScreen(navController: NavController, openDrawer: () -> Unit) {
                                     R.string.passenger_request_notification,
                                     req.createdByName
                                 )
-                                req.status == "accepted" -> stringResource(R.string.request_accepted_notification)
-                                else -> stringResource(R.string.request_rejected_notification)
+
                             }
 
                             UserRole.PASSENGER -> stringResource(

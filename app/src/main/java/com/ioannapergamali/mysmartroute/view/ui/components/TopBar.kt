@@ -69,7 +69,7 @@ fun TopBar(
     val requestViewModel: VehicleRequestViewModel = viewModel()
     val currentLanguage by LanguagePreferenceManager.languageFlow(context).collectAsState(initial = AppLanguage.Greek.code)
     val role by authViewModel.currentUserRole.collectAsState()
-    val requests by requestViewModel.requests.collectAsState()
+    val hasUnreadNotifications by requestViewModel.hasUnreadNotifications.collectAsState()
 
     LaunchedEffect(Unit) {
         authViewModel.loadCurrentUserRole(context)
@@ -82,16 +82,6 @@ fun TopBar(
 
     val userId = FirebaseAuth.getInstance().currentUser?.uid
     val isLoggedIn = userId != null
-    val hasNotifications = remember(role, requests) {
-        when (role) {
-            UserRole.DRIVER -> requests.any {
-                (it.driverId.isBlank() && it.status.isBlank()) ||
-                    (it.driverId == userId && it.status == "accepted")
-            }
-            UserRole.PASSENGER -> requests.any { it.status == "pending" }
-            else -> false
-        }
-    }
 
     Box(modifier = Modifier.statusBarsPadding()) {
         TopAppBar(
@@ -145,7 +135,7 @@ fun TopBar(
             if (showNotifications && isLoggedIn) {
                 IconButton(onClick = { navController.navigate("notifications") }) {
                     BadgedBox(badge = {
-                        if (hasNotifications) {
+                        if (hasUnreadNotifications) {
                             Badge(containerColor = Color.Red)
                         }
                     }) {

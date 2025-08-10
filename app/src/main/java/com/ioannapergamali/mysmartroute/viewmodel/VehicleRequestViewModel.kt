@@ -40,9 +40,19 @@ class VehicleRequestViewModel : ViewModel() {
     val requests: StateFlow<List<MovingEntity>> = _requests
     private val notifiedRequests = mutableSetOf<String>()
     private val passengerRequests = mutableSetOf<PassengerRequest>()
+    private val _hasUnreadNotifications = MutableStateFlow(false)
+    val hasUnreadNotifications: StateFlow<Boolean> = _hasUnreadNotifications
+    private val readNotificationIds = mutableSetOf<String>()
 
     companion object {
         private const val TAG = "VehicleRequestVM"
+    }
+
+    private fun getNextRequestNumber(context: Context): Int {
+        val prefs = context.getSharedPreferences("vehicle_requests", Context.MODE_PRIVATE)
+        val next = prefs.getInt("next_request_number", 1)
+        prefs.edit().putInt("next_request_number", next + 1).apply()
+        return next
     }
 
     fun loadRequests(context: Context, allUsers: Boolean = false) {
@@ -88,6 +98,16 @@ class VehicleRequestViewModel : ViewModel() {
                 )
             }
 
+            val notifications = if (allUsers) {
+                _requests.value.filter {
+                    (it.driverId.isBlank() && it.status.isBlank()) ||
+                        (it.driverId == userId && it.status == "accepted")
+                }
+            } else {
+                _requests.value.filter { it.status == "pending" }
+            }
+            _hasUnreadNotifications.value = notifications.any { it.id !in readNotificationIds }
+
             if (allUsers) {
                 showPassengerRequestNotifications(context)
             } else {
@@ -96,6 +116,20 @@ class VehicleRequestViewModel : ViewModel() {
                 showRejectedNotifications(context)
             }
         }
+    }
+
+    fun markNotificationsRead(allUsers: Boolean) {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid
+        val notifications = if (allUsers) {
+            _requests.value.filter {
+                (it.driverId.isBlank() && it.status.isBlank()) ||
+                    (it.driverId == userId && it.status == "accepted")
+            }
+        } else {
+            _requests.value.filter { it.status == "pending" }
+        }
+        readNotificationIds.addAll(notifications.map { it.id })
+        _hasUnreadNotifications.value = false
     }
 
     fun deleteRequests(context: Context, ids: Set<String>) {
@@ -142,6 +176,7 @@ class VehicleRequestViewModel : ViewModel() {
                 return@launch
             }
             val id = UUID.randomUUID().toString()
+            val requestNumber = getNextRequestNumber(context)
             val entity = MovingEntity(
                 id = id,
                 routeId = routeId,
@@ -153,7 +188,8 @@ class VehicleRequestViewModel : ViewModel() {
                 startPoiId = fromPoiId,
                 endPoiId = toPoiId,
                 createdById = creatorId,
-                createdByName = creatorName
+                createdByName = creatorName,
+                requestNumber = requestNumber
             )
             dao.insert(entity)
             try {
@@ -277,14 +313,14 @@ class VehicleRequestViewModel : ViewModel() {
         val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
         _requests.value.filter { it.status == "accepted" && it.driverId == userId && it.id !in notifiedRequests }
             .forEach { req ->
-                NotificationUtils.showNotification(
-                    context,
-                    context.getString(R.string.notifications),
-                    context.getString(R.string.request_accepted_notification),
-                    req.id.hashCode()
-                )
-                notifiedRequests.add(req.id)
-            }
+            NotificationUtils.showNotification(
+                context,
+                context.getString(R.string.notifications),
+                context.getString(R.string.request_accepted_notification, req.requestNumber),
+                req.id.hashCode()
+            )
+            notifiedRequests.add(req.id)
+        }
     }
 
     private suspend fun showRejectedNotifications(context: Context) {
