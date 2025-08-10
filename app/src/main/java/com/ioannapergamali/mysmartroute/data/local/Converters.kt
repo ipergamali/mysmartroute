@@ -4,6 +4,7 @@ import androidx.room.TypeConverter
 import com.google.gson.Gson
 import com.ioannapergamali.mysmartroute.model.classes.poi.PoiAddress
 import com.google.android.libraries.places.api.model.Place
+import com.ioannapergamali.mysmartroute.model.enumerations.RequestStatus
 
 /** Μετατροπές για αποθήκευση σύνθετων τύπων στη Room. */
 object Converters {
@@ -21,4 +22,10 @@ object Converters {
     @TypeConverter
     fun toAddress(json: String): PoiAddress =
         gson.fromJson(json, PoiAddress::class.java)
+
+    @TypeConverter
+    fun fromRequestStatus(status: RequestStatus): String = status.name
+
+    @TypeConverter
+    fun toRequestStatus(value: String): RequestStatus = enumValueOf(value)
 }
