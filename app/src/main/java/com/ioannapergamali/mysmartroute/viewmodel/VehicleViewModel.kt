@@ -104,45 +104,38 @@ class VehicleViewModel : ViewModel() {
         }
     }
 
-    fun loadRegisteredVehicles(context: Context, includeAll: Boolean = false) {
+    fun loadRegisteredVehicles(
+        context: Context,
+        includeAll: Boolean = false,
+        userId: String? = null
+    ) {
         viewModelScope.launch {
             val dbLocal = MySmartRouteDatabase.getInstance(context)
             val vehicleDao = dbLocal.vehicleDao()
             val userDao = dbLocal.userDao()
 
-            val userId = auth.currentUser?.uid
+            val targetUser = userId ?: auth.currentUser?.uid
 
             val remote = if (NetworkUtils.isInternetAvailable(context)) {
                 val query = when {
                     includeAll -> db.collection("vehicles")
-                    userId != null -> db.collection("vehicles").whereEqualTo("userId", userId)
+                    targetUser != null ->
+                        db.collection("vehicles").whereEqualTo("userId", targetUser)
                     else -> null
                 }
-                query?.let { runCatching { it.get().await() }.getOrNull() }
-                    ?.documents?.mapNotNull { it.toVehicleEntity() }
+                query?.get()?.await()?.documents?.mapNotNull { it.toVehicleEntity() }
             } else null
 
-            val local = if (includeAll) {
-                vehicleDao.getAllVehicles().first()
-            }  else {
-                userId?.let { vehicleDao.getVehiclesForUser(it) } ?: emptyList()
+            val local = when {
+                includeAll -> vehicleDao.getAllVehicles().first()
+                targetUser != null -> vehicleDao.getVehiclesForUser(targetUser)
+                else -> emptyList()
             }
 
             var list = (remote ?: emptyList()) + local
             list = list.distinctBy { it.id }
-            if (!includeAll && userId != null) {
-                list = list.filter { it.userId == userId }
-            }
-
             _vehicles.value = list
             list.forEach { insertVehicleSafely(vehicleDao, userDao, it) }
-
-            // Reload from local DB to ensure names are fetched for all vehicles
-            _vehicles.value = if (includeAll) {
-                vehicleDao.getAllVehicles().first()
-            } else {
-                userId?.let { vehicleDao.getVehiclesForUser(it) } ?: emptyList()
-            }
         }
     }
 

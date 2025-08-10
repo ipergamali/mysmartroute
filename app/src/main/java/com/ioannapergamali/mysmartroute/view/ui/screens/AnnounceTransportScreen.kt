@@ -169,7 +169,6 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     LaunchedEffect(role) {
         val admin = role == UserRole.ADMIN
         routeViewModel.loadRoutes(context, includeAll = admin)
-        vehicleViewModel.loadRegisteredVehicles(context, includeAll = admin)
         if (admin) {
             userViewModel.loadDrivers(context)
             selectedDriverId = null
@@ -180,6 +179,12 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 selectedDriverId = uid
                 selectedDriverName = userViewModel.getUserName(context, uid)
             }
+        }
+    }
+
+    LaunchedEffect(selectedDriverId) {
+        selectedDriverId?.let { id ->
+            vehicleViewModel.loadRegisteredVehicles(context, userId = id)
         }
     }
 
@@ -235,7 +240,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                 selectedVehicle = null
                                 selectedVehicleName = ""
                                 selectedVehicleDescription = ""
-                                vehicleViewModel.loadRegisteredVehicles(context, includeAll = true)
+                                vehicleViewModel.loadRegisteredVehicles(context, userId = driver.id)
                             })
                         }
                     }
