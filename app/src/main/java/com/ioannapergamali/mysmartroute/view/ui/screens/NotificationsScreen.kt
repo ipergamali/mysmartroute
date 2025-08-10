@@ -53,7 +53,7 @@ fun NotificationsScreen(navController: NavController, openDrawer: () -> Unit) {
     val notifications = when (role) {
         UserRole.DRIVER -> requests.filter {
             (it.driverId.isBlank() && it.status.isBlank()) ||
-                (it.driverId == userId && it.status == "accepted")
+                (it.driverId == userId && (it.status == "accepted" || it.status == "rejected"))
         }
         UserRole.PASSENGER -> requests.filter { it.status == "pending" }
         else -> emptyList()
@@ -76,16 +76,12 @@ fun NotificationsScreen(navController: NavController, openDrawer: () -> Unit) {
                 LazyColumn {
                     items(notifications) { req ->
                         val message = when (role) {
-                            UserRole.DRIVER -> if (req.driverId.isBlank()) {
-                                stringResource(
+                            UserRole.DRIVER -> when {
+                                req.driverId.isBlank() -> stringResource(
                                     R.string.passenger_request_notification,
                                     req.createdByName
                                 )
-                            } else {
-                                stringResource(
-                                    R.string.request_accepted_notification,
-                                    req.requestNumber
-                                )
+
                             }
 
                             UserRole.PASSENGER -> stringResource(

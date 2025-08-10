@@ -183,7 +183,11 @@
     <!-- Notification text -->
     <string name="app_started_notification">Η εφαρμογή ξεκίνησε</string>
     <string name="request_accepted">Το αίτημα έγινε αποδεκτό</string>
+
+    <string name="request_rejected_notification">Το αίτημά σας δεν έγινε αποδεκτό</string>
+
     <string name="request_accepted_notification">Το αίτημά σας με αριθμό %1$d έγινε αποδεκτό</string>
+
     <string name="passenger_request_notification">Ο επιβάτης %1$s ζήτησε μεταφορά</string>
     <string name="driver_offer_notification">Ο οδηγός %1$s προσφέρθηκε να σας μεταφέρει</string>
     <string name="available_transports">Διαθέσιμες μεταφορές</string>
