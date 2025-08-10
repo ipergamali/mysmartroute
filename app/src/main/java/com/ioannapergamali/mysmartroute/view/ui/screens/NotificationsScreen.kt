@@ -76,7 +76,10 @@ fun NotificationsScreen(navController: NavController, openDrawer: () -> Unit) {
                                     req.createdByName
                                 )
                             } else {
-                                stringResource(R.string.request_accepted_notification)
+                                stringResource(
+                                    R.string.request_accepted_notification,
+                                    req.requestNumber
+                                )
                             }
 
                             UserRole.PASSENGER -> stringResource(

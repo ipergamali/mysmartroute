@@ -238,7 +238,8 @@ fun MovingEntity.toFirestoreMap(): Map<String, Any> {
         "durationMinutes" to durationMinutes,
         "startPoiId" to FirebaseFirestore.getInstance().collection("pois").document(startPoiId),
         "endPoiId" to FirebaseFirestore.getInstance().collection("pois").document(endPoiId),
-        "status" to status
+        "status" to status,
+        "requestNumber" to requestNumber
     )
     if (vehicleId.isNotEmpty()) {
         map["vehicleId"] = FirebaseFirestore.getInstance().collection("vehicles").document(vehicleId)
@@ -298,6 +299,7 @@ fun DocumentSnapshot.toMovingEntity(): MovingEntity? {
         else -> getString("driverId")
     } ?: ""
     val status = getString("status") ?: "open"
+    val requestNumber = (getLong("requestNumber") ?: 0L).toInt()
     val driverName = getString("driverName") ?: ""
     return MovingEntity(
         movingId,
@@ -313,6 +315,7 @@ fun DocumentSnapshot.toMovingEntity(): MovingEntity? {
         createdByName,
         driverId,
         status,
+        requestNumber,
         driverName
     )
 }
