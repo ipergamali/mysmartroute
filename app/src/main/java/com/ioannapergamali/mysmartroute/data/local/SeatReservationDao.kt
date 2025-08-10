@@ -20,19 +20,20 @@ interface SeatReservationDao {
     @Query("SELECT * FROM seat_reservations WHERE routeId = :routeId")
     fun getReservationsForRoute(routeId: String): Flow<List<SeatReservationEntity>>
 
-    @Query("SELECT * FROM seat_reservations WHERE routeId = :routeId AND date = :date")
-    fun getReservationsForRouteAndDate(routeId: String, date: Long): Flow<List<SeatReservationEntity>>
+    @Query("SELECT * FROM seat_reservations WHERE routeId = :routeId AND date = :date AND startTime = :startTime")
+    fun getReservationsForRouteAndDateTime(routeId: String, date: Long, startTime: Long): Flow<List<SeatReservationEntity>>
 
     @Query("SELECT * FROM seat_reservations WHERE declarationId = :declarationId")
     fun getReservationsForDeclaration(declarationId: String): Flow<List<SeatReservationEntity>>
 
-    /** Ελέγχει αν υπάρχει ήδη κράτηση για τον ίδιο χρήστη, διαδρομή και ημερομηνία */
+    /** Ελέγχει αν υπάρχει ήδη κράτηση για τον ίδιο χρήστη, διαδρομή, ημερομηνία και ώρα */
     @Query(
-        "SELECT * FROM seat_reservations WHERE userId = :userId AND routeId = :routeId AND date = :date LIMIT 1"
+        "SELECT * FROM seat_reservations WHERE userId = :userId AND routeId = :routeId AND date = :date AND startTime = :startTime LIMIT 1"
     )
     suspend fun findUserReservation(
         userId: String,
         routeId: String,
-        date: Long
+        date: Long,
+        startTime: Long
     ): SeatReservationEntity?
 }

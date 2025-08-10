@@ -107,6 +107,9 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     val selectedDateText = datePickerState.selectedDateMillis?.let { millis ->
         Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter)
     } ?: stringResource(R.string.select_date)
+    val timePickerState = rememberTimePickerState()
+    var showTimePicker by remember { mutableStateOf(false) }
+    val selectedTimeText = String.format("%02d:%02d", timePickerState.hour, timePickerState.minute)
     var pois by remember { mutableStateOf<List<PoIEntity>>(emptyList()) }
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     val cameraPositionState = rememberCameraPositionState()
@@ -395,6 +398,25 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
 
             Spacer(Modifier.height(16.dp))
 
+            Button(onClick = { showTimePicker = true }) {
+                Text(selectedTimeText)
+            }
+
+            if (showTimePicker) {
+                TimePickerDialog(
+                    onDismissRequest = { showTimePicker = false },
+                    confirmButton = {
+                        TextButton(onClick = { showTimePicker = false }) {
+                            Text(stringResource(android.R.string.ok))
+                        }
+                    }
+                ) {
+                    TimePicker(state = timePickerState)
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+
             OutlinedTextField(
                 value = costText,
                 onValueChange = { costText = it },
@@ -425,6 +447,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     val vehicle = selectedVehicle
                     val cost = costText.toDoubleOrNull() ?: 0.0
                     val date = datePickerState.selectedDateMillis ?: 0L
+                    val startTime = (timePickerState.hour * 60 + timePickerState.minute) * 60_000L
                     val driverId = selectedDriverId ?: ""
                     if (routeId != null && vehicle != null) {
                         declarationViewModel.declareTransport(
@@ -436,7 +459,8 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                             selectedVehicleSeats,
                             cost,
                             duration,
-                            date
+                            date,
+                            startTime
                         )
                         navController.popBackStack()
                     }

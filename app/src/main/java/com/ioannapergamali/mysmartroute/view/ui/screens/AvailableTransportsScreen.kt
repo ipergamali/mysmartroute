@@ -195,6 +195,7 @@ fun AvailableTransportsScreen(
                                               context = context,
                                               routeId = decl.routeId,
                                               date = decl.date,
+                                              startTime = decl.startTime,
                                               startPoiId = startId ?: "",
                                               endPoiId = endId ?: "",
                                               declarationId = decl.id

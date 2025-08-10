@@ -335,7 +335,8 @@ fun TransportDeclarationEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     "cost" to cost,
     "durationMinutes" to durationMinutes,
     "seats" to seats,
-    "date" to date
+    "date" to date,
+    "startTime" to startTime
 )
 
 fun DocumentSnapshot.toTransportDeclarationEntity(): TransportDeclarationEntity? {
@@ -360,7 +361,8 @@ fun DocumentSnapshot.toTransportDeclarationEntity(): TransportDeclarationEntity?
     val durVal = (getLong("durationMinutes") ?: 0L).toInt()
     val seatsVal = (getLong("seats") ?: 0L).toInt()
     val dateVal = getLong("date") ?: 0L
-    return TransportDeclarationEntity(declId, routeId, driverId, vehicleId, type, costVal, durVal, seatsVal, dateVal)
+    val timeVal = getLong("startTime") ?: 0L
+    return TransportDeclarationEntity(declId, routeId, driverId, vehicleId, type, costVal, durVal, seatsVal, dateVal, timeVal)
 }
 
 fun AvailabilityEntity.toFirestoreMap(): Map<String, Any> = mapOf(
@@ -390,6 +392,7 @@ fun SeatReservationEntity.toFirestoreMap(): Map<String, Any> {
         "routeId" to FirebaseFirestore.getInstance().collection("routes").document(routeId),
         "userId" to FirebaseFirestore.getInstance().collection("users").document(userId),
         "date" to date,
+        "startTime" to startTime,
         "startPoiId" to FirebaseFirestore.getInstance().collection("pois").document(startPoiId),
         "endPoiId" to FirebaseFirestore.getInstance().collection("pois").document(endPoiId)
     )
@@ -419,6 +422,7 @@ fun DocumentSnapshot.toSeatReservationEntity(): SeatReservationEntity? {
         else -> getString("userId")
     } ?: return null
     val dateVal = getLong("date") ?: 0L
+    val timeVal = getLong("startTime") ?: 0L
     val startPoiId = when (val s = get("startPoiId")) {
         is DocumentReference -> s.id
         is String -> s
@@ -429,7 +433,7 @@ fun DocumentSnapshot.toSeatReservationEntity(): SeatReservationEntity? {
         is String -> e
         else -> getString("endPoiId")
     } ?: ""
-    return SeatReservationEntity(resId, declarationId, routeId, userId, dateVal, startPoiId, endPoiId)
+    return SeatReservationEntity(resId, declarationId, routeId, userId, dateVal, timeVal, startPoiId, endPoiId)
 }
 
 fun FavoriteEntity.toFirestoreMap(): Map<String, Any> = mapOf(

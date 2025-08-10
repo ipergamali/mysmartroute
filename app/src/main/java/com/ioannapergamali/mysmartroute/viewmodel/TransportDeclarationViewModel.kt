@@ -43,12 +43,13 @@ class TransportDeclarationViewModel : ViewModel() {
         seats: Int,
         cost: Double,
         durationMinutes: Int,
-        date: Long
+        date: Long,
+        startTime: Long = 0L
     ) {
         viewModelScope.launch {
             val dao = MySmartRouteDatabase.getInstance(context).transportDeclarationDao()
             val id = UUID.randomUUID().toString()
-            val entity = TransportDeclarationEntity(id, routeId, driverId, vehicleId, vehicleType.name, cost, durationMinutes, seats, date)
+            val entity = TransportDeclarationEntity(id, routeId, driverId, vehicleId, vehicleType.name, cost, durationMinutes, seats, date, startTime)
             dao.insert(entity)
             try {
                 FirebaseFirestore.getInstance()

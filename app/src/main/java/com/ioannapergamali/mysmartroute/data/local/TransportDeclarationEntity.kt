@@ -18,5 +18,7 @@ data class TransportDeclarationEntity(
     /** Διαθέσιμες θέσεις στο όχημα */
     val seats: Int = 0,
     /** Ημερομηνία πραγματοποίησης της διαδρομής */
-    val date: Long = 0L
+    val date: Long = 0L,
+    /** Ώρα έναρξης της διαδρομής σε millis από τα μεσάνυχτα */
+    val startTime: Long = 0L
 )

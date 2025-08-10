@@ -259,6 +259,7 @@ class VehicleRequestViewModel : ViewModel() {
                         context = context,
                         routeId = current.routeId,
                         date = current.date,
+                        startTime = 0L,
                         startPoiId = current.startPoiId,
                         endPoiId = current.endPoiId,
                         declarationId = current.id

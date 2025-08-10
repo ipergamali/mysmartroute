@@ -42,6 +42,7 @@ class BookingViewModel : ViewModel() {
         context: Context,
         routeId: String,
         date: Long,
+        startTime: Long,
         startPoiId: String,
         endPoiId: String,
         declarationId: String = ""
@@ -52,7 +53,7 @@ class BookingViewModel : ViewModel() {
         val dao = MySmartRouteDatabase.getInstance(context).seatReservationDao()
 
         // Έλεγχος για ήδη υπάρχουσα κράτηση
-        val existing = dao.findUserReservation(userId, routeId, date)
+        val existing = dao.findUserReservation(userId, routeId, date, startTime)
         if (existing != null) {
             return@withContext Result.failure(Exception("Η θέση έχει ήδη κρατηθεί"))
         }
@@ -63,6 +64,7 @@ class BookingViewModel : ViewModel() {
             routeId = routeId,
             userId = userId,
             date = date,
+            startTime = startTime,
             startPoiId = startPoiId,
             endPoiId = endPoiId
         )
@@ -80,3 +82,4 @@ class BookingViewModel : ViewModel() {
         }
     }
 }
+
