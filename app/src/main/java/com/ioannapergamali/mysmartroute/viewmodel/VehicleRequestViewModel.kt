@@ -41,6 +41,8 @@ class VehicleRequestViewModel : ViewModel() {
 
     private val _requests = MutableStateFlow<List<MovingEntity>>(emptyList())
     val requests: StateFlow<List<MovingEntity>> = _requests
+    /** Alias for requests so UI components can refer to passenger movings directly */
+    val movings: StateFlow<List<MovingEntity>> = requests
     private val notifiedRequests = mutableSetOf<String>()
     private val passengerRequests = mutableSetOf<PassengerRequest>()
     private val _hasUnreadNotifications = MutableStateFlow(false)

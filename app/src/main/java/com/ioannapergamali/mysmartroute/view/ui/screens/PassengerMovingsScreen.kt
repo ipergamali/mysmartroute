@@ -30,7 +30,7 @@ import java.util.Date
 fun PassengerMovingsScreen(navController: NavController, openDrawer: () -> Unit) {
     val context = LocalContext.current
     val viewModel: VehicleRequestViewModel = viewModel()
-    val movings by viewModel.requests.collectAsState()
+    val movings by viewModel.movings.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.loadRequests(context)
