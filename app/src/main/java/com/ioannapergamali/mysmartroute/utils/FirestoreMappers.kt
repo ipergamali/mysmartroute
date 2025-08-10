@@ -449,6 +449,16 @@ fun DocumentSnapshot.toFavoriteEntity(): FavoriteEntity? {
     return FavoriteEntity(favId, userId, type, preferred)
 }
 
+fun TransferRequestEntity.toFirestoreMap(): Map<String, Any> = mapOf(
+    "requestNumber" to requestNumber,
+    "routeId" to FirebaseFirestore.getInstance().collection("routes").document(routeId),
+    "passengerId" to FirebaseFirestore.getInstance().collection("users").document(passengerId),
+    "driverId" to FirebaseFirestore.getInstance().collection("users").document(driverId),
+    "date" to date,
+    "cost" to cost,
+    "status" to status.name
+)
+
 
 fun DocumentSnapshot.toTransferRequestEntity(): TransferRequestEntity? {
     val number = (getLong("requestNumber") ?: return null).toInt()
