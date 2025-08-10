@@ -451,10 +451,7 @@ fun DocumentSnapshot.toFavoriteEntity(): FavoriteEntity? {
 
 fun TransferRequestEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     "requestNumber" to requestNumber,
-    // Χρησιμοποιούμε τα αναγνωριστικά ως απλά κείμενα ώστε να δημιουργείται σωστά το collection στο Firestore
-    "routeId" to routeId,
-    "passengerId" to passengerId,
-    "driverId" to driverId,
+
     "date" to date,
     "cost" to cost,
     "status" to status.name

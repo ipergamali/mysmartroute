@@ -34,14 +34,7 @@ class TransferRequestViewModel : ViewModel() {
         routeId: String,
         driverId: String,
         cost: Double,
-        date: Long,
-        onComplete: (Boolean) -> Unit
-    ) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val passengerId = auth.currentUser?.uid ?: run {
-                onComplete(false)
-                return@launch
-            }
+
             val number = getNextRequestNumber(context)
             val entity = TransferRequestEntity(
                 requestNumber = number,
@@ -59,10 +52,7 @@ class TransferRequestViewModel : ViewModel() {
                     .document(number.toString())
                     .set(entity.toFirestoreMap())
                     .await()
-                onComplete(true)
-            } catch (e: Exception) {
-                Log.e(TAG, "Αποτυχία αποθήκευσης αιτήματος", e)
-                onComplete(false)
+
             }
         }
     }
@@ -76,7 +66,7 @@ class TransferRequestViewModel : ViewModel() {
                     .document(requestNumber.toString())
                     .update(
                         mapOf(
-                            "driverId" to driverId,
+
                             "status" to RequestStatus.PENDING.name
                         )
                     )
