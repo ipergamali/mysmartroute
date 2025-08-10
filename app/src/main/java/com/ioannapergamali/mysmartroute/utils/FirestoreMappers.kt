@@ -20,6 +20,7 @@ import com.ioannapergamali.mysmartroute.data.local.FavoriteEntity
 import com.ioannapergamali.mysmartroute.data.local.TransferRequestEntity
 import com.ioannapergamali.mysmartroute.model.enumerations.RequestStatus
 
+
 /** Βοηθητικά extensions για μετατροπή οντοτήτων σε δομές κατάλληλες για το Firestore. */
 /** Μετατροπή ενός [UserEntity] σε Map. */
 fun UserEntity.toFirestoreMap(): Map<String, Any> = mapOf(
@@ -448,15 +449,6 @@ fun DocumentSnapshot.toFavoriteEntity(): FavoriteEntity? {
     return FavoriteEntity(favId, userId, type, preferred)
 }
 
-fun TransferRequestEntity.toFirestoreMap(): Map<String, Any> = mapOf(
-    "requestNumber" to requestNumber,
-    "routeId" to FirebaseFirestore.getInstance().collection("routes").document(routeId),
-    "passengerId" to FirebaseFirestore.getInstance().collection("users").document(passengerId),
-    "driverId" to FirebaseFirestore.getInstance().collection("users").document(driverId),
-    "date" to date,
-    "cost" to cost,
-    "status" to status.name
-)
 
 fun DocumentSnapshot.toTransferRequestEntity(): TransferRequestEntity? {
     val number = (getLong("requestNumber") ?: return null).toInt()
@@ -473,8 +465,7 @@ fun DocumentSnapshot.toTransferRequestEntity(): TransferRequestEntity? {
     val driverId = when (val d = get("driverId")) {
         is DocumentReference -> d.id
         is String -> d
-        else -> getString("driverId")
-    } ?: return null
+
     val dateVal = getLong("date") ?: 0L
     val costVal = getDouble("cost") ?: 0.0
     val statusStr = getString("status") ?: RequestStatus.PENDING.name

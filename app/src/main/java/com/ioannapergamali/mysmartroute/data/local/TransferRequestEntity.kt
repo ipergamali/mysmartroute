@@ -10,7 +10,7 @@ data class TransferRequestEntity(
     @PrimaryKey(autoGenerate = true) val requestNumber: Int = 0,
     val routeId: String = "",
     val passengerId: String = "",
-    val driverId: String = "",
+
     /** Ημερομηνία σε millis */
     val date: Long = 0L,
     val cost: Double = 0.0,
