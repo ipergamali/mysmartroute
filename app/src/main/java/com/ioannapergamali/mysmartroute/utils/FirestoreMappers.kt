@@ -449,21 +449,23 @@ fun DocumentSnapshot.toFavoriteEntity(): FavoriteEntity? {
     return FavoriteEntity(favId, userId, type, preferred)
 }
 
-fun TransferRequestEntity.toFirestoreMap(): Map<String, Any> = mapOf(
-    "requestNumber" to requestNumber,
-    "routeId" to FirebaseFirestore.getInstance()
-        .collection("routes")
-        .document(routeId),
-    "passengerId" to FirebaseFirestore.getInstance()
-        .collection("users")
-        .document(passengerId),
-    "driverId" to FirebaseFirestore.getInstance()
-        .collection("users")
-        .document(driverId),
-    "date" to date,
-    "cost" to cost,
-    "status" to status.name
-)
+fun TransferRequestEntity.toFirestoreMap(): Map<String, Any> {
+    val db = FirebaseFirestore.getInstance()
+    val map = mutableMapOf<String, Any>(
+        "requestNumber" to requestNumber,
+        "routeId" to db.collection("routes").document(routeId),
+        "passengerId" to db.collection("users").document(passengerId),
+        "date" to date,
+        "cost" to cost,
+        "status" to status.name
+    )
+
+    if (driverId.isNotBlank()) {
+        map["driverId"] = db.collection("users").document(driverId)
+    }
+
+    return map
+}
 
 
 fun DocumentSnapshot.toTransferRequestEntity(): TransferRequestEntity? {
@@ -482,8 +484,7 @@ fun DocumentSnapshot.toTransferRequestEntity(): TransferRequestEntity? {
         is DocumentReference -> d.id
         is String -> d
         else -> getString("driverId")
-
-    } ?: return null
+    } ?: ""
     val dateVal = getLong("date") ?: 0L
     val costVal = getDouble("cost") ?: 0.0
     val statusStr = getString("status") ?: RequestStatus.PENDING.name
