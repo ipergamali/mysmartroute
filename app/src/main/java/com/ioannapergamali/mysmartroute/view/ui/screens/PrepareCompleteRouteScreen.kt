@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.dimensionResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import android.widget.Toast
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.model.LatLng
@@ -274,6 +275,19 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                 }
             } else if (selectedRoute != null && selectedDate != null) {
                 Text(stringResource(R.string.no_reservations))
+            }
+
+            Spacer(Modifier.height(16.dp))
+            if (selectedRoute != null && selectedDate != null) {
+                Button(onClick = {
+                    val decl = declarations.firstOrNull { it.routeId == selectedRoute!!.id && it.date == selectedDate }
+                    if (decl != null) {
+                        reservationViewModel.completeRoute(context, selectedRoute!!.id, selectedDate!!, decl)
+                        Toast.makeText(context, R.string.route_completed, Toast.LENGTH_SHORT).show()
+                    }
+                }) {
+                    Text(stringResource(R.string.complete_route))
+                }
             }
         }
     }

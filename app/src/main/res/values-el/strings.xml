@@ -86,6 +86,8 @@
     <string name="print_completed">Εκτύπωση λίστας για ολοκληρωμένες μεταφορές</string>
     <string name="print_declarations">Εκτύπωση δηλώσεων διαθεσιμότητας</string>
     <string name="prepare_complete_route">Προετοιμασία ολοκλήρωσης διαδρομής</string>
+    <string name="complete_route">Ολοκλήρωση</string>
+    <string name="route_completed">Η διαδρομή ολοκληρώθηκε</string>
     <string name="init_system">Αρχικοποίηση συστήματος</string>
     <string name="create_user">Δημιουργία λογαριασμού χρήστη</string>
     <string name="edit_privileges">Αλλαγή δικαιωμάτων χρήστη</string>

@@ -6,8 +6,11 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.SeatReservationEntity
+import com.ioannapergamali.mysmartroute.data.local.MovingEntity
+import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationEntity
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import com.ioannapergamali.mysmartroute.utils.toSeatReservationEntity
+import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -15,6 +18,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.util.UUID
 
 class ReservationViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
@@ -74,5 +78,42 @@ class ReservationViewModel : ViewModel() {
         }
 
         return localCount
+    }
+
+    fun completeRoute(
+        context: Context,
+        routeId: String,
+        date: Long,
+        declaration: TransportDeclarationEntity
+    ) {
+        viewModelScope.launch {
+            val db = MySmartRouteDatabase.getInstance(context)
+            val resDao = db.seatReservationDao()
+            val movingDao = db.movingDao()
+            val reservations = resDao.getReservationsForRouteAndDate(routeId, date).first()
+            reservations.forEach { res ->
+                val moving = MovingEntity(
+                    id = UUID.randomUUID().toString(),
+                    routeId = routeId,
+                    userId = res.userId,
+                    date = date,
+                    vehicleId = declaration.vehicleId,
+                    cost = declaration.cost,
+                    durationMinutes = declaration.durationMinutes,
+                    startPoiId = res.startPoiId,
+                    endPoiId = res.endPoiId,
+                    driverId = declaration.driverId,
+                    status = "accepted"
+                )
+                movingDao.insert(moving)
+                if (NetworkUtils.isInternetAvailable(context)) {
+                    FirebaseFirestore.getInstance()
+                        .collection("movings")
+                        .document(moving.id)
+                        .set(moving.toFirestoreMap())
+                        .await()
+                }
+            }
+        }
     }
 }
