@@ -50,7 +50,7 @@ import com.ioannapergamali.mysmartroute.data.local.Converters
         FavoriteEntity::class,
         TransferRequestEntity::class
     ],
-    version = 48
+    version = 49
 )
 @TypeConverters(Converters::class)
 abstract class MySmartRouteDatabase : RoomDatabase() {
@@ -651,6 +651,12 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_48_49 = object : Migration(48, 49) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE `transfer_requests` ADD COLUMN `firebaseId` TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
         private fun prepopulate(db: SupportSQLiteDatabase) {
             Log.d(TAG, "Prepopulating database")
             db.execSQL(
@@ -777,7 +783,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_44_45,
                     MIGRATION_45_46,
                     MIGRATION_46_47,
-                    MIGRATION_47_48
+                    MIGRATION_47_48,
+                    MIGRATION_48_49
                 )
                     .addCallback(object : RoomDatabase.Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {
