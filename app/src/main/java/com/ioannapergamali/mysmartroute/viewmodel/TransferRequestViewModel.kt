@@ -47,15 +47,17 @@ class TransferRequestViewModel : ViewModel() {
             cost = cost,
             status = RequestStatus.PENDING
         )
-        val dao = MySmartRouteDatabase.getInstance(context).transferRequestDao()
-        dao.insert(entity)
-        try {
-            db.collection("transfer_requests")
-                .document(number.toString())
-                .set(entity.toFirestoreMap())
-                .await()
-        } catch (e: Exception) {
-            Log.e(TAG, "Αποτυχία υποβολής αιτήματος", e)
+        viewModelScope.launch(Dispatchers.IO) {
+            val dao = MySmartRouteDatabase.getInstance(context).transferRequestDao()
+            dao.insert(entity)
+            try {
+                db.collection("transfer_requests")
+                    .document(number.toString())
+                    .set(entity.toFirestoreMap())
+                    .await()
+            } catch (e: Exception) {
+                Log.e(TAG, "Αποτυχία υποβολής αιτήματος", e)
+            }
         }
     }
 
