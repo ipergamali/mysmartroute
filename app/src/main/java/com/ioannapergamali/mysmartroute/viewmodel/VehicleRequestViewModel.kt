@@ -1,6 +1,8 @@
 package com.ioannapergamali.mysmartroute.viewmodel
 
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
@@ -16,6 +18,7 @@ import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import com.ioannapergamali.mysmartroute.utils.NotificationUtils
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.viewmodel.BookingViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.MainActivity
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -282,15 +285,19 @@ class VehicleRequestViewModel : ViewModel() {
         _requests.value.filter { it.driverId.isBlank() && it.status.isBlank() && it.id !in notifiedRequests }
             .forEach { req ->
                 val passengerName = UserViewModel().getUserName(context, req.userId)
+                val intent = Intent(context, MainActivity::class.java).apply {
+                    putExtra("startDestination", "viewTransportRequests")
+                }
+                val pending = PendingIntent.getActivity(
+                    context,
+                    req.id.hashCode(),
+                    intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
                 NotificationUtils.showNotification(
                     context,
                     context.getString(R.string.notifications),
-                    context.getString(
-                        R.string.passenger_request_notification,
-                        passengerName,
-                        req.requestNumber
-                    ),
-                    req.id.hashCode()
+
                 )
                 notifiedRequests.add(req.id)
             }
@@ -303,15 +310,19 @@ class VehicleRequestViewModel : ViewModel() {
             } else {
                 UserViewModel().getUserName(context, req.driverId)
             }
+            val intent = Intent(context, MainActivity::class.java).apply {
+                putExtra("startDestination", "viewRequests")
+            }
+            val pending = PendingIntent.getActivity(
+                context,
+                req.id.hashCode(),
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
             NotificationUtils.showNotification(
                 context,
                 context.getString(R.string.notifications),
-                context.getString(
-                    R.string.driver_offer_notification,
-                    driverName,
-                    req.requestNumber
-                ),
-                req.id.hashCode()
+
             )
             notifiedRequests.add(req.id)
         }
@@ -321,28 +332,43 @@ class VehicleRequestViewModel : ViewModel() {
         val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
         _requests.value.filter { it.status == "accepted" && it.driverId == userId && it.id !in notifiedRequests }
             .forEach { req ->
-            NotificationUtils.showNotification(
-                context,
-                context.getString(R.string.notifications),
-                context.getString(R.string.request_accepted_notification, req.requestNumber),
-                req.id.hashCode()
-            )
-            notifiedRequests.add(req.id)
-        }
+                val intent = Intent(context, MainActivity::class.java).apply {
+                    putExtra("startDestination", "viewTransportRequests")
+                }
+                val pending = PendingIntent.getActivity(
+                    context,
+                    req.id.hashCode(),
+                    intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+                NotificationUtils.showNotification(
+                    context,
+                    context.getString(R.string.notifications),
+                    context.getString(R.string.request_accepted_notification, req.requestNumber),
+                    req.id.hashCode(),
+                    pending
+                )
+                notifiedRequests.add(req.id)
+            }
     }
 
     private suspend fun showRejectedNotifications(context: Context) {
         val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
         _requests.value.filter { it.status == "rejected" && it.driverId == userId && it.id !in notifiedRequests }
             .forEach { req ->
+                val intent = Intent(context, MainActivity::class.java).apply {
+                    putExtra("startDestination", "viewTransportRequests")
+                }
+                val pending = PendingIntent.getActivity(
+                    context,
+                    req.id.hashCode(),
+                    intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
                 NotificationUtils.showNotification(
                     context,
                     context.getString(R.string.notifications),
-                    context.getString(
-                        R.string.request_rejected_notification,
-                        req.requestNumber
-                    ),
-                    req.id.hashCode()
+
                 )
                 notifiedRequests.add(req.id)
             }
