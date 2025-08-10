@@ -15,6 +15,9 @@ interface TransferRequestDao {
     @Query("UPDATE transfer_requests SET status = :status WHERE requestNumber = :requestNumber")
     suspend fun updateStatus(requestNumber: Int, status: RequestStatus)
 
+    @Query("UPDATE transfer_requests SET driverId = :driverId, status = :status WHERE requestNumber = :requestNumber")
+    suspend fun assignDriver(requestNumber: Int, driverId: String, status: RequestStatus)
+
     @Query("SELECT * FROM transfer_requests WHERE passengerId = :passengerId")
     fun getRequestsForPassenger(passengerId: String): Flow<List<TransferRequestEntity>>
 
