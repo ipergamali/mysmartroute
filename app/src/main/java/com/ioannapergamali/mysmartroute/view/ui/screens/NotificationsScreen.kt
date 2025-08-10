@@ -79,7 +79,8 @@ fun NotificationsScreen(navController: NavController, openDrawer: () -> Unit) {
                             UserRole.DRIVER -> when {
                                 req.driverId.isBlank() -> stringResource(
                                     R.string.passenger_request_notification,
-                                    req.createdByName
+                                    req.createdByName,
+                                    req.requestNumber
                                 )
 
                                 req.status == "accepted" -> stringResource(
@@ -88,7 +89,8 @@ fun NotificationsScreen(navController: NavController, openDrawer: () -> Unit) {
                                 )
 
                                 req.status == "rejected" -> stringResource(
-                                    R.string.request_rejected_notification
+                                    R.string.request_rejected_notification,
+                                    req.requestNumber
                                 )
 
                                 else -> ""
@@ -96,7 +98,8 @@ fun NotificationsScreen(navController: NavController, openDrawer: () -> Unit) {
 
                             UserRole.PASSENGER -> stringResource(
                                 R.string.driver_offer_notification,
-                                req.driverName
+                                req.driverName,
+                                req.requestNumber
                             )
 
                             else -> ""

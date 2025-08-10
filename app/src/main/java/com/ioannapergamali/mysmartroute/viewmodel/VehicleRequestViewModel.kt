@@ -285,7 +285,11 @@ class VehicleRequestViewModel : ViewModel() {
                 NotificationUtils.showNotification(
                     context,
                     context.getString(R.string.notifications),
-                    context.getString(R.string.passenger_request_notification, passengerName),
+                    context.getString(
+                        R.string.passenger_request_notification,
+                        passengerName,
+                        req.requestNumber
+                    ),
                     req.id.hashCode()
                 )
                 notifiedRequests.add(req.id)
@@ -302,7 +306,11 @@ class VehicleRequestViewModel : ViewModel() {
             NotificationUtils.showNotification(
                 context,
                 context.getString(R.string.notifications),
-                context.getString(R.string.driver_offer_notification, driverName),
+                context.getString(
+                    R.string.driver_offer_notification,
+                    driverName,
+                    req.requestNumber
+                ),
                 req.id.hashCode()
             )
             notifiedRequests.add(req.id)
@@ -330,7 +338,10 @@ class VehicleRequestViewModel : ViewModel() {
                 NotificationUtils.showNotification(
                     context,
                     context.getString(R.string.notifications),
-                    context.getString(R.string.request_rejected_notification),
+                    context.getString(
+                        R.string.request_rejected_notification,
+                        req.requestNumber
+                    ),
                     req.id.hashCode()
                 )
                 notifiedRequests.add(req.id)

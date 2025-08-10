@@ -127,6 +127,11 @@ fun ViewTransportRequestsScreen(navController: NavController, openDrawer: () -> 
                                     modifier = Modifier.width(columnWidth),
                                     style = MaterialTheme.typography.labelMedium
                                 )
+                                Text(
+                                    stringResource(R.string.request_number),
+                                    modifier = Modifier.width(columnWidth),
+                                    style = MaterialTheme.typography.labelMedium
+                                )
                             }
                             Divider()
                         }
@@ -159,6 +164,7 @@ fun ViewTransportRequestsScreen(navController: NavController, openDrawer: () -> 
                                 val costText = if (req.cost == Double.MAX_VALUE) "∞" else req.cost.toString()
                                 Text(costText, modifier = Modifier.width(columnWidth))
                                 Text(dateText, modifier = Modifier.width(columnWidth))
+                                Text(req.requestNumber.toString(), modifier = Modifier.width(columnWidth))
                                 if (req.status == "open") {
                                     Button(
                                         onClick = {
