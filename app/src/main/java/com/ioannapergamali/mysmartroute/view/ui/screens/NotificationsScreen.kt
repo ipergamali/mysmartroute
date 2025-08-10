@@ -63,7 +63,7 @@ fun NotificationsScreen(navController: NavController, openDrawer: () -> Unit) {
             )
         }
     ) { padding ->
-        ScreenContainer(modifier = Modifier.padding(padding)) {
+        ScreenContainer(modifier = Modifier.padding(padding), scrollable = false) {
             if (notifications.isEmpty()) {
                 Text(stringResource(R.string.no_notifications))
             } else {

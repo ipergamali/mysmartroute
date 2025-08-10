@@ -49,7 +49,7 @@ fun PrintScheduledScreen(navController: NavController, openDrawer: () -> Unit) {
             )
         }
     ) { paddingValues ->
-        ScreenContainer(modifier = Modifier.padding(paddingValues)) {
+        ScreenContainer(modifier = Modifier.padding(paddingValues), scrollable = false) {
             if (scheduled.isEmpty()) {
                 Text(text = stringResource(R.string.no_scheduled_transports))
             } else {
