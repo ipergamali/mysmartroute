@@ -254,7 +254,6 @@ class VehicleRequestViewModel : ViewModel() {
 
                 if (accept) {
 
-
                 }
 
                 val status = if (accept) "accepted" else "rejected"
