@@ -220,11 +220,17 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                 Spacer(Modifier.height(16.dp))
             }
 
-            Box {
-                Button(onClick = { expanded = true }) {
-                    Text(selectedRoute?.name ?: stringResource(R.string.select_route))
-                }
-                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
+                OutlinedTextField(
+                    value = selectedRoute?.name ?: "",
+                    onValueChange = {},
+                    label = { Text(stringResource(R.string.route_name)) },
+                    placeholder = { Text(stringResource(R.string.select_route)) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                    modifier = Modifier.menuAnchor().fillMaxWidth(),
+                    readOnly = true
+                )
+                ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                     displayRoutes.forEach { route ->
                         DropdownMenuItem(text = { Text(route.name) }, onClick = {
                             selectedRoute = route
