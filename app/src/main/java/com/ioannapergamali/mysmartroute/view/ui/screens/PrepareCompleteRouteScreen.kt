@@ -1,6 +1,8 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.material3.menuAnchor
 import androidx.compose.runtime.*
@@ -9,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -220,11 +223,17 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                 Spacer(Modifier.height(16.dp))
             }
 
-            Box {
-                Button(onClick = { expanded = true }) {
-                    Text(selectedRoute?.name ?: stringResource(R.string.select_route))
-                }
-                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
+                OutlinedTextField(
+                    value = selectedRoute?.name ?: "",
+                    onValueChange = {},
+                    label = { Text(stringResource(R.string.route_name)) },
+                    placeholder = { Text(stringResource(R.string.select_route)) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                    modifier = Modifier.menuAnchor().fillMaxWidth(),
+                    readOnly = true
+                )
+                ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                     displayRoutes.forEach { route ->
                         DropdownMenuItem(text = { Text(route.name) }, onClick = {
                             selectedRoute = route
@@ -288,12 +297,28 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                 Text(stringResource(R.string.vehicle_type))
                 Row {
                     VehicleType.values().forEach { type ->
+                        val isSelected = selectedVehicle == type
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            IconButton(onClick = { selectedVehicle = type }) {
+                            IconButton(
+                                onClick = {
+                                    selectedVehicle = type
+                                    vehicleName = ""
+                                    selectedVehicleId = ""
+                                    selectedVehicleDescription = ""
+                                },
+                                colors = IconButtonDefaults.iconButtonColors(
+                                    containerColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f) else Color.Transparent,
+                                    contentColor = if (isSelected) MaterialTheme.colorScheme.primary else LocalContentColor.current
+                                ),
+                                modifier = Modifier
+                                    .size(48.dp)
+                                    .then(
+                                        if (isSelected) Modifier.border(1.dp, MaterialTheme.colorScheme.primary, CircleShape) else Modifier
+                                    )
+                            ) {
                                 Icon(
                                     imageVector = iconForVehicle(type),
-                                    contentDescription = labelForVehicle(type),
-                                    tint = if (selectedVehicle == type) MaterialTheme.colorScheme.primary else LocalContentColor.current
+                                    contentDescription = labelForVehicle(type)
                                 )
                             }
                             Text(labelForVehicle(type), style = MaterialTheme.typography.labelSmall)
@@ -311,15 +336,20 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                         readOnly = true
                     )
                     ExposedDropdownMenu(expanded = expandedVehicle, onDismissRequest = { expandedVehicle = false }) {
-                        vehicles.filter { it.userId == selectedDriverId }.forEach { vehicle ->
-                            DropdownMenuItem(text = { Text(vehicle.name) }, onClick = {
-                                vehicleName = vehicle.name
-                                selectedVehicle = runCatching { VehicleType.valueOf(vehicle.type) }.getOrNull()
-                                selectedVehicleId = vehicle.id
-                                selectedVehicleDescription = vehicle.description
-                                expandedVehicle = false
-                            })
-                        }
+                        vehicles
+                            .filter {
+                                it.userId == selectedDriverId &&
+                                    (selectedVehicle == null || runCatching { VehicleType.valueOf(it.type) }.getOrNull() == selectedVehicle)
+                            }
+                            .forEach { vehicle ->
+                                DropdownMenuItem(text = { Text(vehicle.name) }, onClick = {
+                                    vehicleName = vehicle.name
+                                    selectedVehicle = runCatching { VehicleType.valueOf(vehicle.type) }.getOrNull()
+                                    selectedVehicleId = vehicle.id
+                                    selectedVehicleDescription = vehicle.description
+                                    expandedVehicle = false
+                                })
+                            }
                     }
                 }
                 if (selectedVehicleDescription.isNotEmpty()) {
