@@ -188,16 +188,19 @@ fun ViewRequestsScreen(
                                     }) {
                                         Text(stringResource(R.string.reject_offer))
                                     }
-                                }
-                                Button(onClick = {
-                                    transferViewModel.updateStatus(
-                                        context,
-                                        req.requestNumber,
-                                        RequestStatus.CANCELED
-                                    )
-                                    viewModel.deleteRequests(context, setOf(req.id))
-                                }) {
-                                    Text(stringResource(R.string.cancel_request))
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Button(onClick = {
+                                        transferViewModel.updateStatus(
+                                            context,
+                                            req.requestNumber,
+                                            RequestStatus.CANCELED
+                                        )
+                                        viewModel.deleteRequests(context, setOf(req.id))
+                                    }) {
+                                        Text(stringResource(R.string.cancel_request))
+                                    }
+                                } else {
+                                    Text(req.status, modifier = Modifier.width(columnWidth))
                                 }
                             }
                             Divider()
