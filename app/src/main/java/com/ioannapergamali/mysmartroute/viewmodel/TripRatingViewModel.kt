@@ -27,11 +27,17 @@ class TripRatingViewModel : ViewModel() {
             val db = MySmartRouteDatabase.getInstance(context)
             val movingFlow = db.movingDao().getAll()
             val ratingFlow = db.tripRatingDao().getAll()
-            combine(movingFlow, ratingFlow) { movings, ratings ->
+            val routeFlow = db.routeDao().getAll()
+            combine(movingFlow, ratingFlow, routeFlow) { movings, ratings, routes ->
                 val ratingMap = ratings.associateBy { it.movingId }
+                val routeMap = routes.associateBy { it.id }
                 movings.filter { it.status == "completed" }.map { m ->
                     val r = ratingMap[m.id]
-                    TripWithRating(m, r?.rating ?: 0, r?.comment ?: "")
+                    TripWithRating(
+                        m.also { it.routeName = routeMap[m.routeId]?.name ?: "" },
+                        r?.rating ?: 0,
+                        r?.comment ?: ""
+                    )
                 }
             }.collect { _trips.value = it }
         }
