@@ -398,8 +398,10 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                             selectedDate!!,
                             updatedDecl.startTime,
                             updatedDecl
-                        )
-                        Toast.makeText(context, R.string.route_completed, Toast.LENGTH_SHORT).show()
+                        ) { completed ->
+                            val msg = if (completed) R.string.route_completed else R.string.route_already_completed
+                            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                        }
                     }
                 }) {
                     Text(stringResource(R.string.complete_route))

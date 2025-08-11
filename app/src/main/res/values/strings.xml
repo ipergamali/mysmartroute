@@ -86,6 +86,7 @@
     <string name="prepare_complete_route">Prepare Route Completion</string>
     <string name="complete_route">Complete Route</string>
     <string name="route_completed">Route marked as completed</string>
+    <string name="route_already_completed">Route has already been completed</string>
     <string name="init_system">Initialize System</string>
     <string name="create_user">Create User Account</string>
     <string name="edit_privileges">Promote or Demote User</string>
