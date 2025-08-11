@@ -89,7 +89,8 @@ fun FindPassengersScreen(
     val routeIds = filteredDeclarations.map { it.routeId }.toSet()
     val filteredRequests = requests.filter { req ->
         routeIds.contains(req.routeId) &&
-            (selectedDateMillis == null || req.date == selectedDateMillis)
+            (selectedDateMillis == null || req.date == selectedDateMillis) &&
+            req.status != "completed"
     }
 
     val poiNames = pois.associate { it.id to it.name }
