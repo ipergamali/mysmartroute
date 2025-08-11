@@ -18,7 +18,7 @@ import com.ioannapergamali.mysmartroute.utils.toMovingEntity
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import com.ioannapergamali.mysmartroute.utils.NotificationUtils
 import com.ioannapergamali.mysmartroute.R
-import com.ioannapergamali.mysmartroute.viewmodel.BookingViewModel
+import com.ioannapergamali.mysmartroute.data.local.SeatReservationEntity
 import com.ioannapergamali.mysmartroute.viewmodel.MainActivity
 
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,7 +38,6 @@ data class PassengerRequest(
 
 class VehicleRequestViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
-    private val bookingViewModel = BookingViewModel()
 
     private val _requests = MutableStateFlow<List<MovingEntity>>(emptyList())
     val requests: StateFlow<List<MovingEntity>> = _requests
@@ -254,22 +253,33 @@ class VehicleRequestViewModel : ViewModel() {
                 val current = list[index]
 
                 if (accept) {
-
-                    val result = bookingViewModel.reserveSeat(
-                        context = context,
-                        routeId = current.routeId,
-                        date = current.date,
-                        startTime = 0L,
-                        startPoiId = current.startPoiId,
-                        endPoiId = current.endPoiId,
-                        declarationId = current.id
-                    )
-                    result.fold(
-                        onSuccess = { },
-                        onFailure = {
-           return@launch
-                        }
-                    )
+                    try {
+                        val dbInstance = MySmartRouteDatabase.getInstance(context)
+                        val seatDao = dbInstance.seatReservationDao()
+                        val declaration = dbInstance.transportDeclarationDao()
+                            .getForDriver(current.driverId)
+                            .first()
+                            .firstOrNull { it.routeId == current.routeId && it.date == current.date }
+                        val reservation = SeatReservationEntity(
+                            id = UUID.randomUUID().toString(),
+                            declarationId = declaration?.id ?: current.id,
+                            routeId = current.routeId,
+                            userId = current.userId,
+                            date = declaration?.date ?: current.date,
+                            startTime = declaration?.startTime ?: 0L,
+                            startPoiId = current.startPoiId,
+                            endPoiId = current.endPoiId
+                        )
+                        seatDao.insert(reservation)
+                        db.collection("seat_reservations")
+                            .document(reservation.id)
+                            .set(reservation.toFirestoreMap())
+                            .await()
+                        Toast.makeText(context, R.string.seat_booked, Toast.LENGTH_SHORT).show()
+                    } catch (e: Exception) {
+                        Toast.makeText(context, R.string.seat_unavailable, Toast.LENGTH_SHORT).show()
+                        return@launch
+                    }
                 }
 
                 val status = if (accept) "accepted" else "rejected"
