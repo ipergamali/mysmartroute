@@ -253,7 +253,24 @@ class VehicleRequestViewModel : ViewModel() {
                 val current = list[index]
 
                 if (accept) {
-
+                    val resDao = MySmartRouteDatabase.getInstance(context).seatReservationDao()
+                    val reservation = SeatReservationEntity(
+                        id = UUID.randomUUID().toString(),
+                        routeId = current.routeId,
+                        userId = current.userId,
+                        date = current.date,
+                        startPoiId = current.startPoiId,
+                        endPoiId = current.endPoiId
+                    )
+                    resDao.insert(reservation)
+                    try {
+                        db.collection("seat_reservations")
+                            .document(reservation.id)
+                            .set(reservation.toFirestoreMap())
+                            .await()
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to create seat reservation", e)
+                    }
                 }
 
                 val status = if (accept) "accepted" else "rejected"
