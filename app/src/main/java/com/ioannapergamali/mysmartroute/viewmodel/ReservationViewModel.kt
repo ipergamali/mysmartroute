@@ -11,6 +11,7 @@ import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationEntity
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import com.ioannapergamali.mysmartroute.utils.toSeatReservationEntity
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
+import com.ioannapergamali.mysmartroute.model.enumerations.RequestStatus
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -93,33 +94,68 @@ class ReservationViewModel : ViewModel() {
             val db = MySmartRouteDatabase.getInstance(context)
             val resDao = db.seatReservationDao()
             val movingDao = db.movingDao()
-            val existing = movingDao.countForRoute(routeId, date)
+            val transferDao = db.transferRequestDao()
+            val hasInternet = NetworkUtils.isInternetAvailable(context)
+            val existing = movingDao.countCompletedForRoute(routeId, date)
             if (existing > 0) {
                 withContext(Dispatchers.Main) { onResult(false) }
                 return@launch
             }
             val reservations = resDao.getReservationsForRouteAndDateTime(routeId, date, startTime).first()
+            val currentMovings = movingDao.getAll().first()
             reservations.forEach { res ->
-                val moving = MovingEntity(
-                    id = UUID.randomUUID().toString(),
-                    routeId = routeId,
-                    userId = res.userId,
-                    date = date,
-                    vehicleId = declaration.vehicleId,
-                    cost = declaration.cost,
-                    durationMinutes = declaration.durationMinutes,
-                    startPoiId = res.startPoiId,
-                    endPoiId = res.endPoiId,
-                    driverId = declaration.driverId,
-                    status = "completed"
-                )
+                val found = currentMovings.find {
+                    it.routeId == routeId &&
+                        it.userId == res.userId &&
+                        it.startPoiId == res.startPoiId &&
+                        it.endPoiId == res.endPoiId &&
+                        it.date == date
+                }
+                val moving = if (found != null) {
+                    found.copy(
+                        vehicleId = declaration.vehicleId,
+                        cost = declaration.cost,
+                        durationMinutes = declaration.durationMinutes,
+                        driverId = declaration.driverId,
+                        status = "completed"
+                    )
+                } else {
+                    MovingEntity(
+                        id = UUID.randomUUID().toString(),
+                        routeId = routeId,
+                        userId = res.userId,
+                        date = date,
+                        vehicleId = declaration.vehicleId,
+                        cost = declaration.cost,
+                        durationMinutes = declaration.durationMinutes,
+                        startPoiId = res.startPoiId,
+                        endPoiId = res.endPoiId,
+                        driverId = declaration.driverId,
+                        status = "completed"
+                    )
+                }
                 movingDao.insert(moving)
-                if (NetworkUtils.isInternetAvailable(context)) {
+                if (moving.requestNumber != 0) {
+                    transferDao.updateStatus(moving.requestNumber, RequestStatus.COMPLETED)
+                }
+                if (hasInternet) {
                     FirebaseFirestore.getInstance()
                         .collection("movings")
                         .document(moving.id)
                         .set(moving.toFirestoreMap())
                         .await()
+                    if (moving.requestNumber != 0) {
+                        transferDao.getRequestByNumber(moving.requestNumber)
+                            ?.firebaseId
+                            ?.takeIf { it.isNotBlank() }
+                            ?.let { id ->
+                                FirebaseFirestore.getInstance()
+                                    .collection("transfer_requests")
+                                    .document(id)
+                                    .update("status", RequestStatus.COMPLETED.name)
+                                    .await()
+                            }
+                    }
                 }
             }
             withContext(Dispatchers.Main) { onResult(true) }
