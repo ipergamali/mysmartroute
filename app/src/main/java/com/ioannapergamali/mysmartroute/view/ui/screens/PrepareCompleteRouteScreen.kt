@@ -61,7 +61,7 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
     var selectedDeclaration by remember { mutableStateOf<TransportDeclarationEntity?>(null) }
     var selectedTime by remember { mutableStateOf<Long?>(null) }
     var selectedTimeText by remember { mutableStateOf("") }
-    var selectedVehicleType by remember { mutableStateOf<VehicleType?>(null) }
+
     var expandedVehicle by remember { mutableStateOf(false) }
     var pois by remember { mutableStateOf<List<PoIEntity>>(emptyList()) }
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
@@ -112,17 +112,12 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
         } ?: routes
     }
 
-    LaunchedEffect(selectedRoute, selectedDate, selectedTime, selectedVehicleType) {
-        val date = selectedDate
-        val time = selectedTime
-        val vehicle = selectedVehicleType
+
         selectedRoute?.let { route ->
             val (_, path) = routeViewModel.getRouteDirections(context, route.id, VehicleType.CAR)
             pathPoints = path
             pois = routeViewModel.getRoutePois(context, route.id)
-            if (date != null && time != null && vehicle != null) {
-                val decl = declarations.firstOrNull {
-                    it.routeId == route.id && it.date == date && it.startTime == time && it.vehicleType == vehicle.name
+
                 }
                 selectedDeclaration = decl
                 val declId = decl?.id ?: ""
@@ -183,7 +178,7 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                             selectedRoute = null
                             selectedDate = null
                             selectedTime = null
-                            selectedVehicleType = null
+
                         })
                     }
                 }
@@ -211,7 +206,7 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                             expanded = false
                             selectedDate = null
                             selectedTime = null
-                            selectedVehicleType = null
+
                         })
                     }
                 }
@@ -234,7 +229,7 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                             TextButton(onClick = {
                                 selectedDate = datePickerState.selectedDateMillis
                                 selectedTime = null
-                                selectedVehicleType = null
+
                                 showDatePicker = false
                             }) {
                                 Text(stringResource(android.R.string.ok))
@@ -267,7 +262,7 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
 
                 ExposedDropdownMenuBox(expanded = expandedVehicle, onExpandedChange = { expandedVehicle = !expandedVehicle }) {
                     OutlinedTextField(
-                        value = selectedVehicleType?.name ?: stringResource(R.string.select_vehicle),
+
                         onValueChange = {},
                         label = { Text(stringResource(R.string.vehicle_type)) },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedVehicle) },
@@ -277,7 +272,7 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                     ExposedDropdownMenu(expanded = expandedVehicle, onDismissRequest = { expandedVehicle = false }) {
                         VehicleType.values().forEach { type ->
                             DropdownMenuItem(text = { Text(type.name) }, onClick = {
-                                selectedVehicleType = type
+
                                 expandedVehicle = false
                             })
                         }
