@@ -2,7 +2,8 @@ package com.ioannapergamali.mysmartroute.view.ui.screens
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.material3.menuAnchor
@@ -14,7 +15,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -302,10 +302,32 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                 Text(stringResource(R.string.vehicle_type))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     VehicleType.values().forEach { type ->
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        val isSelected = selectedVehicle == type
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .clickable {
+                                    selectedVehicle = if (isSelected) null else type
+                                    vehicleName = ""
+                                    selectedVehicleId = ""
+                                    selectedVehicleDescription = ""
+                                }
+                                .background(
+                                    if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                                    else Color.Transparent
+                                )
+                                .border(
+                                    2.dp,
+                                    if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                                    CircleShape
+                                )
+                                .padding(8.dp)
+                        ) {
                             Icon(
                                 imageVector = iconForVehicle(type),
-                                contentDescription = labelForVehicle(type)
+                                contentDescription = labelForVehicle(type),
+                                tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                             )
                             Text(labelForVehicle(type), style = MaterialTheme.typography.labelSmall)
                         }
