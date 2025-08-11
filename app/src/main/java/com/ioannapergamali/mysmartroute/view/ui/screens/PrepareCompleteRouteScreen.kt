@@ -63,6 +63,7 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
     var selectedTimeText by remember { mutableStateOf("") }
 
     var expandedVehicle by remember { mutableStateOf(false) }
+    var selectedVehicle by remember { mutableStateOf<VehicleType?>(null) }
     var pois by remember { mutableStateOf<List<PoIEntity>>(emptyList()) }
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     var expandedDriver by remember { mutableStateOf(false) }
@@ -112,20 +113,19 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
         } ?: routes
     }
 
-
+    LaunchedEffect(selectedRoute, selectedDate, selectedTime, declarations) {
         selectedRoute?.let { route ->
             val (_, path) = routeViewModel.getRouteDirections(context, route.id, VehicleType.CAR)
             pathPoints = path
             pois = routeViewModel.getRoutePois(context, route.id)
 
-                }
-                selectedDeclaration = decl
-                val declId = decl?.id ?: ""
-                reservationViewModel.loadReservations(context, route.id, date, time, declId)
-            } else {
-                selectedDeclaration = null
-                reservationViewModel.loadReservations(context, route.id, 0L, 0L, "")
-            }
+            val date = selectedDate ?: 0L
+            val time = selectedTime ?: 0L
+            val decl = declarations.find { it.routeId == route.id && it.date == date && it.startTime == time }
+            selectedDeclaration = decl
+            val declId = decl?.id ?: ""
+            reservationViewModel.loadReservations(context, route.id, date, time, declId)
+
             path.firstOrNull()?.let {
                 MapsInitializer.initialize(context)
                 cameraPositionState.move(CameraUpdateFactory.newLatLngZoom(it, 13f))
@@ -262,7 +262,7 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
 
                 ExposedDropdownMenuBox(expanded = expandedVehicle, onExpandedChange = { expandedVehicle = !expandedVehicle }) {
                     OutlinedTextField(
-
+                        value = selectedVehicle?.name ?: "",
                         onValueChange = {},
                         label = { Text(stringResource(R.string.vehicle_type)) },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedVehicle) },
@@ -272,7 +272,7 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                     ExposedDropdownMenu(expanded = expandedVehicle, onDismissRequest = { expandedVehicle = false }) {
                         VehicleType.values().forEach { type ->
                             DropdownMenuItem(text = { Text(type.name) }, onClick = {
-
+                                selectedVehicle = type
                                 expandedVehicle = false
                             })
                         }
