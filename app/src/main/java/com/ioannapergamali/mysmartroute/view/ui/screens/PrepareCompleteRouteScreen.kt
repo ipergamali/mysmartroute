@@ -299,23 +299,7 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                     VehicleType.values().forEach { type ->
                         val isSelected = selectedVehicle == type
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            IconButton(
-                                onClick = {
-                                    selectedVehicle = type
-                                    vehicleName = ""
-                                    selectedVehicleId = ""
-                                    selectedVehicleDescription = ""
-                                },
-                                colors = IconButtonDefaults.iconButtonColors(
-                                    containerColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f) else Color.Transparent,
-                                    contentColor = if (isSelected) MaterialTheme.colorScheme.primary else LocalContentColor.current
-                                ),
-                                modifier = Modifier
-                                    .size(48.dp)
-                                    .then(
-                                        if (isSelected) Modifier.border(1.dp, MaterialTheme.colorScheme.primary, CircleShape) else Modifier
-                                    )
-                            ) {
+
                                 Icon(
                                     imageVector = iconForVehicle(type),
                                     contentDescription = labelForVehicle(type)
