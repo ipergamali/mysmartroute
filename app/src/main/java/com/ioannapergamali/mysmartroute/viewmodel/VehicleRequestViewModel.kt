@@ -253,28 +253,7 @@ class VehicleRequestViewModel : ViewModel() {
                 val current = list[index]
 
                 if (accept) {
-                    try {
-                        val seatDao = MySmartRouteDatabase.getInstance(context).seatReservationDao()
-                        val reservation = SeatReservationEntity(
-                            id = UUID.randomUUID().toString(),
-                            declarationId = current.id,
-                            routeId = current.routeId,
-                            userId = current.userId,
-                            date = current.date,
-                            startTime = 0L,
-                            startPoiId = current.startPoiId,
-                            endPoiId = current.endPoiId
-                        )
-                        seatDao.insert(reservation)
-                        db.collection("seat_reservations")
-                            .document(reservation.id)
-                            .set(reservation.toFirestoreMap())
-                            .await()
-                        Toast.makeText(context, R.string.seat_booked, Toast.LENGTH_SHORT).show()
-                    } catch (e: Exception) {
-                        Toast.makeText(context, R.string.seat_unavailable, Toast.LENGTH_SHORT).show()
-                        return@launch
-                    }
+
                 }
 
                 val status = if (accept) "accepted" else "rejected"
