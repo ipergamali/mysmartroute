@@ -108,8 +108,7 @@ private fun TripRatingItem(
                 }) {
                     Icon(
                         imageVector = if (index <= rating) Icons.Filled.Star else Icons.Outlined.Star,
-                        contentDescription = null,
-                        tint = if (index <= rating) Color(0xFFFFD700) else Color.Gray
+
                     )
                 }
             }
