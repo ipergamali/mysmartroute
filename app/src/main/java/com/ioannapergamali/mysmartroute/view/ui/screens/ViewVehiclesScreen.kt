@@ -56,10 +56,9 @@ private fun TableCell(width: Dp, content: @Composable () -> Unit) {
 @Composable
 private fun HeaderRow() {
     Row {
-        TableCell(width = 40.dp) { Text("") }
+        TableCell(width = 80.dp) { Text("") }
         TableCell(width = 120.dp) { Text(stringResource(R.string.vehicle_name)) }
         TableCell(width = 120.dp) { Text(stringResource(R.string.license_plate)) }
-        TableCell(width = 180.dp) { Text(stringResource(R.string.poi_description)) }
         TableCell(width = 80.dp) { Text(stringResource(R.string.vehicle_color)) }
         TableCell(width = 60.dp) { Text(stringResource(R.string.seats_label)) }
     }
@@ -122,12 +121,14 @@ fun ViewVehiclesScreen(navController: NavController, openDrawer: () -> Unit) {
 private fun VehicleRow(vehicle: VehicleEntity) {
     Row {
         val type = runCatching { VehicleType.valueOf(vehicle.type) }.getOrNull()
-        TableCell(width = 40.dp) {
-            type?.let { Icon(imageVector = iconForVehicle(it), contentDescription = null) }
+        TableCell(width = 80.dp) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                type?.let { Icon(imageVector = iconForVehicle(it), contentDescription = null) }
+                Text(text = vehicle.description, style = MaterialTheme.typography.labelSmall, softWrap = false)
+            }
         }
         TableCell(width = 120.dp) { Text(text = vehicle.name, softWrap = false) }
         TableCell(width = 120.dp) { Text(text = vehicle.plate, softWrap = false) }
-        TableCell(width = 180.dp) { Text(text = vehicle.description, softWrap = false) }
         TableCell(width = 80.dp) { Text(text = vehicle.color, softWrap = false) }
         TableCell(width = 60.dp) { Text(text = vehicle.seat.toString(), softWrap = false) }
     }
