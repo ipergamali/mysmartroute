@@ -87,10 +87,7 @@ private fun TripRatingItem(
     } else ""
 
     Column(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = trip.moving.routeName.ifBlank { trip.moving.routeId },
-            style = MaterialTheme.typography.titleMedium
-        )
+
         if (dateText.isNotBlank()) {
             Text(text = dateText, style = MaterialTheme.typography.bodySmall)
         }

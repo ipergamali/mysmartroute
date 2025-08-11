@@ -1,11 +1,17 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.material3.menuAnchor
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
@@ -196,17 +202,19 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                     )
                     ExposedDropdownMenu(expanded = expandedDriver, onDismissRequest = { expandedDriver = false }) {
                         drivers.forEach { driver ->
-                            DropdownMenuItem(text = { Text("${driver.name} ${driver.surname}") }, onClick = {
-                            selectedDriverId = driver.id
-                            selectedDriverName = "${driver.name} ${driver.surname}"
-                            expandedDriver = false
-                            selectedRoute = null
-                            selectedDate = null
-                            selectedTime = null
-
-                        })
+                            DropdownMenuItem(
+                                text = { Text("${driver.name} ${driver.surname}") },
+                                onClick = {
+                                    selectedDriverId = driver.id
+                                    selectedDriverName = "${driver.name} ${driver.surname}"
+                                    expandedDriver = false
+                                    selectedRoute = null
+                                    selectedDate = null
+                                    selectedTime = null
+                                }
+                            )
+                        }
                     }
-                }
                 }
                 Spacer(Modifier.height(16.dp))
             } else {
@@ -292,21 +300,35 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                 Spacer(Modifier.height(16.dp))
 
                 Text(stringResource(R.string.vehicle_type))
-                Row {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     VehicleType.values().forEach { type ->
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            IconButton(onClick = {
-                                selectedVehicle = type
-                                vehicleName = ""
-                                selectedVehicleId = ""
-                                selectedVehicleDescription = ""
-                            }) {
-                                Icon(
-                                    imageVector = iconForVehicle(type),
-                                    contentDescription = labelForVehicle(type),
-                                    tint = if (selectedVehicle == type) MaterialTheme.colorScheme.primary else LocalContentColor.current
+                        val isSelected = selectedVehicle == type
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .clickable {
+                                    selectedVehicle = if (isSelected) null else type
+                                    vehicleName = ""
+                                    selectedVehicleId = ""
+                                    selectedVehicleDescription = ""
+                                }
+                                .background(
+                                    if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                                    else Color.Transparent
                                 )
-                            }
+                                .border(
+                                    2.dp,
+                                    if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                                    CircleShape
+                                )
+                                .padding(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = iconForVehicle(type),
+                                contentDescription = labelForVehicle(type),
+                                tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                            )
                             Text(labelForVehicle(type), style = MaterialTheme.typography.labelSmall)
                         }
                     }
