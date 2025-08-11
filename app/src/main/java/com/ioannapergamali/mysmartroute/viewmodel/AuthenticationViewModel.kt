@@ -361,7 +361,13 @@ class AuthenticationViewModel : ViewModel() {
             Log.i(TAG, "Using roleId: $roleId")
             var menusLocal = loadMenusWithInheritanceLocal(dbLocal, roleId)
             var hasOptions = menusLocal.all { it.options.isNotEmpty() }
-            if (menusLocal.isEmpty() || !hasOptions) {
+            val currentRole = roleIds.entries.find { it.value == roleId }?.key
+            val expectedOptionKeys = currentRole?.let { role ->
+                defaultMenus(context, role).flatMap { it.second.map { opt -> opt.first } }
+            } ?: emptyList()
+            var existingOptionKeys = menusLocal.flatMap { it.options.map { opt -> opt.titleResKey } }
+            var hasMissingOptions = expectedOptionKeys.any { it !in existingOptionKeys }
+            if (menusLocal.isEmpty() || !hasOptions || hasMissingOptions) {
                 // Βεβαιωνόμαστε ότι η τοπική βάση περιέχει τα προεπιλεγμένα μενού
                 try {
                     initializeRolesAndMenusIfNeeded(context)
@@ -370,9 +376,11 @@ class AuthenticationViewModel : ViewModel() {
                 }
                 menusLocal = loadMenusWithInheritanceLocal(dbLocal, roleId)
                 hasOptions = menusLocal.all { it.options.isNotEmpty() }
+                existingOptionKeys = menusLocal.flatMap { it.options.map { opt -> opt.titleResKey } }
+                hasMissingOptions = expectedOptionKeys.any { it !in existingOptionKeys }
             }
 
-            if (menusLocal.isNotEmpty() && hasOptions) {
+            if (menusLocal.isNotEmpty() && hasOptions && !hasMissingOptions) {
                 _currentMenus.value = menusLocal
             } else if (NetworkUtils.isInternetAvailable(context)) {
                 Log.i(TAG, "Loading menus from Firestore")
