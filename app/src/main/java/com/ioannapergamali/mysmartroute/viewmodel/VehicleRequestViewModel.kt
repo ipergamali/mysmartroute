@@ -265,9 +265,12 @@ class VehicleRequestViewModel : ViewModel() {
                         declarationId = current.id
                     )
                     result.fold(
-                        onSuccess = { },
+                        onSuccess = {
+                            Toast.makeText(context, R.string.seat_booked, Toast.LENGTH_SHORT).show()
+                        },
                         onFailure = {
-           return@launch
+                            Toast.makeText(context, R.string.seat_unavailable, Toast.LENGTH_SHORT).show()
+                            return@launch
                         }
                     )
                 }
