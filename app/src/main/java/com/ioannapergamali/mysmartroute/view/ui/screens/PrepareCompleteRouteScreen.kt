@@ -1,11 +1,15 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.material3.menuAnchor
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
@@ -292,15 +296,25 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                 Spacer(Modifier.height(16.dp))
 
                 Text(stringResource(R.string.vehicle_type))
-                Row {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     VehicleType.values().forEach { type ->
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            IconButton(onClick = {
-                                selectedVehicle = type
-                                vehicleName = ""
-                                selectedVehicleId = ""
-                                selectedVehicleDescription = ""
-                            }) {
+                            IconButton(
+                                onClick = {
+                                    selectedVehicle = type
+                                    vehicleName = ""
+                                    selectedVehicleId = ""
+                                    selectedVehicleDescription = ""
+                                },
+                                modifier = Modifier
+                                    .size(48.dp)
+                                    .clip(CircleShape)
+                                    .border(
+                                        2.dp,
+                                        if (selectedVehicle == type) MaterialTheme.colorScheme.primary else Color.Transparent,
+                                        CircleShape
+                                    )
+                            ) {
                                 Icon(
                                     imageVector = iconForVehicle(type),
                                     contentDescription = labelForVehicle(type),
