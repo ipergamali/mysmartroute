@@ -11,6 +11,11 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AttachMoney
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -101,12 +106,18 @@ fun ViewRequestsScreen(
                 Text(stringResource(R.string.no_requests))
             } else {
                 Row {
-                    Button(onClick = { sortOption.value = SortOption.COST }) {
-                        Text(stringResource(R.string.sort_by_cost))
+                    IconButton(onClick = { sortOption.value = SortOption.COST }) {
+                        Icon(
+                            imageVector = Icons.Filled.AttachMoney,
+                            contentDescription = stringResource(R.string.sort_by_cost)
+                        )
                     }
                     Spacer(modifier = Modifier.width(8.dp))
-                    Button(onClick = { sortOption.value = SortOption.DATE }) {
-                        Text(stringResource(R.string.sort_by_date))
+                    IconButton(onClick = { sortOption.value = SortOption.DATE }) {
+                        Icon(
+                            imageVector = Icons.Filled.CalendarMonth,
+                            contentDescription = stringResource(R.string.sort_by_date)
+                        )
                     }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
