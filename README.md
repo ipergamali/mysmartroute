@@ -141,3 +141,27 @@ val notification = NotificationCompat.Builder(this, CHANNEL_ID)
 ```
 
 Το αρχείο `ic_notification.xml` πρέπει να βρίσκεται στο `res/drawable` και να έχει απλή λευκή μορφή ώστε να προβάλλεται σωστά στη γραμμή ειδοποιήσεων.
+
+### Αποδοχή αδειών Android SDK
+
+Για να αποδεχθείς τις άδειες χρήσης του Android SDK σε περιβάλλον Linux:
+
+1. Εγκατάσταση ή ενημέρωση των command-line tools:
+   ```bash
+   sdkmanager "cmdline-tools;latest"
+   ```
+2. Εγκατάσταση των απαραίτητων πακέτων (αν λείπουν):
+   ```bash
+   sdkmanager "build-tools;35.0.0" "platforms;android-35"
+   ```
+3. Αποδοχή των αδειών:
+   ```bash
+   sdkmanager --licenses
+   ```
+4. (Προαιρετικά) Μεταφορά αδειών σε άλλο μηχάνημα:
+   - Αντέγραψε τον φάκελο `licenses` από το `$ANDROID_HOME` και τοποθέτησέ τον στο αντίστοιχο directory του νέου μηχανήματος.
+
+Αν δεις μήνυμα όπως
+`Failed to install the following Android SDK packages as some licences have not been accepted`,
+εκτέλεσε τις παραπάνω εντολές και βεβαιώσου ότι η μεταβλητή `ANDROID_HOME` δείχνει στη σωστή διαδρομή, π.χ. `/usr/lib/android-sdk`.
+
