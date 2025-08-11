@@ -86,12 +86,18 @@ class ReservationViewModel : ViewModel() {
         routeId: String,
         date: Long,
         startTime: Long,
-        declaration: TransportDeclarationEntity
+        declaration: TransportDeclarationEntity,
+        onResult: (Boolean) -> Unit = {}
     ) {
         viewModelScope.launch {
             val db = MySmartRouteDatabase.getInstance(context)
             val resDao = db.seatReservationDao()
             val movingDao = db.movingDao()
+            val existing = movingDao.countForRoute(routeId, date)
+            if (existing > 0) {
+                withContext(Dispatchers.Main) { onResult(false) }
+                return@launch
+            }
             val reservations = resDao.getReservationsForRouteAndDateTime(routeId, date, startTime).first()
             reservations.forEach { res ->
                 val moving = MovingEntity(
@@ -116,6 +122,7 @@ class ReservationViewModel : ViewModel() {
                         .await()
                 }
             }
+            withContext(Dispatchers.Main) { onResult(true) }
         }
     }
 }

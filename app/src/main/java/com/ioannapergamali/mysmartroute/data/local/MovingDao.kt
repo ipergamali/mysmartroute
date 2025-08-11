@@ -18,4 +18,7 @@ interface MovingDao {
 
     @Query("DELETE FROM movings WHERE id IN (:ids)")
     suspend fun deleteByIds(ids: List<String>)
+
+    @Query("SELECT COUNT(*) FROM movings WHERE routeId = :routeId AND date = :date")
+    suspend fun countForRoute(routeId: String, date: Long): Int
 }
