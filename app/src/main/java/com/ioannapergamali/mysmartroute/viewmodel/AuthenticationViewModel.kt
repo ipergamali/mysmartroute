@@ -365,9 +365,7 @@ class AuthenticationViewModel : ViewModel() {
             val expectedOptionKeys = currentRole?.let { role ->
                 defaultMenus(context, role).flatMap { it.second.map { opt -> opt.first } }
             } ?: emptyList()
-            var existingOptionKeys = menusLocal.flatMap { it.options.map { opt -> opt.titleResKey } }
-            var hasMissingOptions = expectedOptionKeys.any { it !in existingOptionKeys }
-            if (menusLocal.isEmpty() || !hasOptions || hasMissingOptions) {
+
                 // Βεβαιωνόμαστε ότι η τοπική βάση περιέχει τα προεπιλεγμένα μενού
                 try {
                     initializeRolesAndMenusIfNeeded(context)
