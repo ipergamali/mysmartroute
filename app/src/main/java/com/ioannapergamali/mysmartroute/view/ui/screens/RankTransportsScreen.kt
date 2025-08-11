@@ -52,7 +52,7 @@ fun RankTransportsScreen(navController: NavController, openDrawer: () -> Unit) {
             )
         }
     ) { padding ->
-        ScreenContainer(modifier = Modifier.padding(padding)) {
+        ScreenContainer(modifier = Modifier.padding(padding), scrollable = false) {
             if (trips.isEmpty()) {
                 Text(stringResource(R.string.no_completed_transports))
             } else {
