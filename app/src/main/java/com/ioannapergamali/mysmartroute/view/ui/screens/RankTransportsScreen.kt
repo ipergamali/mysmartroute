@@ -39,6 +39,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Star
 import android.text.format.DateFormat
 import java.util.Date
+import androidx.compose.ui.graphics.Color
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -107,7 +108,7 @@ private fun TripRatingItem(
                 }) {
                     Icon(
                         imageVector = if (index <= rating) Icons.Filled.Star else Icons.Outlined.Star,
-                        contentDescription = null
+
                     )
                 }
             }
