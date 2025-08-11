@@ -31,7 +31,7 @@ fun PrintScheduledScreen(navController: NavController, openDrawer: () -> Unit) {
     val context = LocalContext.current
     val declarationViewModel: TransportDeclarationViewModel = viewModel()
     val routeViewModel: RouteViewModel = viewModel()
-    val declarations by declarationViewModel.declarations.collectAsState()
+    val declarations by declarationViewModel.pendingDeclarations.collectAsState()
     val routes by routeViewModel.routes.collectAsState()
 
     LaunchedEffect(Unit) {

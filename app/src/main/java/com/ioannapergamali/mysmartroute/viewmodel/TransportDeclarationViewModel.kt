@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.util.UUID
 
 /** ViewModel για αποθήκευση δηλώσεων μεταφοράς. */
@@ -21,16 +22,38 @@ class TransportDeclarationViewModel : ViewModel() {
     private val _declarations = MutableStateFlow<List<TransportDeclarationEntity>>(emptyList())
     val declarations: StateFlow<List<TransportDeclarationEntity>> = _declarations
 
+    private val _pendingDeclarations = MutableStateFlow<List<TransportDeclarationEntity>>(emptyList())
+    val pendingDeclarations: StateFlow<List<TransportDeclarationEntity>> = _pendingDeclarations
+
+    private val _completedDeclarations = MutableStateFlow<List<TransportDeclarationEntity>>(emptyList())
+    val completedDeclarations: StateFlow<List<TransportDeclarationEntity>> = _completedDeclarations
+
     companion object {
         private const val TAG = "TransportDeclVM"
     }
 
     fun loadDeclarations(context: Context, driverId: String? = null) {
         viewModelScope.launch {
-            val dao = MySmartRouteDatabase.getInstance(context).transportDeclarationDao()
+            val db = MySmartRouteDatabase.getInstance(context)
+            val dao = db.transportDeclarationDao()
+            val movingDao = db.movingDao()
             val flow = if (driverId == null) dao.getAll() else dao.getForDriver(driverId)
             flow.collect { list ->
                 _declarations.value = list
+                val pending = mutableListOf<TransportDeclarationEntity>()
+                val completed = mutableListOf<TransportDeclarationEntity>()
+                withContext(Dispatchers.IO) {
+                    list.forEach { decl ->
+                        val count = movingDao.countCompletedForRoute(decl.routeId, decl.date)
+                        if (count > 0) {
+                            completed += decl
+                        } else {
+                            pending += decl
+                        }
+                    }
+                }
+                _pendingDeclarations.value = pending
+                _completedDeclarations.value = completed
             }
         }
     }
