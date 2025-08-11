@@ -29,6 +29,8 @@ import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
+import com.ioannapergamali.mysmartroute.view.ui.util.iconForVehicle
+import com.ioannapergamali.mysmartroute.view.ui.util.labelForVehicle
 import com.ioannapergamali.mysmartroute.viewmodel.ReservationViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.TransportDeclarationViewModel
@@ -62,8 +64,8 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
     var selectedTime by remember { mutableStateOf<Long?>(null) }
     var selectedTimeText by remember { mutableStateOf("") }
 
-    var expandedVehicle by remember { mutableStateOf(false) }
     var selectedVehicle by remember { mutableStateOf<VehicleType?>(null) }
+    var vehicleName by remember { mutableStateOf("") }
     var pois by remember { mutableStateOf<List<PoIEntity>>(emptyList()) }
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     var expandedDriver by remember { mutableStateOf(false) }
@@ -260,24 +262,25 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                 }
                 Spacer(Modifier.height(16.dp))
 
-                ExposedDropdownMenuBox(expanded = expandedVehicle, onExpandedChange = { expandedVehicle = !expandedVehicle }) {
-                    OutlinedTextField(
-                        value = selectedVehicle?.name ?: "",
-                        onValueChange = {},
-                        label = { Text(stringResource(R.string.vehicle_type)) },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedVehicle) },
-                        modifier = Modifier.menuAnchor().fillMaxWidth(),
-                        readOnly = true
-                    )
-                    ExposedDropdownMenu(expanded = expandedVehicle, onDismissRequest = { expandedVehicle = false }) {
-                        VehicleType.values().forEach { type ->
-                            DropdownMenuItem(text = { Text(type.name) }, onClick = {
-                                selectedVehicle = type
-                                expandedVehicle = false
-                            })
+                Text(stringResource(R.string.vehicle_type))
+                Row {
+                    VehicleType.values().forEach { type ->
+                        IconButton(onClick = { selectedVehicle = type }) {
+                            Icon(
+                                imageVector = iconForVehicle(type),
+                                contentDescription = labelForVehicle(type),
+                                tint = if (selectedVehicle == type) MaterialTheme.colorScheme.primary else LocalContentColor.current
+                            )
                         }
                     }
                 }
+                Spacer(Modifier.height(16.dp))
+                OutlinedTextField(
+                    value = vehicleName,
+                    onValueChange = { vehicleName = it },
+                    label = { Text(stringResource(R.string.vehicle_name)) },
+                    modifier = Modifier.fillMaxWidth()
+                )
                 Spacer(Modifier.height(16.dp))
             }
 
