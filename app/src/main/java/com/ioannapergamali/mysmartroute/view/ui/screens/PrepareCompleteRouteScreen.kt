@@ -11,7 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color as ComposeColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
@@ -315,11 +315,11 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                                 }
                                 .background(
                                     if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-                                    else Color.Transparent
+                                      else ComposeColor.Transparent
                                 )
                                 .border(
                                     2.dp,
-                                    if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                                      if (isSelected) MaterialTheme.colorScheme.primary else ComposeColor.Transparent,
                                     CircleShape
                                 )
                                 .padding(8.dp)
