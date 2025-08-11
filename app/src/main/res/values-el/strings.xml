@@ -175,7 +175,6 @@
     <string name="max_cost">Μέγιστο κόστος</string>
     <string name="request_sent">Το αίτημα καταχωρήθηκε</string>
     <string name="view_requests">Προβολή αιτημάτων</string>
-    <string name="select_search_criteria">Επιλέξτε ημερομηνία, ώρα και διαδρομή</string>
     <string name="view_transport_requests">Προβολή αιτημάτων μεταφοράς</string>
     <string name="sort_by_cost">Ταξινόμηση κατά κόστος</string>
     <string name="sort_by_date">Ταξινόμηση κατά ημερομηνία</string>

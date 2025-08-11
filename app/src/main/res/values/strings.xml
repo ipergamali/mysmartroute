@@ -190,7 +190,6 @@
     <string name="request_sent">Request saved</string>
     <string name="view_requests">View Requests</string>
     <string name="no_requests">No requests found</string>
-    <string name="select_search_criteria">Please select date, time and route</string>
     <string name="view_movings">View Movings</string>
     <string name="no_movings">No movings found</string>
     <string name="active_movings">Active movings</string>
@@ -207,9 +206,6 @@
     <string name="reject_offer">Reject</string>
     <string name="no_notifications">No notifications</string>
     <string name="no_scheduled_transports">No scheduled transports</string>
-    <string name="walking">Walking</string>
-    <string name="walking_routes">Walking routes</string>
-    <string name="no_walking_routes">No walking routes found</string>
 
     <!-- Notification text -->
     <string name="app_started_notification">App started successfully</string>
