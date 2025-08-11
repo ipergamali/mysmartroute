@@ -361,7 +361,13 @@ class AuthenticationViewModel : ViewModel() {
             Log.i(TAG, "Using roleId: $roleId")
             var menusLocal = loadMenusWithInheritanceLocal(dbLocal, roleId)
             var hasOptions = menusLocal.all { it.options.isNotEmpty() }
-            if (menusLocal.isEmpty() || !hasOptions) {
+            val currentRole = roleIds.entries.find { it.value == roleId }?.key
+            val expectedOptionKeys = currentRole?.let { role ->
+                defaultMenus(context, role).flatMap { it.second.map { opt -> opt.first } }
+            } ?: emptyList()
+            val existingOptionKeys = menusLocal.flatMap { it.options.map { opt -> opt.titleResKey } }
+            val missingOptions = expectedOptionKeys.any { it !in existingOptionKeys }
+            if (menusLocal.isEmpty() || !hasOptions || missingOptions) {
                 // Βεβαιωνόμαστε ότι η τοπική βάση περιέχει τα προεπιλεγμένα μενού
                 try {
                     initializeRolesAndMenusIfNeeded(context)
