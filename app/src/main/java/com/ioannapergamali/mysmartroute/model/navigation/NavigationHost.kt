@@ -41,6 +41,7 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.ViewRequestsScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.PassengerMovingsScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.BookSeatScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.FindVehicleScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.FindPassengersScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.RouteModeScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.ViewRoutesScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.SelectRoutePoisScreen
@@ -191,6 +192,10 @@ fun NavigationHost(
                 titleRes = R.string.find_way,
                 includeCost = true
             )
+        }
+
+        composable("findPassengers") {
+            FindPassengersScreen(navController = navController, openDrawer = openDrawer)
         }
 
         composable(
