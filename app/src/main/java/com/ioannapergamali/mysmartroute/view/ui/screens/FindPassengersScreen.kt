@@ -79,15 +79,17 @@ fun FindPassengersScreen(
     val selectedDateText = selectedDateMillis?.let { dateFormatter.format(Date(it)) }
         ?: stringResource(R.string.select_date)
 
+    val hasCriteria = selectedDateMillis != null || selectedTimeMillis != null || selectedRouteId != null
+
     val filteredDeclarations = remember(declarations, selectedDateMillis, selectedTimeMillis, selectedRouteId) {
-        declarations.filter { decl ->
+        if (!hasCriteria) emptyList() else declarations.filter { decl ->
             (selectedDateMillis == null || decl.date == selectedDateMillis) &&
             (selectedTimeMillis == null || decl.startTime == selectedTimeMillis) &&
             (selectedRouteId == null || decl.routeId == selectedRouteId)
         }
     }
     val routeIds = filteredDeclarations.map { it.routeId }.toSet()
-    val filteredRequests = requests.filter { req ->
+    val filteredRequests = if (!hasCriteria) emptyList() else requests.filter { req ->
         routeIds.contains(req.routeId) &&
             (selectedDateMillis == null || req.date == selectedDateMillis) &&
             req.status != "completed"
@@ -139,7 +141,9 @@ fun FindPassengersScreen(
                 }
                 Spacer(modifier = Modifier.height(8.dp))
             }
-            if (filteredRequests.isEmpty()) {
+            if (!hasCriteria) {
+                Text(stringResource(R.string.select_search_criteria))
+            } else if (filteredRequests.isEmpty()) {
                 Text(stringResource(R.string.no_requests))
             } else {
                 LazyColumn {
