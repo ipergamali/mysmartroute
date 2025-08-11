@@ -52,6 +52,7 @@ class VehicleRequestViewModel : ViewModel() {
 
     companion object {
         private const val TAG = "VehicleRequestVM"
+        const val WALKING_ID = "WALK"
     }
 
     private fun getNextRequestNumber(context: Context): Int {
@@ -124,6 +125,30 @@ class VehicleRequestViewModel : ViewModel() {
                 showAcceptedNotifications(context)
                 showRejectedNotifications(context)
             }
+        }
+    }
+
+    fun logWalking(context: Context, dateTime: Long) {
+        viewModelScope.launch {
+            val dbInstance = MySmartRouteDatabase.getInstance(context)
+            val dao = dbInstance.movingDao()
+            val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+            val id = UUID.randomUUID().toString()
+            val entity = MovingEntity(
+                id = id,
+                routeId = "",
+                userId = userId,
+                date = dateTime,
+                vehicleId = WALKING_ID,
+                status = "open"
+            )
+            dao.insert(entity)
+            try {
+                db.collection("movings").document(id).set(entity.toFirestoreMap()).await()
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to log walking", e)
+            }
+            _requests.value = _requests.value + entity
         }
     }
 
@@ -313,6 +338,26 @@ class VehicleRequestViewModel : ViewModel() {
                     ).await()
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to respond to offer", e)
+                }
+            }
+        }
+    }
+
+    fun setWalkingStatus(context: Context, requestId: String, accept: Boolean) {
+        viewModelScope.launch {
+            val dao = MySmartRouteDatabase.getInstance(context).movingDao()
+            val list = _requests.value.toMutableList()
+            val index = list.indexOfFirst { it.id == requestId }
+            if (index != -1) {
+                val status = if (accept) "accepted" else "rejected"
+                val updated = list[index].copy(status = status)
+                list[index] = updated
+                _requests.value = list
+                dao.insert(updated)
+                try {
+                    db.collection("movings").document(requestId).update("status", status).await()
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to update walking status", e)
                 }
             }
         }

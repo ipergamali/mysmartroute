@@ -207,6 +207,9 @@
     <string name="reject_offer">Reject</string>
     <string name="no_notifications">No notifications</string>
     <string name="no_scheduled_transports">No scheduled transports</string>
+    <string name="walking">Walking</string>
+    <string name="walking_routes">Walking routes</string>
+    <string name="no_walking_routes">No walking routes found</string>
 
     <!-- Notification text -->
     <string name="app_started_notification">App started successfully</string>
