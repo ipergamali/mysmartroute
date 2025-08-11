@@ -85,16 +85,12 @@ private fun TripRatingItem(
     val dateText = if (trip.moving.date > 0L) {
         DateFormat.getDateFormat(context).format(Date(trip.moving.date))
     } else ""
-    val info = buildString {
-        append(trip.moving.routeName)
-        if (dateText.isNotBlank()) {
-            append(" - ")
-            append(dateText)
-        }
-    }
 
     Column(modifier = Modifier.fillMaxWidth()) {
-        Text(text = info, style = MaterialTheme.typography.titleMedium)
+        Text(text = trip.moving.routeName, style = MaterialTheme.typography.titleMedium)
+        if (dateText.isNotBlank()) {
+            Text(text = dateText, style = MaterialTheme.typography.bodySmall)
+        }
         Slider(
             value = rating,
             onValueChange = {
