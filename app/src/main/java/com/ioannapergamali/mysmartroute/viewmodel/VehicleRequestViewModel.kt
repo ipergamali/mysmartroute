@@ -15,6 +15,7 @@ import com.ioannapergamali.mysmartroute.data.local.RouteDao
 import kotlinx.coroutines.Dispatchers
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.utils.toMovingEntity
+import com.ioannapergamali.mysmartroute.utils.toTransportDeclarationEntity
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import com.ioannapergamali.mysmartroute.utils.NotificationUtils
 import com.ioannapergamali.mysmartroute.R
@@ -254,11 +255,36 @@ class VehicleRequestViewModel : ViewModel() {
 
                 if (accept) {
                     val resDao = MySmartRouteDatabase.getInstance(context).seatReservationDao()
+
+                    val declaration = try {
+                        db.collection("transport_declarations")
+                            .whereEqualTo(
+                                "routeId",
+                                db.collection("routes").document(current.routeId)
+                            )
+                            .whereEqualTo(
+                                "driverId",
+                                db.collection("users").document(current.driverId)
+                            )
+                            .whereEqualTo("date", current.date)
+                            .limit(1)
+                            .get()
+                            .await()
+                            .documents
+                            .firstOrNull()
+                            ?.toTransportDeclarationEntity()
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to fetch declaration", e)
+                        null
+                    }
+
                     val reservation = SeatReservationEntity(
                         id = UUID.randomUUID().toString(),
+                        declarationId = declaration?.id ?: "",
                         routeId = current.routeId,
                         userId = current.userId,
                         date = current.date,
+                        startTime = declaration?.startTime ?: 0L,
                         startPoiId = current.startPoiId,
                         endPoiId = current.endPoiId
                     )
