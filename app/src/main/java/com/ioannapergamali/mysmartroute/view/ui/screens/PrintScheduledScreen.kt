@@ -19,25 +19,30 @@ import com.google.firebase.auth.FirebaseAuth
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
-import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
-import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.TransportDeclarationViewModel
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun PrintScheduledScreen(navController: NavController, openDrawer: () -> Unit) {
     val context = LocalContext.current
-    val requestViewModel: VehicleRequestViewModel = viewModel()
-    val poiViewModel: PoIViewModel = viewModel()
-    val requests by requestViewModel.requests.collectAsState()
-    val pois by poiViewModel.pois.collectAsState()
+    val declarationViewModel: TransportDeclarationViewModel = viewModel()
+    val routeViewModel: RouteViewModel = viewModel()
+    val declarations by declarationViewModel.declarations.collectAsState()
+    val routes by routeViewModel.routes.collectAsState()
 
     LaunchedEffect(Unit) {
-        poiViewModel.loadPois(context)
-        requestViewModel.loadRequests(context, allUsers = true)
+        val driverId = FirebaseAuth.getInstance().currentUser?.uid
+        if (driverId != null) {
+            declarationViewModel.loadDeclarations(context, driverId)
+            routeViewModel.loadRoutes(context)
+        }
     }
 
-    val currentDriver = FirebaseAuth.getInstance().currentUser?.uid
-    val scheduled = requests.filter { it.status == "accepted" && it.driverId == currentDriver }
-    val poiNames = pois.associate { it.id to it.name }
+    val routeNames = routes.associate { it.id to it.name }
+    val scheduled = declarations.filter { it.date >= System.currentTimeMillis() }
 
     Scaffold(
         topBar = {
@@ -53,11 +58,12 @@ fun PrintScheduledScreen(navController: NavController, openDrawer: () -> Unit) {
             if (scheduled.isEmpty()) {
                 Text(text = stringResource(R.string.no_scheduled_transports))
             } else {
+                val formatter = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
                 LazyColumn {
-                    items(scheduled) { req ->
-                        val fromName = poiNames[req.startPoiId] ?: ""
-                        val toName = poiNames[req.endPoiId] ?: ""
-                        Text("$fromName → $toName")
+                    items(scheduled) { decl ->
+                        val routeName = routeNames[decl.routeId] ?: ""
+                        val dateText = formatter.format(Date(decl.date))
+                        Text("$routeName – $dateText")
                         Divider()
                     }
                 }
