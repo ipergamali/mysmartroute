@@ -302,14 +302,11 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                 Text(stringResource(R.string.vehicle_type))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     VehicleType.values().forEach { type ->
-                        val isSelected = selectedVehicle == type
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-
-                                Icon(
-                                    imageVector = iconForVehicle(type),
-                                    contentDescription = labelForVehicle(type)
-                                )
-                            }
+                            Icon(
+                                imageVector = iconForVehicle(type),
+                                contentDescription = labelForVehicle(type)
+                            )
                             Text(labelForVehicle(type), style = MaterialTheme.typography.labelSmall)
                         }
                     }
