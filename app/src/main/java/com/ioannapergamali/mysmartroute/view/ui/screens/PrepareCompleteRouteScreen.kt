@@ -289,7 +289,12 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                 Row {
                     VehicleType.values().forEach { type ->
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            IconButton(onClick = { selectedVehicle = type }) {
+                            IconButton(onClick = {
+                                selectedVehicle = type
+                                vehicleName = ""
+                                selectedVehicleId = ""
+                                selectedVehicleDescription = ""
+                            }) {
                                 Icon(
                                     imageVector = iconForVehicle(type),
                                     contentDescription = labelForVehicle(type),
@@ -311,15 +316,20 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                         readOnly = true
                     )
                     ExposedDropdownMenu(expanded = expandedVehicle, onDismissRequest = { expandedVehicle = false }) {
-                        vehicles.filter { it.userId == selectedDriverId }.forEach { vehicle ->
-                            DropdownMenuItem(text = { Text(vehicle.name) }, onClick = {
-                                vehicleName = vehicle.name
-                                selectedVehicle = runCatching { VehicleType.valueOf(vehicle.type) }.getOrNull()
-                                selectedVehicleId = vehicle.id
-                                selectedVehicleDescription = vehicle.description
-                                expandedVehicle = false
-                            })
-                        }
+                        vehicles
+                            .filter {
+                                it.userId == selectedDriverId &&
+                                    (selectedVehicle == null || runCatching { VehicleType.valueOf(it.type) }.getOrNull() == selectedVehicle)
+                            }
+                            .forEach { vehicle ->
+                                DropdownMenuItem(text = { Text(vehicle.name) }, onClick = {
+                                    vehicleName = vehicle.name
+                                    selectedVehicle = runCatching { VehicleType.valueOf(vehicle.type) }.getOrNull()
+                                    selectedVehicleId = vehicle.id
+                                    selectedVehicleDescription = vehicle.description
+                                    expandedVehicle = false
+                                })
+                            }
                     }
                 }
                 if (selectedVehicleDescription.isNotEmpty()) {
