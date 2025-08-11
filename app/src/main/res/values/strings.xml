@@ -190,7 +190,7 @@
     <string name="request_sent">Request saved</string>
     <string name="view_requests">View Requests</string>
     <string name="no_requests">No requests found</string>
-    <string name="select_search_criteria">Please select search criteria</string>
+    <string name="select_search_criteria">Please select date, time and route</string>
     <string name="view_movings">View Movings</string>
     <string name="no_movings">No movings found</string>
     <string name="active_movings">Active movings</string>
