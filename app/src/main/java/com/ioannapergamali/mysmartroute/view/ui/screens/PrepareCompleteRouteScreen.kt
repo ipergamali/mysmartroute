@@ -4,11 +4,12 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.material3.menuAnchor
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.res.dimensionResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import android.widget.Toast
@@ -31,6 +32,7 @@ import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.view.ui.util.iconForVehicle
 import com.ioannapergamali.mysmartroute.view.ui.util.labelForVehicle
+import com.ioannapergamali.mysmartroute.viewmodel.VehicleViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.ReservationViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.TransportDeclarationViewModel
@@ -50,12 +52,14 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
     val userViewModel: UserViewModel = viewModel()
     val poiViewModel: PoIViewModel = viewModel()
     val authViewModel: AuthenticationViewModel = viewModel()
+    val vehicleViewModel: VehicleViewModel = viewModel()
     val routes by routeViewModel.routes.collectAsState()
     val reservations by reservationViewModel.reservations.collectAsState()
     val declarations by declarationViewModel.declarations.collectAsState()
     val role by authViewModel.currentUserRole.collectAsState()
     val drivers by userViewModel.drivers.collectAsState()
     val allPois by poiViewModel.pois.collectAsState()
+    val vehicles by vehicleViewModel.vehicles.collectAsState()
     val userNames = remember { mutableStateMapOf<String, String>() }
     val poiNames = remember { mutableStateMapOf<String, String>() }
     var selectedRoute by remember { mutableStateOf<RouteEntity?>(null) }
@@ -66,6 +70,9 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
 
     var selectedVehicle by remember { mutableStateOf<VehicleType?>(null) }
     var vehicleName by remember { mutableStateOf("") }
+    var selectedVehicleId by remember { mutableStateOf("") }
+    var selectedVehicleDescription by remember { mutableStateOf("") }
+    var expandedVehicle by remember { mutableStateOf(false) }
     var pois by remember { mutableStateOf<List<PoIEntity>>(emptyList()) }
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     var expandedDriver by remember { mutableStateOf(false) }
@@ -115,6 +122,10 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
         } ?: routes
     }
 
+    LaunchedEffect(selectedDriverId) {
+        selectedDriverId?.let { vehicleViewModel.loadRegisteredVehicles(context, userId = it) }
+    }
+
     LaunchedEffect(selectedRoute, selectedDate, selectedTime, declarations) {
         selectedRoute?.let { route ->
             val (_, path) = routeViewModel.getRouteDirections(context, route.id, VehicleType.CAR)
@@ -131,6 +142,18 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
             path.firstOrNull()?.let {
                 MapsInitializer.initialize(context)
                 cameraPositionState.move(CameraUpdateFactory.newLatLngZoom(it, 13f))
+            }
+        }
+    }
+
+    LaunchedEffect(selectedDeclaration, vehicles) {
+        val decl = selectedDeclaration
+        if (decl != null) {
+            selectedVehicle = runCatching { VehicleType.valueOf(decl.vehicleType) }.getOrNull()
+            selectedVehicleId = decl.vehicleId
+            vehicles.firstOrNull { it.id == decl.vehicleId }?.let { veh ->
+                vehicleName = veh.name
+                selectedVehicleDescription = veh.description
             }
         }
     }
@@ -265,22 +288,48 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                 Text(stringResource(R.string.vehicle_type))
                 Row {
                     VehicleType.values().forEach { type ->
-                        IconButton(onClick = { selectedVehicle = type }) {
-                            Icon(
-                                imageVector = iconForVehicle(type),
-                                contentDescription = labelForVehicle(type),
-                                tint = if (selectedVehicle == type) MaterialTheme.colorScheme.primary else LocalContentColor.current
-                            )
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            IconButton(onClick = { selectedVehicle = type }) {
+                                Icon(
+                                    imageVector = iconForVehicle(type),
+                                    contentDescription = labelForVehicle(type),
+                                    tint = if (selectedVehicle == type) MaterialTheme.colorScheme.primary else LocalContentColor.current
+                                )
+                            }
+                            Text(labelForVehicle(type), style = MaterialTheme.typography.labelSmall)
                         }
                     }
                 }
                 Spacer(Modifier.height(16.dp))
-                OutlinedTextField(
-                    value = vehicleName,
-                    onValueChange = { vehicleName = it },
-                    label = { Text(stringResource(R.string.vehicle_name)) },
-                    modifier = Modifier.fillMaxWidth()
-                )
+                ExposedDropdownMenuBox(expanded = expandedVehicle, onExpandedChange = { expandedVehicle = !expandedVehicle }) {
+                    OutlinedTextField(
+                        value = vehicleName,
+                        onValueChange = {},
+                        label = { Text(stringResource(R.string.vehicle_name)) },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedVehicle) },
+                        modifier = Modifier.menuAnchor().fillMaxWidth(),
+                        readOnly = true
+                    )
+                    ExposedDropdownMenu(expanded = expandedVehicle, onDismissRequest = { expandedVehicle = false }) {
+                        vehicles.filter { it.userId == selectedDriverId }.forEach { vehicle ->
+                            DropdownMenuItem(text = { Text(vehicle.name) }, onClick = {
+                                vehicleName = vehicle.name
+                                selectedVehicle = runCatching { VehicleType.valueOf(vehicle.type) }.getOrNull()
+                                selectedVehicleId = vehicle.id
+                                selectedVehicleDescription = vehicle.description
+                                expandedVehicle = false
+                            })
+                        }
+                    }
+                }
+                if (selectedVehicleDescription.isNotEmpty()) {
+                    Spacer(Modifier.height(8.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        selectedVehicle?.let { Icon(iconForVehicle(it), contentDescription = null) }
+                        Spacer(Modifier.width(8.dp))
+                        Text(selectedVehicleDescription)
+                    }
+                }
                 Spacer(Modifier.height(16.dp))
             }
 
@@ -339,12 +388,16 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                 Button(onClick = {
                     val decl = selectedDeclaration
                     if (decl != null) {
+                        val updatedDecl = decl.copy(
+                            vehicleId = selectedVehicleId.ifBlank { decl.vehicleId },
+                            vehicleType = selectedVehicle?.name ?: decl.vehicleType
+                        )
                         reservationViewModel.completeRoute(
                             context,
                             selectedRoute!!.id,
                             selectedDate!!,
-                            decl.startTime,
-                            decl
+                            updatedDecl.startTime,
+                            updatedDecl
                         )
                         Toast.makeText(context, R.string.route_completed, Toast.LENGTH_SHORT).show()
                     }
