@@ -2,6 +2,7 @@ package com.ioannapergamali.mysmartroute.view.ui.screens
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -9,10 +10,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -32,8 +34,12 @@ import com.ioannapergamali.mysmartroute.model.classes.transports.TripWithRating
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.TripRatingViewModel
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.Star
 import android.text.format.DateFormat
 import java.util.Date
+import androidx.compose.ui.graphics.Color
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -79,7 +85,7 @@ private fun TripRatingItem(
     trip: TripWithRating,
     onSave: (Int, String) -> Unit
 ) {
-    var rating by remember { mutableStateOf(trip.rating.toFloat()) }
+    var rating by remember { mutableStateOf(trip.rating) }
     var comment by remember { mutableStateOf(trip.comment) }
     val context = LocalContext.current
     val dateText = if (trip.moving.date > 0L) {
@@ -94,20 +100,26 @@ private fun TripRatingItem(
         if (headerText.isNotBlank()) {
             Text(text = headerText, style = MaterialTheme.typography.bodySmall)
         }
-        Slider(
-            value = rating,
-            onValueChange = {
-                rating = it
-                onSave(it.toInt(), comment)
-            },
-            valueRange = 0f..100f
-        )
-        Text(stringResource(R.string.rating_label, rating.toInt()))
+        Row {
+            (1..5).forEach { index ->
+                IconButton(onClick = {
+                    rating = index
+                    onSave(rating, comment)
+                }) {
+                    Icon(
+                        imageVector = if (index <= rating) Icons.Filled.Star else Icons.Outlined.Star,
+                        contentDescription = null,
+                        tint = if (index <= rating) Color(0xFFFFD700) else Color.Gray
+                    )
+                }
+            }
+        }
+        Text(stringResource(R.string.rating_label, rating))
         OutlinedTextField(
             value = comment,
             onValueChange = {
                 comment = it
-                onSave(rating.toInt(), comment)
+                onSave(rating, comment)
             },
             label = { Text(stringResource(R.string.comment_label)) },
             modifier = Modifier.fillMaxWidth()
