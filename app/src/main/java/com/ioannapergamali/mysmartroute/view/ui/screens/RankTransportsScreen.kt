@@ -32,6 +32,8 @@ import com.ioannapergamali.mysmartroute.model.classes.transports.TripWithRating
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.TripRatingViewModel
+import android.text.format.DateFormat
+import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -79,9 +81,20 @@ private fun TripRatingItem(
 ) {
     var rating by remember { mutableStateOf(trip.rating.toFloat()) }
     var comment by remember { mutableStateOf(trip.comment) }
+    val context = LocalContext.current
+    val dateText = if (trip.moving.date > 0L) {
+        DateFormat.getDateFormat(context).format(Date(trip.moving.date))
+    } else ""
+    val info = buildString {
+        append(trip.moving.routeName)
+        if (dateText.isNotBlank()) {
+            append(" - ")
+            append(dateText)
+        }
+    }
 
     Column(modifier = Modifier.fillMaxWidth()) {
-        Text(text = trip.moving.routeName, style = MaterialTheme.typography.titleMedium)
+        Text(text = info, style = MaterialTheme.typography.titleMedium)
         Slider(
             value = rating,
             onValueChange = {
