@@ -5,5 +5,6 @@ enum class RequestStatus {
     ACCEPTED,
     REJECTED,
     CANCELED,
-    PENDING
+    PENDING,
+    COMPLETED
 }
