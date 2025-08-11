@@ -199,17 +199,19 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                     )
                     ExposedDropdownMenu(expanded = expandedDriver, onDismissRequest = { expandedDriver = false }) {
                         drivers.forEach { driver ->
-                            DropdownMenuItem(text = { Text("${driver.name} ${driver.surname}") }, onClick = {
-                            selectedDriverId = driver.id
-                            selectedDriverName = "${driver.name} ${driver.surname}"
-                            expandedDriver = false
-                            selectedRoute = null
-                            selectedDate = null
-                            selectedTime = null
-
-                        })
+                            DropdownMenuItem(
+                                text = { Text("${driver.name} ${driver.surname}") },
+                                onClick = {
+                                    selectedDriverId = driver.id
+                                    selectedDriverName = "${driver.name} ${driver.surname}"
+                                    expandedDriver = false
+                                    selectedRoute = null
+                                    selectedDate = null
+                                    selectedTime = null
+                                }
+                            )
+                        }
                     }
-                }
                 }
                 Spacer(Modifier.height(16.dp))
             } else {
