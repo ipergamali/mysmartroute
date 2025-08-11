@@ -16,6 +16,8 @@
           {"titleKey": "view_transports", "route": "viewTransports"},
           {"titleKey": "view_requests", "route": "viewRequests"},
           {"titleKey": "view_movings", "route": "viewMovings"},
+          {"titleKey": "walking", "route": "walking"},
+          {"titleKey": "walking_routes", "route": "walkingRoutes"},
           {"titleKey": "print_ticket", "route": "printTicket"},
           {"titleKey": "cancel_seat", "route": "cancelSeat"},
           {"titleKey": "rank_transports", "route": "rankTransports"},
