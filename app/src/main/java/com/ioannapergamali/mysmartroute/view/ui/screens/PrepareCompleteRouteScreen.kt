@@ -220,11 +220,17 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                 Spacer(Modifier.height(16.dp))
             }
 
-            Box {
-                Button(onClick = { expanded = true }) {
-                    Text(selectedRoute?.name ?: stringResource(R.string.select_route))
-                }
-                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
+                OutlinedTextField(
+                    value = selectedRoute?.name ?: "",
+                    onValueChange = {},
+                    label = { Text(stringResource(R.string.route_name)) },
+                    placeholder = { Text(stringResource(R.string.select_route)) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                    modifier = Modifier.menuAnchor().fillMaxWidth(),
+                    readOnly = true
+                )
+                ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                     displayRoutes.forEach { route ->
                         DropdownMenuItem(text = { Text(route.name) }, onClick = {
                             selectedRoute = route
@@ -289,7 +295,12 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                 Row {
                     VehicleType.values().forEach { type ->
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            IconButton(onClick = { selectedVehicle = type }) {
+                            IconButton(onClick = {
+                                selectedVehicle = type
+                                vehicleName = ""
+                                selectedVehicleId = ""
+                                selectedVehicleDescription = ""
+                            }) {
                                 Icon(
                                     imageVector = iconForVehicle(type),
                                     contentDescription = labelForVehicle(type),
@@ -311,15 +322,20 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                         readOnly = true
                     )
                     ExposedDropdownMenu(expanded = expandedVehicle, onDismissRequest = { expandedVehicle = false }) {
-                        vehicles.filter { it.userId == selectedDriverId }.forEach { vehicle ->
-                            DropdownMenuItem(text = { Text(vehicle.name) }, onClick = {
-                                vehicleName = vehicle.name
-                                selectedVehicle = runCatching { VehicleType.valueOf(vehicle.type) }.getOrNull()
-                                selectedVehicleId = vehicle.id
-                                selectedVehicleDescription = vehicle.description
-                                expandedVehicle = false
-                            })
-                        }
+                        vehicles
+                            .filter {
+                                it.userId == selectedDriverId &&
+                                    (selectedVehicle == null || runCatching { VehicleType.valueOf(it.type) }.getOrNull() == selectedVehicle)
+                            }
+                            .forEach { vehicle ->
+                                DropdownMenuItem(text = { Text(vehicle.name) }, onClick = {
+                                    vehicleName = vehicle.name
+                                    selectedVehicle = runCatching { VehicleType.valueOf(vehicle.type) }.getOrNull()
+                                    selectedVehicleId = vehicle.id
+                                    selectedVehicleDescription = vehicle.description
+                                    expandedVehicle = false
+                                })
+                            }
                     }
                 }
                 if (selectedVehicleDescription.isNotEmpty()) {
