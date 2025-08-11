@@ -12,6 +12,7 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import android.widget.Toast
+import android.app.TimePickerDialog
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.model.LatLng
@@ -58,6 +59,10 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
     var selectedRoute by remember { mutableStateOf<RouteEntity?>(null) }
     var selectedDate by remember { mutableStateOf<Long?>(null) }
     var selectedDeclaration by remember { mutableStateOf<TransportDeclarationEntity?>(null) }
+    var selectedTime by remember { mutableStateOf<Long?>(null) }
+    var selectedTimeText by remember { mutableStateOf("") }
+    var selectedVehicleName by remember { mutableStateOf<String?>(null) }
+    var expandedVehicle by remember { mutableStateOf(false) }
     var pois by remember { mutableStateOf<List<PoIEntity>>(emptyList()) }
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     var expandedDriver by remember { mutableStateOf(false) }
@@ -107,18 +112,24 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
         } ?: routes
     }
 
-    LaunchedEffect(selectedRoute, selectedDate) {
+    LaunchedEffect(selectedRoute, selectedDate, selectedTime, selectedVehicleName) {
         val date = selectedDate
+        val time = selectedTime
+        val vehicleName = selectedVehicleName
         selectedRoute?.let { route ->
             val (_, path) = routeViewModel.getRouteDirections(context, route.id, VehicleType.CAR)
             pathPoints = path
             pois = routeViewModel.getRoutePois(context, route.id)
-            if (date != null) {
-                val decl = declarations.firstOrNull { it.routeId == route.id && it.date == date }
+            if (date != null && time != null && vehicleName != null) {
+                val decl = declarations.firstOrNull {
+                    it.routeId == route.id && it.date == date && it.startTime == time && it.vehicleType == vehicleName
+                }
                 selectedDeclaration = decl
                 val declId = decl?.id ?: ""
-                val startTime = decl?.startTime ?: 0L
-                reservationViewModel.loadReservations(context, route.id, date, startTime, declId)
+                reservationViewModel.loadReservations(context, route.id, date, time, declId)
+            } else {
+                selectedDeclaration = null
+                reservationViewModel.loadReservations(context, route.id, 0L, 0L, "")
             }
             path.firstOrNull()?.let {
                 MapsInitializer.initialize(context)
@@ -166,14 +177,16 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                     ExposedDropdownMenu(expanded = expandedDriver, onDismissRequest = { expandedDriver = false }) {
                         drivers.forEach { driver ->
                             DropdownMenuItem(text = { Text("${driver.name} ${driver.surname}") }, onClick = {
-                                selectedDriverId = driver.id
-                                selectedDriverName = "${driver.name} ${driver.surname}"
-                                expandedDriver = false
-                                selectedRoute = null
-                                selectedDate = null
-                            })
-                        }
+                            selectedDriverId = driver.id
+                            selectedDriverName = "${driver.name} ${driver.surname}"
+                            expandedDriver = false
+                            selectedRoute = null
+                            selectedDate = null
+                            selectedTime = null
+                            selectedVehicleName = null
+                        })
                     }
+                }
                 }
                 Spacer(Modifier.height(16.dp))
             } else {
@@ -197,6 +210,8 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                             selectedRoute = route
                             expanded = false
                             selectedDate = null
+                            selectedTime = null
+                            selectedVehicleName = null
                         })
                     }
                 }
@@ -218,6 +233,8 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                         confirmButton = {
                             TextButton(onClick = {
                                 selectedDate = datePickerState.selectedDateMillis
+                                selectedTime = null
+                                selectedVehicleName = null
                                 showDatePicker = false
                             }) {
                                 Text(stringResource(android.R.string.ok))
@@ -230,7 +247,44 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                 Spacer(Modifier.height(16.dp))
             }
 
-            Spacer(Modifier.height(16.dp))
+            if (selectedRoute != null && selectedDate != null) {
+                Text(stringResource(R.string.time))
+                Button(onClick = {
+                    TimePickerDialog(
+                        context,
+                        { _, hour, minute ->
+                            selectedTime = (hour * 60 + minute) * 60_000L
+                            selectedTimeText = String.format("%02d:%02d", hour, minute)
+                        },
+                        0,
+                        0,
+                        true
+                    ).show()
+                }) {
+                    Text(if (selectedTimeText.isNotEmpty()) selectedTimeText else stringResource(R.string.select_time))
+                }
+                Spacer(Modifier.height(16.dp))
+
+                ExposedDropdownMenuBox(expanded = expandedVehicle, onExpandedChange = { expandedVehicle = !expandedVehicle }) {
+                    OutlinedTextField(
+                        value = selectedVehicleName ?: stringResource(R.string.select_vehicle),
+                        onValueChange = {},
+                        label = { Text(stringResource(R.string.vehicle_type)) },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedVehicle) },
+                        modifier = Modifier.menuAnchor().fillMaxWidth(),
+                        readOnly = true
+                    )
+                    ExposedDropdownMenu(expanded = expandedVehicle, onDismissRequest = { expandedVehicle = false }) {
+                        VehicleType.values().forEach { type ->
+                            DropdownMenuItem(text = { Text(type.name) }, onClick = {
+                                selectedVehicleName = type.name
+                                expandedVehicle = false
+                            })
+                        }
+                    }
+                }
+                Spacer(Modifier.height(16.dp))
+            }
 
             val seats = selectedDeclaration?.seats ?: 0
 
