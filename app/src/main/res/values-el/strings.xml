@@ -115,6 +115,8 @@
     <string name="duration">Διάρκεια</string>
     <string name="date">Ημερομηνία</string>
     <string name="time">Ώρα</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Ακύρωση</string>
     <string name="announce">Αποστολή</string>
     <string name="duration_format">Διάρκεια: %1$d λεπτά</string>
     <string name="app_language">Γλώσσα εφαρμογής</string>
