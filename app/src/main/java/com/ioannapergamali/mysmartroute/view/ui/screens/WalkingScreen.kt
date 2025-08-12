@@ -40,11 +40,9 @@ import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
-import androidx.compose.material3.TimePicker
-import androidx.compose.material3.TimePickerDialog
-import androidx.compose.material3.rememberTimePickerState
+import android.app.TimePickerDialog
+import java.util.Calendar
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WalkingScreen(navController: NavController, openDrawer: () -> Unit) {
     val context = LocalContext.current
@@ -74,25 +72,18 @@ fun WalkingScreen(navController: NavController, openDrawer: () -> Unit) {
     val coroutineScope = rememberCoroutineScope()
     val apiKey = MapsUtils.getApiKey(context)
     val isKeyMissing = apiKey.isBlank()
-    val timePickerState = rememberTimePickerState()
-
     if (showTimePicker) {
+        val calendar = Calendar.getInstance()
         TimePickerDialog(
-            onDismissRequest = { showTimePicker = false },
-            confirmButton = {
-                TextButton(onClick = {
-                    timeText = "%02d:%02d".format(timePickerState.hour, timePickerState.minute)
-                    showTimePicker = false
-                }) { Text(stringResource(R.string.ok)) }
+            context,
+            { _, hour, minute ->
+                timeText = "%02d:%02d".format(hour, minute)
             },
-            dismissButton = {
-                TextButton(onClick = { showTimePicker = false }) {
-                    Text(stringResource(R.string.cancel))
-                }
-            }
-        ) {
-            TimePicker(state = timePickerState)
-        }
+            calendar.get(Calendar.HOUR_OF_DAY),
+            calendar.get(Calendar.MINUTE),
+            true
+        ).show()
+        showTimePicker = false
     }
 
     fun refreshRoute() {
