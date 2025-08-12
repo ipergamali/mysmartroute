@@ -206,6 +206,7 @@
     <string name="view_details">Προβολή λεπτομερειών</string>
     <string name="reservation_details">Λεπτομέρειες κράτησης</string>
     <string name="no_reservation_found">Δεν βρέθηκε η κράτηση</string>
+    <string name="walking">Περπάτημα</string>
     <string name="walking_routes">Διαδρομές πεζών</string>
     <string name="no_walking_routes">Δεν βρέθηκαν διαδρομές πεζών</string>
 
