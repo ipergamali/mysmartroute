@@ -1,5 +1,6 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.*
@@ -7,13 +8,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.res.dimensionResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
@@ -28,6 +31,7 @@ import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -145,7 +149,38 @@ fun SelectRoutePoisScreen(navController: NavController, openDrawer: () -> Unit) 
 
                 Spacer(Modifier.height(16.dp))
 
-                Button(onClick = { /* TODO: Handle confirmation */ }) {
+                Button(onClick = {
+                    val uid = FirebaseAuth.getInstance().currentUser?.uid
+                    if (uid != null && selectedPoiIds.size >= 2) {
+                        scope.launch {
+                            val username = FirebaseFirestore.getInstance()
+                                .collection("users")
+                                .document(uid)
+                                .get()
+                                .await()
+                                .getString("username") ?: uid
+                            val routeName = "edited_by_" + username
+                            val result = routeViewModel.addRoute(
+                                context,
+                                selectedPoiIds.toList(),
+                                routeName
+                            )
+                            if (result != null) {
+                                Toast.makeText(
+                                    context,
+                                    R.string.route_saved,
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    R.string.route_save_failed,
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
+                    }
+                }) {
                     Text(stringResource(R.string.confirm_poi_selection))
                 }
             }
