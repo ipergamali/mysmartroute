@@ -71,6 +71,9 @@ import java.time.format.DateTimeFormatter
 import kotlin.math.abs
 import androidx.compose.ui.graphics.Color
 import androidx.annotation.StringRes
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
 
 private const val MARKER_ORANGE = BitmapDescriptorFactory.HUE_ORANGE
 private const val MARKER_BLUE = BitmapDescriptorFactory.HUE_BLUE
@@ -108,6 +111,7 @@ fun BookSeatScreen(
             restore = { mutableStateListOf<String>().apply { addAll(it) } }
         )
     ) { mutableStateListOf<String>() }
+    val originalPoiIds = remember { mutableStateListOf<String>() }
     var startIndex by rememberSaveable { mutableStateOf<Int?>(null) }
     var endIndex by rememberSaveable { mutableStateOf<Int?>(null) }
     val pois = poiIds.mapNotNull { id -> allPois.find { it.id == id } }
@@ -175,6 +179,23 @@ fun BookSeatScreen(
         }
     }
 
+    suspend fun saveEditedRouteIfChanged(): String {
+        if (poiIds == originalPoiIds) return selectedRouteId ?: ""
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return selectedRouteId ?: ""
+        val username = FirebaseFirestore.getInstance()
+            .collection("users")
+            .document(uid)
+            .get()
+            .await()
+            .getString("username") ?: uid
+        val baseName = routes.find { it.id == selectedRouteId }?.name ?: "route"
+        return routeViewModel.addRoute(
+            context,
+            poiIds.toList(),
+            "${baseName}_edited_by_$username"
+        ) ?: selectedRouteId ?: ""
+    }
+
     val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
@@ -203,9 +224,11 @@ fun BookSeatScreen(
                         pathPoints = path
                         poiIds.clear()
                         userPoiIds.clear()
+                        originalPoiIds.clear()
                         startIndex = null
                         endIndex = null
                         poiIds.addAll(routeViewModel.getRoutePois(context, newRoute).map { it.id })
+                        originalPoiIds.addAll(poiIds)
                         path.firstOrNull()?.let {
                             MapsInitializer.initialize(context)
                             cameraPositionState.move(
@@ -326,9 +349,11 @@ fun BookSeatScreen(
                                     pathPoints = path
                                     poiIds.clear()
                                     userPoiIds.clear()
+                                    originalPoiIds.clear()
                                     startIndex = null
                                     endIndex = null
                                     poiIds.addAll(routeViewModel.getRoutePois(context, route.id).map { it.id })
+                                    originalPoiIds.addAll(poiIds)
                                     path.firstOrNull()?.let {
                                         MapsInitializer.initialize(context)
                                         cameraPositionState.move(
@@ -345,11 +370,13 @@ fun BookSeatScreen(
             Spacer(Modifier.height(16.dp))
 
             if (selectedRoute != null) {
-                Button(onClick = {
-                    val rId = selectedRouteId ?: ""
-                    navController.navigate("definePoi?lat=&lng=&source=&view=false&routeId=$rId")
-                }) {
-                    Text(stringResource(R.string.add_poi_option))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(onClick = {
+                        val rId = selectedRouteId ?: ""
+                        navController.navigate("definePoi?lat=&lng=&source=&view=false&routeId=$rId")
+                    }) {
+                        Text(stringResource(R.string.add_poi_option))
+                    }
                 }
 
                 Spacer(Modifier.height(16.dp))
@@ -543,25 +570,28 @@ fun BookSeatScreen(
                     enabled = selectedRoute != null && startIndex != null && endIndex != null &&
                             datePickerState.selectedDateMillis != null,
                     onClick = {
-                        val r = selectedRoute ?: return@Button
-                        val dateMillis = datePickerState.selectedDateMillis ?: return@Button
-                        val startId = startIndex?.let { pois[it].id } ?: return@Button
-                        val endId = endIndex?.let { pois[it].id } ?: return@Button
-                        requestViewModel.requestTransport(
-                            context,
-                            r.id,
-                            startId,
-                            endId,
-                            Double.MAX_VALUE,
-                            dateMillis
-                        )
-                        transferRequestViewModel.submitRequest(
-                            context,
-                            r.id,
-                            dateMillis,
-                            Double.MAX_VALUE
-                        )
-                        message = context.getString(R.string.request_sent)
+                        scope.launch {
+                            val r = selectedRoute ?: return@launch
+                            val dateMillis = datePickerState.selectedDateMillis ?: return@launch
+                            val startId = startIndex?.let { pois[it].id } ?: return@launch
+                            val endId = endIndex?.let { pois[it].id } ?: return@launch
+                            val routeId = saveEditedRouteIfChanged()
+                            requestViewModel.requestTransport(
+                                context,
+                                routeId,
+                                startId,
+                                endId,
+                                Double.MAX_VALUE,
+                                dateMillis
+                            )
+                            transferRequestViewModel.submitRequest(
+                                context,
+                                routeId,
+                                dateMillis,
+                                Double.MAX_VALUE
+                            )
+                            message = context.getString(R.string.request_sent)
+                        }
                     }
                 ) {
                     Text(stringResource(R.string.save_request))

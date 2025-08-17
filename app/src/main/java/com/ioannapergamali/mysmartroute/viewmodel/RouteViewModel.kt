@@ -9,7 +9,6 @@ import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.RouteEntity
 import com.ioannapergamali.mysmartroute.data.local.RoutePointEntity
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
-import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.utils.toRouteEntity
 import com.ioannapergamali.mysmartroute.utils.toRouteWithPoints
@@ -115,14 +114,12 @@ class RouteViewModel : ViewModel() {
         val routeDao = db.routeDao()
         val pointDao = db.routePointDao()
 
-        if (routeDao.findByName(name) != null) return null
-
         val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return null
         val id = UUID.randomUUID().toString()
         val entity = RouteEntity(id, userId, name, poiIds.first(), poiIds.last())
         val points = poiIds.mapIndexed { index, p -> RoutePointEntity(id, index, p) }
 
-        if (NetworkUtils.isInternetAvailable(context)) {
+        runCatching {
             firestore.collection("routes").document(id).set(entity.toFirestoreMap(points)).await()
         }
 
