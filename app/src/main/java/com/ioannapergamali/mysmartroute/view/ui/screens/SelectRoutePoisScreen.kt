@@ -52,6 +52,23 @@ fun SelectRoutePoisScreen(navController: NavController, openDrawer: () -> Unit) 
     val apiKey = MapsUtils.getApiKey(context)
     val isKeyMissing = apiKey.isBlank()
 
+    suspend fun saveEditedRouteIfChanged(): Boolean? {
+        if (selectedPoiIds.toList() == originalPoiIds.toList()) return null
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return false
+        val username = FirebaseFirestore.getInstance()
+            .collection("users")
+            .document(uid)
+            .get()
+            .await()
+            .getString("username") ?: uid
+        val baseName = selectedRoute?.name ?: "route"
+        return routeViewModel.addRoute(
+            context,
+            selectedPoiIds.toList(),
+            "${baseName}_edited_by_$username"
+        ) != null
+    }
+
     LaunchedEffect(Unit) { routeViewModel.loadRoutes(context, includeAll = true) }
 
     Scaffold(
@@ -153,36 +170,20 @@ fun SelectRoutePoisScreen(navController: NavController, openDrawer: () -> Unit) 
                 Spacer(Modifier.height(16.dp))
 
                 Button(onClick = {
-                    val uid = FirebaseAuth.getInstance().currentUser?.uid
-                    if (uid != null && selectedPoiIds.size >= 2) {
+                    if (selectedRoute != null && selectedPoiIds.size >= 2) {
                         scope.launch {
-                            if (selectedPoiIds.toList() != originalPoiIds.toList()) {
-                                val username = FirebaseFirestore.getInstance()
-                                    .collection("users")
-                                    .document(uid)
-                                    .get()
-                                    .await()
-                                    .getString("username") ?: uid
-                                val baseName = selectedRoute?.name ?: "route"
-                                val routeName = "${baseName}_edited_by_$username"
-                                val result = routeViewModel.addRoute(
+                            when (saveEditedRouteIfChanged()) {
+                                true -> Toast.makeText(
                                     context,
-                                    selectedPoiIds.toList(),
-                                    routeName
-                                )
-                                if (result != null) {
-                                    Toast.makeText(
-                                        context,
-                                        R.string.route_saved,
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                } else {
-                                    Toast.makeText(
-                                        context,
-                                        R.string.route_save_failed,
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
+                                    R.string.route_saved,
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                false -> Toast.makeText(
+                                    context,
+                                    R.string.route_save_failed,
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                null -> {} // No changes; do nothing
                             }
                         }
                     }
