@@ -153,15 +153,7 @@ fun SelectRoutePoisScreen(navController: NavController, openDrawer: () -> Unit) 
                 Spacer(Modifier.height(16.dp))
 
                 Button(onClick = {
-                    val route = selectedRoute
-                    if (route != null && selectedPoiIds.size >= 2) {
-                        scope.launch {
-                            routeViewModel.updateRoute(context, route.id, selectedPoiIds)
-                            Toast.makeText(
-                                context,
-                                context.getString(R.string.route_saved),
-                                Toast.LENGTH_SHORT
-                            ).show()
+
                         }
                     }
                 }) {

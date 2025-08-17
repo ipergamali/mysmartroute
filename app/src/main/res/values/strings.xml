@@ -129,8 +129,8 @@
     <string name="poi_details">PoI details</string>
     <string name="save_point">Save point</string>
     <string name="point_not_saved_toast">Please save the point before adding it</string>
-    <string name="route_saved_success">Η διαδρομή αποθηκεύτηκε με επιτυχία</string>
-    <string name="route_exists">Υπάρχει ήδη διαδρομή με αυτό το όνομα</string>
+    <string name="route_saved_success">Route saved successfully</string>
+    <string name="route_exists">A route with this name already exists</string>
     <string name="not_implemented">Functionality not available</string>
     <string name="route_editor">Route Editor</string>
     <string name="add_stop">Add stop</string>
