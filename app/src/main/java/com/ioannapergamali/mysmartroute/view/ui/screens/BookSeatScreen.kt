@@ -71,6 +71,7 @@ import java.time.format.DateTimeFormatter
 import kotlin.math.abs
 import androidx.compose.ui.graphics.Color
 import androidx.annotation.StringRes
+
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
@@ -179,21 +180,6 @@ fun BookSeatScreen(
         }
     }
 
-    suspend fun saveEditedRouteIfChanged(): String {
-        if (poiIds == originalPoiIds) return selectedRouteId ?: ""
-        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return selectedRouteId ?: ""
-        val username = FirebaseFirestore.getInstance()
-            .collection("users")
-            .document(uid)
-            .get()
-            .await()
-            .getString("username") ?: uid
-        val baseName = routes.find { it.id == selectedRouteId }?.name ?: "route"
-        return routeViewModel.addRoute(
-            context,
-            poiIds.toList(),
-            "${baseName}_edited_by_$username"
-        ) ?: selectedRouteId ?: ""
     }
 
     val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
@@ -377,6 +363,7 @@ fun BookSeatScreen(
                     }) {
                         Text(stringResource(R.string.add_poi_option))
                     }
+
                 }
 
                 Spacer(Modifier.height(16.dp))

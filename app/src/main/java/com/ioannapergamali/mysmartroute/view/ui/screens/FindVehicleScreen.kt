@@ -44,6 +44,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
+
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
@@ -110,21 +111,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
         }
     }
 
-    suspend fun saveEditedRouteIfChanged(): String {
-        if (routePoiIds == originalPoiIds) return selectedRouteId ?: ""
-        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return selectedRouteId ?: ""
-        val username = FirebaseFirestore.getInstance()
-            .collection("users")
-            .document(uid)
-            .get()
-            .await()
-            .getString("username") ?: uid
-        val baseName = routes.find { it.id == selectedRouteId }?.name ?: "route"
-        return routeViewModel.addRoute(
-            context,
-            routePoiIds.toList(),
-            "${baseName}_edited_by_$username"
-        ) ?: selectedRouteId ?: ""
+
     }
 
 
@@ -241,6 +228,9 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                     }
                     Button(onClick = { refreshRoute() }, enabled = !calculating) {
                         Text(stringResource(R.string.recalculate_route))
+                    }
+                    Button(onClick = { saveEditedRoute() }) {
+                        Text(stringResource(R.string.save_route))
                     }
                 }
 

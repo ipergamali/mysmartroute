@@ -156,33 +156,7 @@ fun SelectRoutePoisScreen(navController: NavController, openDrawer: () -> Unit) 
                     val uid = FirebaseAuth.getInstance().currentUser?.uid
                     if (uid != null && selectedPoiIds.size >= 2) {
                         scope.launch {
-                            if (selectedPoiIds.toList() != originalPoiIds.toList()) {
-                                val username = FirebaseFirestore.getInstance()
-                                    .collection("users")
-                                    .document(uid)
-                                    .get()
-                                    .await()
-                                    .getString("username") ?: uid
-                                val baseName = selectedRoute?.name ?: "route"
-                                val routeName = "${baseName}_edited_by_$username"
-                                val result = routeViewModel.addRoute(
-                                    context,
-                                    selectedPoiIds.toList(),
-                                    routeName
-                                )
-                                if (result != null) {
-                                    Toast.makeText(
-                                        context,
-                                        R.string.route_saved,
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                } else {
-                                    Toast.makeText(
-                                        context,
-                                        R.string.route_save_failed,
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
+
                             }
                         }
                     }
