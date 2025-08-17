@@ -37,7 +37,6 @@ import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
-import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -62,7 +61,6 @@ fun RouteModeScreen(
     val context = LocalContext.current
     val routeViewModel: RouteViewModel = viewModel()
     val poiViewModel: PoIViewModel = viewModel()
-    val requestViewModel: VehicleRequestViewModel = viewModel()
     val routes by routeViewModel.routes.collectAsState()
     val allPois by poiViewModel.pois.collectAsState()
 
@@ -120,6 +118,7 @@ fun RouteModeScreen(
             pathPoints = emptyList()
         }
     }
+
 
     LaunchedEffect(Unit) {
         routeViewModel.loadRoutes(context, includeAll = true)
