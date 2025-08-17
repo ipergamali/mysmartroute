@@ -132,6 +132,23 @@ class RouteViewModel : ViewModel() {
         return id
     }
 
+    suspend fun addRouteWithUniqueName(
+        context: Context,
+        poiIds: List<String>,
+        baseName: String
+    ): String? {
+        if (poiIds.size < 2 || baseName.isBlank()) return null
+        val db = MySmartRouteDatabase.getInstance(context)
+        val routeDao = db.routeDao()
+        var name = baseName
+        var counter = 1
+        while (routeDao.findByName(name) != null) {
+            name = "$baseName ($counter)"
+            counter++
+        }
+        return addRoute(context, poiIds, name)
+    }
+
     suspend fun updateRoute(context: Context, routeId: String, poiIds: List<String>) {
         if (routeId.isBlank() || poiIds.size < 2) return
         val db = MySmartRouteDatabase.getInstance(context)

@@ -156,12 +156,19 @@ fun SelectRoutePoisScreen(navController: NavController, openDrawer: () -> Unit) 
                     val route = selectedRoute
                     if (route != null && selectedPoiIds.size >= 2) {
                         scope.launch {
-                            routeViewModel.updateRoute(context, route.id, selectedPoiIds)
-                            Toast.makeText(
+                            val id = routeViewModel.addRouteWithUniqueName(
                                 context,
-                                context.getString(R.string.route_saved),
-                                Toast.LENGTH_SHORT
-                            ).show()
+                                selectedPoiIds,
+                                route.name
+                            )
+                            if (id != null) {
+                                routeViewModel.loadRoutes(context, includeAll = true)
+                                Toast.makeText(
+                                    context,
+                                    context.getString(R.string.route_saved),
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
                         }
                     }
                 }) {
