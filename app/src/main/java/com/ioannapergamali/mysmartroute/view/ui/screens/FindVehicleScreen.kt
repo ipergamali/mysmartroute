@@ -83,13 +83,6 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
     val apiKey = MapsUtils.getApiKey(context)
     val isKeyMissing = apiKey.isBlank()
 
-    fun saveEditedRoute() {
-        coroutineScope.launch {
-            saveEditedRouteIfChanged()
-            message = context.getString(R.string.route_saved)
-        }
-    }
-
     suspend fun saveEditedRouteIfChanged(): String {
         val routeId = selectedRouteId ?: return ""
         if (routePoiIds != originalPoiIds) {
@@ -98,6 +91,13 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
             originalPoiIds.addAll(routePoiIds)
         }
         return routeId
+    }
+
+    fun saveEditedRoute() {
+        coroutineScope.launch {
+            saveEditedRouteIfChanged()
+            message = context.getString(R.string.route_saved)
+        }
     }
 
     fun refreshRoute() {
