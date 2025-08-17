@@ -96,13 +96,6 @@ fun RouteModeScreen(
     var pendingPoi by remember { mutableStateOf<Triple<String, Double, Double>?>(null) }
     var maxCostText by rememberSaveable { mutableStateOf("") }
 
-    fun saveEditedRoute() {
-        coroutineScope.launch {
-            saveEditedRouteIfChanged()
-            message = context.getString(R.string.route_saved)
-        }
-    }
-
     suspend fun saveEditedRouteIfChanged(): String {
         val routeId = selectedRouteId ?: return ""
         if (routePoiIds != originalPoiIds) {
@@ -111,6 +104,13 @@ fun RouteModeScreen(
             originalPoiIds.addAll(routePoiIds)
         }
         return routeId
+    }
+
+    fun saveEditedRoute() {
+        coroutineScope.launch {
+            saveEditedRouteIfChanged()
+            message = context.getString(R.string.route_saved)
+        }
     }
 
     fun refreshRoute() {
