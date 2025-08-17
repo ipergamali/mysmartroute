@@ -180,8 +180,6 @@ fun BookSeatScreen(
         }
     }
 
-    }
-
     val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
