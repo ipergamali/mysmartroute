@@ -72,9 +72,6 @@ import kotlin.math.abs
 import androidx.compose.ui.graphics.Color
 import androidx.annotation.StringRes
 
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.tasks.await
 
 private const val MARKER_ORANGE = BitmapDescriptorFactory.HUE_ORANGE
 private const val MARKER_BLUE = BitmapDescriptorFactory.HUE_BLUE
@@ -153,12 +150,20 @@ fun BookSeatScreen(
     val isKeyMissing = apiKey.isBlank()
 
     suspend fun saveEditedRouteIfChanged(): String {
-        val routeId = selectedRouteId ?: return ""
-        if (poiIds != originalPoiIds) {
-            routeViewModel.updateRoute(context, routeId, poiIds)
-            originalPoiIds.clear()
-            originalPoiIds.addAll(poiIds)
+        val ids = poiIds.toList()
+        var routeId = selectedRouteId
+        if (routeId == null) {
+            routeId = routeViewModel.addRoute(
+                context,
+                ids,
+                "Route ${'$'}{System.currentTimeMillis()}"
+            ) ?: return ""
+            selectedRouteId = routeId
+        } else if (ids != originalPoiIds) {
+            routeViewModel.updateRoute(context, routeId, ids)
         }
+        originalPoiIds.clear()
+        originalPoiIds.addAll(ids)
         return routeId
     }
 

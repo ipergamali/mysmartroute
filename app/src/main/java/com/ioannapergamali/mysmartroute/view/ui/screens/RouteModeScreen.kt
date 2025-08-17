@@ -49,9 +49,6 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import kotlin.math.abs
 import android.widget.Toast
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.tasks.await
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -96,21 +93,29 @@ fun RouteModeScreen(
     var pendingPoi by remember { mutableStateOf<Triple<String, Double, Double>?>(null) }
     var maxCostText by rememberSaveable { mutableStateOf("") }
 
+    suspend fun saveEditedRouteIfChanged(): String {
+        val ids = routePoiIds.toList()
+        var routeId = selectedRouteId
+        if (routeId == null) {
+            routeId = routeViewModel.addRoute(
+                context,
+                ids,
+                "Route ${'$'}{System.currentTimeMillis()}"
+            ) ?: return ""
+            selectedRouteId = routeId
+        } else if (ids != originalPoiIds) {
+            routeViewModel.updateRoute(context, routeId, ids)
+        }
+        originalPoiIds.clear()
+        originalPoiIds.addAll(ids)
+        return routeId
+    }
+
     fun saveEditedRoute() {
         coroutineScope.launch {
             saveEditedRouteIfChanged()
             message = context.getString(R.string.route_saved)
         }
-    }
-
-    suspend fun saveEditedRouteIfChanged(): String {
-        val routeId = selectedRouteId ?: return ""
-        if (routePoiIds != originalPoiIds) {
-            routeViewModel.updateRoute(context, routeId, routePoiIds)
-            originalPoiIds.clear()
-            originalPoiIds.addAll(routePoiIds)
-        }
-        return routeId
     }
 
     fun refreshRoute() {
