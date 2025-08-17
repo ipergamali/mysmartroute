@@ -48,6 +48,10 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import kotlin.math.abs
+import android.widget.Toast
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -72,6 +76,7 @@ fun RouteModeScreen(
     val routePois = routePoiIds.mapNotNull { id ->
         allPois.find { it.id == id }
     }
+    val originalPoiIds = remember { mutableStateListOf<String>() }
     var startIndex by rememberSaveable { mutableStateOf<Int?>(null) }
     var endIndex by rememberSaveable { mutableStateOf<Int?>(null) }
     var message by remember { mutableStateOf("") }
@@ -90,6 +95,23 @@ fun RouteModeScreen(
     var calculating by remember { mutableStateOf(false) }
     var pendingPoi by remember { mutableStateOf<Triple<String, Double, Double>?>(null) }
     var maxCostText by rememberSaveable { mutableStateOf("") }
+
+    suspend fun saveEditedRouteIfChanged(): String {
+        val routeId = selectedRouteId ?: return ""
+        if (routePoiIds != originalPoiIds) {
+            routeViewModel.updateRoute(context, routeId, routePoiIds)
+            originalPoiIds.clear()
+            originalPoiIds.addAll(routePoiIds)
+        }
+        return routeId
+    }
+
+    fun saveEditedRoute() {
+        coroutineScope.launch {
+            saveEditedRouteIfChanged()
+            message = context.getString(R.string.route_saved)
+        }
+    }
 
     fun refreshRoute() {
         if (routePois.size >= 2) {
@@ -129,6 +151,8 @@ fun RouteModeScreen(
         selectedRouteId?.let { id ->
             routePoiIds.clear()
             routePoiIds.addAll(routeViewModel.getRoutePois(context, id).map { it.id })
+            originalPoiIds.clear()
+            originalPoiIds.addAll(routePoiIds)
             startIndex = null
             endIndex = null
             refreshRoute()
@@ -231,6 +255,9 @@ fun RouteModeScreen(
                     }
                     Button(onClick = { refreshRoute() }, enabled = !calculating) {
                         Text(stringResource(R.string.recalculate_route))
+                    }
+                    Button(onClick = { saveEditedRoute() }) {
+                        Text(stringResource(R.string.save_route))
                     }
                 }
 

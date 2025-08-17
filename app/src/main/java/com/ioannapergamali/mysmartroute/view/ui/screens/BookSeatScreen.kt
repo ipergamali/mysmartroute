@@ -75,6 +75,10 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
+
 private const val MARKER_ORANGE = BitmapDescriptorFactory.HUE_ORANGE
 private const val MARKER_BLUE = BitmapDescriptorFactory.HUE_BLUE
 
@@ -150,6 +154,16 @@ fun BookSeatScreen(
     val context = LocalContext.current
     val apiKey = MapsUtils.getApiKey(context)
     val isKeyMissing = apiKey.isBlank()
+
+    suspend fun saveEditedRouteIfChanged(): String {
+        val routeId = selectedRouteId ?: return ""
+        if (poiIds != originalPoiIds) {
+            routeViewModel.updateRoute(context, routeId, poiIds)
+            originalPoiIds.clear()
+            originalPoiIds.addAll(poiIds)
+        }
+        return routeId
+    }
 
     fun refreshRoute() {
         val currentPois = poiIds.mapNotNull { id -> allPois.find { it.id == id } }
@@ -377,6 +391,7 @@ fun BookSeatScreen(
                     }) {
                         Text(stringResource(R.string.add_poi_option))
                     }
+
                 }
 
                 Spacer(Modifier.height(16.dp))
