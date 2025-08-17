@@ -112,9 +112,6 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
     }
 
 
-    }
-
-
     LaunchedEffect(Unit) {
         routeViewModel.loadRoutes(context, includeAll = true)
         poiViewModel.loadPois(context)
@@ -428,4 +425,5 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                 Text(message)
             }
         }
-    } }
+    }
+}
