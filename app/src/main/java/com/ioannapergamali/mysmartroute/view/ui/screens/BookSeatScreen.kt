@@ -71,6 +71,10 @@ import java.time.format.DateTimeFormatter
 import kotlin.math.abs
 import androidx.compose.ui.graphics.Color
 import androidx.annotation.StringRes
+import android.widget.Toast
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
 
 private const val MARKER_ORANGE = BitmapDescriptorFactory.HUE_ORANGE
 private const val MARKER_BLUE = BitmapDescriptorFactory.HUE_BLUE
@@ -172,6 +176,31 @@ fun BookSeatScreen(
             }
         } else {
             pathPoints = emptyList()
+        }
+    }
+
+    fun saveEditedRoute() {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+        if (uid != null && poiIds.size >= 2) {
+            scope.launch {
+                val username = FirebaseFirestore.getInstance()
+                    .collection("users")
+                    .document(uid)
+                    .get()
+                    .await()
+                    .getString("username") ?: uid
+                val routeName = "edited_by_" + username
+                val result = routeViewModel.addRoute(
+                    context,
+                    poiIds.toList(),
+                    routeName
+                )
+                Toast.makeText(
+                    context,
+                    if (result != null) R.string.route_saved else R.string.route_save_failed,
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
         }
     }
 
@@ -345,11 +374,16 @@ fun BookSeatScreen(
             Spacer(Modifier.height(16.dp))
 
             if (selectedRoute != null) {
-                Button(onClick = {
-                    val rId = selectedRouteId ?: ""
-                    navController.navigate("definePoi?lat=&lng=&source=&view=false&routeId=$rId")
-                }) {
-                    Text(stringResource(R.string.add_poi_option))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(onClick = {
+                        val rId = selectedRouteId ?: ""
+                        navController.navigate("definePoi?lat=&lng=&source=&view=false&routeId=$rId")
+                    }) {
+                        Text(stringResource(R.string.add_poi_option))
+                    }
+                    Button(onClick = { saveEditedRoute() }) {
+                        Text(stringResource(R.string.save_route))
+                    }
                 }
 
                 Spacer(Modifier.height(16.dp))
