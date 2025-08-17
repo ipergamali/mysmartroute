@@ -44,6 +44,10 @@ import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
+import android.widget.Toast
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -103,6 +107,31 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
             }
         } else {
             pathPoints = emptyList()
+        }
+    }
+
+    fun saveEditedRoute() {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+        if (uid != null && routePoiIds.size >= 2) {
+            coroutineScope.launch {
+                val username = FirebaseFirestore.getInstance()
+                    .collection("users")
+                    .document(uid)
+                    .get()
+                    .await()
+                    .getString("username") ?: uid
+                val routeName = "edited_by_" + username
+                val result = routeViewModel.addRoute(
+                    context,
+                    routePoiIds.toList(),
+                    routeName
+                )
+                Toast.makeText(
+                    context,
+                    if (result != null) R.string.route_saved else R.string.route_save_failed,
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
         }
     }
 
@@ -218,6 +247,9 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                     }
                     Button(onClick = { refreshRoute() }, enabled = !calculating) {
                         Text(stringResource(R.string.recalculate_route))
+                    }
+                    Button(onClick = { saveEditedRoute() }) {
+                        Text(stringResource(R.string.save_route))
                     }
                 }
 

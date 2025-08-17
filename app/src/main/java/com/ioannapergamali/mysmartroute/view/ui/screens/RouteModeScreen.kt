@@ -49,6 +49,10 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import kotlin.math.abs
+import android.widget.Toast
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -118,6 +122,31 @@ fun RouteModeScreen(
             }
         } else {
             pathPoints = emptyList()
+        }
+    }
+
+    fun saveEditedRoute() {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+        if (uid != null && routePoiIds.size >= 2) {
+            coroutineScope.launch {
+                val username = FirebaseFirestore.getInstance()
+                    .collection("users")
+                    .document(uid)
+                    .get()
+                    .await()
+                    .getString("username") ?: uid
+                val routeName = "edited_by_" + username
+                val result = routeViewModel.addRoute(
+                    context,
+                    routePoiIds.toList(),
+                    routeName
+                )
+                Toast.makeText(
+                    context,
+                    if (result != null) R.string.route_saved else R.string.route_save_failed,
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
         }
     }
 
@@ -232,6 +261,9 @@ fun RouteModeScreen(
                     }
                     Button(onClick = { refreshRoute() }, enabled = !calculating) {
                         Text(stringResource(R.string.recalculate_route))
+                    }
+                    Button(onClick = { saveEditedRoute() }) {
+                        Text(stringResource(R.string.save_route))
                     }
                 }
 
