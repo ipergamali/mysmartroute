@@ -44,6 +44,9 @@ import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -126,6 +129,23 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
         } else {
             pathPoints = emptyList()
         }
+    }
+
+    suspend fun saveEditedRouteIfChanged(): String {
+        if (routePoiIds == originalPoiIds) return selectedRouteId ?: ""
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return selectedRouteId ?: ""
+        val username = FirebaseFirestore.getInstance()
+            .collection("users")
+            .document(uid)
+            .get()
+            .await()
+            .getString("username") ?: uid
+        val baseName = routes.find { it.id == selectedRouteId }?.name ?: "route"
+        return routeViewModel.addRoute(
+            context,
+            routePoiIds.toList(),
+            "${baseName}_edited_by_$username"
+        ) ?: selectedRouteId ?: ""
     }
 
 

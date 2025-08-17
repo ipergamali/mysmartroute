@@ -52,6 +52,23 @@ fun SelectRoutePoisScreen(navController: NavController, openDrawer: () -> Unit) 
     val apiKey = MapsUtils.getApiKey(context)
     val isKeyMissing = apiKey.isBlank()
 
+    suspend fun saveEditedRouteIfChanged(): Boolean? {
+        if (selectedPoiIds.toList() == originalPoiIds.toList()) return null
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return false
+        val username = FirebaseFirestore.getInstance()
+            .collection("users")
+            .document(uid)
+            .get()
+            .await()
+            .getString("username") ?: uid
+        val baseName = selectedRoute?.name ?: "route"
+        return routeViewModel.addRoute(
+            context,
+            selectedPoiIds.toList(),
+            "${baseName}_edited_by_$username"
+        ) != null
+    }
+
     LaunchedEffect(Unit) { routeViewModel.loadRoutes(context, includeAll = true) }
 
     Scaffold(
@@ -153,15 +170,7 @@ fun SelectRoutePoisScreen(navController: NavController, openDrawer: () -> Unit) 
                 Spacer(Modifier.height(16.dp))
 
                 Button(onClick = {
-                    val route = selectedRoute
-                    if (route != null && selectedPoiIds.size >= 2) {
-                        scope.launch {
-                            routeViewModel.updateRoute(context, route.id, selectedPoiIds)
-                            Toast.makeText(
-                                context,
-                                context.getString(R.string.route_saved),
-                                Toast.LENGTH_SHORT
-                            ).show()
+
                         }
                     }
                 }) {
