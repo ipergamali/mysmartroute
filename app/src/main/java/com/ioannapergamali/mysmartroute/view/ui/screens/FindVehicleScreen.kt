@@ -45,9 +45,6 @@ import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.tasks.await
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -83,21 +80,29 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
     val apiKey = MapsUtils.getApiKey(context)
     val isKeyMissing = apiKey.isBlank()
 
+    suspend fun saveEditedRouteIfChanged(): String {
+        val ids = routePoiIds.toList()
+        var routeId = selectedRouteId
+        if (routeId == null) {
+            routeId = routeViewModel.addRoute(
+                context,
+                ids,
+                "Route ${'$'}{System.currentTimeMillis()}"
+            ) ?: return ""
+            selectedRouteId = routeId
+        } else if (ids != originalPoiIds) {
+            routeViewModel.updateRoute(context, routeId, ids)
+        }
+        originalPoiIds.clear()
+        originalPoiIds.addAll(ids)
+        return routeId
+    }
+
     fun saveEditedRoute() {
         coroutineScope.launch {
             saveEditedRouteIfChanged()
             message = context.getString(R.string.route_saved)
         }
-    }
-
-    suspend fun saveEditedRouteIfChanged(): String {
-        val routeId = selectedRouteId ?: return ""
-        if (routePoiIds != originalPoiIds) {
-            routeViewModel.updateRoute(context, routeId, routePoiIds)
-            originalPoiIds.clear()
-            originalPoiIds.addAll(routePoiIds)
-        }
-        return routeId
     }
 
     fun refreshRoute() {
