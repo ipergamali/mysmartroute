@@ -71,7 +71,7 @@ import java.time.format.DateTimeFormatter
 import kotlin.math.abs
 import androidx.compose.ui.graphics.Color
 import androidx.annotation.StringRes
-import android.widget.Toast
+
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
@@ -112,6 +112,7 @@ fun BookSeatScreen(
             restore = { mutableStateListOf<String>().apply { addAll(it) } }
         )
     ) { mutableStateListOf<String>() }
+    val originalPoiIds = remember { mutableStateListOf<String>() }
     var startIndex by rememberSaveable { mutableStateOf<Int?>(null) }
     var endIndex by rememberSaveable { mutableStateOf<Int?>(null) }
     val pois = poiIds.mapNotNull { id -> allPois.find { it.id == id } }
@@ -179,29 +180,6 @@ fun BookSeatScreen(
         }
     }
 
-    fun saveEditedRoute() {
-        val uid = FirebaseAuth.getInstance().currentUser?.uid
-        if (uid != null && poiIds.size >= 2) {
-            scope.launch {
-                val username = FirebaseFirestore.getInstance()
-                    .collection("users")
-                    .document(uid)
-                    .get()
-                    .await()
-                    .getString("username") ?: uid
-                val routeName = "edited_by_" + username
-                val result = routeViewModel.addRoute(
-                    context,
-                    poiIds.toList(),
-                    routeName
-                )
-                Toast.makeText(
-                    context,
-                    if (result != null) R.string.route_saved else R.string.route_save_failed,
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-        }
     }
 
     val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
@@ -232,9 +210,11 @@ fun BookSeatScreen(
                         pathPoints = path
                         poiIds.clear()
                         userPoiIds.clear()
+                        originalPoiIds.clear()
                         startIndex = null
                         endIndex = null
                         poiIds.addAll(routeViewModel.getRoutePois(context, newRoute).map { it.id })
+                        originalPoiIds.addAll(poiIds)
                         path.firstOrNull()?.let {
                             MapsInitializer.initialize(context)
                             cameraPositionState.move(
@@ -355,9 +335,11 @@ fun BookSeatScreen(
                                     pathPoints = path
                                     poiIds.clear()
                                     userPoiIds.clear()
+                                    originalPoiIds.clear()
                                     startIndex = null
                                     endIndex = null
                                     poiIds.addAll(routeViewModel.getRoutePois(context, route.id).map { it.id })
+                                    originalPoiIds.addAll(poiIds)
                                     path.firstOrNull()?.let {
                                         MapsInitializer.initialize(context)
                                         cameraPositionState.move(
@@ -381,9 +363,7 @@ fun BookSeatScreen(
                     }) {
                         Text(stringResource(R.string.add_poi_option))
                     }
-                    Button(onClick = { saveEditedRoute() }) {
-                        Text(stringResource(R.string.save_route))
-                    }
+
                 }
 
                 Spacer(Modifier.height(16.dp))
@@ -577,25 +557,28 @@ fun BookSeatScreen(
                     enabled = selectedRoute != null && startIndex != null && endIndex != null &&
                             datePickerState.selectedDateMillis != null,
                     onClick = {
-                        val r = selectedRoute ?: return@Button
-                        val dateMillis = datePickerState.selectedDateMillis ?: return@Button
-                        val startId = startIndex?.let { pois[it].id } ?: return@Button
-                        val endId = endIndex?.let { pois[it].id } ?: return@Button
-                        requestViewModel.requestTransport(
-                            context,
-                            r.id,
-                            startId,
-                            endId,
-                            Double.MAX_VALUE,
-                            dateMillis
-                        )
-                        transferRequestViewModel.submitRequest(
-                            context,
-                            r.id,
-                            dateMillis,
-                            Double.MAX_VALUE
-                        )
-                        message = context.getString(R.string.request_sent)
+                        scope.launch {
+                            val r = selectedRoute ?: return@launch
+                            val dateMillis = datePickerState.selectedDateMillis ?: return@launch
+                            val startId = startIndex?.let { pois[it].id } ?: return@launch
+                            val endId = endIndex?.let { pois[it].id } ?: return@launch
+                            val routeId = saveEditedRouteIfChanged()
+                            requestViewModel.requestTransport(
+                                context,
+                                routeId,
+                                startId,
+                                endId,
+                                Double.MAX_VALUE,
+                                dateMillis
+                            )
+                            transferRequestViewModel.submitRequest(
+                                context,
+                                routeId,
+                                dateMillis,
+                                Double.MAX_VALUE
+                            )
+                            message = context.getString(R.string.request_sent)
+                        }
                     }
                 ) {
                     Text(stringResource(R.string.save_request))

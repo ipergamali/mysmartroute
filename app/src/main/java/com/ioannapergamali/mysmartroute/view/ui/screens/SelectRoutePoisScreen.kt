@@ -46,6 +46,7 @@ fun SelectRoutePoisScreen(navController: NavController, openDrawer: () -> Unit) 
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     var expanded by remember { mutableStateOf(false) }
     val selectedPoiIds = remember { mutableStateListOf<String>() }
+    val originalPoiIds = remember { mutableStateListOf<String>() }
 
     val cameraPositionState = rememberCameraPositionState()
     val apiKey = MapsUtils.getApiKey(context)
@@ -85,6 +86,8 @@ fun SelectRoutePoisScreen(navController: NavController, openDrawer: () -> Unit) 
                                     pois = routeViewModel.getRoutePois(context, route.id)
                                     selectedPoiIds.clear()
                                     selectedPoiIds.addAll(pois.map { it.id })
+                                    originalPoiIds.clear()
+                                    originalPoiIds.addAll(selectedPoiIds)
                                     path.firstOrNull()?.let {
                                         cameraPositionState.move(
                                             CameraUpdateFactory.newLatLngZoom(it, 13f)
@@ -153,30 +156,7 @@ fun SelectRoutePoisScreen(navController: NavController, openDrawer: () -> Unit) 
                     val uid = FirebaseAuth.getInstance().currentUser?.uid
                     if (uid != null && selectedPoiIds.size >= 2) {
                         scope.launch {
-                            val username = FirebaseFirestore.getInstance()
-                                .collection("users")
-                                .document(uid)
-                                .get()
-                                .await()
-                                .getString("username") ?: uid
-                            val routeName = "edited_by_" + username
-                            val result = routeViewModel.addRoute(
-                                context,
-                                selectedPoiIds.toList(),
-                                routeName
-                            )
-                            if (result != null) {
-                                Toast.makeText(
-                                    context,
-                                    R.string.route_saved,
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            } else {
-                                Toast.makeText(
-                                    context,
-                                    R.string.route_save_failed,
-                                    Toast.LENGTH_SHORT
-                                ).show()
+
                             }
                         }
                     }

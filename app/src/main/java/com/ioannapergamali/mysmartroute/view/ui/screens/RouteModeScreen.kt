@@ -37,7 +37,6 @@ import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
-import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -66,7 +65,6 @@ fun RouteModeScreen(
     val context = LocalContext.current
     val routeViewModel: RouteViewModel = viewModel()
     val poiViewModel: PoIViewModel = viewModel()
-    val requestViewModel: VehicleRequestViewModel = viewModel()
     val routes by routeViewModel.routes.collectAsState()
     val allPois by poiViewModel.pois.collectAsState()
 
@@ -125,30 +123,6 @@ fun RouteModeScreen(
         }
     }
 
-    fun saveEditedRoute() {
-        val uid = FirebaseAuth.getInstance().currentUser?.uid
-        if (uid != null && routePoiIds.size >= 2) {
-            coroutineScope.launch {
-                val username = FirebaseFirestore.getInstance()
-                    .collection("users")
-                    .document(uid)
-                    .get()
-                    .await()
-                    .getString("username") ?: uid
-                val routeName = "edited_by_" + username
-                val result = routeViewModel.addRoute(
-                    context,
-                    routePoiIds.toList(),
-                    routeName
-                )
-                Toast.makeText(
-                    context,
-                    if (result != null) R.string.route_saved else R.string.route_save_failed,
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-        }
-    }
 
     LaunchedEffect(Unit) {
         routeViewModel.loadRoutes(context, includeAll = true)
