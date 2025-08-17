@@ -152,6 +152,16 @@ fun BookSeatScreen(
     val apiKey = MapsUtils.getApiKey(context)
     val isKeyMissing = apiKey.isBlank()
 
+    suspend fun saveEditedRouteIfChanged(): String {
+        val routeId = selectedRouteId ?: return ""
+        if (poiIds != originalPoiIds) {
+            routeViewModel.updateRoute(context, routeId, poiIds)
+            originalPoiIds.clear()
+            originalPoiIds.addAll(poiIds)
+        }
+        return routeId
+    }
+
     fun refreshRoute() {
         val currentPois = poiIds.mapNotNull { id -> allPois.find { it.id == id } }
         if (currentPois.size >= 2) {

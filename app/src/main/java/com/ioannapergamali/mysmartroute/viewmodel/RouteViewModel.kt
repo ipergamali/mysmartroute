@@ -132,6 +132,25 @@ class RouteViewModel : ViewModel() {
         return id
     }
 
+    suspend fun updateRoute(context: Context, routeId: String, poiIds: List<String>) {
+        if (routeId.isBlank() || poiIds.size < 2) return
+        val db = MySmartRouteDatabase.getInstance(context)
+        val routeDao = db.routeDao()
+        val pointDao = db.routePointDao()
+
+        val existing = routeDao.findById(routeId) ?: return
+        val updated = existing.copy(startPoiId = poiIds.first(), endPoiId = poiIds.last())
+        val points = poiIds.mapIndexed { index, p -> RoutePointEntity(routeId, index, p) }
+
+        if (NetworkUtils.isInternetAvailable(context)) {
+            firestore.collection("routes").document(routeId).set(updated.toFirestoreMap(points)).await()
+        }
+
+        routeDao.insert(updated)
+        pointDao.deletePointsForRoute(routeId)
+        points.forEach { pointDao.insert(it) }
+    }
+
     /**
      * Υπολογίζει τη διάρκεια διαδρομής με βάση τα αποθηκευμένα σημεία και το επιλεγμένο όχημα.
      * Χρησιμοποιεί το Google Maps Directions API για να επιστρέψει τη διάρκεια σε λεπτά.
