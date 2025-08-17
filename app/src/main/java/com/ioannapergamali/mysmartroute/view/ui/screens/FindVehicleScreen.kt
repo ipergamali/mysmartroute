@@ -44,6 +44,9 @@ import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,6 +68,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
         )
     ) { mutableStateListOf<String>() }
     val routePois = routePoiIds.mapNotNull { id -> allPois.find { it.id == id } }
+    val originalPoiIds = remember { mutableStateListOf<String>() }
     var startIndex by rememberSaveable { mutableStateOf<Int?>(null) }
     var endIndex by rememberSaveable { mutableStateOf<Int?>(null) }
     var maxCostText by rememberSaveable { mutableStateOf("") }
@@ -106,6 +110,23 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
         }
     }
 
+    suspend fun saveEditedRouteIfChanged(): String {
+        if (routePoiIds == originalPoiIds) return selectedRouteId ?: ""
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return selectedRouteId ?: ""
+        val username = FirebaseFirestore.getInstance()
+            .collection("users")
+            .document(uid)
+            .get()
+            .await()
+            .getString("username") ?: uid
+        val baseName = routes.find { it.id == selectedRouteId }?.name ?: "route"
+        return routeViewModel.addRoute(
+            context,
+            routePoiIds.toList(),
+            "${baseName}_edited_by_$username"
+        ) ?: selectedRouteId ?: ""
+    }
+
 
     LaunchedEffect(Unit) {
         routeViewModel.loadRoutes(context, includeAll = true)
@@ -115,6 +136,8 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
         selectedRouteId?.let { id ->
             routePoiIds.clear()
             routePoiIds.addAll(routeViewModel.getRoutePois(context, id).map { it.id })
+            originalPoiIds.clear()
+            originalPoiIds.addAll(routePoiIds)
             startIndex = null
             endIndex = null
             refreshRoute()
@@ -388,20 +411,22 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                 }
                 Button(
                     onClick = {
-                        val fromIdx = startIndex ?: return@Button
-                        val toIdx = endIndex ?: return@Button
-                        if (fromIdx >= toIdx) {
-                            message = context.getString(R.string.invalid_stop_order)
-                            return@Button
+                        coroutineScope.launch {
+                            val fromIdx = startIndex ?: return@launch
+                            val toIdx = endIndex ?: return@launch
+                            if (fromIdx >= toIdx) {
+                                message = context.getString(R.string.invalid_stop_order)
+                                return@launch
+                            }
+                            val fromId = routePois[fromIdx].id
+                            val toId = routePois[toIdx].id
+                            val cost = maxCostText.toDoubleOrNull() ?: Double.MAX_VALUE
+                            val routeId = saveEditedRouteIfChanged()
+                            val dateMillis = System.currentTimeMillis()
+                            requestViewModel.requestTransport(context, routeId, fromId, toId, cost, dateMillis)
+                            transferRequestViewModel.submitRequest(context, routeId, dateMillis, cost)
+                            message = context.getString(R.string.request_sent)
                         }
-                        val fromId = routePois[fromIdx].id
-                        val toId = routePois[toIdx].id
-                        val cost = maxCostText.toDoubleOrNull() ?: Double.MAX_VALUE
-                        val routeId = selectedRouteId ?: return@Button
-                        val dateMillis = System.currentTimeMillis()
-                        requestViewModel.requestTransport(context, routeId, fromId, toId, cost, dateMillis)
-                        transferRequestViewModel.submitRequest(context, routeId, dateMillis, cost)
-                        message = context.getString(R.string.request_sent)
                     },
                     enabled = selectedRouteId != null && startIndex != null && endIndex != null,
                 ) {
