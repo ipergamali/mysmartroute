@@ -48,6 +48,10 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
@@ -81,6 +85,23 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
     val coroutineScope = rememberCoroutineScope()
     val apiKey = MapsUtils.getApiKey(context)
     val isKeyMissing = apiKey.isBlank()
+
+    suspend fun saveEditedRouteIfChanged(): String {
+        val routeId = selectedRouteId ?: return ""
+        if (routePoiIds != originalPoiIds) {
+            routeViewModel.updateRoute(context, routeId, routePoiIds)
+            originalPoiIds.clear()
+            originalPoiIds.addAll(routePoiIds)
+        }
+        return routeId
+    }
+
+    fun saveEditedRoute() {
+        coroutineScope.launch {
+            saveEditedRouteIfChanged()
+            message = context.getString(R.string.route_saved)
+        }
+    }
 
     fun refreshRoute() {
         if (routePois.size >= 2) {
@@ -241,6 +262,9 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                     }
                     Button(onClick = { refreshRoute() }, enabled = !calculating) {
                         Text(stringResource(R.string.recalculate_route))
+                    }
+                    Button(onClick = { saveEditedRoute() }) {
+                        Text(stringResource(R.string.save_route))
                     }
                 }
 
@@ -438,4 +462,5 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                 Text(message)
             }
         }
-    } }
+    }
+}
