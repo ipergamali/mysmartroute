@@ -127,7 +127,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
         }
     }
 
-    suspend fun saveEditedRouteIfChanged(): String {
+    suspend fun saveEditedRouteAsNewRoute(): String {
         if (routePoiIds == originalPoiIds) return selectedRouteId ?: ""
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return selectedRouteId ?: ""
         val username = FirebaseFirestore.getInstance()
@@ -441,7 +441,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                             val fromId = routePois[fromIdx].id
                             val toId = routePois[toIdx].id
                             val cost = maxCostText.toDoubleOrNull() ?: Double.MAX_VALUE
-                            val routeId = saveEditedRouteIfChanged()
+                            val routeId = saveEditedRouteAsNewRoute()
                             val dateMillis = System.currentTimeMillis()
                             requestViewModel.requestTransport(context, routeId, fromId, toId, cost, dateMillis)
                             transferRequestViewModel.submitRequest(context, routeId, dateMillis, cost)
