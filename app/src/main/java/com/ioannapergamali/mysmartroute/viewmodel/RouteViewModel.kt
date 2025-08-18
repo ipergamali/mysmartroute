@@ -15,6 +15,7 @@ import com.ioannapergamali.mysmartroute.utils.toRouteWithPoints
 import com.google.android.gms.maps.model.LatLng
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
+import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
