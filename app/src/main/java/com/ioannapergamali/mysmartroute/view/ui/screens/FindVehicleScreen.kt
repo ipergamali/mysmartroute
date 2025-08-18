@@ -48,10 +48,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.tasks.await
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {

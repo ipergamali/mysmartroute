@@ -75,10 +75,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.tasks.await
-
 private const val MARKER_ORANGE = BitmapDescriptorFactory.HUE_ORANGE
 private const val MARKER_BLUE = BitmapDescriptorFactory.HUE_BLUE
 
