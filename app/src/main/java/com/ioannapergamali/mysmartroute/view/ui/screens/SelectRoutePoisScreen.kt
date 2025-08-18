@@ -170,7 +170,14 @@ fun SelectRoutePoisScreen(navController: NavController, openDrawer: () -> Unit) 
                 Spacer(Modifier.height(16.dp))
 
                 Button(onClick = {
-
+                    scope.launch {
+                        val saved = saveEditedRouteIfChanged()
+                        if (saved == true) {
+                            Toast.makeText(
+                                context,
+                                context.getString(R.string.route_saved),
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     }
                 }) {
