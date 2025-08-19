@@ -187,15 +187,14 @@ class UserViewModel : ViewModel() {
         demoteDriverToPassenger(dbInstance, firestore, driverId)
     }
 
-    private suspend fun handlePassengerPromotion(dbInstance: MySmartRouteDatabase, passengerId: String) {
+    private suspend fun handlePassengerPromotion(
+        dbInstance: MySmartRouteDatabase,
+        passengerId: String
+    ) {
         val transferDao = dbInstance.transferRequestDao()
         val seatDao = dbInstance.seatReservationDao()
 
-        val firestore = FirebaseFirestore.getInstance()
-
         transferDao.deleteForPassenger(passengerId)
         seatDao.deleteForUser(passengerId)
-
-        }
     }
 }
