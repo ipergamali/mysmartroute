@@ -190,12 +190,12 @@ class UserViewModel : ViewModel() {
     private suspend fun handlePassengerPromotion(dbInstance: MySmartRouteDatabase, passengerId: String) {
         val transferDao = dbInstance.transferRequestDao()
         val seatDao = dbInstance.seatReservationDao()
-        val movingDao = dbInstance.movingDao()
+
         val firestore = FirebaseFirestore.getInstance()
 
         transferDao.deleteForPassenger(passengerId)
         seatDao.deleteForUser(passengerId)
-        movingDao.deleteForUser(passengerId)
+
 
         runCatching {
             val batch = firestore.batch()
@@ -206,12 +206,6 @@ class UserViewModel : ViewModel() {
 
             firestore.collection("seat_reservations")
                 .whereEqualTo("userId", passengerId)
-                .get().await()
-                .forEach { batch.delete(it.reference) }
-
-            val userRef = firestore.collection("users").document(passengerId)
-            firestore.collection("movings")
-                .whereEqualTo("userId", userRef)
                 .get().await()
                 .forEach { batch.delete(it.reference) }
 
