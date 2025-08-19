@@ -46,3 +46,38 @@ suspend fun demoteDriverToPassenger(
     batch.commit().await()
 }
 
+/**
+ * Καθαρίζει τα εκκρεμή δεδομένα ενός επιβάτη όταν προάγεται σε οδηγό.
+ */
+suspend fun promotePassengerToDriver(
+    db: MySmartRouteDatabase,
+    firestore: FirebaseFirestore = FirebaseFirestore.getInstance(),
+    passengerId: String,
+) = withContext(Dispatchers.IO) {
+    // Τοπική βάση
+    db.transferRequestDao().deleteForPassenger(passengerId)
+    db.movingDao().deleteForUser(passengerId)
+    db.seatReservationDao().deleteForUser(passengerId)
+
+    // Firebase
+    val userRef = firestore.collection("users").document(passengerId)
+    val batch = firestore.batch()
+
+    firestore.collection("transfer_requests")
+        .whereEqualTo("passengerId", userRef)
+        .get().await()
+        .forEach { batch.delete(it.reference) }
+
+    firestore.collection("movings")
+        .whereEqualTo("userId", userRef)
+        .get().await()
+        .forEach { batch.delete(it.reference) }
+
+    firestore.collection("seat_reservations")
+        .whereEqualTo("userId", userRef)
+        .get().await()
+        .forEach { batch.delete(it.reference) }
+
+    batch.commit().await()
+}
+

@@ -10,6 +10,7 @@ import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.UserEntity
 import com.ioannapergamali.mysmartroute.data.local.NotificationEntity
 import com.ioannapergamali.mysmartroute.data.local.demoteDriverToPassenger
+import com.ioannapergamali.mysmartroute.data.local.promotePassengerToDriver
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
@@ -189,6 +190,7 @@ class UserViewModel : ViewModel() {
     }
 
     private suspend fun handlePassengerPromotion(dbInstance: MySmartRouteDatabase, userId: String) {
-
+        val firestore = FirebaseFirestore.getInstance()
+        promotePassengerToDriver(dbInstance, firestore, userId)
     }
 }
