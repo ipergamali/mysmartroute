@@ -105,7 +105,7 @@ object MapsUtils {
         val legs = routes.getJSONObject(0).getJSONArray("legs")
         if (legs.length() == 0) return 0
         val durationSec = legs.getJSONObject(0).getJSONObject("duration").getInt("value")
-        return durationSec / 60
+        return (durationSec + 59) / 60
     }
 
     private fun parseDirections(json: String): DirectionsData {
@@ -121,7 +121,8 @@ object MapsUtils {
             .getJSONObject("duration")
             .getInt("value")
         val encoded = route.getJSONObject("overview_polyline").getString("points")
-        return DirectionsData(durationSec / 60, decodePolyline(encoded), status)
+        val durationMin = (durationSec + 59) / 60
+        return DirectionsData(durationMin, decodePolyline(encoded), status)
     }
 
     suspend fun fetchDuration(
