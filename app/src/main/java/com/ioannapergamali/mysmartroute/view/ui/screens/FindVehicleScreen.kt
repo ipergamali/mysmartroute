@@ -414,15 +414,14 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                         val toId = routePois[toIdx].id
                         val cost = maxCostText.toDoubleOrNull() ?: Double.MAX_VALUE
                         val routeId = selectedRouteId ?: return@Button
-                        val dateMillis = System.currentTimeMillis()
-                        requestViewModel.requestTransport(context, routeId, fromId, toId, cost, dateMillis)
+                        requestViewModel.requestTransport(context, routeId, fromId, toId, cost, 0L)
                         navController.navigate(
                             "availableTransports?routeId=" +
                                 routeId +
                                 "&startId=" + fromId +
                                 "&endId=" + toId +
                                 "&maxCost=" + cost +
-                                "&date=" + dateMillis
+                                "&date="
                         )
                     },
                     enabled = selectedRouteId != null && startIndex != null && endIndex != null,
@@ -442,9 +441,8 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                             val toId = routePois[toIdx].id
                             val cost = maxCostText.toDoubleOrNull() ?: Double.MAX_VALUE
                             val routeId = saveEditedRouteAsNewRoute()
-                            val dateMillis = System.currentTimeMillis()
-                            requestViewModel.requestTransport(context, routeId, fromId, toId, cost, dateMillis)
-                            transferRequestViewModel.submitRequest(context, routeId, dateMillis, cost)
+                            requestViewModel.requestTransport(context, routeId, fromId, toId, cost, 0L)
+                            transferRequestViewModel.submitRequest(context, routeId, 0L, cost)
                             message = context.getString(R.string.request_sent)
                         }
                     },
