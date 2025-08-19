@@ -77,7 +77,7 @@ fun AvailableTransportsScreen(
     val bookingViewModel: BookingViewModel = viewModel()
     val scope = rememberCoroutineScope()
 
-    val declarations by declarationViewModel.declarations.collectAsState()
+    val declarations by declarationViewModel.pendingDeclarations.collectAsState()
     val drivers by userViewModel.drivers.collectAsState()
     val vehicles by vehicleViewModel.vehicles.collectAsState()
     val preferred by favoritesViewModel.preferredFlow(context).collectAsState(initial = emptySet())
