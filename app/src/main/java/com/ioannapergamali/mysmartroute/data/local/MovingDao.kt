@@ -22,6 +22,9 @@ interface MovingDao {
     @Query("DELETE FROM movings WHERE driverId = :driverId")
     suspend fun deleteForDriver(driverId: String)
 
+    @Query("DELETE FROM movings WHERE userId = :userId")
+    suspend fun deleteForUser(userId: String)
+
     @Query("SELECT COUNT(*) FROM movings WHERE routeId = :routeId AND date = :date")
     suspend fun countForRoute(routeId: String, date: Long): Int
 

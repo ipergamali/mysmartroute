@@ -132,6 +132,9 @@ class UserViewModel : ViewModel() {
             if (oldRole == UserRole.DRIVER && newRole == UserRole.PASSENGER) {
                 handleDriverDemotion(dbInstance, userId)
             }
+            if (oldRole == UserRole.PASSENGER && newRole == UserRole.DRIVER) {
+                handlePassengerPromotion(dbInstance, userId)
+            }
             if (FirebaseAuth.getInstance().currentUser?.uid == userId) {
                 authViewModel?.loadCurrentUserRole(context, loadMenus = true)
             }
@@ -182,5 +185,37 @@ class UserViewModel : ViewModel() {
 
         // Καθαρίζουμε τα δεδομένα του οδηγού από Room και Firestore
         demoteDriverToPassenger(dbInstance, firestore, driverId)
+    }
+
+    private suspend fun handlePassengerPromotion(dbInstance: MySmartRouteDatabase, passengerId: String) {
+        val transferDao = dbInstance.transferRequestDao()
+        val seatDao = dbInstance.seatReservationDao()
+        val movingDao = dbInstance.movingDao()
+        val firestore = FirebaseFirestore.getInstance()
+
+        transferDao.deleteForPassenger(passengerId)
+        seatDao.deleteForUser(passengerId)
+        movingDao.deleteForUser(passengerId)
+
+        runCatching {
+            val batch = firestore.batch()
+            firestore.collection("transfer_requests")
+                .whereEqualTo("passengerId", passengerId)
+                .get().await()
+                .forEach { batch.delete(it.reference) }
+
+            firestore.collection("seat_reservations")
+                .whereEqualTo("userId", passengerId)
+                .get().await()
+                .forEach { batch.delete(it.reference) }
+
+            val userRef = firestore.collection("users").document(passengerId)
+            firestore.collection("movings")
+                .whereEqualTo("userId", userRef)
+                .get().await()
+                .forEach { batch.delete(it.reference) }
+
+            batch.commit().await()
+        }
     }
 }

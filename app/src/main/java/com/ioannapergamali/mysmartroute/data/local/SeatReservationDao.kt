@@ -17,6 +17,9 @@ interface SeatReservationDao {
     @Query("SELECT * FROM seat_reservations WHERE userId = :userId")
     fun getReservationsForUser(userId: String): Flow<List<SeatReservationEntity>>
 
+    @Query("DELETE FROM seat_reservations WHERE userId = :userId")
+    suspend fun deleteForUser(userId: String)
+
     @Query("SELECT * FROM seat_reservations WHERE routeId = :routeId")
     fun getReservationsForRoute(routeId: String): Flow<List<SeatReservationEntity>>
 
