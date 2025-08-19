@@ -180,7 +180,8 @@ fun ViewTransportRequestsScreen(
                                 Text(costText, modifier = Modifier.width(columnWidth))
                                 Text(dateTimeText, modifier = Modifier.width(columnWidth))
                                 Text(req.requestNumber.toString(), modifier = Modifier.width(columnWidth))
-                                if (req.status == "open") {
+                                val isExpired = req.date > 0L && System.currentTimeMillis() > req.date
+                                if (req.status == "open" && !isExpired) {
                                     Button(
                                         onClick = {
                                             viewModel.notifyPassenger(context, req.id)
@@ -191,7 +192,8 @@ fun ViewTransportRequestsScreen(
                                         Text(stringResource(R.string.notify_passenger))
                                     }
                                 } else {
-                                    Text(req.status, modifier = Modifier.width(columnWidth))
+                                    val statusText = if (isExpired) stringResource(R.string.request_expired) else req.status
+                                    Text(statusText, modifier = Modifier.width(columnWidth))
                                 }
                             }
                             Divider()
