@@ -195,12 +195,14 @@ class UserViewModel : ViewModel() {
 
         transferDao.deleteForPassenger(passengerId)
         seatDao.deleteForUser(passengerId)
-
+        firestore.batch().let { batch ->
+            firestore.collection("transfer_requests")
+                .whereEqualTo("passengerId", passengerId)
                 .get().await()
                 .forEach { batch.delete(it.reference) }
 
             firestore.collection("seat_reservations")
-
+                .whereEqualTo("userId", passengerId)
                 .get().await()
                 .forEach { batch.delete(it.reference) }
 
