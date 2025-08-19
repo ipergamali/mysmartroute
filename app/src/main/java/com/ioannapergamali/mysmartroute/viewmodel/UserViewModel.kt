@@ -199,11 +199,6 @@ class UserViewModel : ViewModel() {
                 .get().await()
                 .forEach { batch.delete(it.reference) }
 
-            firestore.collection("seat_reservations")
-
-                .get().await()
-                .forEach { batch.delete(it.reference) }
-
             batch.commit().await()
         }
     }
