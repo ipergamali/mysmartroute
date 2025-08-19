@@ -21,8 +21,32 @@ import kotlinx.coroutines.tasks.await
 class UserViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
 
+    private val _users = MutableStateFlow<List<UserEntity>>(emptyList())
+    val users: StateFlow<List<UserEntity>> = _users
+
     private val _drivers = MutableStateFlow<List<UserEntity>>(emptyList())
     val drivers: StateFlow<List<UserEntity>> = _drivers
+
+    fun loadUsers(context: Context) {
+        viewModelScope.launch {
+            val dao = MySmartRouteDatabase.getInstance(context).userDao()
+            var list = dao.getAllUsers().first()
+            _users.value = list
+            if (NetworkUtils.isInternetAvailable(context)) {
+                val snapshot = runCatching {
+                    db.collection("users")
+                        .get()
+                        .await()
+                }.getOrNull()
+                if (snapshot != null) {
+                    val remote = snapshot.documents.mapNotNull { it.toUserEntity() }
+                    remote.forEach { dao.insert(it) }
+                    list = (list + remote).distinctBy { it.id }
+                    _users.value = list
+                }
+            }
+        }
+    }
 
     fun loadDrivers(context: Context) {
         viewModelScope.launch {

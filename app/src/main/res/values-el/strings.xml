@@ -102,6 +102,7 @@
     <string name="vehicles_empty">Δεν βρέθηκαν οχήματα</string>
     <string name="view_pois">Προβολή σημείων ενδιαφέροντος</string>
     <string name="view_users">Προβολή χρηστών</string>
+    <string name="no_users">Δεν βρέθηκαν χρήστες</string>
     <string name="advance_date">Μεταφορά ημερομηνίας</string>
     <string name="declare_route">Δήλωση διαδρομής</string>
     <string name="announce_transport">Δήλωση μεταφοράς</string>

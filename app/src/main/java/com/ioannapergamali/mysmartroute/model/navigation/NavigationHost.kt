@@ -24,6 +24,7 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.DatabaseMenuScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.LocalDatabaseScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.FirebaseDatabaseScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.AdminSignUpScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.EditPrivilegesScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.DatabaseSyncScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.RolesScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.ProfileScreen
@@ -351,6 +352,10 @@ fun NavigationHost(
                 },
                 openDrawer = openDrawer
             )
+        }
+
+        composable("editPrivileges") {
+            EditPrivilegesScreen(navController = navController, openDrawer = openDrawer)
         }
 
 
