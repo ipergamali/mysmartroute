@@ -192,6 +192,12 @@
     <string name="max_cost">Μέγιστο κόστος</string>
     <string name="request_sent">Το αίτημα καταχωρήθηκε</string>
     <string name="view_requests">Προβολή αιτημάτων</string>
+    <string name="view_movings">Προβολή μετακινήσεων</string>
+    <string name="no_movings">Δεν βρέθηκαν μετακινήσεις</string>
+    <string name="active_movings">Ενεργές μετακινήσεις</string>
+    <string name="pending_movings">Εκκρεμείς μετακινήσεις</string>
+    <string name="unsuccessful_movings">Ανεπιτυχείς μετακινήσεις</string>
+    <string name="completed_movings">Ολοκληρωμένες μετακινήσεις</string>
     <string name="view_transport_requests">Προβολή αιτημάτων μεταφοράς</string>
     <string name="sort_by_cost">Ταξινόμηση κατά κόστος</string>
     <string name="sort_by_date">Ταξινόμηση κατά ημερομηνία</string>

@@ -78,6 +78,9 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     var calculating by remember { mutableStateOf(false) }
     var pendingPoi by remember { mutableStateOf<Triple<String, Double, Double>?>(null) }
+    val dateMillis = remember {
+        LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+    }
 
     val cameraPositionState = rememberCameraPositionState()
     val coroutineScope = rememberCoroutineScope()
@@ -419,6 +422,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                         val toId = routePois[toIdx].id
                         val cost = maxCostText.toDoubleOrNull() ?: Double.MAX_VALUE
                         val routeId = selectedRouteId ?: return@Button
+
                         requestViewModel.requestTransport(context, routeId, fromId, toId, cost, dateMillis)
                         navController.navigate(
                             "availableTransports?routeId=" +
@@ -445,6 +449,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                             val toId = routePois[toIdx].id
                             val cost = maxCostText.toDoubleOrNull() ?: Double.MAX_VALUE
                             val routeId = saveEditedRouteAsNewRoute()
+
                             requestViewModel.requestTransport(context, routeId, fromId, toId, cost, dateMillis)
                             transferRequestViewModel.submitRequest(context, routeId, dateMillis, cost)
                             message = context.getString(R.string.request_sent)
