@@ -821,7 +821,6 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                             prepopulate(db)
                         }
                     })
-                    .fallbackToDestructiveMigration()
                     .build().also { INSTANCE = it }
             }
         }
