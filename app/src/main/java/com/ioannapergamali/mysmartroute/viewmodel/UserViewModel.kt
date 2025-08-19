@@ -132,6 +132,9 @@ class UserViewModel : ViewModel() {
             if (oldRole == UserRole.DRIVER && newRole == UserRole.PASSENGER) {
                 handleDriverDemotion(dbInstance, userId)
             }
+            if (oldRole == UserRole.PASSENGER && newRole == UserRole.DRIVER) {
+                handlePassengerPromotion(dbInstance, userId)
+            }
             if (FirebaseAuth.getInstance().currentUser?.uid == userId) {
                 authViewModel?.loadCurrentUserRole(context, loadMenus = true)
             }
@@ -182,5 +185,47 @@ class UserViewModel : ViewModel() {
 
         // Καθαρίζουμε τα δεδομένα του οδηγού από Room και Firestore
         demoteDriverToPassenger(dbInstance, firestore, driverId)
+    }
+
+    private suspend fun handlePassengerPromotion(dbInstance: MySmartRouteDatabase, passengerId: String) {
+        val transferDao = dbInstance.transferRequestDao()
+        val seatDao = dbInstance.seatReservationDao()
+        val movingDao = dbInstance.movingDao()
+        val firestore = FirebaseFirestore.getInstance()
+
+        transferDao.deleteForPassenger(passengerId)
+        seatDao.deleteForUser(passengerId)
+        movingDao.deleteForUser(passengerId)
+
+        runCatching {
+            val batch = firestore.batch()
+            val userRef = firestore.collection("users").document(passengerId)
+
+            val transferCol = firestore.collection("transfer_requests")
+            transferCol.whereEqualTo("passengerId", userRef)
+                .get().await()
+                .forEach { batch.delete(it.reference) }
+            transferCol.whereEqualTo("passengerId", passengerId)
+                .get().await()
+                .forEach { batch.delete(it.reference) }
+
+            val seatCol = firestore.collection("seat_reservations")
+            seatCol.whereEqualTo("userId", userRef)
+                .get().await()
+                .forEach { batch.delete(it.reference) }
+            seatCol.whereEqualTo("userId", passengerId)
+                .get().await()
+                .forEach { batch.delete(it.reference) }
+
+            val movingCol = firestore.collection("movings")
+            movingCol.whereEqualTo("userId", userRef)
+                .get().await()
+                .forEach { batch.delete(it.reference) }
+            movingCol.whereEqualTo("userId", passengerId)
+                .get().await()
+                .forEach { batch.delete(it.reference) }
+
+            batch.commit().await()
+        }
     }
 }
