@@ -145,20 +145,15 @@ class UserViewModel : ViewModel() {
         val transferDao = dbInstance.transferRequestDao()
         val movingDao = dbInstance.movingDao()
         val firestore = FirebaseFirestore.getInstance()
+        val userRef = firestore.collection("users").document(driverId)
 
         vehicleDao.deleteForUser(driverId)
-        deleteByField(firestore, "vehicles", "userId", driverId)
 
-        transferDao.deleteForDriver(driverId)
-        deleteByField(firestore, "transfer_requests", "driverId", driverId)
-
-        movingDao.deleteForDriver(driverId)
-        deleteByField(firestore, "movings", "driverId", driverId)
 
         // Ανακτούμε όλες τις δηλώσεις μεταφοράς του οδηγού από το Firestore
         val declarations = runCatching {
             firestore.collection("transport_declarations")
-                .whereEqualTo("driverId", driverId)
+                .whereEqualTo("driverId", userRef)
                 .get()
                 .await()
                 .documents
@@ -203,7 +198,7 @@ class UserViewModel : ViewModel() {
         firestore: FirebaseFirestore,
         collection: String,
         field: String,
-        value: String,
+
     ) {
         runCatching {
             firestore.collection(collection)
