@@ -149,32 +149,14 @@ class UserViewModel : ViewModel() {
         declDao.deleteByIds(ids)
 
         declarations.forEach { declaration ->
-            val declarationId = declaration.id
 
-            // Για κάθε δήλωση, διαγράφουμε τις κρατήσεις θέσεων και ειδοποιούμε τους επιβάτες
-            val reservations = runCatching {
-                firestore.collection("seat_reservations")
-                    .whereEqualTo("declarationId", declarationId)
-                    .get()
-                    .await()
-                    .documents
-            }.getOrNull() ?: emptyList()
-
-            reservations.forEach { resDoc ->
-                val resId = resDoc.id
-                val userId = resDoc.getString("userId") ?: return@forEach
-
-                seatDao.deleteById(resId)
-                runCatching { firestore.collection("seat_reservations").document(resId).delete().await() }
-
-                val existingLocal = notifDao.getForUser(userId).first()
                 existingLocal.forEach { notif ->
                     notifDao.deleteById(notif.id)
                     runCatching { firestore.collection("notifications").document(notif.id).delete().await() }
                 }
                 runCatching {
                     firestore.collection("notifications")
-                        .whereEqualTo("userId", userId)
+
                         .get()
                         .await()
                         .documents
@@ -183,7 +165,7 @@ class UserViewModel : ViewModel() {
 
                 val notification = NotificationEntity(
                     id = java.util.UUID.randomUUID().toString(),
-                    userId = userId,
+
                     message = "Η κράτησή σας ακυρώθηκε λόγω αλλαγής οδηγού.",
                 )
                 notifDao.insert(notification)
