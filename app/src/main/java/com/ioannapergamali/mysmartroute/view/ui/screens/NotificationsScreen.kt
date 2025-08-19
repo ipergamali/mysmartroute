@@ -23,6 +23,7 @@ import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.UserViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,8 +31,11 @@ fun NotificationsScreen(navController: NavController, openDrawer: () -> Unit) {
     val context = LocalContext.current
     val requestViewModel: VehicleRequestViewModel = viewModel()
     val authViewModel: AuthenticationViewModel = viewModel()
+    val userViewModel: UserViewModel = viewModel()
     val role by authViewModel.currentUserRole.collectAsState()
     val requests by requestViewModel.requests.collectAsState()
+    val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+    val systemNotifications by userViewModel.getNotifications(context, userId).collectAsState(emptyList())
 
     LaunchedEffect(Unit) {
         authViewModel.loadCurrentUserRole(context)
@@ -49,15 +53,50 @@ fun NotificationsScreen(navController: NavController, openDrawer: () -> Unit) {
         }
     }
 
-    val userId = FirebaseAuth.getInstance().currentUser?.uid
-    val notifications = when (role) {
+    LaunchedEffect(systemNotifications) {
+        if (systemNotifications.isNotEmpty()) {
+            userViewModel.markNotificationsRead(context, userId)
+        }
+    }
+
+    val requestMessages = when (role) {
         UserRole.DRIVER -> requests.filter {
             (it.driverId.isBlank() && it.status.isBlank()) ||
                 (it.driverId == userId && (it.status == "accepted" || it.status == "rejected"))
+        }.map { req ->
+            when {
+                req.driverId.isBlank() -> stringResource(
+                    R.string.passenger_request_notification,
+                    req.createdByName,
+                    req.requestNumber
+                )
+
+                req.status == "accepted" -> stringResource(
+                    R.string.request_accepted_notification,
+                    req.requestNumber
+                )
+
+                req.status == "rejected" -> stringResource(
+                    R.string.request_rejected_notification,
+                    req.requestNumber
+                )
+
+                else -> ""
+            }
         }
-        UserRole.PASSENGER -> requests.filter { it.status == "pending" }
+
+        UserRole.PASSENGER -> requests.filter { it.status == "pending" }.map { req ->
+            stringResource(
+                R.string.driver_offer_notification,
+                req.driverName,
+                req.requestNumber
+            )
+        }
+
         else -> emptyList()
     }
+
+    val messages = systemNotifications.map { it.message } + requestMessages
 
     Scaffold(
         topBar = {
@@ -70,41 +109,12 @@ fun NotificationsScreen(navController: NavController, openDrawer: () -> Unit) {
         }
     ) { padding ->
         ScreenContainer(modifier = Modifier.padding(padding), scrollable = false) {
-            if (notifications.isEmpty()) {
+            if (messages.isEmpty()) {
                 Text(stringResource(R.string.no_notifications))
             } else {
                 LazyColumn {
-                    items(notifications) { req ->
-                        val message = when (role) {
-                            UserRole.DRIVER -> when {
-                                req.driverId.isBlank() -> stringResource(
-                                    R.string.passenger_request_notification,
-                                    req.createdByName,
-                                    req.requestNumber
-                                )
-
-                                req.status == "accepted" -> stringResource(
-                                    R.string.request_accepted_notification,
-                                    req.requestNumber
-                                )
-
-                                req.status == "rejected" -> stringResource(
-                                    R.string.request_rejected_notification,
-                                    req.requestNumber
-                                )
-
-                                else -> ""
-                            }
-
-                            UserRole.PASSENGER -> stringResource(
-                                R.string.driver_offer_notification,
-                                req.driverName,
-                                req.requestNumber
-                            )
-
-                            else -> ""
-                        }
-                        Text(message)
+                    items(messages) { msg ->
+                        Text(msg)
                         Divider()
                     }
                 }

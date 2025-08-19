@@ -88,6 +88,20 @@ class UserViewModel : ViewModel() {
     fun getNotifications(context: Context, userId: String) =
         MySmartRouteDatabase.getInstance(context).notificationDao().getForUser(userId)
 
+    /** Διαγράφει τις ειδοποιήσεις του χρήστη αφού διαβαστούν. */
+    fun markNotificationsRead(context: Context, userId: String) {
+        viewModelScope.launch {
+            val dao = MySmartRouteDatabase.getInstance(context).notificationDao()
+            val notifications = dao.getForUser(userId).first()
+            notifications.forEach { notif ->
+                dao.deleteById(notif.id)
+                runCatching {
+                    db.collection("notifications").document(notif.id).delete().await()
+                }
+            }
+        }
+    }
+
     fun changeUserRole(context: Context, userId: String, newRole: UserRole) {
         viewModelScope.launch {
             val dbInstance = MySmartRouteDatabase.getInstance(context)
