@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import android.widget.Toast
+import androidx.compose.ui.res.stringResource
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
@@ -53,7 +54,7 @@ fun AdminSignUpScreen(
     Scaffold(
         topBar = {
             TopBar(
-                title = "Admin Sign Up",
+                title = stringResource(R.string.admin_sign_up),
                 navController = navController,
                 showMenu = true,
                 onMenuClick = openDrawer
@@ -71,7 +72,7 @@ fun AdminSignUpScreen(
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Name") },
+                    label = { Text(stringResource(R.string.first_name)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .observeBubble(bubbleState, 0) { name },
@@ -85,7 +86,7 @@ fun AdminSignUpScreen(
                 OutlinedTextField(
                     value = surname,
                     onValueChange = { surname = it },
-                    label = { Text("Surname") },
+                    label = { Text(stringResource(R.string.last_name)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .observeBubble(bubbleState, 1) { surname },
@@ -99,7 +100,7 @@ fun AdminSignUpScreen(
                 OutlinedTextField(
                     value = username,
                     onValueChange = { username = it },
-                    label = { Text("Username") },
+                    label = { Text(stringResource(R.string.username)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .observeBubble(bubbleState, 2) { username },
@@ -113,7 +114,7 @@ fun AdminSignUpScreen(
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it },
-                    label = { Text("Email") },
+                    label = { Text(stringResource(R.string.email)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .observeBubble(bubbleState, 3) { email },
@@ -127,7 +128,7 @@ fun AdminSignUpScreen(
                 OutlinedTextField(
                     value = phoneNum,
                     onValueChange = { phoneNum = it },
-                    label = { Text("Phone Number") },
+                    label = { Text(stringResource(R.string.phone_number)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .observeBubble(bubbleState, 4) { phoneNum },
@@ -142,7 +143,7 @@ fun AdminSignUpScreen(
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
-                    label = { Text("Password") },
+                    label = { Text(stringResource(R.string.password)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .observeBubble(bubbleState, 5) { password },
@@ -155,11 +156,11 @@ fun AdminSignUpScreen(
                 )
 
                 Spacer(Modifier.height(16.dp))
-                Text("Address", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.address), style = MaterialTheme.typography.titleMedium)
                 OutlinedTextField(
                     value = city,
                     onValueChange = { city = it },
-                    label = { Text("City") },
+                    label = { Text(stringResource(R.string.city)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .observeBubble(bubbleState, 6) { city },
@@ -173,7 +174,7 @@ fun AdminSignUpScreen(
                 OutlinedTextField(
                     value = streetName,
                     onValueChange = { streetName = it },
-                    label = { Text("Street Name") },
+                    label = { Text(stringResource(R.string.street_name)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .observeBubble(bubbleState, 7) { streetName },
@@ -187,7 +188,7 @@ fun AdminSignUpScreen(
                 OutlinedTextField(
                     value = streetNumInput,
                     onValueChange = { streetNumInput = it },
-                    label = { Text("Street Number") },
+                    label = { Text(stringResource(R.string.street_number)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .observeBubble(bubbleState, 8) { streetNumInput },
@@ -202,7 +203,7 @@ fun AdminSignUpScreen(
                 OutlinedTextField(
                     value = postalCodeInput,
                     onValueChange = { postalCodeInput = it },
-                    label = { Text("Postal Code") },
+                    label = { Text(stringResource(R.string.postal_code)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .observeBubble(bubbleState, 9) { postalCodeInput },
@@ -240,7 +241,7 @@ fun AdminSignUpScreen(
                         )
                     }
                 }) {
-                    Text("Sign Up")
+                    Text(stringResource(R.string.sign_up))
                 }
 
             }
@@ -251,7 +252,7 @@ fun AdminSignUpScreen(
                 is AuthenticationViewModel.SignUpState.Success -> {
                     Toast.makeText(
                         context,
-                        "Η εγγραφή ολοκληρώθηκε με επιτυχία",
+                        context.getString(R.string.sign_up_success),
                         Toast.LENGTH_SHORT
                     ).show()
                     onSignUpSuccess()
