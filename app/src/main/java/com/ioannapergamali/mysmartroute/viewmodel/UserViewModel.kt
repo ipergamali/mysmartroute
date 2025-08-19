@@ -149,24 +149,22 @@ class UserViewModel : ViewModel() {
         declDao.deleteByIds(ids)
 
         declarations.forEach { declaration ->
-
-                existingLocal.forEach { notif ->
-                    notifDao.deleteById(notif.id)
-                    runCatching { firestore.collection("notifications").document(notif.id).delete().await() }
-                }
+            // διαγράφουμε τις κρατήσεις θέσεων για κάθε δήλωση
+            val reservations = seatDao.getReservationsForDeclaration(declaration.id).first()
+            reservations.forEach { reservation ->
+                seatDao.deleteById(reservation.id)
                 runCatching {
-                    firestore.collection("notifications")
-
-                        .get()
+                    firestore.collection("seat_reservations")
+                        .document(reservation.id)
+                        .delete()
                         .await()
-                        .documents
-                        .forEach { doc -> firestore.collection("notifications").document(doc.id).delete().await() }
                 }
 
+                // ενημερώνουμε τον επιβάτη με ειδοποίηση
                 val notification = NotificationEntity(
                     id = java.util.UUID.randomUUID().toString(),
-
-                    message = "Η κράτησή σας ακυρώθηκε λόγω αλλαγής οδηγού.",
+                    userId = reservation.userId,
+                    message = "Η κράτησή σας ακυρώθηκε λόγω αλλαγής οδηγού."
                 )
                 notifDao.insert(notification)
                 runCatching {
