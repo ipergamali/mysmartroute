@@ -147,40 +147,13 @@ class UserViewModel : ViewModel() {
         val firestore = FirebaseFirestore.getInstance()
 
         vehicleDao.deleteForUser(driverId)
-        runCatching {
-            firestore.collection("vehicles")
-                .whereEqualTo("userId", driverId)
-                .get()
-                .await()
-                .documents
-                .forEach { doc ->
-                    firestore.collection("vehicles").document(doc.id).delete().await()
-                }
-        }
+        deleteByField(firestore, "vehicles", "userId", driverId)
 
         transferDao.deleteForDriver(driverId)
-        runCatching {
-            firestore.collection("transfer_requests")
-                .whereEqualTo("driverId", driverId)
-                .get()
-                .await()
-                .documents
-                .forEach { doc ->
-                    firestore.collection("transfer_requests").document(doc.id).delete().await()
-                }
-        }
+        deleteByField(firestore, "transfer_requests", "driverId", driverId)
 
         movingDao.deleteForDriver(driverId)
-        runCatching {
-            firestore.collection("movings")
-                .whereEqualTo("driverId", driverId)
-                .get()
-                .await()
-                .documents
-                .forEach { doc ->
-                    firestore.collection("movings").document(doc.id).delete().await()
-                }
-        }
+        deleteByField(firestore, "movings", "driverId", driverId)
 
         // Ανακτούμε όλες τις δηλώσεις μεταφοράς του οδηγού από το Firestore
         val declarations = runCatching {
@@ -223,6 +196,22 @@ class UserViewModel : ViewModel() {
                         .await()
                 }
             }
+        }
+    }
+
+    private suspend fun deleteByField(
+        firestore: FirebaseFirestore,
+        collection: String,
+        field: String,
+        value: String,
+    ) {
+        runCatching {
+            firestore.collection(collection)
+                .whereEqualTo(field, value)
+                .get()
+                .await()
+                .documents
+                .forEach { it.reference.delete().await() }
         }
     }
 }
