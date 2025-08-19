@@ -51,9 +51,10 @@ import com.ioannapergamali.mysmartroute.data.local.TripRatingDao
         SeatReservationEntity::class,
         FavoriteEntity::class,
         TransferRequestEntity::class,
-        TripRatingEntity::class
+        TripRatingEntity::class,
+        NotificationEntity::class
     ],
-    version = 50
+    version = 51
 )
 @TypeConverters(Converters::class)
 abstract class MySmartRouteDatabase : RoomDatabase() {
@@ -75,6 +76,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
     abstract fun favoriteDao(): FavoriteDao
     abstract fun transferRequestDao(): TransferRequestDao
     abstract fun tripRatingDao(): TripRatingDao
+    abstract fun notificationDao(): NotificationDao
 
     companion object {
         @Volatile
@@ -669,6 +671,18 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_50_51 = object : Migration(50, 51) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `notifications` (" +
+                        "`id` TEXT NOT NULL, " +
+                        "`userId` TEXT NOT NULL, " +
+                        "`message` TEXT NOT NULL, " +
+                        "PRIMARY KEY(`id`))"
+                )
+            }
+        }
+
         private fun prepopulate(db: SupportSQLiteDatabase) {
             Log.d(TAG, "Prepopulating database")
             db.execSQL(
@@ -799,7 +813,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_46_47,
                     MIGRATION_47_48,
                     MIGRATION_48_49,
-                    MIGRATION_49_50
+                    MIGRATION_49_50,
+                    MIGRATION_50_51
                 )
                     .addCallback(object : RoomDatabase.Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {
