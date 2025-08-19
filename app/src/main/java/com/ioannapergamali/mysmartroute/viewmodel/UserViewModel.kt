@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.UserEntity
@@ -132,6 +133,9 @@ class UserViewModel : ViewModel() {
             if (oldRole == UserRole.DRIVER && newRole == UserRole.PASSENGER) {
                 handleDriverDemotion(dbInstance, userId)
             }
+            if (oldRole == UserRole.PASSENGER && newRole == UserRole.DRIVER) {
+                handlePassengerPromotion(dbInstance, userId)
+            }
             if (FirebaseAuth.getInstance().currentUser?.uid == userId) {
                 authViewModel?.loadCurrentUserRole(context, loadMenus = true)
             }
@@ -182,5 +186,45 @@ class UserViewModel : ViewModel() {
 
         // Καθαρίζουμε τα δεδομένα του οδηγού από Room και Firestore
         demoteDriverToPassenger(dbInstance, firestore, driverId)
+    }
+
+    private suspend fun handlePassengerPromotion(dbInstance: MySmartRouteDatabase, passengerId: String) {
+        val transferDao = dbInstance.transferRequestDao()
+        val seatDao = dbInstance.seatReservationDao()
+        val movingDao = dbInstance.movingDao()
+        val firestore = FirebaseFirestore.getInstance()
+
+        transferDao.deleteForPassenger(passengerId)
+        seatDao.deleteForUser(passengerId)
+        movingDao.deleteForUser(passengerId)
+
+        val userRef = firestore.collection("users").document(passengerId)
+        try {
+            deleteUserDocs(firestore, "transfer_requests", "passengerId", passengerId, userRef)
+            deleteUserDocs(firestore, "seat_reservations", "userId", passengerId, userRef)
+            deleteUserDocs(firestore, "movings", "userId", passengerId, userRef)
+        } catch (_: Exception) {
+        }
+    }
+
+    private suspend fun deleteUserDocs(
+        firestore: FirebaseFirestore,
+        collection: String,
+        field: String,
+        userId: String,
+        userRef: DocumentReference
+    ) {
+        runCatching {
+            firestore.collection(collection)
+                .whereEqualTo(field, userRef)
+                .get().await()
+                .forEach { it.reference.delete().await() }
+        }
+        runCatching {
+            firestore.collection(collection)
+                .whereEqualTo(field, userId)
+                .get().await()
+                .forEach { it.reference.delete().await() }
+        }
     }
 }
