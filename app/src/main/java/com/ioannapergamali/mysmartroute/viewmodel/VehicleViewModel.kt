@@ -120,7 +120,10 @@ class VehicleViewModel : ViewModel() {
                 val query = when {
                     includeAll -> db.collection("vehicles")
                     targetUser != null ->
-                        db.collection("vehicles").whereEqualTo("userId", targetUser)
+                        db.collection("vehicles").whereEqualTo(
+                            "userId",
+                            db.collection("users").document(targetUser)
+                        )
                     else -> null
                 }
                 query?.get()?.await()?.documents?.mapNotNull { it.toVehicleEntity() }
