@@ -56,7 +56,7 @@ fun SignUpScreen(
     Scaffold(
         topBar = {
             TopBar(
-                title = "Sign Up",
+                title = stringResource(R.string.sign_up),
                 navController = navController,
                 showMenu = true,
                 onMenuClick = openDrawer
@@ -78,7 +78,7 @@ fun SignUpScreen(
                     onValueChange = {
                         name = it
                     },
-                    label = { Text("Name") },
+                    label = { Text(stringResource(R.string.first_name)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .bringIntoViewOnFocus()
@@ -95,7 +95,7 @@ fun SignUpScreen(
                     onValueChange = {
                         surname = it
                     },
-                    label = { Text("Surname") },
+                    label = { Text(stringResource(R.string.last_name)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .bringIntoViewOnFocus()
@@ -112,7 +112,7 @@ fun SignUpScreen(
                     onValueChange = {
                         username = it
                     },
-                    label = { Text("Username") },
+                    label = { Text(stringResource(R.string.username)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .bringIntoViewOnFocus()
@@ -129,7 +129,7 @@ fun SignUpScreen(
                     onValueChange = {
                         email = it
                     },
-                    label = { Text("Email") },
+                    label = { Text(stringResource(R.string.email)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .bringIntoViewOnFocus()
@@ -146,7 +146,7 @@ fun SignUpScreen(
                     onValueChange = {
                         phoneNum = it
                     },
-                    label = { Text("Phone Number") },
+                    label = { Text(stringResource(R.string.phone_number)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .bringIntoViewOnFocus()
@@ -164,7 +164,7 @@ fun SignUpScreen(
                     onValueChange = {
                         password = it
                     },
-                    label = { Text("Password") },
+                    label = { Text(stringResource(R.string.password)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .bringIntoViewOnFocus()
@@ -178,13 +178,13 @@ fun SignUpScreen(
                 )
 
                 Spacer(Modifier.height(16.dp))
-                Text("Address", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.address), style = MaterialTheme.typography.titleMedium)
                 OutlinedTextField(
                     value = city,
                     onValueChange = {
                         city = it
                     },
-                    label = { Text("City") },
+                    label = { Text(stringResource(R.string.city)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .bringIntoViewOnFocus()
@@ -201,7 +201,7 @@ fun SignUpScreen(
                     onValueChange = {
                         streetName = it
                     },
-                    label = { Text("Street Name") },
+                    label = { Text(stringResource(R.string.street_name)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .bringIntoViewOnFocus()
@@ -218,7 +218,7 @@ fun SignUpScreen(
                     onValueChange = {
                         streetNumInput = it
                     },
-                    label = { Text("Street Number") },
+                    label = { Text(stringResource(R.string.street_number)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .bringIntoViewOnFocus()
@@ -236,7 +236,7 @@ fun SignUpScreen(
                     onValueChange = {
                         postalCodeInput = it
                     },
-                    label = { Text("Postal Code") },
+                    label = { Text(stringResource(R.string.postal_code)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .bringIntoViewOnFocus()
@@ -289,12 +289,12 @@ fun SignUpScreen(
                     } else {
                         Toast.makeText(
                             context,
-                            "Συμπλήρωσε σωστά τον αριθμό οδού και τον ταχυδρομικό κώδικα",
+                            context.getString(R.string.invalid_address_fields),
                             Toast.LENGTH_SHORT
                         ).show()
                     }
                 }) {
-                    Text("Sign Up")
+                    Text(stringResource(R.string.sign_up))
                 }
 
                 }
@@ -307,7 +307,7 @@ fun SignUpScreen(
                 is AuthenticationViewModel.SignUpState.Success -> {
                     Toast.makeText(
                         context,
-                        "Η εγγραφή ολοκληρώθηκε με επιτυχία",
+                        context.getString(R.string.sign_up_success),
                         Toast.LENGTH_SHORT
                     ).show()
                     onSignUpSuccess()

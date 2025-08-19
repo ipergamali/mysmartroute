@@ -246,6 +246,11 @@ class VehicleRequestViewModel : ViewModel() {
             val dao = MySmartRouteDatabase.getInstance(context).movingDao()
             val driver = FirebaseAuth.getInstance().currentUser ?: return@launch
             val driverName = UserViewModel().getUserName(context, driver.uid)
+            val current = _requests.value.find { it.id == requestId } ?: return@launch
+            if (current.date > 0L && System.currentTimeMillis() > current.date) {
+                Toast.makeText(context, R.string.request_expired, Toast.LENGTH_SHORT).show()
+                return@launch
+            }
             val list = _requests.value.toMutableList()
             val index = list.indexOfFirst { it.id == requestId }
             if (index != -1) {

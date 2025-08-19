@@ -188,43 +188,5 @@ class UserViewModel : ViewModel() {
         demoteDriverToPassenger(dbInstance, firestore, driverId)
     }
 
-    private suspend fun handlePassengerPromotion(dbInstance: MySmartRouteDatabase, passengerId: String) {
-        val transferDao = dbInstance.transferRequestDao()
-        val seatDao = dbInstance.seatReservationDao()
-        val movingDao = dbInstance.movingDao()
-        val firestore = FirebaseFirestore.getInstance()
-
-        transferDao.deleteForPassenger(passengerId)
-        seatDao.deleteForUser(passengerId)
-        movingDao.deleteForUser(passengerId)
-
-        val userRef = firestore.collection("users").document(passengerId)
-        try {
-            deleteUserDocs(firestore, "transfer_requests", "passengerId", passengerId, userRef)
-            deleteUserDocs(firestore, "seat_reservations", "userId", passengerId, userRef)
-            deleteUserDocs(firestore, "movings", "userId", passengerId, userRef)
-        } catch (_: Exception) {
-        }
-    }
-
-    private suspend fun deleteUserDocs(
-        firestore: FirebaseFirestore,
-        collection: String,
-        field: String,
-        userId: String,
-        userRef: DocumentReference
-    ) {
-        runCatching {
-            firestore.collection(collection)
-                .whereEqualTo(field, userRef)
-                .get().await()
-                .forEach { it.reference.delete().await() }
-        }
-        runCatching {
-            firestore.collection(collection)
-                .whereEqualTo(field, userId)
-                .get().await()
-                .forEach { it.reference.delete().await() }
-        }
     }
 }
