@@ -223,45 +223,42 @@ class AuthenticationViewModel : ViewModel() {
 
         viewModelScope.launch {
             val dbLocal = MySmartRouteDatabase.getInstance(context)
-            val localRole = dbLocal.userDao().getUser(uid)?.role
+            val userDao = dbLocal.userDao()
+
+            // Πρώτα προσπαθούμε να πάρουμε τον ρόλο από το Firestore ώστε να είναι πάντα ενημερωμένος
+            val document = runCatching {
+                db.collection("users").document(uid).get().await()
+            }.getOrNull()
+
+            val roleNameRaw = document?.getString("role")
+            val roleIdField = when (val field = document?.get("roleId")) {
+                is String -> field
+                is DocumentReference -> field.id
+                else -> null
+            }
+            val roleName = roleNameRaw ?: roleIdField?.let { id ->
+                roleIds.entries.find { it.value == id }?.key?.name
+            }
+            val roleId = roleIdField ?: ""
+
+            if (roleName != null) {
+                Log.i(TAG, "Role from Firestore: $roleName")
+                _currentUserRole.value = runCatching { UserRole.valueOf(roleName) }.getOrNull()
+                val current = userDao.getUser(uid) ?: UserEntity(id = uid)
+                userDao.insert(current.copy(role = roleName, roleId = roleId))
+                if (loadMenus) loadCurrentUserMenus(context)
+                return@launch
+            }
+
+            // Αν αποτύχει η ανάκτηση από το Firestore, πέφτουμε στην τοπική τιμή
+            val localRole = userDao.getUser(uid)?.role
             if (!localRole.isNullOrEmpty()) {
                 Log.i(TAG, "Role from local DB: $localRole")
                 _currentUserRole.value = runCatching { UserRole.valueOf(localRole) }.getOrNull()
-                if (_currentUserRole.value != null) {
-                    if (loadMenus) loadCurrentUserMenus(context)
-                    return@launch
-                }
+                if (loadMenus) loadCurrentUserMenus(context)
+            } else {
+                _currentUserRole.value = null
             }
-
-            Log.i(TAG, "Fetching role from Firestore for user: $uid")
-            db.collection("users")
-                .document(uid)
-                .get()
-                .addOnSuccessListener { document ->
-                    val roleNameRaw = document.getString("role")
-                    val roleIdField = when (val field = document.get("roleId")) {
-                        is String -> field
-                        is DocumentReference -> field.id
-                        else -> null
-                    }
-                    val roleName = roleNameRaw ?: roleIdField?.let { id ->
-                        roleIds.entries.find { it.value == id }?.key?.name
-                    }
-                    val roleId = roleIdField ?: ""
-                    Log.i(TAG, "Role from Firestore: $roleName")
-                    _currentUserRole.value = roleName?.let {
-                        runCatching { UserRole.valueOf(it) }.getOrNull()
-                    }
-                    viewModelScope.launch {
-                        val dao = MySmartRouteDatabase.getInstance(context).userDao()
-                        val current = dao.getUser(uid) ?: UserEntity(id = uid)
-                        dao.insert(current.copy(role = roleName ?: "", roleId = roleId))
-                    }
-                    if (loadMenus) loadCurrentUserMenus(context)
-                }
-                .addOnFailureListener { e ->
-                    Log.e(TAG, "Failed to fetch role", e)
-                }
         }
     }
 

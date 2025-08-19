@@ -3,6 +3,7 @@ package com.ioannapergamali.mysmartroute.viewmodel
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.UserEntity
@@ -102,7 +103,12 @@ class UserViewModel : ViewModel() {
         }
     }
 
-    fun changeUserRole(context: Context, userId: String, newRole: UserRole) {
+    fun changeUserRole(
+        context: Context,
+        userId: String,
+        newRole: UserRole,
+        authViewModel: AuthenticationViewModel? = null
+    ) {
         viewModelScope.launch {
             val dbInstance = MySmartRouteDatabase.getInstance(context)
             val userDao = dbInstance.userDao()
@@ -115,6 +121,9 @@ class UserViewModel : ViewModel() {
             if (oldRole == UserRole.DRIVER && newRole == UserRole.PASSENGER) {
                 handleDriverDemotion(dbInstance, userId)
             }
+            if (FirebaseAuth.getInstance().currentUser?.uid == userId) {
+                authViewModel?.loadCurrentUserRole(context, loadMenus = true)
+            }
         }
     }
 
@@ -122,22 +131,60 @@ class UserViewModel : ViewModel() {
         val declDao = dbInstance.transportDeclarationDao()
         val seatDao = dbInstance.seatReservationDao()
         val notifDao = dbInstance.notificationDao()
-        val declarations = declDao.getForDriver(driverId).first()
         val firestore = FirebaseFirestore.getInstance()
+
+        // Ανακτούμε όλες τις δηλώσεις μεταφοράς του οδηγού από το Firestore
+        val declarations = runCatching {
+            firestore.collection("transport_declarations")
+                .whereEqualTo("driverId", driverId)
+                .get()
+                .await()
+                .documents
+        }.getOrNull() ?: emptyList()
+
         val ids = declarations.map { it.id }
         ids.forEach { id ->
             runCatching { firestore.collection("transport_declarations").document(id).delete().await() }
         }
         declDao.deleteByIds(ids)
+
         declarations.forEach { declaration ->
-            val reservations = seatDao.getReservationsForDeclaration(declaration.id).first()
-            reservations.forEach { res ->
-                seatDao.deleteById(res.id)
-                runCatching { firestore.collection("seat_reservations").document(res.id).delete().await() }
+            val declarationId = declaration.id
+
+            // Για κάθε δήλωση, διαγράφουμε τις κρατήσεις θέσεων και ειδοποιούμε τους επιβάτες
+            val reservations = runCatching {
+                firestore.collection("seat_reservations")
+                    .whereEqualTo("declarationId", declarationId)
+                    .get()
+                    .await()
+                    .documents
+            }.getOrNull() ?: emptyList()
+
+            reservations.forEach { resDoc ->
+                val resId = resDoc.id
+                val userId = resDoc.getString("userId") ?: return@forEach
+
+                seatDao.deleteById(resId)
+                runCatching { firestore.collection("seat_reservations").document(resId).delete().await() }
+
+                val existingLocal = notifDao.getForUser(userId).first()
+                existingLocal.forEach { notif ->
+                    notifDao.deleteById(notif.id)
+                    runCatching { firestore.collection("notifications").document(notif.id).delete().await() }
+                }
+                runCatching {
+                    firestore.collection("notifications")
+                        .whereEqualTo("userId", userId)
+                        .get()
+                        .await()
+                        .documents
+                        .forEach { doc -> firestore.collection("notifications").document(doc.id).delete().await() }
+                }
+
                 val notification = NotificationEntity(
                     id = java.util.UUID.randomUUID().toString(),
-                    userId = res.userId,
-                    message = "Η κράτησή σας ακυρώθηκε λόγω αλλαγής οδηγού."
+                    userId = userId,
+                    message = "Η κράτησή σας ακυρώθηκε λόγω αλλαγής οδηγού.",
                 )
                 notifDao.insert(notification)
                 runCatching {
