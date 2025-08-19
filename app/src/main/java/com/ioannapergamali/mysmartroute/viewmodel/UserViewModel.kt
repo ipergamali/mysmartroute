@@ -189,6 +189,6 @@ class UserViewModel : ViewModel() {
     }
 
     private suspend fun handlePassengerPromotion(dbInstance: MySmartRouteDatabase, userId: String) {
-        // Δεν απαιτείται επιπλέον ενέργεια προς το παρόν
+
     }
 }
