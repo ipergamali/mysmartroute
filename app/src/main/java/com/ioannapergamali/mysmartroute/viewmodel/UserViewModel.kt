@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.UserEntity
@@ -187,14 +188,5 @@ class UserViewModel : ViewModel() {
         demoteDriverToPassenger(dbInstance, firestore, driverId)
     }
 
-    private suspend fun handlePassengerPromotion(
-        dbInstance: MySmartRouteDatabase,
-        passengerId: String
-    ) {
-        val transferDao = dbInstance.transferRequestDao()
-        val seatDao = dbInstance.seatReservationDao()
-
-        transferDao.deleteForPassenger(passengerId)
-        seatDao.deleteForUser(passengerId)
     }
 }
