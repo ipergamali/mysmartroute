@@ -86,6 +86,9 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
     val coroutineScope = rememberCoroutineScope()
     val apiKey = MapsUtils.getApiKey(context)
     val isKeyMissing = apiKey.isBlank()
+    val dateMillis = remember {
+        LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+    }
 
     suspend fun saveEditedRouteIfChanged(): String {
         val routeId = selectedRouteId ?: return ""
@@ -426,8 +429,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                                 routeId +
                                 "&startId=" + fromId +
                                 "&endId=" + toId +
-                                "&maxCost=" + cost +
-                                "&date=" + dateMillis
+                                "&maxCost=" + cost
                         )
                     },
                     enabled = selectedRouteId != null && startIndex != null && endIndex != null,
