@@ -32,4 +32,7 @@ interface TransferRequestDao {
 
     @Query("DELETE FROM transfer_requests WHERE driverId = :driverId")
     suspend fun deleteForDriver(driverId: String)
+
+    @Query("DELETE FROM transfer_requests WHERE passengerId = :passengerId")
+    suspend fun deleteForPassenger(passengerId: String)
 }
