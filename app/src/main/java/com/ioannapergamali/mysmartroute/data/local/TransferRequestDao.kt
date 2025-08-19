@@ -29,4 +29,7 @@ interface TransferRequestDao {
 
     @Query("SELECT * FROM transfer_requests WHERE driverId = :driverId")
     fun getRequestsForDriver(driverId: String): Flow<List<TransferRequestEntity>>
+
+    @Query("DELETE FROM transfer_requests WHERE driverId = :userId OR passengerId = :userId")
+    suspend fun deleteAllForUser(userId: String)
 }

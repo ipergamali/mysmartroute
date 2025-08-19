@@ -141,7 +141,49 @@ class UserViewModel : ViewModel() {
         val declDao = dbInstance.transportDeclarationDao()
         val seatDao = dbInstance.seatReservationDao()
         val notifDao = dbInstance.notificationDao()
+        val vehicleDao = dbInstance.vehicleDao()
+        val transferDao = dbInstance.transferRequestDao()
         val firestore = FirebaseFirestore.getInstance()
+
+        // Διαγραφή όλων των αιτημάτων μεταφοράς του οδηγού από το Firestore και τη βάση
+        val userRef = firestore.collection("users").document(driverId)
+
+        val remoteDriverRequests = runCatching {
+            firestore.collection("transfer_requests")
+                .whereEqualTo("driverId", userRef)
+                .get()
+                .await()
+                .documents
+        }.getOrNull() ?: emptyList()
+
+        val remotePassengerRequests = runCatching {
+            firestore.collection("transfer_requests")
+                .whereEqualTo("passengerId", userRef)
+                .get()
+                .await()
+                .documents
+        }.getOrNull() ?: emptyList()
+
+        (remoteDriverRequests + remotePassengerRequests).forEach { doc ->
+            runCatching { doc.reference.delete().await() }
+        }
+
+        transferDao.deleteAllForUser(driverId)
+
+        // Διαγραφή όλων των οχημάτων του οδηγού από το Firestore και τη βάση
+        val remoteVehicles = runCatching {
+            firestore.collection("vehicles")
+                .whereEqualTo("userId", userRef)
+                .get()
+                .await()
+                .documents
+        }.getOrNull() ?: emptyList()
+
+        remoteVehicles.forEach { doc ->
+            runCatching { doc.reference.delete().await() }
+        }
+
+        vehicleDao.deleteForUser(driverId)
 
         // Ανακτούμε όλες τις δηλώσεις μεταφοράς του οδηγού από το Firestore
         val declarations = runCatching {
