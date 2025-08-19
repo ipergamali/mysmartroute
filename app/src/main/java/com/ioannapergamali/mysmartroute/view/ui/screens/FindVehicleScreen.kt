@@ -47,6 +47,8 @@ import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
+import java.time.LocalDate
+import java.time.ZoneId
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -414,7 +416,11 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                         val toId = routePois[toIdx].id
                         val cost = maxCostText.toDoubleOrNull() ?: Double.MAX_VALUE
                         val routeId = selectedRouteId ?: return@Button
-                        val dateMillis = System.currentTimeMillis()
+                        val dateMillis = LocalDate
+                            .now()
+                            .atStartOfDay(ZoneId.systemDefault())
+                            .toInstant()
+                            .toEpochMilli()
                         requestViewModel.requestTransport(context, routeId, fromId, toId, cost, dateMillis)
                         navController.navigate(
                             "availableTransports?routeId=" +
@@ -442,7 +448,11 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                             val toId = routePois[toIdx].id
                             val cost = maxCostText.toDoubleOrNull() ?: Double.MAX_VALUE
                             val routeId = saveEditedRouteAsNewRoute()
-                            val dateMillis = System.currentTimeMillis()
+                            val dateMillis = LocalDate
+                                .now()
+                                .atStartOfDay(ZoneId.systemDefault())
+                                .toInstant()
+                                .toEpochMilli()
                             requestViewModel.requestTransport(context, routeId, fromId, toId, cost, dateMillis)
                             transferRequestViewModel.submitRequest(context, routeId, dateMillis, cost)
                             message = context.getString(R.string.request_sent)
