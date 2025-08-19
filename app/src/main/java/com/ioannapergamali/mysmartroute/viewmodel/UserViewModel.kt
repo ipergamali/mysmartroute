@@ -145,47 +145,21 @@ class UserViewModel : ViewModel() {
         val transferDao = dbInstance.transferRequestDao()
         val movingDao = dbInstance.movingDao()
         val firestore = FirebaseFirestore.getInstance()
+        val userRef = firestore.collection("users").document(driverId)
 
         vehicleDao.deleteForUser(driverId)
-        runCatching {
-            firestore.collection("vehicles")
-                .whereEqualTo("userId", driverId)
-                .get()
-                .await()
-                .documents
-                .forEach { doc ->
-                    firestore.collection("vehicles").document(doc.id).delete().await()
-                }
-        }
+        deleteByField(firestore, "vehicles", "userId", userRef)
 
         transferDao.deleteForDriver(driverId)
-        runCatching {
-            firestore.collection("transfer_requests")
-                .whereEqualTo("driverId", driverId)
-                .get()
-                .await()
-                .documents
-                .forEach { doc ->
-                    firestore.collection("transfer_requests").document(doc.id).delete().await()
-                }
-        }
+        deleteByField(firestore, "transfer_requests", "driverId", userRef)
 
         movingDao.deleteForDriver(driverId)
-        runCatching {
-            firestore.collection("movings")
-                .whereEqualTo("driverId", driverId)
-                .get()
-                .await()
-                .documents
-                .forEach { doc ->
-                    firestore.collection("movings").document(doc.id).delete().await()
-                }
-        }
+        deleteByField(firestore, "movings", "driverId", userRef)
 
         // Ανακτούμε όλες τις δηλώσεις μεταφοράς του οδηγού από το Firestore
         val declarations = runCatching {
             firestore.collection("transport_declarations")
-                .whereEqualTo("driverId", driverId)
+                .whereEqualTo("driverId", userRef)
                 .get()
                 .await()
                 .documents
@@ -223,6 +197,22 @@ class UserViewModel : ViewModel() {
                         .await()
                 }
             }
+        }
+    }
+
+    private suspend fun deleteByField(
+        firestore: FirebaseFirestore,
+        collection: String,
+        field: String,
+        value: Any,
+    ) {
+        runCatching {
+            firestore.collection(collection)
+                .whereEqualTo(field, value)
+                .get()
+                .await()
+                .documents
+                .forEach { it.reference.delete().await() }
         }
     }
 }
