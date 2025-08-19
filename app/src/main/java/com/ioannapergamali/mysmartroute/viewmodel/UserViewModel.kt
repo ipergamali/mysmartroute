@@ -116,8 +116,18 @@ class UserViewModel : ViewModel() {
             val oldRole = runCatching { UserRole.valueOf(user.role) }.getOrNull() ?: UserRole.PASSENGER
             if (oldRole == newRole) return@launch
             user.role = newRole.name
+            val newRoleId = when (newRole) {
+                UserRole.PASSENGER -> "role_passenger"
+                UserRole.DRIVER -> "role_driver"
+                UserRole.ADMIN -> "role_admin"
+            }
+            user.roleId = newRoleId
             userDao.insert(user)
-            runCatching { db.collection("users").document(userId).update("role", newRole.name).await() }
+            runCatching {
+                db.collection("users").document(userId)
+                    .update("role", newRole.name, "roleId", newRoleId)
+                    .await()
+            }
             if (oldRole == UserRole.DRIVER && newRole == UserRole.PASSENGER) {
                 handleDriverDemotion(dbInstance, userId)
             }
