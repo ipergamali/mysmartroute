@@ -18,4 +18,7 @@ interface VehicleDao {
 
     @Query("SELECT * FROM vehicles WHERE id = :id LIMIT 1")
     suspend fun getVehicle(id: String): VehicleEntity?
+
+    @Query("DELETE FROM vehicles WHERE userId = :userId")
+    suspend fun deleteForUser(userId: String)
 }
