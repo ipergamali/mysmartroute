@@ -131,27 +131,32 @@ class UserViewModel : ViewModel() {
         val declDao = dbInstance.transportDeclarationDao()
         val seatDao = dbInstance.seatReservationDao()
         val notifDao = dbInstance.notificationDao()
-        val declarations = declDao.getForDriver(driverId).first()
         val firestore = FirebaseFirestore.getInstance()
+
+        // Ανακτούμε όλες τις δηλώσεις μεταφοράς του οδηγού από το Firestore
+        val declarations = runCatching {
+            firestore.collection("transport_declarations")
+                .whereEqualTo("driverId", driverId)
+                .get()
+                .await()
+                .documents
+        }.getOrNull() ?: emptyList()
+
         val ids = declarations.map { it.id }
         ids.forEach { id ->
             runCatching { firestore.collection("transport_declarations").document(id).delete().await() }
         }
         declDao.deleteByIds(ids)
-        declarations.forEach { declaration ->
-            val reservations = seatDao.getReservationsForDeclaration(declaration.id).first()
-            reservations.forEach { res ->
-                seatDao.deleteById(res.id)
-                runCatching { firestore.collection("seat_reservations").document(res.id).delete().await() }
 
-                val existingLocal = notifDao.getForUser(res.userId).first()
+        declarations.forEach { declaration ->
+
                 existingLocal.forEach { notif ->
                     notifDao.deleteById(notif.id)
                     runCatching { firestore.collection("notifications").document(notif.id).delete().await() }
                 }
                 runCatching {
                     firestore.collection("notifications")
-                        .whereEqualTo("userId", res.userId)
+
                         .get()
                         .await()
                         .documents
@@ -160,7 +165,7 @@ class UserViewModel : ViewModel() {
 
                 val notification = NotificationEntity(
                     id = java.util.UUID.randomUUID().toString(),
-                    userId = res.userId,
+
                     message = "Η κράτησή σας ακυρώθηκε λόγω αλλαγής οδηγού.",
                 )
                 notifDao.insert(notification)
