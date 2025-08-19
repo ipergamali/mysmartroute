@@ -20,6 +20,9 @@ interface TransportDeclarationDao {
     @Query("SELECT * FROM transport_declarations WHERE id = :id LIMIT 1")
     suspend fun getById(id: String): TransportDeclarationEntity?
 
+    @Query("DELETE FROM transport_declarations WHERE driverId = :driverId")
+    suspend fun deleteForDriver(driverId: String)
+
     @Query("DELETE FROM transport_declarations WHERE id IN (:ids)")
     suspend fun deleteByIds(ids: List<String>)
 }
