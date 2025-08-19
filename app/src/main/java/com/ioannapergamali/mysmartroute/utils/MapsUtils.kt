@@ -104,7 +104,13 @@ object MapsUtils {
         if (routes.length() == 0) return 0
         val legs = routes.getJSONObject(0).getJSONArray("legs")
         if (legs.length() == 0) return 0
-        val durationSec = legs.getJSONObject(0).getJSONObject("duration").getInt("value")
+
+        var durationSec = 0
+        for (i in 0 until legs.length()) {
+            durationSec += legs.getJSONObject(i)
+                .getJSONObject("duration")
+                .getInt("value")
+        }
         return (durationSec + 59) / 60
     }
 
@@ -117,9 +123,13 @@ object MapsUtils {
         val route = routes.getJSONObject(0)
         val legs = route.getJSONArray("legs")
         if (legs.length() == 0) return DirectionsData(0, emptyList(), status)
-        val durationSec = legs.getJSONObject(0)
-            .getJSONObject("duration")
-            .getInt("value")
+
+        var durationSec = 0
+        for (i in 0 until legs.length()) {
+            durationSec += legs.getJSONObject(i)
+                .getJSONObject("duration")
+                .getInt("value")
+        }
         val encoded = route.getJSONObject("overview_polyline").getString("points")
         val durationMin = (durationSec + 59) / 60
         return DirectionsData(durationMin, decodePolyline(encoded), status)
