@@ -414,7 +414,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                         val toId = routePois[toIdx].id
                         val cost = maxCostText.toDoubleOrNull() ?: Double.MAX_VALUE
                         val routeId = selectedRouteId ?: return@Button
-                        val dateMillis = System.currentTimeMillis()
+                        val dateMillis = 0L
                         requestViewModel.requestTransport(context, routeId, fromId, toId, cost, dateMillis)
                         navController.navigate(
                             "availableTransports?routeId=" +
@@ -442,7 +442,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                             val toId = routePois[toIdx].id
                             val cost = maxCostText.toDoubleOrNull() ?: Double.MAX_VALUE
                             val routeId = saveEditedRouteAsNewRoute()
-                            val dateMillis = System.currentTimeMillis()
+                            val dateMillis = 0L
                             requestViewModel.requestTransport(context, routeId, fromId, toId, cost, dateMillis)
                             transferRequestViewModel.submitRequest(context, routeId, dateMillis, cost)
                             message = context.getString(R.string.request_sent)
