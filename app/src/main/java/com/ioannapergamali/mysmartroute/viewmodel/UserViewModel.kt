@@ -141,7 +141,36 @@ class UserViewModel : ViewModel() {
         val declDao = dbInstance.transportDeclarationDao()
         val seatDao = dbInstance.seatReservationDao()
         val notifDao = dbInstance.notificationDao()
+        val vehicleDao = dbInstance.vehicleDao()
+        val transferDao = dbInstance.transferRequestDao()
         val firestore = FirebaseFirestore.getInstance()
+
+        // Ακύρωση όλων των αιτημάτων μεταφοράς του οδηγού
+        val driverRequests = transferDao.getRequestsForDriver(driverId).first()
+        val passengerRequests = transferDao.getRequestsForPassenger(driverId).first()
+        (driverRequests + passengerRequests).forEach { request ->
+            if (request.firebaseId.isNotBlank()) {
+                runCatching {
+                    firestore.collection("transfer_requests")
+                        .document(request.firebaseId)
+                        .delete()
+                        .await()
+                }
+            }
+        }
+        transferDao.deleteAllForUser(driverId)
+
+        // Διαγραφή όλων των οχημάτων του οδηγού
+        val vehicles = vehicleDao.getVehiclesForUser(driverId)
+        vehicles.forEach { vehicle ->
+            runCatching {
+                firestore.collection("vehicles")
+                    .document(vehicle.id)
+                    .delete()
+                    .await()
+            }
+        }
+        vehicleDao.deleteForUser(driverId)
 
         // Ανακτούμε όλες τις δηλώσεις μεταφοράς του οδηγού από το Firestore
         val declarations = runCatching {
