@@ -143,6 +143,7 @@ class UserViewModel : ViewModel() {
         val notifDao = dbInstance.notificationDao()
         val vehicleDao = dbInstance.vehicleDao()
         val transferDao = dbInstance.transferRequestDao()
+        val movingDao = dbInstance.movingDao()
         val firestore = FirebaseFirestore.getInstance()
 
         vehicleDao.deleteForUser(driverId)
@@ -166,6 +167,18 @@ class UserViewModel : ViewModel() {
                 .documents
                 .forEach { doc ->
                     firestore.collection("transfer_requests").document(doc.id).delete().await()
+                }
+        }
+
+        movingDao.deleteForDriver(driverId)
+        runCatching {
+            firestore.collection("movings")
+                .whereEqualTo("driverId", driverId)
+                .get()
+                .await()
+                .documents
+                .forEach { doc ->
+                    firestore.collection("movings").document(doc.id).delete().await()
                 }
         }
 
