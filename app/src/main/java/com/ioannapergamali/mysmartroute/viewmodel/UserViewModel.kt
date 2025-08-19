@@ -188,5 +188,7 @@ class UserViewModel : ViewModel() {
         demoteDriverToPassenger(dbInstance, firestore, driverId)
     }
 
+    private suspend fun handlePassengerPromotion(dbInstance: MySmartRouteDatabase, userId: String) {
+        // Δεν απαιτείται επιπλέον ενέργεια προς το παρόν
     }
 }
