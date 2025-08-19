@@ -3,6 +3,7 @@ package com.ioannapergamali.mysmartroute.viewmodel
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.UserEntity
@@ -102,7 +103,12 @@ class UserViewModel : ViewModel() {
         }
     }
 
-    fun changeUserRole(context: Context, userId: String, newRole: UserRole) {
+    fun changeUserRole(
+        context: Context,
+        userId: String,
+        newRole: UserRole,
+        authViewModel: AuthenticationViewModel? = null
+    ) {
         viewModelScope.launch {
             val dbInstance = MySmartRouteDatabase.getInstance(context)
             val userDao = dbInstance.userDao()
@@ -114,6 +120,9 @@ class UserViewModel : ViewModel() {
             runCatching { db.collection("users").document(userId).update("role", newRole.name).await() }
             if (oldRole == UserRole.DRIVER && newRole == UserRole.PASSENGER) {
                 handleDriverDemotion(dbInstance, userId)
+            }
+            if (FirebaseAuth.getInstance().currentUser?.uid == userId) {
+                authViewModel?.loadCurrentUserRole(context, loadMenus = true)
             }
         }
     }
@@ -134,10 +143,25 @@ class UserViewModel : ViewModel() {
             reservations.forEach { res ->
                 seatDao.deleteById(res.id)
                 runCatching { firestore.collection("seat_reservations").document(res.id).delete().await() }
+
+                val existingLocal = notifDao.getForUser(res.userId).first()
+                existingLocal.forEach { notif ->
+                    notifDao.deleteById(notif.id)
+                    runCatching { firestore.collection("notifications").document(notif.id).delete().await() }
+                }
+                runCatching {
+                    firestore.collection("notifications")
+                        .whereEqualTo("userId", res.userId)
+                        .get()
+                        .await()
+                        .documents
+                        .forEach { doc -> firestore.collection("notifications").document(doc.id).delete().await() }
+                }
+
                 val notification = NotificationEntity(
                     id = java.util.UUID.randomUUID().toString(),
                     userId = res.userId,
-                    message = "Η κράτησή σας ακυρώθηκε λόγω αλλαγής οδηγού."
+                    message = "Η κράτησή σας ακυρώθηκε λόγω αλλαγής οδηγού.",
                 )
                 notifDao.insert(notification)
                 runCatching {
