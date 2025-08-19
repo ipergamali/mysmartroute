@@ -148,18 +148,26 @@ fun TopBar(
                 }
             }
             if (showLanguageToggle) {
+                val nextLanguage = if (currentLanguage == AppLanguage.Greek.code) {
+                    AppLanguage.English
+                } else {
+                    AppLanguage.Greek
+                }
+
                 IconButton(onClick = {
-                    val newLang = if (currentLanguage == AppLanguage.Greek.code) AppLanguage.English.code else AppLanguage.Greek.code
-                    Log.d(TAG, "Language toggle pressed. Current: $currentLanguage, switching to: $newLang")
+                    Log.d(
+                        TAG,
+                        "Language toggle pressed. Current: $currentLanguage, switching to: ${nextLanguage.code}"
+                    )
                     coroutineScope.launch {
-                        LanguagePreferenceManager.setLanguage(context, newLang)
-                        LocaleUtils.updateLocale(context, newLang)
+                        LanguagePreferenceManager.setLanguage(context, nextLanguage.code)
+                        LocaleUtils.updateLocale(context, nextLanguage.code)
                         settingsViewModel.saveCurrentSettings(context)
-                        Log.d(TAG, "Locale updated to $newLang")
+                        Log.d(TAG, "Locale updated to ${nextLanguage.code}")
                         (context as? android.app.Activity)?.recreate()
                     }
                 }) {
-                    Text(AppLanguage.values().first { it.code == currentLanguage }.flag)
+                    Text(nextLanguage.flag)
                 }
             }
             if (showLogout) {

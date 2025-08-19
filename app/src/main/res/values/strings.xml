@@ -207,6 +207,7 @@
     <string name="request_number">Request number</string>
     <string name="notify_passenger">Notify passenger</string>
     <string name="notify_selected">Notify selected</string>
+    <string name="request_expired">Request expired</string>
     <string name="accept_offer">Accept</string>
     <string name="reject_offer">Reject</string>
     <string name="no_notifications">No notifications</string>
