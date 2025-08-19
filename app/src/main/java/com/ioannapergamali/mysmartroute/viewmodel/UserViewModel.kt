@@ -146,6 +146,28 @@ class UserViewModel : ViewModel() {
         val firestore = FirebaseFirestore.getInstance()
 
         vehicleDao.deleteForUser(driverId)
+        runCatching {
+            firestore.collection("vehicles")
+                .whereEqualTo("userId", driverId)
+                .get()
+                .await()
+                .documents
+                .forEach { doc ->
+                    firestore.collection("vehicles").document(doc.id).delete().await()
+                }
+        }
+
+        transferDao.deleteForDriver(driverId)
+        runCatching {
+            firestore.collection("transfer_requests")
+                .whereEqualTo("driverId", driverId)
+                .get()
+                .await()
+                .documents
+                .forEach { doc ->
+                    firestore.collection("transfer_requests").document(doc.id).delete().await()
+                }
+        }
 
         // Ανακτούμε όλες τις δηλώσεις μεταφοράς του οδηγού από το Firestore
         val declarations = runCatching {
