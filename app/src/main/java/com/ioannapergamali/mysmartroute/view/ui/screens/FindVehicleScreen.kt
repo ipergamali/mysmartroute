@@ -47,6 +47,8 @@ import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
+import java.time.LocalDate
+import java.time.ZoneId
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -76,6 +78,9 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     var calculating by remember { mutableStateOf(false) }
     var pendingPoi by remember { mutableStateOf<Triple<String, Double, Double>?>(null) }
+    val dateMillis = remember {
+        LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+    }
 
     val cameraPositionState = rememberCameraPositionState()
     val coroutineScope = rememberCoroutineScope()
@@ -414,7 +419,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                         val toId = routePois[toIdx].id
                         val cost = maxCostText.toDoubleOrNull() ?: Double.MAX_VALUE
                         val routeId = selectedRouteId ?: return@Button
-                        requestViewModel.requestTransport(context, routeId, fromId, toId, cost, 0L)
+
                         navController.navigate(
                             "availableTransports?routeId=" +
                                 routeId +
@@ -441,8 +446,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                             val toId = routePois[toIdx].id
                             val cost = maxCostText.toDoubleOrNull() ?: Double.MAX_VALUE
                             val routeId = saveEditedRouteAsNewRoute()
-                            requestViewModel.requestTransport(context, routeId, fromId, toId, cost, 0L)
-                            transferRequestViewModel.submitRequest(context, routeId, 0L, cost)
+
                             message = context.getString(R.string.request_sent)
                         }
                     },

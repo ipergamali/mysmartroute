@@ -77,7 +77,7 @@ fun AvailableTransportsScreen(
     val bookingViewModel: BookingViewModel = viewModel()
     val scope = rememberCoroutineScope()
 
-    val declarations by declarationViewModel.declarations.collectAsState()
+    val declarations by declarationViewModel.pendingDeclarations.collectAsState()
     val drivers by userViewModel.drivers.collectAsState()
     val vehicles by vehicleViewModel.vehicles.collectAsState()
     val preferred by favoritesViewModel.preferredFlow(context).collectAsState(initial = emptySet())
@@ -111,7 +111,7 @@ fun AvailableTransportsScreen(
         if (decl.routeId != routeId) return@filter false
         if (startIndex < 0 || endIndex < 0 || startIndex >= endIndex) return@filter false
         if (maxCost != null && decl.cost > maxCost) return@filter false
-        if (date != null && decl.date != date) return@filter false
+        if (date != null && date > 0 && decl.date != date) return@filter false
         if (!decl.matchesFavorites(preferred, nonPreferred)) return@filter false
         true
     }
