@@ -19,10 +19,12 @@ import com.ioannapergamali.mysmartroute.model.enumerations.localizedName
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.UserViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 
 @Composable
 fun EditPrivilegesScreen(navController: NavController, openDrawer: () -> Unit) {
     val viewModel: UserViewModel = viewModel()
+    val authViewModel: AuthenticationViewModel = viewModel()
     val context = LocalContext.current
     val users by viewModel.users.collectAsState()
 
@@ -47,7 +49,7 @@ fun EditPrivilegesScreen(navController: NavController, openDrawer: () -> Unit) {
                 LazyColumn {
                     items(users) { user ->
                         UserRoleRow(user = user) { role ->
-                            viewModel.changeUserRole(context, user.id, role)
+                            viewModel.changeUserRole(context, user.id, role, authViewModel)
                         }
                         Divider(color = MaterialTheme.colorScheme.outline)
                     }
