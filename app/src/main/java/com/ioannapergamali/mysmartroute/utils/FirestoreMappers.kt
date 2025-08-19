@@ -18,6 +18,7 @@ import com.ioannapergamali.mysmartroute.data.local.AvailabilityEntity
 import com.ioannapergamali.mysmartroute.data.local.SeatReservationEntity
 import com.ioannapergamali.mysmartroute.data.local.FavoriteEntity
 import com.ioannapergamali.mysmartroute.data.local.TransferRequestEntity
+import com.ioannapergamali.mysmartroute.data.local.NotificationEntity
 import com.ioannapergamali.mysmartroute.model.enumerations.RequestStatus
 
 
@@ -495,4 +496,21 @@ fun DocumentSnapshot.toTransferRequestEntity(): TransferRequestEntity? {
     val costVal = getDouble("cost") ?: 0.0
     val statusStr = getString("status") ?: RequestStatus.PENDING.name
     return TransferRequestEntity(number, routeId, passengerId, driverId, id, dateVal, costVal, enumValueOf(statusStr))
+}
+
+fun NotificationEntity.toFirestoreMap(): Map<String, Any> = mapOf(
+    "id" to id,
+    "userId" to FirebaseFirestore.getInstance().collection("users").document(userId),
+    "message" to message
+)
+
+fun DocumentSnapshot.toNotificationEntity(): NotificationEntity? {
+    val idVal = getString("id") ?: id
+    val userId = when (val u = get("userId")) {
+        is DocumentReference -> u.id
+        is String -> u
+        else -> getString("userId")
+    } ?: return null
+    val msg = getString("message") ?: ""
+    return NotificationEntity(idVal, userId, msg)
 }

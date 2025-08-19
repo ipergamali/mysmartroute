@@ -6,12 +6,15 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.UserEntity
+import com.ioannapergamali.mysmartroute.data.local.NotificationEntity
+import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import com.ioannapergamali.mysmartroute.utils.toUserEntity
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
@@ -56,5 +59,56 @@ class UserViewModel : ViewModel() {
     suspend fun getUserName(context: Context, id: String): String {
         val user = getUser(context, id)
         return user?.let { "${it.name} ${it.surname}" } ?: ""
+    }
+
+    fun getNotifications(context: Context, userId: String) =
+        MySmartRouteDatabase.getInstance(context).notificationDao().getForUser(userId)
+
+    fun changeUserRole(context: Context, userId: String, newRole: UserRole) {
+        viewModelScope.launch {
+            val dbInstance = MySmartRouteDatabase.getInstance(context)
+            val userDao = dbInstance.userDao()
+            val user = userDao.getUser(userId) ?: return@launch
+            val oldRole = runCatching { UserRole.valueOf(user.role) }.getOrNull() ?: UserRole.PASSENGER
+            if (oldRole == newRole) return@launch
+            user.role = newRole.name
+            userDao.insert(user)
+            runCatching { db.collection("users").document(userId).update("role", newRole.name).await() }
+            if (oldRole == UserRole.DRIVER && newRole == UserRole.PASSENGER) {
+                handleDriverDemotion(dbInstance, userId)
+            }
+        }
+    }
+
+    private suspend fun handleDriverDemotion(dbInstance: MySmartRouteDatabase, driverId: String) {
+        val declDao = dbInstance.transportDeclarationDao()
+        val seatDao = dbInstance.seatReservationDao()
+        val notifDao = dbInstance.notificationDao()
+        val declarations = declDao.getForDriver(driverId).first()
+        val firestore = FirebaseFirestore.getInstance()
+        val ids = declarations.map { it.id }
+        ids.forEach { id ->
+            runCatching { firestore.collection("transport_declarations").document(id).delete().await() }
+        }
+        declDao.deleteByIds(ids)
+        declarations.forEach { declaration ->
+            val reservations = seatDao.getReservationsForDeclaration(declaration.id).first()
+            reservations.forEach { res ->
+                seatDao.deleteById(res.id)
+                runCatching { firestore.collection("seat_reservations").document(res.id).delete().await() }
+                val notification = NotificationEntity(
+                    id = java.util.UUID.randomUUID().toString(),
+                    userId = res.userId,
+                    message = "Η κράτησή σας ακυρώθηκε λόγω αλλαγής οδηγού."
+                )
+                notifDao.insert(notification)
+                runCatching {
+                    firestore.collection("notifications")
+                        .document(notification.id)
+                        .set(notification.toFirestoreMap())
+                        .await()
+                }
+            }
+        }
     }
 }
