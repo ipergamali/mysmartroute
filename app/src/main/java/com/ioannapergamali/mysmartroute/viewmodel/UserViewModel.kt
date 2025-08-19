@@ -8,6 +8,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.UserEntity
 import com.ioannapergamali.mysmartroute.data.local.NotificationEntity
+import com.ioannapergamali.mysmartroute.data.local.demoteDriverToPassenger
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
@@ -138,22 +139,9 @@ class UserViewModel : ViewModel() {
     }
 
     private suspend fun handleDriverDemotion(dbInstance: MySmartRouteDatabase, driverId: String) {
-        val declDao = dbInstance.transportDeclarationDao()
         val seatDao = dbInstance.seatReservationDao()
         val notifDao = dbInstance.notificationDao()
-        val vehicleDao = dbInstance.vehicleDao()
-        val transferDao = dbInstance.transferRequestDao()
-        val movingDao = dbInstance.movingDao()
         val firestore = FirebaseFirestore.getInstance()
-
-        vehicleDao.deleteForUser(driverId)
-        deleteByField(firestore, "vehicles", "userId", driverId)
-
-        transferDao.deleteForDriver(driverId)
-        deleteByField(firestore, "transfer_requests", "driverId", driverId)
-
-        movingDao.deleteForDriver(driverId)
-        deleteByField(firestore, "movings", "driverId", driverId)
 
         // Ανακτούμε όλες τις δηλώσεις μεταφοράς του οδηγού από το Firestore
         val declarations = runCatching {
@@ -163,12 +151,6 @@ class UserViewModel : ViewModel() {
                 .await()
                 .documents
         }.getOrNull() ?: emptyList()
-
-        val ids = declarations.map { it.id }
-        ids.forEach { id ->
-            runCatching { firestore.collection("transport_declarations").document(id).delete().await() }
-        }
-        declDao.deleteByIds(ids)
 
         declarations.forEach { declaration ->
             // διαγράφουμε τις κρατήσεις θέσεων για κάθε δήλωση
@@ -186,7 +168,7 @@ class UserViewModel : ViewModel() {
                 val notification = NotificationEntity(
                     id = java.util.UUID.randomUUID().toString(),
                     userId = reservation.userId,
-                    message = "Η κράτησή σας ακυρώθηκε λόγω αλλαγής οδηγού."
+                    message = "Η κράτησή σας ακυρώθηκε λόγω αλλαγής οδηγού.",
                 )
                 notifDao.insert(notification)
                 runCatching {
@@ -197,21 +179,8 @@ class UserViewModel : ViewModel() {
                 }
             }
         }
-    }
 
-    private suspend fun deleteByField(
-        firestore: FirebaseFirestore,
-        collection: String,
-        field: String,
-        value: String,
-    ) {
-        runCatching {
-            firestore.collection(collection)
-                .whereEqualTo(field, value)
-                .get()
-                .await()
-                .documents
-                .forEach { it.reference.delete().await() }
-        }
+        // Καθαρίζουμε τα δεδομένα του οδηγού από Room και Firestore
+        demoteDriverToPassenger(dbInstance, firestore, driverId)
     }
 }
