@@ -22,25 +22,22 @@ suspend fun demoteDriverToPassenger(
     // Firebase
     val batch = firestore.batch()
 
-    val userRef = firestore.collection("users").document(driverId)
 
-    firestore.collection("vehicles")
-        .whereEqualTo("userId", userRef)
         .get().await()
         .forEach { batch.delete(it.reference) }
 
     firestore.collection("transport_declarations")
-        .whereEqualTo("driverId", userRef)
+
         .get().await()
         .forEach { batch.delete(it.reference) }
 
     firestore.collection("transfer_requests")
-        .whereEqualTo("driverId", userRef)
+
         .get().await()
         .forEach { batch.delete(it.reference) }
 
     firestore.collection("movings")
-        .whereEqualTo("driverId", userRef)
+r
         .get().await()
         .forEach { batch.delete(it.reference) }
 
