@@ -53,6 +53,9 @@ class AuthenticationViewModel : ViewModel() {
     private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)
     val loginState: StateFlow<LoginState> = _loginState
 
+    private val _resetPasswordState = MutableStateFlow<ResetPasswordState>(ResetPasswordState.Idle)
+    val resetPasswordState: StateFlow<ResetPasswordState> = _resetPasswordState
+
     private val _currentUserRole = MutableStateFlow<UserRole?>(null)
     val currentUserRole: StateFlow<UserRole?> = _currentUserRole
 
@@ -199,6 +202,29 @@ class AuthenticationViewModel : ViewModel() {
         }
     }
 
+    fun resetPassword(email: String) {
+        viewModelScope.launch {
+            _resetPasswordState.value = ResetPasswordState.Loading
+            if (email.isBlank()) {
+                _resetPasswordState.value = ResetPasswordState.Error("Email is required")
+                return@launch
+            }
+            auth.sendPasswordResetEmail(email)
+                .addOnSuccessListener {
+                    _resetPasswordState.value = ResetPasswordState.Success
+                }
+                .addOnFailureListener { e ->
+                    _resetPasswordState.value = ResetPasswordState.Error(
+                        e.localizedMessage ?: "Failed to send reset email"
+                    )
+                }
+        }
+    }
+
+    fun clearResetPasswordState() {
+        _resetPasswordState.value = ResetPasswordState.Idle
+    }
+
 
     sealed class SignUpState {
         object Idle : SignUpState()
@@ -212,6 +238,13 @@ class AuthenticationViewModel : ViewModel() {
         object Loading : LoginState()
         object Success : LoginState()
         data class Error(val message: String) : LoginState()
+    }
+
+    sealed class ResetPasswordState {
+        object Idle : ResetPasswordState()
+        object Loading : ResetPasswordState()
+        object Success : ResetPasswordState()
+        data class Error(val message: String) : ResetPasswordState()
     }
 
     fun loadCurrentUserRole(context: Context, loadMenus: Boolean = false) {
