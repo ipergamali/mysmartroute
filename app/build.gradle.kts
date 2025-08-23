@@ -84,11 +84,11 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:34.1.0"))
 
     // Firebase Auth
-    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-auth-ktx:24.0.1")
 
     // Firebase Firestore
-    implementation("com.google.firebase:firebase-firestore-ktx")
-    implementation("com.google.firebase:firebase-dynamic-links-ktx")
+    implementation("com.google.firebase:firebase-firestore-ktx:26.0.0")
+    implementation("com.google.firebase:firebase-dynamic-links-ktx:22.1.0")
     // Android core
     implementation("androidx.core:core-ktx:1.17.0")
     implementation("androidx.appcompat:appcompat:1.7.1")
