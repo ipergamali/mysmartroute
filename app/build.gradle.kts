@@ -9,6 +9,11 @@ plugins {
     id("com.google.gms.google-services")
 }
 
+repositories {
+    google()
+    mavenCentral()
+}
+
 // Διαβάζουμε τα API keys από το local.properties ή από μεταβλητή περιβάλλοντος
 
 val localProps = Properties()
@@ -30,8 +35,8 @@ android {
         applicationId = "com.ioannapergamali.mysmartroute"
         minSdk = 33
         targetSdk = 35
-        versionCode = 20
-        versionName = "2.12"
+        versionCode = 18
+        versionName = "2.10"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "MAPS_API_KEY", "\"$MAPS_API_KEY\"")
         buildConfigField(
@@ -75,18 +80,17 @@ kotlin {
 }
 
 dependencies {
-    // Firebase βιβλιοθήκες (BoM για συγχρονισμένες εκδόσεις)
+    // Firebase BoM (χωρίς έκδοση για κάθε βιβλιοθήκη)
     implementation(platform("com.google.firebase:firebase-bom:34.1.0"))
-    implementation("com.google.firebase:firebase-auth-ktx")
-    implementation("com.google.firebase:firebase-firestore-ktx")
-    implementation("com.google.firebase:firebase-analytics-ktx")
 
-    // Το Dynamic Links δεν περιλαμβάνεται στο BoM, δηλώνουμε ρητά την έκδοση
-    implementation("com.google.firebase:firebase-dynamic-links:22.1.0")
+    // Firebase Auth
+    implementation("com.google.firebase:firebase-auth-ktx:24.0.1")
 
-
+    // Firebase Firestore
+    implementation("com.google.firebase:firebase-firestore-ktx:26.0.0")
+    implementation("com.google.firebase:firebase-dynamic-links-ktx:22.1.0")
     // Android core
-    implementation(libs.androidx.core.ktx)
+    implementation("androidx.core:core-ktx:1.17.0")
     implementation("androidx.appcompat:appcompat:1.7.1")
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.activity:activity-ktx:1.10.1")
