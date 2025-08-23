@@ -52,5 +52,11 @@ class PointRepository {
     fun addRoute(route: Route) {
         routes[route.id] = route
     }
+
+    /** Επιστροφή σημείου */
+    fun getPoint(pointId: String): Point? = points[pointId]
+
+    /** Επιστροφή διαδρομής */
+    fun getRoute(routeId: String): Route? = routes[routeId]
 }
 
