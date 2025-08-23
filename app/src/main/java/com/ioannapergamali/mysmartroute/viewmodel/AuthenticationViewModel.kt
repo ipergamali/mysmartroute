@@ -230,7 +230,7 @@ class AuthenticationViewModel : ViewModel() {
                     _resetPasswordState.value = ResetPasswordState.Success
                 }
                 .addOnFailureListener { e ->
-                    val msg = e.localizedMessage ?: "Failed to send reset email"
+
                     Log.e(TAG, msg, e)
                     _resetPasswordState.value = ResetPasswordState.Error(msg)
                 }

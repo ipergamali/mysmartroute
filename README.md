@@ -109,8 +109,16 @@ private val gson = Gson()
 val type = object : TypeToken<User>() {}.type
 val user: User = gson.fromJson(jsonString, type)
 ```
-
 Μετά την προσθήκη ή επιβεβαίωση της παραπάνω εξάρτησης, κάνε "Sync Project with Gradle Files" ώστε να κατέβει το library και να λυθούν τα σφάλματα.
+
+### Αν λάβεις "Domain not allowlisted by project" στην επαναφορά κωδικού
+
+Αν κατά την αποστολή email επαναφοράς κωδικού εμφανιστεί το μήνυμα σφάλματος
+`Domain not allowlisted by project`, τότε το custom domain των δυναμικών συνδέσμων
+δεν έχει προστεθεί στη λίστα επιτρεπόμενων διευθύνσεων του Firebase. Μεταβείτε στο
+Firebase console -> Authentication -> Settings -> Authorized domains και προσθέστε
+το domain (π.χ. `mysmartroute.page.link`). Αφού επιτρέψετε το domain, το email
+επαναφοράς θα σταλεί κανονικά.
 
 ### Αν τα κοντινά μέρη επιστρέφουν "null"
 
