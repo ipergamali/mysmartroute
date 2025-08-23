@@ -22,7 +22,6 @@ import com.ioannapergamali.mysmartroute.view.ui.animation.rememberBreathingAnima
 import com.ioannapergamali.mysmartroute.view.ui.animation.rememberSlideFadeInAnimation
 import androidx.compose.ui.platform.LocalContext
 import android.widget.Toast
-import android.util.Log
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -30,8 +29,6 @@ import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.google.firebase.auth.FirebaseAuth
 import com.ioannapergamali.mysmartroute.view.ui.util.observeBubble
 import com.ioannapergamali.mysmartroute.view.ui.util.LocalKeyboardBubbleState
-
-private const val TAG = "HomeScreen"
 
 @Composable
 fun HomeScreen(
@@ -59,7 +56,6 @@ fun HomeScreen(
 
         val viewModel: AuthenticationViewModel = viewModel()
         val uiState by viewModel.loginState.collectAsState()
-        val resetState by viewModel.resetPasswordState.collectAsState()
         val context = LocalContext.current
         var email by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
@@ -88,7 +84,7 @@ fun HomeScreen(
                         onLogin = { viewModel.login(context, email, password) },
                         onNavigateToSignUp = onNavigateToSignUp,
                         onLogout = { viewModel.signOut() },
-                        onResetPassword = { viewModel.resetPassword(email) },
+                        onResetPassword = { navController.navigate("forgotPassword") },
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -111,7 +107,7 @@ fun HomeScreen(
                         onLogin = { viewModel.login(context, email, password) },
                         onNavigateToSignUp = onNavigateToSignUp,
                         onLogout = { viewModel.signOut() },
-                        onResetPassword = { viewModel.resetPassword(email) }
+                        onResetPassword = { navController.navigate("forgotPassword") }
                     )
                 }
             }
@@ -135,27 +131,6 @@ fun HomeScreen(
             }
         }
 
-        LaunchedEffect(resetState) {
-            when (resetState) {
-                is AuthenticationViewModel.ResetPasswordState.Success -> {
-                    val msg = context.getString(R.string.reset_email_sent)
-                    Log.i(TAG, msg)
-                    Toast.makeText(
-                        context,
-                        msg,
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    viewModel.clearResetPasswordState()
-                }
-                is AuthenticationViewModel.ResetPasswordState.Error -> {
-                    val message = (resetState as AuthenticationViewModel.ResetPasswordState.Error).message
-                    Log.e(TAG, message)
-                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                    viewModel.clearResetPasswordState()
-                }
-                else -> {}
-            }
-        }
     }
 }
 
