@@ -135,7 +135,11 @@ fun HomeScreen(
         LaunchedEffect(resetState) {
             when (resetState) {
                 is AuthenticationViewModel.ResetPasswordState.Success -> {
-                    Toast.makeText(context, stringResource(R.string.reset_email_sent), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.reset_email_sent),
+                        Toast.LENGTH_SHORT
+                    ).show()
                     viewModel.clearResetPasswordState()
                 }
                 is AuthenticationViewModel.ResetPasswordState.Error -> {
