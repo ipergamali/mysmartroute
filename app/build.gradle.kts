@@ -70,7 +70,10 @@ kotlin {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.1.21")
+    // Firebase BoM – διαχειρίζεται όλες τις εκδόσεις Firebase
+    implementation(platform("com.google.firebase:firebase-bom:34.1.0"))
+    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-firestore-ktx")
 
     // Android core
     implementation("androidx.core:core-ktx:1.12.0")
@@ -96,12 +99,6 @@ dependencies {
 
     // DataStore για αποθήκευση ρυθμίσεων
     implementation("androidx.datastore:datastore-preferences:1.1.7")
-
-    // Firebase
-    // Χρήση της πιο πρόσφατης έκδοσης BOM
-    implementation(platform("com.google.firebase:firebase-bom:34.1.0"))
-    implementation("com.google.firebase:firebase-auth-ktx")
-    implementation("com.google.firebase:firebase-firestore-ktx")
 
     // Room
     implementation("androidx.room:room-runtime:2.7.1")
