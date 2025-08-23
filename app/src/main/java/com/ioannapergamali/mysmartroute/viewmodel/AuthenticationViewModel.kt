@@ -6,7 +6,6 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.ktx.actionCodeSettings
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.DocumentReference
@@ -223,6 +222,7 @@ class AuthenticationViewModel : ViewModel() {
                     true,
                     null
                 )
+                dynamicLinkDomain = domain
             }
             auth.sendPasswordResetEmail(email, actionCodeSettings)
                 .addOnSuccessListener {
@@ -230,9 +230,9 @@ class AuthenticationViewModel : ViewModel() {
                     _resetPasswordState.value = ResetPasswordState.Success
                 }
                 .addOnFailureListener { e ->
-                    val message = e.localizedMessage ?: "Failed to send reset email"
-                    Log.e(TAG, message, e)
-                    _resetPasswordState.value = ResetPasswordState.Error(message)
+                    val msg = e.localizedMessage ?: "Failed to send reset email"
+                    Log.e(TAG, msg, e)
+                    _resetPasswordState.value = ResetPasswordState.Error(msg)
                 }
         }
     }
@@ -253,12 +253,9 @@ class AuthenticationViewModel : ViewModel() {
                         }
                 }
                 .addOnFailureListener { e ->
-                    val message = if (e is FirebaseAuthInvalidCredentialsException) {
-                        "Ο σύνδεσμος επαναφοράς δεν είναι έγκυρος ή έχει λήξει"
-                    } else {
-                        e.localizedMessage ?: "Invalid or expired reset link"
-                    }
-                    _resetPasswordState.value = ResetPasswordState.Error(message)
+                    _resetPasswordState.value = ResetPasswordState.Error(
+                        e.localizedMessage ?: "Invalid or expired reset link",
+                    )
                 }
         }
     }
