@@ -208,7 +208,9 @@ class AuthenticationViewModel : ViewModel() {
         viewModelScope.launch {
             _resetPasswordState.value = ResetPasswordState.Loading
             if (email.isBlank()) {
-                _resetPasswordState.value = ResetPasswordState.Error("Email is required")
+                val message = "Email is required"
+                Log.w(TAG, message)
+                _resetPasswordState.value = ResetPasswordState.Error(message)
                 return@launch
             }
             val domain = BuildConfig.PASSWORD_RESET_DOMAIN
@@ -224,12 +226,16 @@ class AuthenticationViewModel : ViewModel() {
             }
             auth.sendPasswordResetEmail(email, actionCodeSettings)
                 .addOnSuccessListener {
+                    Log.i(TAG, "Password reset email sent to $email")
                     _resetPasswordState.value = ResetPasswordState.Success
                 }
                 .addOnFailureListener { e ->
-                    _resetPasswordState.value = ResetPasswordState.Error(
-                        e.localizedMessage ?: "Failed to send reset email"
-                    )
+                    val rawMsg = e.localizedMessage ?: "Failed to send reset email"
+                    val msg = if (rawMsg.contains("Domain not allowlisted")) {
+                        "The configured custom domain is not allowlisted. Please add it in Firebase Authentication settings."
+                    } else rawMsg
+                    Log.e(TAG, msg, e)
+                    _resetPasswordState.value = ResetPasswordState.Error(msg)
                 }
         }
     }
