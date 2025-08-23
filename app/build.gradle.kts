@@ -81,9 +81,10 @@ kotlin {
 
 dependencies {
     // Firebase βιβλιοθήκες
-    implementation(libs.firebase.auth.ktx)
-    implementation(libs.firebase.firestore.ktx)
-    implementation(libs.firebase.dynamic.links.ktx)
+    implementation("com.google.firebase:firebase-auth-ktx:23.2.1")
+    implementation("com.google.firebase:firebase-firestore-ktx:25.1.4")
+    implementation("com.google.firebase:firebase-dynamic-links-ktx:22.1.0")
+    implementation("com.google.firebase:firebase-common-ktx:21.0.0")
     // Android core
     implementation(libs.androidx.core.ktx)
     implementation("androidx.appcompat:appcompat:1.7.1")
