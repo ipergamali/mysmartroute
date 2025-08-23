@@ -222,7 +222,6 @@ class AuthenticationViewModel : ViewModel() {
                     true,
                     null
                 )
-                dynamicLinkDomain = domain
             }
             auth.sendPasswordResetEmail(email, actionCodeSettings)
                 .addOnSuccessListener {

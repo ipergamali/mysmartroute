@@ -39,7 +39,11 @@ android {
         versionName = "2.10"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "MAPS_API_KEY", "\"$MAPS_API_KEY\"")
-        buildConfigField("String", "PASSWORD_RESET_DOMAIN", "\"reset.mysmartroute.com\"")
+        buildConfigField(
+            "String",
+            "PASSWORD_RESET_DOMAIN",
+            "\"mysmartroute-26a64.firebaseapp.com\""
+        )
         manifestPlaceholders["MAPS_API_KEY"] = MAPS_API_KEY
     }
 
