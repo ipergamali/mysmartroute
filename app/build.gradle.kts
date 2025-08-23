@@ -39,6 +39,7 @@ android {
         versionName = "2.10"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "MAPS_API_KEY", "\"$MAPS_API_KEY\"")
+        buildConfigField("String", "PASSWORD_RESET_DOMAIN", "\"reset.mysmartroute.com\"")
         manifestPlaceholders["MAPS_API_KEY"] = MAPS_API_KEY
     }
 
@@ -83,6 +84,7 @@ dependencies {
 
     // Firebase Firestore
     implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation("com.google.firebase:firebase-dynamic-links-ktx")
     // Android core
     implementation("androidx.core:core-ktx:1.17.0")
     implementation("androidx.appcompat:appcompat:1.7.1")

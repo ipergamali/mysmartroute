@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.actionCodeSettings
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.DocumentReference
 import com.google.gson.Gson
@@ -25,6 +26,7 @@ import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import com.ioannapergamali.mysmartroute.model.menus.MenuConfig
 import com.ioannapergamali.mysmartroute.model.menus.RoleMenuConfig
+import com.ioannapergamali.mysmartroute.BuildConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -209,7 +211,14 @@ class AuthenticationViewModel : ViewModel() {
                 _resetPasswordState.value = ResetPasswordState.Error("Email is required")
                 return@launch
             }
-            auth.sendPasswordResetEmail(email)
+            val domain = BuildConfig.PASSWORD_RESET_DOMAIN
+            val actionCodeSettings = actionCodeSettings {
+                url = "https://$domain/reset"
+                handleCodeInApp = true
+                androidPackageName(BuildConfig.APPLICATION_ID, true, null)
+                dynamicLinkDomain = domain
+            }
+            auth.sendPasswordResetEmail(email, actionCodeSettings)
                 .addOnSuccessListener {
                     _resetPasswordState.value = ResetPasswordState.Success
                 }
