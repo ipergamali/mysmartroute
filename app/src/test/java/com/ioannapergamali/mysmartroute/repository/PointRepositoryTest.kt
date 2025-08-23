@@ -40,14 +40,16 @@ class PointRepositoryTest {
     @Test
     fun mergePoints_updatesRoutesAndRemovesMergedPoint() {
         val repo = PointRepository()
-        repo.addPoint(Point("1", "Α", ""))
-        repo.addPoint(Point("2", "Β", ""))
+        repo.addPoint(Point("1", "Α", "Λεπτομέρειες Α"))
+        repo.addPoint(Point("2", "Β", "Λεπτομέρειες Β"))
         repo.addRoute(Route("r", mutableListOf("1", "2")))
 
         repo.mergePoints("1", "2")
 
         assertNull(repo.getPoint("2"))
-        assertEquals("Α / Β", repo.getPoint("1")?.name)
+        val merged = repo.getPoint("1")
+        assertEquals("Α / Β", merged?.name)
+        assertEquals("Λεπτομέρειες Α\nΛεπτομέρειες Β", merged?.details)
         assertEquals(listOf("1", "1"), repo.getRoute("r")?.pointIds)
     }
 }
