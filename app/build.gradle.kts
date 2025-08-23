@@ -75,9 +75,7 @@ kotlin {
 }
 
 dependencies {
-    // Firebase
-    implementation("com.google.firebase:firebase-auth-ktx:23.2.1")
-    implementation("com.google.firebase:firebase-firestore-ktx:25.1.4")
+
 
     // Android core
     implementation("androidx.core:core-ktx:1.12.0")
