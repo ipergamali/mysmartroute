@@ -6,6 +6,17 @@ import org.junit.Test
 class PointRepositoryTest {
 
     @Test
+    fun getAllPoints_returnsAllPoints() {
+        val repo = PointRepository()
+        val p1 = Point("1", "Σημείο Α", "")
+        val p2 = Point("2", "Σημείο Β", "")
+        repo.addPoint(p1)
+        repo.addPoint(p2)
+
+        assertEquals(listOf(p1, p2), repo.getAllPoints())
+    }
+
+    @Test
     fun getAllPointNames_returnsAll() {
         val repo = PointRepository()
         repo.addPoint(Point("1", "Σημείο Α", ""))
