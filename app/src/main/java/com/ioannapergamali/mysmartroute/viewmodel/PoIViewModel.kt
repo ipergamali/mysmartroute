@@ -115,11 +115,6 @@ class PoIViewModel : ViewModel() {
             val routePointDao = database.routePointDao()
             val routeDao = database.routeDao()
 
-            routePointDao.updatePoiReferences(removeId, keepId)
-            routeDao.updatePoiReferences(removeId, keepId)
-            poiDao.deleteById(removeId)
-            _pois.value = _pois.value.filterNot { it.id == removeId }
-
             val removeRef = db.collection("pois").document(removeId)
             val keepRef = db.collection("pois").document(keepId)
 
@@ -135,25 +130,32 @@ class PoIViewModel : ViewModel() {
             val allDocs = (pointsRoutes.documents + startRoutes.documents + endRoutes.documents)
                 .distinctBy { it.id }
 
-            db.runTransaction { tx ->
-                allDocs.forEach { doc ->
-                    val points = doc.get("points") as? MutableList<Any?> ?: mutableListOf()
-                    var updatedPoints = false
-                    for (i in points.indices) {
-                        val ref = points[i]
-                        if (ref is com.google.firebase.firestore.DocumentReference && ref.id == removeId) {
-                            points[i] = keepRef
-                            updatedPoints = true
+            try {
+                db.runTransaction { tx ->
+                    allDocs.forEach { doc ->
+                        val points = doc.get("points") as? MutableList<Any?> ?: mutableListOf()
+                        var updatedPoints = false
+                        for (i in points.indices) {
+                            val ref = points[i]
+                            if (ref is com.google.firebase.firestore.DocumentReference && ref.id == removeId) {
+                                points[i] = keepRef
+                                updatedPoints = true
+                            }
                         }
+                        val startRef = doc.get("start") as? com.google.firebase.firestore.DocumentReference
+                        val endRef = doc.get("end") as? com.google.firebase.firestore.DocumentReference
+                        if (startRef?.id == removeId) tx.update(doc.reference, "start", keepRef)
+                        if (endRef?.id == removeId) tx.update(doc.reference, "end", keepRef)
+                        if (updatedPoints) tx.update(doc.reference, "points", points)
                     }
-                    val startRef = doc.get("start") as? com.google.firebase.firestore.DocumentReference
-                    val endRef = doc.get("end") as? com.google.firebase.firestore.DocumentReference
-                    if (startRef?.id == removeId) tx.update(doc.reference, "start", keepRef)
-                    if (endRef?.id == removeId) tx.update(doc.reference, "end", keepRef)
-                    if (updatedPoints) tx.update(doc.reference, "points", points)
-                }
-                tx.delete(removeRef)
-            }.await()
+                    tx.delete(removeRef)
+                }.await()
+
+                routePointDao.updatePoiReferences(removeId, keepId)
+                poiDao.deleteById(removeId)
+                _pois.value = _pois.value.filterNot { it.id == removeId }
+            } catch (_: Exception) {
+            }
         }
     }
 
