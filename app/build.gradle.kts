@@ -1,8 +1,61 @@
-diff --git a/app/build.gradle.kts b/app/build.gradle.kts
-        index 976dce23a65a6e560a9878a4e0a8d28134900a8f..ad8c34773632437d3990529409e732403a3b9b86 100644
---- a/app/build.gradle.kts
-+++ b/app/build.gradle.kts
-@@ -59,54 +59,54 @@ android {
+import java.util.Properties
+import java.io.FileInputStream
+
+plugins {
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.compose")
+    id("kotlin-kapt")
+    id("com.google.gms.google-services")
+}
+
+repositories {
+    google()
+    mavenCentral()
+}
+
+// Διαβάζουμε τα API keys από το local.properties ή από μεταβλητή περιβάλλοντος
+
+val localProps = Properties()
+val localPropsFile = rootProject.file("local.properties")
+if (localPropsFile.exists()) {
+    localProps.load(FileInputStream(localPropsFile))
+}
+
+val MAPS_API_KEY: String =
+    (localProps.getProperty("MAPS_API_KEY"))
+        ?: System.getenv("MAPS_API_KEY")
+        ?: ""
+
+android {
+    namespace = "com.ioannapergamali.mysmartroute"
+    compileSdk = 35
+
+    defaultConfig {
+        applicationId = "com.ioannapergamali.mysmartroute"
+        minSdk = 33
+        targetSdk = 35
+        versionCode = 18
+        versionName = "2.10"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "MAPS_API_KEY", "\"$MAPS_API_KEY\"")
+        buildConfigField(
+            "String",
+            "PASSWORD_RESET_DOMAIN",
+            "\"mysmartroute-26a64.firebaseapp.com\""
+        )
+        manifestPlaceholders["MAPS_API_KEY"] = MAPS_API_KEY
+    }
+
+    buildFeatures {
+        compose = true
+        buildConfig = true
+    }
+
+    composeOptions {
+        // Χρήση της νεότερης σταθερής έκδοσης του compiler
+        kotlinCompilerExtensionVersion = "1.6.7"
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -26,16 +79,18 @@ kotlin {
     jvmToolchain(21)
 }
 
+repositories {
+    google()
+    mavenCentral()
+}
+
 dependencies {
-    // Firebase βιβλιοθήκες
-    -
-    -    implementation(libs.firebase.auth.ktx)
-    -    implementation(libs.firebase.firestore.ktx)
-    -    implementation(libs.firebase.dynamic.links.ktx)
-    +    implementation("com.google.firebase:firebase-auth-ktx:23.2.1")
-    +    implementation("com.google.firebase:firebase-firestore-ktx:25.1.4")
-    +    implementation("com.google.firebase:firebase-dynamic-links-ktx:22.1.0")
-    +    implementation("com.google.firebase:firebase-common-ktx:21.0.0")
+    // Firebase βιβλιοθήκες (BoM για συγχρονισμένες εκδόσεις)
+    implementation(platform("com.google.firebase:firebase-bom:34.1.0"))
+    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation("com.google.firebase:firebase-dynamic-links-ktx")
+
     // Android core
     implementation(libs.androidx.core.ktx)
     implementation("androidx.appcompat:appcompat:1.7.1")
@@ -60,4 +115,39 @@ dependencies {
 
     // DataStore για αποθήκευση ρυθμίσεων
     implementation("androidx.datastore:datastore-preferences:1.1.7")
- 
+
+    // Room
+    implementation("androidx.room:room-runtime:2.7.1")
+    implementation("androidx.room:room-ktx:2.7.1")
+    kapt("androidx.room:room-compiler:2.7.1")
+
+    // Google Maps
+    implementation("com.google.android.gms:play-services-maps:19.2.0")
+    implementation("com.google.maps.android:maps-compose:6.6.0")
+    implementation("com.google.maps.android:maps-ktx:5.2.0")
+    implementation("com.google.android.gms:play-services-location:21.3.0")
+    implementation("com.google.android.libraries.places:places:3.4.0")
+
+    // Coroutines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0")
+
+    // HTTP Networking
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+
+    // JSON parsing
+    implementation("com.google.code.gson:gson:2.13.1")
+
+    // Crash reporting με ACRA
+    implementation("ch.acra:acra-mail:5.12.0")
+
+    // Testing
+    testImplementation("junit:junit:4.13.2")
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+}
+
+kapt {
+    correctErrorTypes = true
+}
