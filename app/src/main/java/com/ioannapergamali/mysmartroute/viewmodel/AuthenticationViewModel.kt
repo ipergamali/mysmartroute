@@ -230,10 +230,7 @@ class AuthenticationViewModel : ViewModel() {
                     _resetPasswordState.value = ResetPasswordState.Success
                 }
                 .addOnFailureListener { e ->
-                    val rawMsg = e.localizedMessage ?: "Failed to send reset email"
-                    val msg = if (rawMsg.contains("Domain not allowlisted")) {
-                        "The configured custom domain is not allowlisted. Please add it in Firebase Authentication settings."
-                    } else rawMsg
+
                     Log.e(TAG, msg, e)
                     _resetPasswordState.value = ResetPasswordState.Error(msg)
                 }
