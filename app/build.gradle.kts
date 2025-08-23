@@ -75,10 +75,9 @@ kotlin {
 }
 
 dependencies {
-    // Firebase BoM – διαχειρίζεται όλες τις εκδόσεις Firebase
-    implementation(platform("com.google.firebase:firebase-bom:34.1.0"))
-    implementation("com.google.firebase:firebase-auth-ktx")
-    implementation("com.google.firebase:firebase-firestore-ktx")
+    // Firebase
+    implementation("com.google.firebase:firebase-auth-ktx:23.2.1")
+    implementation("com.google.firebase:firebase-firestore-ktx:25.1.4")
 
     // Android core
     implementation("androidx.core:core-ktx:1.12.0")
