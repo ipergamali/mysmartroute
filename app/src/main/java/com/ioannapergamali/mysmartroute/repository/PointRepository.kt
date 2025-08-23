@@ -21,6 +21,9 @@ class PointRepository {
     /** Επιστροφή όλων των ονομάτων σημείων */
     fun getAllPointNames(): List<String> = points.values.map { it.name }
 
+    /** Επιστροφή όλων των σημείων */
+    fun getAllPoints(): List<Point> = points.values.toList()
+
     /** Ενημέρωση στοιχείων ενός σημείου */
     fun updatePoint(pointId: String, newName: String, newDetails: String) {
         points[pointId]?.apply {
