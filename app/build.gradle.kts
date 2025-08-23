@@ -80,7 +80,6 @@ dependencies {
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.firebase:firebase-dynamic-links-ktx")
-    implementation("com.google.firebase:firebase-common-ktx")
 
     // Android core
     implementation(libs.androidx.core.ktx)
