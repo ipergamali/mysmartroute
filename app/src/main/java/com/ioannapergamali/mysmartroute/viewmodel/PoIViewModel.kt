@@ -151,7 +151,11 @@ class PoIViewModel : ViewModel() {
                     tx.delete(removeRef)
                 }.await()
 
+                // Ενημέρωση των τοπικών διαδρομών ώστε να μην παραμένουν
+                // αναφορές στο παλιό σημείο που διαγράφεται.
                 routePointDao.updatePoiReferences(removeId, keepId)
+                routeDao.updatePoiReferences(removeId, keepId)
+
                 poiDao.deleteById(removeId)
                 _pois.value = _pois.value.filterNot { it.id == removeId }
             } catch (_: Exception) {
