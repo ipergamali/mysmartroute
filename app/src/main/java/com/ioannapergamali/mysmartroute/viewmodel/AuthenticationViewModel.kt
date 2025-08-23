@@ -215,7 +215,11 @@ class AuthenticationViewModel : ViewModel() {
             val actionCodeSettings = actionCodeSettings {
                 url = "https://$domain/reset"
                 handleCodeInApp = true
-                androidPackageName(BuildConfig.APPLICATION_ID, true, null)
+                setAndroidPackageName(
+                    BuildConfig.APPLICATION_ID,
+                    true,
+                    null
+                )
                 dynamicLinkDomain = domain
             }
             auth.sendPasswordResetEmail(email, actionCodeSettings)
