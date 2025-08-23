@@ -107,6 +107,10 @@
     <string name="view_unassigned">View List of Unassigned Routes</string>
     <string name="review_poi">Review Point of Interest Names</string>
     <string name="rank_drivers">Show 10 Best and Worst Drivers</string>
+    <string name="top_drivers">Top 10 drivers</string>
+    <string name="worst_drivers">Bottom 10 drivers</string>
+    <string name="no_driver_ratings">No driver ratings found</string>
+    <string name="average_rating_label">Avg rating: %1$.1f/5</string>
     <string name="rank_passengers">View 10 Happiest/Least Happy Passengers</string>
     <string name="view_vehicles">View Available Vehicles</string>
     <string name="vehicles_empty">No vehicles found</string>
