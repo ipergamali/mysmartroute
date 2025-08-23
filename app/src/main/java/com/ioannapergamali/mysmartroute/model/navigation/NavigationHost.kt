@@ -106,7 +106,7 @@ fun NavigationHost(
             AnnounceTransportScreen(navController = navController, openDrawer = openDrawer)
         }
 
-        composable("poiList") {
+        composable("viewPois") {
             PoIListScreen(navController = navController, openDrawer = openDrawer)
         }
         composable("editRoute") {
