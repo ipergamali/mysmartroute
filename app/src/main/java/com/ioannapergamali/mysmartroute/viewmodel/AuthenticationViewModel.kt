@@ -221,6 +221,29 @@ class AuthenticationViewModel : ViewModel() {
         }
     }
 
+    fun confirmPasswordReset(oobCode: String, newPassword: String) {
+        viewModelScope.launch {
+            _resetPasswordState.value = ResetPasswordState.Loading
+            auth.verifyPasswordResetCode(oobCode)
+                .addOnSuccessListener {
+                    auth.confirmPasswordReset(oobCode, newPassword)
+                        .addOnSuccessListener {
+                            _resetPasswordState.value = ResetPasswordState.Success
+                        }
+                        .addOnFailureListener { e ->
+                            _resetPasswordState.value = ResetPasswordState.Error(
+                                e.localizedMessage ?: "Failed to reset password",
+                            )
+                        }
+                }
+                .addOnFailureListener { e ->
+                    _resetPasswordState.value = ResetPasswordState.Error(
+                        e.localizedMessage ?: "Invalid or expired reset link",
+                    )
+                }
+        }
+    }
+
     fun clearResetPasswordState() {
         _resetPasswordState.value = ResetPasswordState.Idle
     }
