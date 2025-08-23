@@ -99,6 +99,62 @@ class PoIViewModel : ViewModel() {
         }
     }
 
+    fun updatePoi(context: Context, poi: PoIEntity) {
+        viewModelScope.launch {
+            val dao = MySmartRouteDatabase.getInstance(context).poIDao()
+            dao.insert(poi)
+            _pois.value = _pois.value.map { if (it.id == poi.id) poi else it }
+            db.collection("pois").document(poi.id).set(poi.toFirestoreMap())
+        }
+    }
+
+    fun mergePois(context: Context, keepId: String, removeId: String) {
+        viewModelScope.launch {
+            val database = MySmartRouteDatabase.getInstance(context)
+            val poiDao = database.poIDao()
+            val routePointDao = database.routePointDao()
+
+            routePointDao.updatePoiReferences(removeId, keepId)
+            poiDao.deleteById(removeId)
+            _pois.value = _pois.value.filterNot { it.id == removeId }
+
+            val removeRef = db.collection("pois").document(removeId)
+            val keepRef = db.collection("pois").document(keepId)
+
+            val pointsRoutes = db.collection("routes")
+                .whereArrayContains("points", removeRef)
+                .get().await()
+            val startRoutes = db.collection("routes")
+                .whereEqualTo("start", removeRef)
+                .get().await()
+            val endRoutes = db.collection("routes")
+                .whereEqualTo("end", removeRef)
+                .get().await()
+            val allDocs = (pointsRoutes.documents + startRoutes.documents + endRoutes.documents)
+                .distinctBy { it.id }
+
+            db.runTransaction { tx ->
+                allDocs.forEach { doc ->
+                    val points = doc.get("points") as? MutableList<Any?> ?: mutableListOf()
+                    var updatedPoints = false
+                    for (i in points.indices) {
+                        val ref = points[i]
+                        if (ref is com.google.firebase.firestore.DocumentReference && ref.id == removeId) {
+                            points[i] = keepRef
+                            updatedPoints = true
+                        }
+                    }
+                    val startRef = doc.get("start") as? com.google.firebase.firestore.DocumentReference
+                    val endRef = doc.get("end") as? com.google.firebase.firestore.DocumentReference
+                    if (startRef?.id == removeId) tx.update(doc.reference, "start", keepRef)
+                    if (endRef?.id == removeId) tx.update(doc.reference, "end", keepRef)
+                    if (updatedPoints) tx.update(doc.reference, "points", points)
+                }
+                tx.delete(removeRef)
+            }.await()
+        }
+    }
+
     suspend fun getPoi(context: Context, id: String): PoIEntity? {
         val dao = MySmartRouteDatabase.getInstance(context).poIDao()
         val local = dao.findById(id)
