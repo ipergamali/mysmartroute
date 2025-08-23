@@ -76,9 +76,9 @@ kotlin {
 
 dependencies {
     // Firebase
-    implementation(platform("com.google.firebase:firebase-bom:34.1.0"))
-    implementation("com.google.firebase:firebase-auth-ktx")
-    implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation(libs.firebase.bom)
+    implementation(libs.google.firebase.auth.ktx)
+    implementation(libs.google.firebase.firestore.ktx)
 
     // Android core
     implementation("androidx.core:core-ktx:1.12.0")
