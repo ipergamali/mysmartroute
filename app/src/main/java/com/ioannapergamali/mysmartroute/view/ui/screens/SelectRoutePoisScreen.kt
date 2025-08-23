@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -106,6 +107,7 @@ fun SelectRoutePoisScreen(navController: NavController, openDrawer: () -> Unit) 
                                     originalPoiIds.clear()
                                     originalPoiIds.addAll(selectedPoiIds)
                                     path.firstOrNull()?.let {
+                                        MapsInitializer.initialize(context)
                                         cameraPositionState.move(
                                             CameraUpdateFactory.newLatLngZoom(it, 13f)
                                         )
