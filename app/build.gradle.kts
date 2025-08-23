@@ -9,6 +9,11 @@ plugins {
     id("com.google.gms.google-services")
 }
 
+repositories {
+    google()
+    mavenCentral()
+}
+
 // Διαβάζουμε τα API keys από το local.properties ή από μεταβλητή περιβάλλοντος
 
 val localProps = Properties()
