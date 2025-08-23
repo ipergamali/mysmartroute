@@ -80,15 +80,10 @@ kotlin {
 }
 
 dependencies {
-    // Firebase BoM (χωρίς έκδοση για κάθε βιβλιοθήκη)
-    implementation(platform("com.google.firebase:firebase-bom:34.1.0"))
-
-    // Firebase Auth
-    implementation("com.google.firebase:firebase-auth-ktx")
-
-    // Firebase Firestore
-    implementation("com.google.firebase:firebase-firestore-ktx")
-    implementation("com.google.firebase:firebase-dynamic-links-ktx")
+    // Firebase βιβλιοθήκες
+    implementation(libs.firebase.auth.ktx)
+    implementation(libs.firebase.firestore.ktx)
+    implementation(libs.firebase.dynamic.links.ktx)
     // Android core
     implementation("androidx.core:core-ktx:1.17.0")
     implementation("androidx.appcompat:appcompat:1.7.1")
