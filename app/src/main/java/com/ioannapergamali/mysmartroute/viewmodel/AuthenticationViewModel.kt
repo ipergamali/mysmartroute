@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.ktx.actionCodeSettings
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.DocumentReference
@@ -252,9 +253,12 @@ class AuthenticationViewModel : ViewModel() {
                         }
                 }
                 .addOnFailureListener { e ->
-                    _resetPasswordState.value = ResetPasswordState.Error(
-                        e.localizedMessage ?: "Invalid or expired reset link",
-                    )
+                    val message = if (e is FirebaseAuthInvalidCredentialsException) {
+                        "Ο σύνδεσμος επαναφοράς δεν είναι έγκυρος ή έχει λήξει"
+                    } else {
+                        e.localizedMessage ?: "Invalid or expired reset link"
+                    }
+                    _resetPasswordState.value = ResetPasswordState.Error(message)
                 }
         }
     }

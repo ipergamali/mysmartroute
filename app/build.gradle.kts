@@ -81,7 +81,7 @@ kotlin {
 
 dependencies {
     // Firebase BoM (χωρίς έκδοση για κάθε βιβλιοθήκη)
-    implementation(platform("com.google.firebase:firebase-bom:33.2.0"))
+    implementation(platform("com.google.firebase:firebase-bom:34.1.0"))
 
     // Firebase Auth
     implementation("com.google.firebase:firebase-auth-ktx")
