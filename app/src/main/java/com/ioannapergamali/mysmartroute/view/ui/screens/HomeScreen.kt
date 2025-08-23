@@ -56,6 +56,7 @@ fun HomeScreen(
 
         val viewModel: AuthenticationViewModel = viewModel()
         val uiState by viewModel.loginState.collectAsState()
+        val resetState by viewModel.resetPasswordState.collectAsState()
         val context = LocalContext.current
         var email by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
@@ -84,6 +85,7 @@ fun HomeScreen(
                         onLogin = { viewModel.login(context, email, password) },
                         onNavigateToSignUp = onNavigateToSignUp,
                         onLogout = { viewModel.signOut() },
+                        onResetPassword = { viewModel.resetPassword(email) },
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -105,7 +107,8 @@ fun HomeScreen(
                         uiState = uiState,
                         onLogin = { viewModel.login(context, email, password) },
                         onNavigateToSignUp = onNavigateToSignUp,
-                        onLogout = { viewModel.signOut() }
+                        onLogout = { viewModel.signOut() },
+                        onResetPassword = { viewModel.resetPassword(email) }
                     )
                 }
             }
@@ -128,6 +131,21 @@ fun HomeScreen(
                 else -> {}
             }
         }
+
+        LaunchedEffect(resetState) {
+            when (resetState) {
+                is AuthenticationViewModel.ResetPasswordState.Success -> {
+                    Toast.makeText(context, stringResource(R.string.reset_email_sent), Toast.LENGTH_SHORT).show()
+                    viewModel.clearResetPasswordState()
+                }
+                is AuthenticationViewModel.ResetPasswordState.Error -> {
+                    val message = (resetState as AuthenticationViewModel.ResetPasswordState.Error).message
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                    viewModel.clearResetPasswordState()
+                }
+                else -> {}
+            }
+        }
     }
 }
 
@@ -145,6 +163,7 @@ private fun HomeContent(
     onLogin: () -> Unit,
     onNavigateToSignUp: () -> Unit,
     onLogout: () -> Unit = {},
+    onResetPassword: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val bubbleState = LocalKeyboardBubbleState.current!!
@@ -213,6 +232,14 @@ private fun HomeContent(
                     color = MaterialTheme.colorScheme.error
                 )
             }
+
+            Spacer(Modifier.height(8.dp))
+
+            Text(
+                text = stringResource(R.string.forgot_password),
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.clickable { onResetPassword() }
+            )
 
             Spacer(Modifier.height(16.dp))
 
