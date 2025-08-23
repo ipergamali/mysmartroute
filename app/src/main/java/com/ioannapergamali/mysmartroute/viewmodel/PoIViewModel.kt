@@ -113,6 +113,7 @@ class PoIViewModel : ViewModel() {
             val database = MySmartRouteDatabase.getInstance(context)
             val poiDao = database.poIDao()
             val routePointDao = database.routePointDao()
+            val routeDao = database.routeDao()
 
             val removeRef = db.collection("pois").document(removeId)
             val keepRef = db.collection("pois").document(keepId)
