@@ -2,7 +2,6 @@ package com.ioannapergamali.mysmartroute.view.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -42,19 +41,22 @@ fun ViewUsersScreen(navController: NavController, openDrawer: () -> Unit) {
             if (summaries.isEmpty()) {
                 Text(stringResource(R.string.no_users))
             } else {
-                val grouped = summaries.groupBy { runCatching { UserRole.valueOf(it.user.role) }.getOrNull() }
+                val sorted = summaries.sortedBy { it.user.role }
                 LazyColumn {
-                    grouped.forEach { (role, users) ->
-                        role?.let {
+                    var currentRole: UserRole? = null
+                    sorted.forEach { summary ->
+                        val role = runCatching { UserRole.valueOf(summary.user.role) }.getOrNull()
+                        if (role != null && role != currentRole) {
+                            currentRole = role
                             item {
                                 Text(
-                                    it.localizedName(),
+                                    role.localizedName(),
                                     style = MaterialTheme.typography.titleLarge,
                                     modifier = Modifier.padding(vertical = 4.dp)
                                 )
                             }
                         }
-                        items(users) { summary ->
+                        item {
                             UserSummaryItem(summary)
                             Divider(modifier = Modifier.padding(vertical = 8.dp))
                         }

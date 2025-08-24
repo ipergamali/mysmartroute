@@ -7,6 +7,7 @@ import com.ioannapergamali.mysmartroute.data.local.MovingEntity
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.UserEntity
 import com.ioannapergamali.mysmartroute.data.local.VehicleEntity
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -26,11 +27,14 @@ class UserStatsViewModel(application: Application) : AndroidViewModel(applicatio
     val userSummaries: StateFlow<List<UserSummary>> = _userSummaries
 
     init {
+
+ 
         viewModelScope.launch {
 
             val db = MySmartRouteDatabase.getInstance(application)
 
             val db = MySmartRouteDatabase.getInstance(context)
+
 
             val users = db.userDao().getAllUsers().first()
             val movings = db.movingDao().getAll().first()
