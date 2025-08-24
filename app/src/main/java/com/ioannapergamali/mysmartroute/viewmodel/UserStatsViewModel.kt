@@ -27,8 +27,15 @@ class UserStatsViewModel(application: Application) : AndroidViewModel(applicatio
     val userSummaries: StateFlow<List<UserSummary>> = _userSummaries
 
     init {
-        viewModelScope.launch(Dispatchers.IO) {
+
+ 
+        viewModelScope.launch {
+
             val db = MySmartRouteDatabase.getInstance(application)
+
+            val db = MySmartRouteDatabase.getInstance(context)
+
+
             val users = db.userDao().getAllUsers().first()
             val movings = db.movingDao().getAll().first()
             val ratings = db.tripRatingDao().getAll().first()
