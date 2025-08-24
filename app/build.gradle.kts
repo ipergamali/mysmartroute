@@ -29,12 +29,12 @@ val MAPS_API_KEY: String =
 
 android {
     namespace = "com.ioannapergamali.mysmartroute"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.ioannapergamali.mysmartroute"
         minSdk = 33
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 18
         versionName = "2.10"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
