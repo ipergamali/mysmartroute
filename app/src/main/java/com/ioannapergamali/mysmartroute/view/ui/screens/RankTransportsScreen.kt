@@ -127,6 +127,7 @@ private fun TripRatingItem(
             label = { Text(stringResource(R.string.comment_label)) },
             modifier = Modifier.fillMaxWidth()
         )
+
         Spacer(modifier = Modifier.height(8.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -135,6 +136,7 @@ private fun TripRatingItem(
             Button(onClick = { onSave(rating, comment) }) {
                 Text(stringResource(R.string.save))
             }
+
         }
     }
 }
