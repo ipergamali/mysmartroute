@@ -82,9 +82,11 @@ private fun UserSummaryItem(summary: UserSummary) {
         summary.completedMovings.forEach { m ->
             Text("- ${m.routeName}")
         }
-        Text(stringResource(R.string.total_cost_label, summary.totalCost))
-        Text(stringResource(R.string.average_rating_label, summary.passengerAverageRating))
+    } else {
+        Text(stringResource(R.string.no_completed_movings))
     }
+    Text(stringResource(R.string.total_cost_label, summary.totalCost))
+    Text(stringResource(R.string.average_rating_label, summary.passengerAverageRating))
     if (role == UserRole.DRIVER || role == UserRole.ADMIN) {
         if (summary.vehicles.isNotEmpty()) {
             Text(stringResource(R.string.vehicles_label), style = MaterialTheme.typography.labelLarge)
