@@ -264,6 +264,7 @@
     <string name="no_transports_found">No transports found</string>
     <string name="rating_label">Rating: %1$d/5</string>
     <string name="comment_label">Comment</string>
+    <string name="save">Save</string>
     <string name="no_completed_transports">No completed transports</string>
     <string name="view_details">View details</string>
     <string name="reservation_details">Reservation details</string>

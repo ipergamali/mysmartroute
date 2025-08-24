@@ -12,6 +12,7 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -27,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.Alignment
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.R
@@ -104,7 +106,6 @@ private fun TripRatingItem(
             (1..5).forEach { index ->
                 IconButton(onClick = {
                     rating = index
-                    onSave(rating, comment)
                 }) {
                     Icon(
                         imageVector = if (index <= rating) Icons.Filled.Star else Icons.Outlined.Star,
@@ -119,10 +120,15 @@ private fun TripRatingItem(
             value = comment,
             onValueChange = {
                 comment = it
-                onSave(rating, comment)
             },
             label = { Text(stringResource(R.string.comment_label)) },
             modifier = Modifier.fillMaxWidth()
         )
+        Button(
+            onClick = { onSave(rating, comment) },
+            modifier = Modifier.align(Alignment.End)
+        ) {
+            Text(stringResource(R.string.save))
+        }
     }
 }
