@@ -122,6 +122,7 @@
     <string name="total_cost_label">Συνολικό κόστος: %1$.2f€</string>
     <string name="vehicles_label">Οχήματα</string>
     <string name="passenger_avg_rating_label">Ικανοποίηση επιβατών: %1$.1f/5</string>
+    <string name="no_completed_movings">Δεν υπάρχουν ολοκληρωμένες μετακινήσεις</string>
     <string name="advance_date">Μεταφορά ημερομηνίας</string>
     <string name="declare_route">Δήλωση διαδρομής</string>
     <string name="announce_transport">Δήλωση μεταφοράς</string>
