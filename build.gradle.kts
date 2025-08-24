@@ -10,12 +10,3 @@ plugins {
     id("org.jetbrains.kotlin.android") version "2.0.20" apply false
     id("com.google.gms.google-services") version "4.4.3" apply false
 }
-
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-    }
-}
-
-
