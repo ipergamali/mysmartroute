@@ -8,6 +8,7 @@ plugins {
     id("kotlin-kapt")
     id("com.google.gms.google-services")
 }
+
 // Διαβάζουμε τα API keys από το local.properties ή από μεταβλητή περιβάλλοντος
 
 val localProps = Properties()
