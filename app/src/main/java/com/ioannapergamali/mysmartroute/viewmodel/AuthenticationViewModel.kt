@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.actionCodeSettings
+import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.DocumentReference
 import com.google.gson.Gson
@@ -57,6 +58,9 @@ class AuthenticationViewModel : ViewModel() {
 
     private val _resetPasswordState = MutableStateFlow<ResetPasswordState>(ResetPasswordState.Idle)
     val resetPasswordState: StateFlow<ResetPasswordState> = _resetPasswordState
+
+    private val _changePasswordState = MutableStateFlow<ChangePasswordState>(ChangePasswordState.Idle)
+    val changePasswordState: StateFlow<ChangePasswordState> = _changePasswordState
 
     private val _currentUserRole = MutableStateFlow<UserRole?>(null)
     val currentUserRole: StateFlow<UserRole?> = _currentUserRole
@@ -264,6 +268,32 @@ class AuthenticationViewModel : ViewModel() {
         _resetPasswordState.value = ResetPasswordState.Idle
     }
 
+    fun changePassword(oldPassword: String, newPassword: String) {
+        val user = auth.currentUser ?: run {
+            _changePasswordState.value = ChangePasswordState.Error("Δεν υπάρχει συνδεδεμένος χρήστης")
+            return
+        }
+        val email = user.email ?: run {
+            _changePasswordState.value = ChangePasswordState.Error("Το email δεν βρέθηκε")
+            return
+        }
+        val credential = EmailAuthProvider.getCredential(email, oldPassword)
+        _changePasswordState.value = ChangePasswordState.Loading
+        user.reauthenticate(credential).addOnCompleteListener { reauth ->
+            if (reauth.isSuccessful) {
+                user.updatePassword(newPassword).addOnCompleteListener { update ->
+                    _changePasswordState.value =
+                        if (update.isSuccessful) ChangePasswordState.Success
+                        else ChangePasswordState.Error(update.exception?.localizedMessage ?: "Αποτυχία ενημέρωσης κωδικού")
+                }
+            } else {
+                _changePasswordState.value = ChangePasswordState.Error(
+                    reauth.exception?.localizedMessage ?: "Αποτυχία επαλήθευσης ταυτότητας"
+                )
+            }
+        }
+    }
+
 
     sealed class SignUpState {
         object Idle : SignUpState()
@@ -284,6 +314,13 @@ class AuthenticationViewModel : ViewModel() {
         object Loading : ResetPasswordState()
         object Success : ResetPasswordState()
         data class Error(val message: String) : ResetPasswordState()
+    }
+
+    sealed class ChangePasswordState {
+        object Idle : ChangePasswordState()
+        object Loading : ChangePasswordState()
+        object Success : ChangePasswordState()
+        data class Error(val message: String) : ChangePasswordState()
     }
 
     fun loadCurrentUserRole(context: Context, loadMenus: Boolean = false) {
