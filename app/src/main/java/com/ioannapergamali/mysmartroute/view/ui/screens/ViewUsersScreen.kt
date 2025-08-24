@@ -19,6 +19,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
+import com.ioannapergamali.mysmartroute.model.enumerations.localizedName
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.UserStatsViewModel
@@ -48,10 +49,22 @@ fun ViewUsersScreen(navController: NavController, openDrawer: () -> Unit) {
             if (summaries.isEmpty()) {
                 Text(stringResource(R.string.no_users))
             } else {
+                val grouped = summaries.groupBy { runCatching { UserRole.valueOf(it.user.role) }.getOrNull() }
                 LazyColumn {
-                    items(summaries) { summary ->
-                        UserSummaryItem(summary)
-                        Divider(modifier = Modifier.padding(vertical = 8.dp))
+                    grouped.forEach { (role, users) ->
+                        role?.let {
+                            item {
+                                Text(
+                                    it.localizedName(),
+                                    style = MaterialTheme.typography.titleLarge,
+                                    modifier = Modifier.padding(vertical = 4.dp)
+                                )
+                            }
+                        }
+                        items(users) { summary ->
+                            UserSummaryItem(summary)
+                            Divider(modifier = Modifier.padding(vertical = 8.dp))
+                        }
                     }
                 }
             }
