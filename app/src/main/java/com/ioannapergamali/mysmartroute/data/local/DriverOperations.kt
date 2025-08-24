@@ -1,8 +1,6 @@
 package com.ioannapergamali.mysmartroute.data.local
 
-import com.google.firebase.ktx.Firebase
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ktx.firestore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
@@ -12,7 +10,7 @@ import kotlinx.coroutines.withContext
  */
 suspend fun demoteDriverToPassenger(
     db: MySmartRouteDatabase,
-    firestore: FirebaseFirestore = Firebase.firestore,
+    firestore: FirebaseFirestore = FirebaseFirestore.getInstance(),
     driverId: String,
 ) = withContext(Dispatchers.IO) {
     // Τοπική βάση
