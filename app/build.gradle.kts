@@ -8,6 +8,7 @@ plugins {
     id("kotlin-kapt")
     id("com.google.gms.google-services")
 }
+
 // Διαβάζουμε τα API keys από το local.properties ή από μεταβλητή περιβάλλοντος
 
 val localProps = Properties()
@@ -76,9 +77,9 @@ kotlin {
 dependencies {
     // Firebase βιβλιοθήκες (BoM για συγχρονισμένες εκδόσεις)
     implementation(platform("com.google.firebase:firebase-bom:34.1.0"))
-    implementation("com.google.firebase:firebase-auth-ktx")
-    implementation("com.google.firebase:firebase-firestore-ktx")
-    implementation("com.google.firebase:firebase-dynamic-links-ktx")
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-firestore")
+    implementation("com.google.firebase:firebase-dynamic-links")
 
     // Android core
     implementation(libs.androidx.core.ktx)
