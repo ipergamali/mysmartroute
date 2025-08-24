@@ -74,8 +74,13 @@ kotlin {
     jvmToolchain(21)
 }
 
+repositories {
+    google()
+    mavenCentral()
+}
+
 dependencies {
-    // Firebase βιβλιοθήκες
+    // Firebase βιβλιοθήκες (BoM για συγχρονισμένες εκδόσεις)
     implementation(platform("com.google.firebase:firebase-bom:34.1.0"))
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
