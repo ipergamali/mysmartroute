@@ -83,6 +83,7 @@ fun HomeScreen(
                         uiState = uiState,
                         onLogin = { viewModel.login(context, email, password) },
                         onNavigateToSignUp = onNavigateToSignUp,
+                        onForgotPassword = { navController.navigate("resetPassword") },
                         onLogout = { viewModel.signOut() },
                         modifier = Modifier.weight(1f)
                     )
@@ -105,6 +106,7 @@ fun HomeScreen(
                         uiState = uiState,
                         onLogin = { viewModel.login(context, email, password) },
                         onNavigateToSignUp = onNavigateToSignUp,
+                        onForgotPassword = { navController.navigate("resetPassword") },
                         onLogout = { viewModel.signOut() }
                     )
                 }
@@ -145,6 +147,7 @@ private fun HomeContent(
     uiState: AuthenticationViewModel.LoginState,
     onLogin: () -> Unit,
     onNavigateToSignUp: () -> Unit,
+    onForgotPassword: () -> Unit,
     onLogout: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -220,6 +223,14 @@ private fun HomeContent(
             Button(onClick = onLogin) {
                 Text(stringResource(R.string.login))
             }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = stringResource(R.string.forgot_password),
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.clickable { onForgotPassword() }
+            )
 
             Spacer(modifier = Modifier.height(8.dp))
 

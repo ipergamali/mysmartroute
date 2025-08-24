@@ -5,9 +5,10 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ioannapergamali.mysmartroute.R
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.ktx.actionCodeSettings
 import com.google.firebase.auth.EmailAuthProvider
+import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.DocumentReference
 import com.google.gson.Gson
@@ -27,7 +28,6 @@ import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import com.ioannapergamali.mysmartroute.model.menus.MenuConfig
 import com.ioannapergamali.mysmartroute.model.menus.RoleMenuConfig
-import com.ioannapergamali.mysmartroute.BuildConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -208,33 +208,31 @@ class AuthenticationViewModel : ViewModel() {
         }
     }
 
-    fun resetPassword(email: String) {
+    fun resetPassword(email: String, context: Context) {
         viewModelScope.launch {
             _resetPasswordState.value = ResetPasswordState.Loading
             if (email.isBlank()) {
-                val message = "Email is required"
+                val message = context.getString(R.string.email_required)
                 Log.w(TAG, message)
                 _resetPasswordState.value = ResetPasswordState.Error(message)
                 return@launch
             }
-            val domain = BuildConfig.PASSWORD_RESET_DOMAIN
-            val actionCodeSettings = actionCodeSettings {
-                url = "https://$domain/reset"
-                handleCodeInApp = true
-                setAndroidPackageName(
-                    BuildConfig.APPLICATION_ID,
-                    true,
-                    null
-                )
-                dynamicLinkDomain = domain
-            }
-            auth.sendPasswordResetEmail(email, actionCodeSettings)
+            auth.sendPasswordResetEmail(email)
                 .addOnSuccessListener {
                     Log.i(TAG, "Password reset email sent to $email")
                     _resetPasswordState.value = ResetPasswordState.Success
                 }
                 .addOnFailureListener { e ->
-                    val message = e.localizedMessage ?: "Failed to send reset email"
+                    val message = if (e is FirebaseAuthException) {
+                        when (e.errorCode) {
+                            "ERROR_INVALID_EMAIL" -> context.getString(R.string.error_invalid_email)
+                            "ERROR_USER_NOT_FOUND" -> context.getString(R.string.error_user_not_found)
+                            "ERROR_OPERATION_NOT_ALLOWED" -> context.getString(R.string.error_operation_not_allowed)
+                            else -> e.localizedMessage ?: context.getString(R.string.error_send_reset)
+                        }
+                    } else {
+                        e.localizedMessage ?: context.getString(R.string.error_send_reset)
+                    }
                     Log.e(TAG, message, e)
                     _resetPasswordState.value = ResetPasswordState.Error(message)
                 }

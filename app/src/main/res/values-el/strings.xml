@@ -30,6 +30,16 @@
     <string name="password">Κωδικός</string>
     <string name="no_account">Αν δεν έχετε λογαριασμό</string>
     <string name="sign_up">Εγγραφή</string>
+    <string name="forgot_password">Ξέχασα τον κωδικό;</string>
+    <string name="reset_password">Επαναφορά κωδικού</string>
+    <string name="send_reset_email">Αποστολή email επαναφοράς</string>
+    <string name="back_to_login">Επιστροφή στη σύνδεση</string>
+    <string name="password_reset_email_sent">Στάλθηκε email επαναφοράς κωδικού</string>
+    <string name="email_required">Απαιτείται email</string>
+    <string name="error_invalid_email">Μη έγκυρο email</string>
+    <string name="error_user_not_found">Το email δεν είναι καταχωρημένο</string>
+    <string name="error_operation_not_allowed">Η λειτουργία δεν επιτρέπεται. Ενεργοποιήστε την είσοδο με email/κωδικό στο Firebase.</string>
+    <string name="error_send_reset">Αποτυχία αποστολής email επαναφοράς</string>
     <string name="first_name">Όνομα</string>
     <string name="last_name">Επώνυμο</string>
     <string name="username">Όνομα χρήστη</string>
