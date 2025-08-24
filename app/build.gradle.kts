@@ -13,7 +13,6 @@ repositories {
     google()
     mavenCentral()
 }
-
 // Διαβάζουμε τα API keys από το local.properties ή από μεταβλητή περιβάλλοντος
 
 val localProps = Properties()
@@ -77,11 +76,6 @@ android {
 
 kotlin {
     jvmToolchain(21)
-}
-
-repositories {
-    google()
-    mavenCentral()
 }
 
 dependencies {
