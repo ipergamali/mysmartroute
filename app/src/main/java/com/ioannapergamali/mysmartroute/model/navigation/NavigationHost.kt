@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.ioannapergamali.mysmartroute.view.ui.screens.HomeScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.ResetPasswordScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.SignUpScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.MenuScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.RegisterVehicleScreen
@@ -77,8 +78,9 @@ fun NavigationHost(
                 openDrawer = openDrawer
             )
         }
-
-
+        composable("resetPassword") {
+            ResetPasswordScreen(navController = navController, openDrawer = openDrawer)
+        }
 
         composable("Signup") {
             SignUpScreen(

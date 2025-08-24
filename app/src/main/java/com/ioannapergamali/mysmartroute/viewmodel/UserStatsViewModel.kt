@@ -27,7 +27,11 @@ class UserStatsViewModel(application: Application) : AndroidViewModel(applicatio
 
     init {
         viewModelScope.launch {
+
             val db = MySmartRouteDatabase.getInstance(application)
+
+            val db = MySmartRouteDatabase.getInstance(context)
+
             val users = db.userDao().getAllUsers().first()
             val movings = db.movingDao().getAll().first()
             val ratings = db.tripRatingDao().getAll().first()
