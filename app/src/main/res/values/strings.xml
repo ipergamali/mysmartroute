@@ -121,6 +121,9 @@
     <string name="view_pois">View PoIs</string>
     <string name="view_users">View Users</string>
     <string name="no_users">No users found</string>
+    <string name="total_cost_label">Total cost: %1$.2f€</string>
+    <string name="vehicles_label">Vehicles</string>
+    <string name="passenger_avg_rating_label">Passenger satisfaction: %1$.1f/5</string>
     <string name="advance_date">Advance Date</string>
     <string name="declare_route">Declare Route</string>
     <string name="announce_transport">Announce Transport</string>

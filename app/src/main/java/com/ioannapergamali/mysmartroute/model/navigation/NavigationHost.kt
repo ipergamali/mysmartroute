@@ -38,6 +38,7 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.PrintDeclarationsScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.PrintTicketScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.PrepareCompleteRouteScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.ViewVehiclesScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.ViewUsersScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.ViewTransportRequestsScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.ViewRequestsScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.PassengerMovingsScreen
@@ -323,6 +324,10 @@ fun NavigationHost(
 
         composable("viewVehicles") {
             ViewVehiclesScreen(navController = navController, openDrawer = openDrawer)
+        }
+
+        composable("viewUsers") {
+            ViewUsersScreen(navController = navController, openDrawer = openDrawer)
         }
 
         composable("soundPicker") {
