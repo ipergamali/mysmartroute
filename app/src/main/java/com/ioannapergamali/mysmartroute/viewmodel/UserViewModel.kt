@@ -186,11 +186,10 @@ class UserViewModel : ViewModel() {
         }
 
         // Καθαρίζουμε τα δεδομένα του οδηγού από Room και Firestore
-        demoteDriverToPassenger(dbInstance, firestore, driverId)
+        demoteDriverToPassenger(dbInstance, driverId)
     }
 
     private suspend fun handlePassengerPromotion(dbInstance: MySmartRouteDatabase, userId: String) {
-        val firestore = FirebaseFirestore.getInstance()
-        promotePassengerToDriver(dbInstance, firestore, userId)
+        promotePassengerToDriver(dbInstance, userId)
     }
 }
