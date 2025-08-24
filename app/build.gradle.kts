@@ -79,6 +79,7 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:34.1.0"))
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation("com.google.firebase:firebase-analytics-ktx")
 
     // Το Dynamic Links δεν περιλαμβάνεται στο BoM, δηλώνουμε ρητά την έκδοση
     implementation("com.google.firebase:firebase-dynamic-links:22.1.0")
