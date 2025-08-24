@@ -1,5 +1,6 @@
 package com.ioannapergamali.mysmartroute.data.local
 
+
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -8,6 +9,7 @@ import kotlinx.coroutines.withContext
  */
 suspend fun demoteDriverToPassenger(
     db: MySmartRouteDatabase,
+
     driverId: String,
 ) = withContext(Dispatchers.IO) {
     // Τοπική βάση
