@@ -5,7 +5,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -23,7 +23,7 @@ fun ResetPasswordScreen(navController: NavController, openDrawer: () -> Unit) {
     val uiState by viewModel.resetPasswordState.collectAsState()
     var email by remember { mutableStateOf("") }
     val bubbleState = LocalKeyboardBubbleState.current!!
-    val context = LocalContext.current
+
 
     Scaffold(
         topBar = {
@@ -51,8 +51,7 @@ fun ResetPasswordScreen(navController: NavController, openDrawer: () -> Unit) {
                         .observeBubble(bubbleState, 0) { email }
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                Button(onClick = { viewModel.resetPassword(email, context) }) {
-                    Text(stringResource(R.string.send_reset_email))
+     Text(stringResource(R.string.send_reset_email))
                 }
                 when (uiState) {
                     is AuthenticationViewModel.ResetPasswordState.Loading -> {

@@ -33,11 +33,8 @@
     <string name="send_reset_email">Send reset email</string>
     <string name="back_to_login">Back to login</string>
     <string name="password_reset_email_sent">Password reset email sent</string>
-    <string name="email_required">Email is required</string>
-    <string name="error_invalid_email">Invalid email address</string>
-    <string name="error_user_not_found">Email not registered</string>
-    <string name="error_operation_not_allowed">Operation not allowed. Enable Email/Password sign-in in Firebase.</string>
-    <string name="error_send_reset">Failed to send reset email</string>
+
+
     <string name="first_name">Name</string>
     <string name="last_name">Surname</string>
     <string name="username">Username</string>
@@ -130,6 +127,7 @@
     <string name="total_cost_label">Total cost: %1$.2f€</string>
     <string name="vehicles_label">Vehicles</string>
     <string name="passenger_avg_rating_label">Passenger satisfaction: %1$.1f/5</string>
+    <string name="no_completed_movings">No completed movings</string>
     <string name="advance_date">Advance Date</string>
     <string name="declare_route">Declare Route</string>
     <string name="announce_transport">Announce Transport</string>
