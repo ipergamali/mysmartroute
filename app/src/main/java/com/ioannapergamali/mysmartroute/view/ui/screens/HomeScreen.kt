@@ -84,7 +84,6 @@ fun HomeScreen(
                         onLogin = { viewModel.login(context, email, password) },
                         onNavigateToSignUp = onNavigateToSignUp,
                         onLogout = { viewModel.signOut() },
-                        onResetPassword = { navController.navigate("forgotPassword") },
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -106,8 +105,7 @@ fun HomeScreen(
                         uiState = uiState,
                         onLogin = { viewModel.login(context, email, password) },
                         onNavigateToSignUp = onNavigateToSignUp,
-                        onLogout = { viewModel.signOut() },
-                        onResetPassword = { navController.navigate("forgotPassword") }
+                        onLogout = { viewModel.signOut() }
                     )
                 }
             }
@@ -148,7 +146,6 @@ private fun HomeContent(
     onLogin: () -> Unit,
     onNavigateToSignUp: () -> Unit,
     onLogout: () -> Unit = {},
-    onResetPassword: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val bubbleState = LocalKeyboardBubbleState.current!!
@@ -217,14 +214,6 @@ private fun HomeContent(
                     color = MaterialTheme.colorScheme.error
                 )
             }
-
-            Spacer(Modifier.height(8.dp))
-
-            Text(
-                text = stringResource(R.string.forgot_password),
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.clickable { onResetPassword() }
-            )
 
             Spacer(Modifier.height(16.dp))
 
