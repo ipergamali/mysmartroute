@@ -1,7 +1,7 @@
 package com.ioannapergamali.mysmartroute.viewmodel
 
-import android.content.Context
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.ioannapergamali.mysmartroute.data.local.MovingEntity
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
@@ -21,13 +21,17 @@ data class UserSummary(
     val driverAverageRating: Double
 )
 
-class UserStatsViewModel : ViewModel() {
+class UserStatsViewModel(application: Application) : AndroidViewModel(application) {
     private val _userSummaries = MutableStateFlow<List<UserSummary>>(emptyList())
     val userSummaries: StateFlow<List<UserSummary>> = _userSummaries
 
-    fun load(context: Context) {
+    init {
         viewModelScope.launch {
+
+            val db = MySmartRouteDatabase.getInstance(application)
+
             val db = MySmartRouteDatabase.getInstance(context)
+
             val users = db.userDao().getAllUsers().first()
             val movings = db.movingDao().getAll().first()
             val ratings = db.tripRatingDao().getAll().first()
