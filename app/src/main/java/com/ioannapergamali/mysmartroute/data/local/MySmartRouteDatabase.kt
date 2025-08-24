@@ -282,9 +282,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                 insertOption("opt_admin_8", adminMenuId, "rank_drivers", "rankDrivers")
                 insertOption("opt_admin_9", adminMenuId, "rank_passengers", "rankPassengers")
                 insertOption("opt_admin_10", adminMenuId, "view_vehicles", "viewVehicles")
-                insertOption("opt_admin_11", adminMenuId, "view_pois", "viewPois")
-                insertOption("opt_admin_12", adminMenuId, "view_users", "viewUsers")
-                insertOption("opt_admin_13", adminMenuId, "advance_date", "advanceDate")
+                insertOption("opt_admin_11", adminMenuId, "view_users", "viewUsers")
+                insertOption("opt_admin_12", adminMenuId, "advance_date", "advanceDate")
             }
         }
 
@@ -759,9 +758,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             insertOption("opt_admin_8", adminMenuId, "rank_drivers", "rankDrivers")
             insertOption("opt_admin_9", adminMenuId, "rank_passengers", "rankPassengers")
             insertOption("opt_admin_10", adminMenuId, "view_vehicles", "viewVehicles")
-            insertOption("opt_admin_11", adminMenuId, "view_pois", "viewPois")
-            insertOption("opt_admin_12", adminMenuId, "view_users", "viewUsers")
-            insertOption("opt_admin_13", adminMenuId, "advance_date", "advanceDate")
+            insertOption("opt_admin_11", adminMenuId, "view_users", "viewUsers")
+            insertOption("opt_admin_12", adminMenuId, "advance_date", "advanceDate")
 
             Log.d(TAG, "Prepopulate complete")
             db.execSQL("INSERT INTO app_language (id, language) VALUES (1, 'el')")
