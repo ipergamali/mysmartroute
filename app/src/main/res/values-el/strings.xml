@@ -35,6 +35,7 @@
     <string name="send_reset_email">Αποστολή email επαναφοράς</string>
     <string name="back_to_login">Επιστροφή στη σύνδεση</string>
     <string name="password_reset_email_sent">Στάλθηκε email επαναφοράς κωδικού</string>
+
     <string name="first_name">Όνομα</string>
     <string name="last_name">Επώνυμο</string>
     <string name="username">Όνομα χρήστη</string>

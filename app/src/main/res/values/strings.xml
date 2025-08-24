@@ -33,6 +33,8 @@
     <string name="send_reset_email">Send reset email</string>
     <string name="back_to_login">Back to login</string>
     <string name="password_reset_email_sent">Password reset email sent</string>
+
+
     <string name="first_name">Name</string>
     <string name="last_name">Surname</string>
     <string name="username">Username</string>
