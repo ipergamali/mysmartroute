@@ -30,8 +30,6 @@
     <string name="password">Κωδικός</string>
     <string name="forgot_password">Ξεχάσατε τον κωδικό;</string>
     <string name="reset_email_sent">Στάλθηκε email επαναφοράς κωδικού</string>
-    <string name="reset_password_title">Επαναφορά κωδικού</string>
-    <string name="send_reset_email">Αποστολή email επαναφοράς</string>
     <string name="no_account">Αν δεν έχετε λογαριασμό</string>
     <string name="sign_up">Εγγραφή</string>
     <string name="first_name">Όνομα</string>
