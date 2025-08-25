@@ -40,6 +40,10 @@
           {"titleKey": "print_list", "route": "printList"},
           {"titleKey": "print_scheduled", "route": "printScheduled"},
           {"titleKey": "print_completed", "route": "printCompleted"},
+          {
+            "titleKey": "print_completed_passenger_list",
+            "route": "printCompletedPassengers"
+          },
           {"titleKey": "prepare_complete_route", "route": "prepareCompleteRoute"},
           {"titleKey": "view_transport_requests", "route": "viewTransportRequests"}
         ]

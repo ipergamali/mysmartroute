@@ -238,5 +238,9 @@
     <string name="walking">Περπάτημα</string>
     <string name="walking_routes">Διαδρομές πεζών</string>
     <string name="no_walking_routes">Δεν βρέθηκαν διαδρομές πεζών</string>
-
+    <string name="print_completed_passenger_list">Εκτύπωση λίστας επιβατών ολοκληρωμένων διαδρομών</string>
+    <string name="select_from_gallery">Επιλογή από τη Συλλογή</string>
+    <string name="take_photo">Λήψη Φωτογραφίας</string>
+    <string name="profile_updated">Το προφίλ ενημερώθηκε με επιτυχία</string>
+    <string name="save">Αποθήκευση</string>
 </resources>

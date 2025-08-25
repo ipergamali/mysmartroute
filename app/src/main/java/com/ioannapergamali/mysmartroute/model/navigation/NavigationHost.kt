@@ -56,7 +56,6 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.RankDriversScreen
 import com.ioannapergamali.mysmartroute.R
 
 
-
 @Composable
 fun NavigationHost(
     navController: NavHostController,
@@ -359,12 +358,19 @@ fun NavigationHost(
             )
         }
 
+        composable("createUser") {
+            AdminSignUpScreen(
+                navController = navController,
+                onSignUpSuccess = {
+                    navController.popBackStack()
+                },
+                openDrawer = openDrawer
+            )
+        }
+
         composable("editPrivileges") {
             EditPrivilegesScreen(navController = navController, openDrawer = openDrawer)
         }
-
-
-
 
 
 

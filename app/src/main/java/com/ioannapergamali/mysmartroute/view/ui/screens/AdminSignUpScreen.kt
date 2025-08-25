@@ -22,7 +22,12 @@ import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.util.observeBubble
 import com.ioannapergamali.mysmartroute.view.ui.util.LocalKeyboardBubbleState
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalView
+import androidx.activity.ComponentActivity
+import androidx.compose.material3.ExperimentalMaterial3Api
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminSignUpScreen(
     navController: NavController,
@@ -33,7 +38,7 @@ fun AdminSignUpScreen(
     val viewModel: AuthenticationViewModel = viewModel()
     val uiState by viewModel.signUpState.collectAsState()
     val context = LocalContext.current
-    val activity = LocalContext.current as Activity
+    val activity = LocalView.current.context as Activity
 
 
     var name by remember { mutableStateOf("") }
@@ -48,8 +53,8 @@ fun AdminSignUpScreen(
     var streetNumInput by remember { mutableStateOf("") }
     var postalCodeInput by remember { mutableStateOf("") }
 
-
-
+    var selectedRole by remember { mutableStateOf(UserRole.PASSENGER) }
+    var expanded by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -155,7 +160,7 @@ fun AdminSignUpScreen(
                     )
                 )
 
-                Spacer(Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 Text(stringResource(R.string.address), style = MaterialTheme.typography.titleMedium)
                 OutlinedTextField(
                     value = city,
@@ -215,13 +220,45 @@ fun AdminSignUpScreen(
                     )
                 )
 
+                Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                    stringResource(R.string.select_role),
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    RadioButton(
+                        selected = selectedRole == UserRole.PASSENGER,
+                        onClick = { selectedRole = UserRole.PASSENGER }
+                    )
+                    Text(
+                        text = stringResource(R.string.role_passenger),
+                        modifier = Modifier.padding(end = 12.dp)
+                    )
+
+                    RadioButton(
+                        selected = selectedRole == UserRole.DRIVER,
+                        onClick = { selectedRole = UserRole.DRIVER }
+                    )
+                    Text(
+                        text = stringResource(R.string.role_driver),
+                        modifier = Modifier.padding(end = 12.dp)
+                    )
+
+                    RadioButton(
+                        selected = selectedRole == UserRole.ADMIN,
+                        onClick = { selectedRole = UserRole.ADMIN }
+                    )
+                    Text(
+                        text = stringResource(R.string.role_admin)
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
                 if (uiState is AuthenticationViewModel.SignUpState.Error) {
                     val message = (uiState as AuthenticationViewModel.SignUpState.Error).message
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(text = message, color = MaterialTheme.colorScheme.error)
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
                 Button(onClick = {
                     val streetNum = streetNumInput.toIntOrNull()
                     val postalCode = postalCodeInput.toIntOrNull()
@@ -237,7 +274,7 @@ fun AdminSignUpScreen(
                                 streetNum,
                                 postalCode
                             ),
-                            UserRole.ADMIN
+                            selectedRole
                         )
                     }
                 }) {

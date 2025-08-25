@@ -1,11 +1,15 @@
 package com.ioannapergamali.mysmartroute.viewmodel
 
 import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
+
+import kotlinx.coroutines.tasks.await
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.UserEntity
 import com.ioannapergamali.mysmartroute.data.local.NotificationEntity
@@ -20,7 +24,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
+import com.google.firebase.storage.FirebaseStorage
+import android.util.Log
 
 class UserViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
@@ -192,5 +197,55 @@ class UserViewModel : ViewModel() {
     private suspend fun handlePassengerPromotion(dbInstance: MySmartRouteDatabase, userId: String) {
         val firestore = FirebaseFirestore.getInstance()
         promotePassengerToDriver(dbInstance, firestore, userId)
+    }
+
+    fun updateUser(context: Context, user: UserEntity, imageUri: Uri?) {
+        viewModelScope.launch {
+            val dao = MySmartRouteDatabase.getInstance(context).userDao()
+            // Πριν από κάθε insert, φέρνω το προηγούμενο user (αν υπάρχει)
+            val prev = dao.getUser(user.id)
+
+            var photoUrl: String? = null
+            if (imageUri != null) {
+                try {
+                    val storageRef = FirebaseStorage.getInstance().reference
+                    val fileRef =
+                        storageRef.child("profileImages/${user.id}_${System.currentTimeMillis()}.jpg")
+                    fileRef.putFile(imageUri).await()
+                    photoUrl = fileRef.downloadUrl.await().toString()
+                    user.photoUrl = photoUrl
+                    Log.d("ProfileDebug", "photoUrl from upload: $photoUrl")
+                } catch (e: Exception) {
+                    Log.e("ProfileDebug", "UPLOAD ERROR: ${e.message}")
+                }
+            } else if (prev != null) {
+                user.photoUrl = prev.photoUrl
+            }
+
+            Log.d("ProfileDebug", "photoUrl before insert: ${user.photoUrl}")
+            dao.insert(user)
+
+            try {
+                val userMap = mutableMapOf<String, Any>(
+                    "name" to user.name,
+                    "surname" to user.surname,
+                    "email" to user.email,
+                    "phoneNum" to user.phoneNum,
+                    "city" to user.city,
+                    "streetName" to user.streetName,
+                    "streetNum" to user.streetNum,
+                    "postalCode" to user.postalCode,
+                    "photoUrl" to (user.photoUrl ?: "")
+                )
+                Log.d("ProfileDebug", "userMap for Firestore: $userMap")
+                FirebaseFirestore.getInstance()
+                    .collection("users")
+                    .document(user.id)
+                    .set(userMap, SetOptions.merge())
+                    .await()
+            } catch (e: Exception) {
+                Log.e("ProfileDebug", "FIRESTORE ERROR: ${e.message}")
+            }
+        }
     }
 }

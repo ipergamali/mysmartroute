@@ -1,6 +1,7 @@
 import java.util.Properties
 import java.io.FileInputStream
 
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -54,7 +55,7 @@ android {
 
     composeOptions {
         // Χρήση της νεότερης σταθερής έκδοσης του compiler
-        kotlinCompilerExtensionVersion = "1.6.7"
+        kotlinCompilerExtensionVersion = "1.7.0"
     }
 
     compileOptions {
@@ -86,6 +87,7 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.firebase:firebase-dynamic-links-ktx")
     implementation("com.google.firebase:firebase-common-ktx")
+    implementation("com.google.firebase:firebase-storage-ktx")
 
     // Android core
     implementation(libs.androidx.core.ktx)
@@ -98,8 +100,8 @@ dependencies {
     implementation(platform("androidx.compose:compose-bom:2025.07.00"))
     androidTestImplementation(platform("androidx.compose:compose-bom:2025.07.00"))
 
-    // Χρήση της σταθερής έκδοσης Material3
-    implementation("androidx.compose.material3:material3:1.3.2")
+    // Χρήση του BOM - χωρίς έκδοση
+    implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-text")
     implementation("androidx.compose.ui:ui-tooling-preview")
@@ -137,6 +139,9 @@ dependencies {
 
     // Crash reporting με ACRA
     implementation("ch.acra:acra-mail:5.12.0")
+
+    // Coil για φόρτωση εικόνων
+    implementation("io.coil-kt:coil-compose:2.4.0")
 
     // Testing
     testImplementation("junit:junit:4.13.2")
