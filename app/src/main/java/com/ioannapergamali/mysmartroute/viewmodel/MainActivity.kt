@@ -45,8 +45,10 @@ class MainActivity : ComponentActivity() {
     private val requestViewModel: VehicleRequestViewModel by viewModels()
     private val locationPermissions = arrayOf(
         Manifest.permission.ACCESS_COARSE_LOCATION,
-        Manifest.permission.ACCESS_FINE_LOCATION
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACCESS_MEDIA_LOCATION
     )
+
     override fun onCreate(savedInstanceState : Bundle?)
     {
         // Εφαρμογή αποθηκευμένης γλώσσας πριν αρχίσει το lifecycle
