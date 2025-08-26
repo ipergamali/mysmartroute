@@ -54,7 +54,7 @@ import com.ioannapergamali.mysmartroute.data.local.TripRatingDao
         TripRatingEntity::class,
         NotificationEntity::class
     ],
-    version = 52
+    version = 53
 )
 @TypeConverters(Converters::class)
 abstract class MySmartRouteDatabase : RoomDatabase() {
@@ -691,6 +691,12 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_52_53 = object : Migration(52, 53) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE `users` ADD COLUMN `photoUrl` TEXT")
+            }
+        }
+
         private fun prepopulate(db: SupportSQLiteDatabase) {
             Log.d(TAG, "Prepopulating database")
             db.execSQL(
@@ -822,7 +828,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_48_49,
                     MIGRATION_49_50,
                     MIGRATION_50_51,
-                    MIGRATION_51_52
+                    MIGRATION_51_52,
+                    MIGRATION_52_53
                 )
                     .addCallback(object : RoomDatabase.Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {

@@ -33,6 +33,7 @@ fun UserEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     "username" to username,
     "email" to email,
     "phoneNum" to phoneNum,
+    "photoUrl" to (photoUrl ?: ""),
     "password" to password,
     "role" to role,
     "roleId" to roleId,
@@ -127,6 +128,7 @@ fun DocumentSnapshot.toUserEntity(): UserEntity? {
         username = getString("username") ?: "",
         email = getString("email") ?: "",
         phoneNum = getString("phoneNum") ?: "",
+        photoUrl = getString("photoUrl"),
         password = getString("password") ?: "",
         role = getString("role") ?: "",
         roleId = when (val rawRole = get("roleId")) {
