@@ -22,6 +22,9 @@ import androidx.compose.ui.res.stringResource
 import com.ioannapergamali.mysmartroute.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+
+import com.google.firebase.firestore.SetOptions
+
 import com.google.firebase.storage.FirebaseStorage
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -48,7 +51,11 @@ fun ProfileScreen(navController: NavController, openDrawer: () -> Unit) {
                 photoUrl.value = url
                 FirebaseFirestore.getInstance().collection("users")
                     .document(uid)
-                    .update("photoUrl", url)
+              codex/save-user-photourl-in-database-vczmfz
+                    .set(mapOf("photoUrl" to url), SetOptions.merge())
+
+                .update("photoUrl", url)
+
             }
         }
     }
