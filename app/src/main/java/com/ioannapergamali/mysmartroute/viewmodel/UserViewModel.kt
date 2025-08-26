@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import com.google.firebase.storage.FirebaseStorage
 import android.util.Log
+import java.util.UUID
 
 class UserViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
@@ -199,53 +200,166 @@ class UserViewModel : ViewModel() {
         promotePassengerToDriver(dbInstance, firestore, userId)
     }
 
+
     fun updateUser(context: Context, user: UserEntity, imageUri: Uri?) {
         viewModelScope.launch {
             val dao = MySmartRouteDatabase.getInstance(context).userDao()
-            // Πριν από κάθε insert, φέρνω το προηγούμενο user (αν υπάρχει)
             val prev = dao.getUser(user.id)
 
-            var photoUrl: String? = null
+            var updatedUser = user
+
             if (imageUri != null) {
                 try {
                     val storageRef = FirebaseStorage.getInstance().reference
-                    val fileRef =
-                        storageRef.child("profileImages/${user.id}_${System.currentTimeMillis()}.jpg")
-                    fileRef.putFile(imageUri).await()
-                    photoUrl = fileRef.downloadUrl.await().toString()
-                    user.photoUrl = photoUrl
-                    Log.d("ProfileDebug", "photoUrl from upload: $photoUrl")
+                    val fileName = "profile_${user.id}_${System.currentTimeMillis()}.jpg"
+                    val fileRef = storageRef.child("profile_images/$fileName")
+
+                    Log.d("UserViewModel", "Starting upload for URI: $imageUri")
+
+                    val uploadTask = fileRef.putFile(imageUri)
+                    val uploadResult = uploadTask.await()
+
+                    Log.d("UserViewModel", "Upload completed successfully")
+
+                    val downloadUrl = fileRef.downloadUrl.await().toString()
+
+                    updatedUser = user.copy(photoUrl = downloadUrl)
+                    Log.d("UserViewModel", "Download URL obtained: $downloadUrl")
+
                 } catch (e: Exception) {
-                    Log.e("ProfileDebug", "UPLOAD ERROR: ${e.message}")
+                    Log.e("UserViewModel", "Upload failed: ${e.message}", e)
+                    updatedUser = if (prev != null) {
+                        user.copy(photoUrl = prev.photoUrl)
+                    } else {
+                        user.copy(photoUrl = "")
+                    }
                 }
-            } else if (prev != null) {
-                user.photoUrl = prev.photoUrl
+            } else {
+                // Κράτα την παλιά φωτογραφία αν δεν επιλέχθηκε νέα
+                updatedUser = if (prev != null) {
+                    user.copy(photoUrl = prev.photoUrl)
+                } else {
+                    user.copy(photoUrl = "")
+                }
             }
 
-            Log.d("ProfileDebug", "photoUrl before insert: ${user.photoUrl}")
-            dao.insert(user)
+            Log.d("UserViewModel", "Final user before save - photoUrl: '${updatedUser.photoUrl}'")
+
+            // Αποθήκευση στην τοπική βάση
+            dao.insert(updatedUser)
 
             try {
-                val userMap = mutableMapOf<String, Any>(
-                    "name" to user.name,
-                    "surname" to user.surname,
-                    "email" to user.email,
-                    "phoneNum" to user.phoneNum,
-                    "city" to user.city,
-                    "streetName" to user.streetName,
-                    "streetNum" to user.streetNum,
-                    "postalCode" to user.postalCode,
-                    "photoUrl" to (user.photoUrl ?: "")
+                // ✅ Πάντα να περιλαμβάνεις το photoUrl στο update
+                val updateMap = mapOf(
+                    "name" to updatedUser.name,
+                    "surname" to updatedUser.surname,
+                    "email" to updatedUser.email,
+                    "phoneNum" to updatedUser.phoneNum,
+                    "city" to updatedUser.city,
+                    "streetName" to updatedUser.streetName,
+                    "streetNum" to updatedUser.streetNum,
+                    "postalCode" to updatedUser.postalCode,
+                    "photoUrl" to (updatedUser.photoUrl ?: "")  // ✅ Πάντα συμπεριλάμβανε το photoUrl
                 )
-                Log.d("ProfileDebug", "userMap for Firestore: $userMap")
+
+                Log.d("UserViewModel", "Updating Firestore with: $updateMap")
+
                 FirebaseFirestore.getInstance()
                     .collection("users")
-                    .document(user.id)
-                    .set(userMap, SetOptions.merge())
+                    .document(updatedUser.id)
+                    .update(updateMap)
                     .await()
+
+                Log.d("UserViewModel", "Successfully updated Firestore")
+
             } catch (e: Exception) {
-                Log.e("ProfileDebug", "FIRESTORE ERROR: ${e.message}")
+                Log.e("UserViewModel", "Firestore update error: ${e.message}", e)
+
+                // Fallback: Δημιούργησε το document αν δεν υπάρχει
+                try {
+                    Log.d("UserViewModel", "Document might not exist, trying to create with set()")
+                    val completeMap = updatedUser.toFirestoreMap()
+                    Log.d("UserViewModel", "Creating document with: $completeMap")
+
+                    FirebaseFirestore.getInstance()
+                        .collection("users")
+                        .document(updatedUser.id)
+                        .set(completeMap, SetOptions.merge())
+                        .await()
+                    Log.d("UserViewModel", "Document created/merged successfully")
+                } catch (setException: Exception) {
+                    Log.e("UserViewModel", "Failed to create/merge document: ${setException.message}", setException)
+                }
             }
         }
+    }}
+
+// Μέσα στην updateUser στο UserViewModel
+suspend fun updateUser(context: Context, userEntity: UserEntity, imageUri: Uri?): Boolean {
+    return try {
+        var entityToSave = userEntity // Ξεκινάμε με το entity που λάβαμε
+
+        if (imageUri != null) {
+            // 1. Ανέβασμα εικόνας στο Firebase Storage
+            val storageRef = FirebaseStorage.getInstance().reference
+            // Δημιουργήστε ένα μοναδικό όνομα αρχείου, π.χ., με UUID ή το όνομα από το URI αν είναι ασφαλές
+            val fileName =
+                "profile_${userEntity.id}_${UUID.randomUUID()}" // Ή imageUri.lastPathSegment αν είναι αξιόπιστο
+            val profileImageRef = storageRef.child("profile_images/${userEntity.id}/$fileName")
+
+            Log.d(
+                "UserViewModel",
+                "Uploading image from URI: $imageUri to path: ${profileImageRef.path}"
+            )
+
+            // Χρήση try-catch ειδικά για το ανέβασμα
+            try {
+                val uploadTaskSnapshot =
+                    profileImageRef.putFile(imageUri).await() // Περιμένουμε το ανέβασμα
+                val downloadUrl = uploadTaskSnapshot.storage.downloadUrl.await().toString()
+                Log.d(
+                    "UserViewModel",
+                    "Image uploaded successfully. Download URL: $downloadUrl"
+                )
+                // Ενημέρωση του entity με το νέο photoUrl
+                entityToSave = entityToSave.copy(photoUrl = downloadUrl)
+            } catch (storageException: Exception) {
+                Log.e(
+                    "UserViewModel",
+                    "Firebase Storage upload failed: ${storageException.message}",
+                    storageException
+                )
+                // Αποφασίστε αν θέλετε να συνεχίσετε την αποθήκευση των άλλων δεδομένων ή να επιστρέψετε false
+                // return false // Αν το ανέβασμα εικόνας είναι κρίσιμο
+            }
+        } else {
+            // Δεν επιλέχθηκε νέα εικόνα. Το entityToSave.photoUrl παραμένει αυτό που ήρθε από την ProfileScreen
+            // (το οποίο ήταν userEntity.value?.photoUrl).
+            Log.d(
+                "UserViewModel",
+                "No new image URI provided. Keeping existing photoUrl: ${entityToSave.photoUrl}"
+            )
+        }
+
+        // 2. Αποθήκευση του (πιθανώς ενημερωμένου) entityToSave στο Firestore
+        Log.d(
+            "UserViewModel",
+            "Saving user to Firestore with photoUrl: ${entityToSave.photoUrl}"
+        )
+        FirebaseFirestore.getInstance().collection("users")
+            .document(entityToSave.id)
+            .set(entityToSave) // Χρησιμοποιήστε set(entity, SetOptions.merge()) αν θέλετε να κάνετε merge και όχι overwrite πάντα
+            .await()
+        Log.d("UserViewModel", "User saved to Firestore successfully.")
+
+        // 3. (Προαιρετικά) Αποθήκευση/Ενημέρωση στην τοπική βάση Room
+        // Π.χ. localUserDao.updateUser(entityToSave)
+        // Log.d("UserViewModel", "User updated in local Room database.")
+
+        true // Επιτυχής ολοκλήρωση
+    } catch (e: Exception) {
+        Log.e("UserViewModel", "Error in updateUser: ${e.message}", e)
+        false // Σφάλμα κατά τη διαδικασία
     }
 }
+

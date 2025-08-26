@@ -35,6 +35,7 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 import java.util.*
+import android.util.Log
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -208,20 +209,32 @@ fun ProfileScreen(navController: NavController, openDrawer: () -> Unit) {
                     )
 
                     Spacer(Modifier.height(12.dp))
-                    if (uploading) CircularProgressIndicator() else Button(onClick = {
+
+                    // Στο onClick του Save button:
+                    Button(onClick = {
                         uploading = true
                         scope.launch {
+                            // ✅ Διατήρησε το προηγούμενο photoUrl αν δεν επιλέχθηκε νέα εικόνα
+                            val currentPhotoUrl = if (imageUri != null) "" else (userEntity.value?.photoUrl ?: "")
+                            
                             val entity = UserEntity(
                                 id = user?.uid ?: "",
                                 name = name.trim(),
                                 surname = surname.trim(),
+                                username = userEntity.value?.username ?: "",  // ✅ Κράτα το username
                                 email = email.trim(),
                                 phoneNum = phoneNum.trim(),
+                                password = userEntity.value?.password ?: "",  // ✅ Κράτα το password
+                                role = userEntity.value?.role ?: "",          // ✅ Κράτα το role
+                                roleId = userEntity.value?.roleId ?: "",      // ✅ Κράτα το roleId
                                 city = city.trim(),
                                 streetName = streetName.trim(),
                                 streetNum = streetNum.toIntOrNull() ?: 0,
-                                postalCode = postalCode.toIntOrNull() ?: 0
+                                postalCode = postalCode.toIntOrNull() ?: 0,
+                                photoUrl = currentPhotoUrl  // ✅ Διατήρησε το photoUrl
                             )
+
+                            Log.d("ProfileScreen", "Updating user with photoUrl: '${entity.photoUrl}', hasNewImage: ${imageUri != null}")
                             viewModel.updateUser(context, entity, imageUri)
                             uploading = false
                             saveMessage = context.getString(R.string.profile_updated)

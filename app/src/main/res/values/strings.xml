@@ -1,3 +1,7 @@
+
+    <!-- Άλλες υπάρχουσες συμβολοσειρές -->
+
+    <!-- Μπορείτε να αλλάξετε το "Profile Picture" σε όποιο κείμενο θέλετε -->
 <resources>
     <string name="app_name">mysmartroute</string>
     <string name="invalid_coordinates">Invalid coordinates</string>
@@ -264,4 +268,5 @@
     <string name="take_photo">Take Photo</string>
     <string name="profile_updated">Profile updated successfully</string>
     <string name="save">Save</string>
+    <string name="profile_picture">Profile Picture</string>
 </resources>

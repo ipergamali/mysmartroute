@@ -24,10 +24,10 @@ import com.ioannapergamali.mysmartroute.model.enumerations.RequestStatus
 
 /** Βοηθητικά extensions για μετατροπή οντοτήτων σε δομές κατάλληλες για το Firestore. */
 /** Μετατροπή ενός [UserEntity] σε Map. */
+
+/** Μετατροπή ενός [UserEntity] σε Map. */
 fun UserEntity.toFirestoreMap(): Map<String, Any> = mapOf(
-    "id" to FirebaseFirestore.getInstance()
-        .collection("Authedication")
-        .document(id),
+    "id" to id,  // Αφαίρεσα το DocumentReference - απλά string
     "name" to name,
     "surname" to surname,
     "username" to username,
@@ -39,9 +39,9 @@ fun UserEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     "city" to city,
     "streetName" to streetName,
     "streetNum" to streetNum,
-    "postalCode" to postalCode
+    "postalCode" to postalCode,
+    "photoUrl" to (photoUrl ?: "")
 )
-
 /** Μετατροπή [VehicleEntity] σε Map. */
 fun VehicleEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     "id" to id,
@@ -137,7 +137,8 @@ fun DocumentSnapshot.toUserEntity(): UserEntity? {
         city = getString("city") ?: "",
         streetName = getString("streetName") ?: "",
         streetNum = (getLong("streetNum") ?: 0L).toInt(),
-        postalCode = (getLong("postalCode") ?: 0L).toInt()
+        postalCode = (getLong("postalCode") ?: 0L).toInt(),
+        photoUrl = getString("photoUrl") ?: ""   // ✅ πρόσθεσε αυτό
     )
 }
 
