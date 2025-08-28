@@ -1,3 +1,4 @@
+// Βασική διαμόρφωση Gradle
 pluginManagement {
     repositories {
         google()
