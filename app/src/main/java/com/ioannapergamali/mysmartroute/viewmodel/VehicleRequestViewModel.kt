@@ -152,6 +152,37 @@ class VehicleRequestViewModel : ViewModel() {
         }
     }
 
+    fun saveWalkingRoute(
+        context: Context,
+        routeId: String,
+        fromPoiId: String,
+        toPoiId: String,
+        dateTime: Long
+    ) {
+        viewModelScope.launch {
+            val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+            val id = UUID.randomUUID().toString()
+            val data = mapOf(
+                "routeId" to routeId,
+                "fromPoiId" to fromPoiId,
+                "toPoiId" to toPoiId,
+                "date" to dateTime
+            )
+            try {
+                db.collection("users")
+                    .document(userId)
+                    .collection("walking")
+                    .document(id)
+                    .set(data)
+                    .await()
+                Toast.makeText(context, R.string.route_saved, Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to save walking route", e)
+                Toast.makeText(context, R.string.route_save_failed, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
     fun markNotificationsRead(allUsers: Boolean) {
         val userId = FirebaseAuth.getInstance().currentUser?.uid
         val notifications = if (allUsers) {

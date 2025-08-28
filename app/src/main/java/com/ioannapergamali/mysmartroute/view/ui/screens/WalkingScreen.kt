@@ -40,6 +40,7 @@ import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import android.app.TimePickerDialog
@@ -50,6 +51,7 @@ fun WalkingScreen(navController: NavController, openDrawer: () -> Unit) {
     val context = LocalContext.current
     val routeViewModel: RouteViewModel = viewModel()
     val poiViewModel: PoIViewModel = viewModel()
+    val vehicleRequestViewModel: VehicleRequestViewModel = viewModel()
     val routes by routeViewModel.routes.collectAsState()
     val allPois by poiViewModel.pois.collectAsState()
 
@@ -369,5 +371,27 @@ fun WalkingScreen(navController: NavController, openDrawer: () -> Unit) {
             )
 
             Spacer(Modifier.height(16.dp))
+
+            Button(
+                onClick = {
+                    val rId = selectedRouteId ?: return@Button
+                    val start = startIndex?.let { routePois[it].id } ?: return@Button
+                    val end = endIndex?.let { routePois[it].id } ?: return@Button
+                    val timestamp = System.currentTimeMillis()
+                    vehicleRequestViewModel.saveWalkingRoute(
+                        context,
+                        rId,
+                        start,
+                        end,
+                        timestamp
+                    )
+                },
+                enabled = selectedRouteId != null && startIndex != null && endIndex != null
+            ) {
+                Text(stringResource(R.string.save))
+            }
+
+            Spacer(Modifier.height(16.dp))
         }
-    } }
+    }
+}
