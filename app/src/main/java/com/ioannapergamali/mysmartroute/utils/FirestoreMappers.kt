@@ -24,24 +24,26 @@ import com.ioannapergamali.mysmartroute.model.enumerations.RequestStatus
 
 /** Βοηθητικά extensions για μετατροπή οντοτήτων σε δομές κατάλληλες για το Firestore. */
 /** Μετατροπή ενός [UserEntity] σε Map. */
-fun UserEntity.toFirestoreMap(): Map<String, Any> = mapOf(
-    "id" to FirebaseFirestore.getInstance()
-        .collection("Authedication")
-        .document(id),
-    "name" to name,
-    "surname" to surname,
-    "username" to username,
-    "email" to email,
-    "phoneNum" to phoneNum,
-    "photoUrl" to (photoUrl ?: ""),
-    "password" to password,
-    "role" to role,
-    "roleId" to roleId,
-    "city" to city,
-    "streetName" to streetName,
-    "streetNum" to streetNum,
-    "postalCode" to postalCode
-)
+fun UserEntity.toFirestoreMap(): Map<String, Any> = buildMap {
+    put(
+        "id", FirebaseFirestore.getInstance()
+            .collection("Authedication")
+            .document(id)
+    )
+    put("name", name)
+    put("surname", surname)
+    put("username", username)
+    put("email", email)
+    put("phoneNum", phoneNum)
+    photoUrl?.takeIf { it.isNotBlank() }?.let { put("photoUrl", it) }
+    put("password", password)
+    put("role", role)
+    put("roleId", roleId)
+    put("city", city)
+    put("streetName", streetName)
+    put("streetNum", streetNum)
+    put("postalCode", postalCode)
+}
 
 /** Μετατροπή [VehicleEntity] σε Map. */
 fun VehicleEntity.toFirestoreMap(): Map<String, Any> = mapOf(
