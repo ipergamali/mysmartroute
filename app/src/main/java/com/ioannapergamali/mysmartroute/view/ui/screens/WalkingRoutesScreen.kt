@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.weight
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -76,10 +77,20 @@ private fun WalkingRow(
     onSave: () -> Unit,
     onRespond: (Boolean) -> Unit
 ) {
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(m.routeName, modifier = Modifier.weight(1f))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Button(onClick = onSave) {
+
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         Text(m.routeName)
         Row {
             TextButton(onClick = onSave) {
+
                 Text(stringResource(R.string.save))
             }
             TextButton(onClick = { onRespond(true) }) {
