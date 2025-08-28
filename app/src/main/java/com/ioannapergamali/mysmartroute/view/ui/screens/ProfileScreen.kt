@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import android.util.Log
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import androidx.compose.ui.res.stringResource
@@ -49,13 +50,21 @@ fun ProfileScreen(navController: NavController, openDrawer: () -> Unit) {
             }.addOnSuccessListener { downloadUri ->
                 val url = downloadUri.toString()
                 photoUrl.value = url
-                FirebaseFirestore.getInstance().collection("users")
+                val docRef = FirebaseFirestore.getInstance()
+                    .collection("users")
                     .document(uid)
-              codex/save-user-photourl-in-database-vczmfz
-                    .set(mapOf("photoUrl" to url), SetOptions.merge())
 
-                .update("photoUrl", url)
+                Log.d("ProfileScreen", "photoUrl προς αποθήκευση: $url")
 
+                docRef.set(mapOf("photoUrl" to url), SetOptions.merge())
+                    .addOnSuccessListener {
+                        Log.d("ProfileScreen", "photoUrl αποθηκεύτηκε επιτυχώς")
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e("ProfileScreen", "Αποτυχία αποθήκευσης photoUrl", e)
+                    }
+            }.addOnFailureListener { e ->
+                Log.e("ProfileScreen", "Αποτυχία λήψης URL", e)
             }
         }
     }
@@ -69,6 +78,10 @@ fun ProfileScreen(navController: NavController, openDrawer: () -> Unit) {
                 .addOnSuccessListener { doc ->
                     username.value = doc.getString("username")
                     photoUrl.value = doc.getString("photoUrl")
+                    Log.d("ProfileScreen", "photoUrl από τη βάση: ${photoUrl.value}")
+                }
+                .addOnFailureListener { e ->
+                    Log.e("ProfileScreen", "Αποτυχία φόρτωσης photoUrl", e)
                 }
         }
     }
