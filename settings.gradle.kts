@@ -1,5 +1,9 @@
 // Βασική διαμόρφωση Gradle
 pluginManagement {
+    plugins {
+        id("com.android.application") version "8.12.2"
+        kotlin("android") version "2.2.10"
+    }
     repositories {
         google()
         mavenCentral()
