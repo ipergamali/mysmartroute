@@ -15,6 +15,7 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.DeclareRouteScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.DirectionsMapScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.PoIListScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.DefinePoiScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.DefineDurationScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.SettingsScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.AboutScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.SupportScreen
@@ -140,6 +141,10 @@ fun NavigationHost(
                 routeId = routeIdArg
             )
         }
+        composable("defineDuration") {
+            DefineDurationScreen(navController = navController, openDrawer = openDrawer)
+        }
+
 
 
 
