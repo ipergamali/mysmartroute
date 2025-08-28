@@ -52,6 +52,7 @@ fun ProfileScreen(navController: NavController, openDrawer: () -> Unit) {
             .addOnSuccessListener {
                 Log.d("ProfileScreen", "Το ανέβασμα ολοκληρώθηκε, ανακτώ URL")
                 ref.downloadUrl
+
                     .addOnSuccessListener { downloadUri ->
                         val url = downloadUri.toString()
                         photoUrl.value = url
@@ -73,6 +74,26 @@ fun ProfileScreen(navController: NavController, openDrawer: () -> Unit) {
                             .addOnFailureListener { e ->
                                 Log.e("ProfileScreen", "Αποτυχία αποθήκευσης photoUrl", e)
                             }
+
+            }.addOnSuccessListener { downloadUri ->
+                val url = downloadUri.toString()
+                photoUrl.value = url
+                val docRef = FirebaseFirestore.getInstance()
+                    .collection("users")
+                    .document(uid)
+
+                Log.d("ProfileScreen", "photoUrl προς αποθήκευση: $url")
+
+                docRef.set(mapOf("photoUrl" to url), SetOptions.merge())
+                    .addOnSuccessListener {
+                        Log.d("ProfileScreen", "photoUrl αποθηκεύτηκε επιτυχώς")
+                        docRef.get().addOnSuccessListener { refreshed ->
+                            Log.d(
+                                "ProfileScreen",
+                                "photoUrl μετά την αποθήκευση: ${refreshed.getString("photoUrl")}"
+                            )
+                        }
+
                     }
                     .addOnFailureListener { e ->
                         Log.e("ProfileScreen", "Αποτυχία λήψης URL", e)
