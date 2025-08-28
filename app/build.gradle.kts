@@ -79,11 +79,11 @@ kotlin {
 dependencies {
 
 
+    // Firebase
     implementation(platform("com.google.firebase:firebase-bom:34.1.0"))
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.firebase:firebase-storage-ktx")
-
     implementation("com.google.firebase:firebase-dynamic-links-ktx")
 
 
