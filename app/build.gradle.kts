@@ -69,25 +69,20 @@ android {
     }
 
 }
-repositories {
-    google()
-    mavenCentral()
-}
-
-
+//
+// Οι repositories δηλώνονται πλέον κεντρικά στο settings.gradle.kts
+//
 kotlin {
     jvmToolchain(21)
 }
 
 dependencies {
-    // Firebase - δήλωση ρητών εκδόσεων
-    implementation("com.google.firebase:firebase-auth-ktx:23.2.1")
-    implementation("com.google.firebase:firebase-firestore-ktx:25.1.4")
-    implementation("com.google.firebase:firebase-storage-ktx:21.0.2")
-
-    // Dynamic Links με την τελευταία διαθέσιμη έκδοση
-    implementation("com.google.firebase:firebase-dynamic-links:22.1.0")
-
+    // Firebase μέσω του BoM ώστε να μη χρειάζονται εκδόσεις
+    implementation(platform("com.google.firebase:firebase-bom:34.1.0"))
+    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation("com.google.firebase:firebase-storage-ktx")
+    implementation("com.google.firebase:firebase-dynamic-links-ktx")
 
     // Android core
     implementation(libs.androidx.core.ktx)
