@@ -245,6 +245,10 @@
     <string name="walking_routes">Walking routes</string>
     <string name="no_walking_routes">No walking routes</string>
 
+    <string name="distance_meters">Distance (m)</string>
+    <string name="calculate">Calculate</string>
+    <string name="walking_duration_result">Duration: %1$s</string>
+
     <!-- Notification text -->
     <string name="app_started_notification">App started successfully</string>
     <string name="driver_offer_notification">Ο οδηγός %1$s προσφέρθηκε να σας μεταφέρει. Αίτημα αριθμός %2$d</string>
