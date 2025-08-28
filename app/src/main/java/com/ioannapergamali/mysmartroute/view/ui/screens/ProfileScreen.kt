@@ -41,9 +41,18 @@ fun ProfileScreen(navController: NavController, openDrawer: () -> Unit) {
     val imagePicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         val uid = user?.uid ?: return@rememberLauncherForActivityResult
         uri ?: return@rememberLauncherForActivityResult
+filescreen-ppycbc
+        Log.d("ProfileScreen", "Επιλέχθηκε εικόνα: $uri")
 
         val storageRef = FirebaseStorage.getInstance().reference
             .child("profileImages/$uid.jpg")
+
+        Log.d("ProfileScreen", "Διαδρομή Storage: ${'$'}{storageRef.path}")
+
+
+        val storageRef = FirebaseStorage.getInstance().reference
+            .child("profileImages/$uid.jpg")
+
 
         storageRef.putFile(uri)
             .addOnSuccessListener {
@@ -51,12 +60,25 @@ fun ProfileScreen(navController: NavController, openDrawer: () -> Unit) {
                     val url = downloadUri.toString()
                     photoUrl.value = url
 
+                    Log.d("ProfileScreen", "Λήφθηκε download URL: $url")
+
+
                     val docRef = FirebaseFirestore.getInstance()
                         .collection("users")
                         .document(uid)
 
                     docRef.update("photoUrl", url)
+
+                        .addOnSuccessListener {
+                            Log.d("ProfileScreen", "Αποθηκεύτηκε το URL στο Firestore")
+                        }
+                        .addOnFailureListener { error ->
+                            Log.e("ProfileScreen", "Αποτυχία ενημέρωσης Firestore", error)
+                            docRef.set(mapOf("photoUrl" to url))
+                        }
+
                         .addOnFailureListener { docRef.set(mapOf("photoUrl" to url)) }
+
                 }
             }
             .addOnFailureListener { e ->
@@ -72,6 +94,13 @@ fun ProfileScreen(navController: NavController, openDrawer: () -> Unit) {
                 .addOnSuccessListener { doc ->
                     username.value = doc.getString("username")
                     photoUrl.value = doc.getString("photoUrl")
+
+
+                    Log.d(
+                        "ProfileScreen",
+                        "Φορτώθηκε χρήστης: ${'$'}{username.value}, photoUrl: ${'$'}{photoUrl.value}"
+                    )
+
                 }
                 .addOnFailureListener { e ->
                     Log.e("ProfileScreen", "Αποτυχία φόρτωσης photoUrl", e)
