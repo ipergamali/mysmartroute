@@ -31,6 +31,8 @@ import androidx.room.TypeConverters
 import com.ioannapergamali.mysmartroute.data.local.Converters
 import com.ioannapergamali.mysmartroute.data.local.TripRatingEntity
 import com.ioannapergamali.mysmartroute.data.local.TripRatingDao
+import com.ioannapergamali.mysmartroute.data.local.WalkingRouteEntity
+import com.ioannapergamali.mysmartroute.data.local.WalkingDao
 
 @Database(
     entities = [
@@ -52,9 +54,10 @@ import com.ioannapergamali.mysmartroute.data.local.TripRatingDao
         FavoriteEntity::class,
         TransferRequestEntity::class,
         TripRatingEntity::class,
-        NotificationEntity::class
+        NotificationEntity::class,
+        WalkingRouteEntity::class
     ],
-    version = 53
+    version = 54
 )
 @TypeConverters(Converters::class)
 abstract class MySmartRouteDatabase : RoomDatabase() {
@@ -77,6 +80,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
     abstract fun transferRequestDao(): TransferRequestDao
     abstract fun tripRatingDao(): TripRatingDao
     abstract fun notificationDao(): NotificationDao
+    abstract fun walkingDao(): WalkingDao
 
     companion object {
         @Volatile
@@ -697,6 +701,21 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_53_54 = object : Migration(53, 54) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `walking` (" +
+                        "`id` TEXT NOT NULL, " +
+                        "`userId` TEXT NOT NULL, " +
+                        "`routeId` TEXT NOT NULL, " +
+                        "`fromPoiId` TEXT NOT NULL, " +
+                        "`toPoiId` TEXT NOT NULL, " +
+                        "`date` INTEGER NOT NULL, " +
+                        "PRIMARY KEY(`id`))"
+                )
+            }
+        }
+
         private fun prepopulate(db: SupportSQLiteDatabase) {
             Log.d(TAG, "Prepopulating database")
             db.execSQL(
@@ -829,7 +848,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_49_50,
                     MIGRATION_50_51,
                     MIGRATION_51_52,
-                    MIGRATION_52_53
+                    MIGRATION_52_53,
+                    MIGRATION_53_54
                 )
                     .addCallback(object : RoomDatabase.Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {
