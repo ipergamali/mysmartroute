@@ -24,7 +24,6 @@ import com.ioannapergamali.mysmartroute.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
-import com.google.firebase.firestore.SetOptions
 
 import com.google.firebase.storage.FirebaseStorage
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -40,33 +39,48 @@ fun ProfileScreen(navController: NavController, openDrawer: () -> Unit) {
     val imagePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
-        val uid = user?.uid ?: return@rememberLauncherForActivityResult
-        uri?.let {
-            val ref = FirebaseStorage.getInstance()
-                .reference.child("profile_photos/$uid.jpg")
-            ref.putFile(it).continueWithTask { task ->
-                if (!task.isSuccessful) throw task.exception
+        val uid = user?.uid
+        Log.d("ProfileScreen", "Ελήφθη uri=$uri για uid=$uid")
+        if (uid == null || uri == null) {
+            Log.w("ProfileScreen", "uid ή uri κενό - διακοπή διαδικασίας")
+            return@rememberLauncherForActivityResult
+        }
+        val ref = FirebaseStorage.getInstance()
+            .reference.child("profile_photos/$uid.jpg")
+        Log.d("ProfileScreen", "Ξεκινάει ανέβασμα εικόνας για $uid")
+        ref.putFile(uri)
+            .addOnSuccessListener {
+                Log.d("ProfileScreen", "Το ανέβασμα ολοκληρώθηκε, ανακτώ URL")
                 ref.downloadUrl
-            }.addOnSuccessListener { downloadUri ->
-                val url = downloadUri.toString()
-                photoUrl.value = url
-                val docRef = FirebaseFirestore.getInstance()
-                    .collection("users")
-                    .document(uid)
-
-                Log.d("ProfileScreen", "photoUrl προς αποθήκευση: $url")
-
-                docRef.set(mapOf("photoUrl" to url), SetOptions.merge())
-                    .addOnSuccessListener {
-                        Log.d("ProfileScreen", "photoUrl αποθηκεύτηκε επιτυχώς")
+                    .addOnSuccessListener { downloadUri ->
+                        val url = downloadUri.toString()
+                        photoUrl.value = url
+                        Log.d("ProfileScreen", "Λήφθηκε URL: $url")
+                        val docRef = FirebaseFirestore.getInstance()
+                            .collection("users")
+                            .document(uid)
+                        Log.d("ProfileScreen", "Αποθήκευση photoUrl στο Firestore για $uid")
+                        docRef.update("photoUrl", url)
+                            .addOnSuccessListener {
+                                Log.d("ProfileScreen", "photoUrl αποθηκεύτηκε επιτυχώς")
+                                docRef.get().addOnSuccessListener { refreshed ->
+                                    Log.d(
+                                        "ProfileScreen",
+                                        "photoUrl μετά την αποθήκευση: ${refreshed.getString("photoUrl")}"
+                                    )
+                                }
+                            }
+                            .addOnFailureListener { e ->
+                                Log.e("ProfileScreen", "Αποτυχία αποθήκευσης photoUrl", e)
+                            }
                     }
                     .addOnFailureListener { e ->
-                        Log.e("ProfileScreen", "Αποτυχία αποθήκευσης photoUrl", e)
+                        Log.e("ProfileScreen", "Αποτυχία λήψης URL", e)
                     }
-            }.addOnFailureListener { e ->
-                Log.e("ProfileScreen", "Αποτυχία λήψης URL", e)
             }
-        }
+            .addOnFailureListener { e ->
+                Log.e("ProfileScreen", "Αποτυχία ανεβάσματος εικόνας", e)
+            }
     }
 
     LaunchedEffect(user) {
