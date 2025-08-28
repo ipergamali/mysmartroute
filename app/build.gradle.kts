@@ -69,9 +69,6 @@ android {
     }
 
 }
-//
-// Οι repositories δηλώνονται πλέον κεντρικά στο settings.gradle.kts
-//
 kotlin {
     jvmToolchain(21)
 }
