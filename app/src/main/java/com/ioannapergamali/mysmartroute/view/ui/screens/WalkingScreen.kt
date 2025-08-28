@@ -193,25 +193,24 @@ fun WalkingScreen(navController: NavController, openDrawer: () -> Unit) {
             )
         },
         floatingActionButton = {
-            if (selectedRouteId != null && startIndex != null && endIndex != null) {
-                ExtendedFloatingActionButton(
-                    onClick = {
-                        val rId = selectedRouteId ?: return@ExtendedFloatingActionButton
-                        val start = startIndex?.let { routePois[it].id } ?: return@ExtendedFloatingActionButton
-                        val end = endIndex?.let { routePois[it].id } ?: return@ExtendedFloatingActionButton
-                        val timestamp = System.currentTimeMillis()
-                        vehicleRequestViewModel.saveWalkingRoute(
-                            context,
-                            rId,
-                            start,
-                            end,
-                            timestamp
-                        )
-                    },
-                    icon = { Icon(Icons.Default.Save, contentDescription = null) },
-                    text = { Text(stringResource(R.string.save)) }
-                )
-            }
+            ExtendedFloatingActionButton(
+                onClick = {
+                    val rId = selectedRouteId ?: return@ExtendedFloatingActionButton
+                    val start = startIndex?.let { routePois[it].id } ?: return@ExtendedFloatingActionButton
+                    val end = endIndex?.let { routePois[it].id } ?: return@ExtendedFloatingActionButton
+                    val timestamp = System.currentTimeMillis()
+                    vehicleRequestViewModel.saveWalkingRoute(
+                        context,
+                        rId,
+                        start,
+                        end,
+                        timestamp
+                    )
+                },
+                icon = { Icon(Icons.Default.Save, contentDescription = null) },
+                text = { Text(stringResource(R.string.save)) },
+                enabled = selectedRouteId != null && startIndex != null && endIndex != null
+            )
         }
     ) { padding ->
         ScreenContainer(modifier = Modifier.padding(padding)) {
@@ -394,29 +393,6 @@ fun WalkingScreen(navController: NavController, openDrawer: () -> Unit) {
                     .fillMaxWidth()
                     .clickable { showTimePicker = true }
             )
-
-            Spacer(Modifier.height(16.dp))
-
-            Button(
-                onClick = {
-                    val rId = selectedRouteId ?: return@Button
-                    val start = startIndex?.let { routePois[it].id } ?: return@Button
-                    val end = endIndex?.let { routePois[it].id } ?: return@Button
-                    val timestamp = System.currentTimeMillis()
-                    vehicleRequestViewModel.saveWalkingRoute(
-                        context,
-                        rId,
-                        start,
-                        end,
-                        timestamp
-                    )
-                },
-                enabled = selectedRouteId != null && startIndex != null && endIndex != null
-            ) {
-                Text(stringResource(R.string.save))
-            }
-
-            Spacer(Modifier.height(16.dp))
         }
     }
 }
