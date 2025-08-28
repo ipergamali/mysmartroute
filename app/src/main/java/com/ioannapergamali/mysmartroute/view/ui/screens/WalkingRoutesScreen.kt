@@ -9,9 +9,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.R
@@ -48,9 +48,21 @@ fun WalkingRoutesScreen(navController: NavController, openDrawer: () -> Unit) {
                 Text(stringResource(R.string.no_walking_routes))
             } else {
                 walkingMovings.forEach { m ->
-                    WalkingRow(m, onRespond = { accept ->
-                        viewModel.setWalkingStatus(context, m.id, accept)
-                    })
+                    WalkingRow(
+                        m,
+                        onSave = {
+                            viewModel.saveWalkingRoute(
+                                context,
+                                m.routeId,
+                                m.startPoiId,
+                                m.endPoiId,
+                                m.date
+                            )
+                        },
+                        onRespond = { accept ->
+                            viewModel.setWalkingStatus(context, m.id, accept)
+                        }
+                    )
                     Spacer(Modifier.height(8.dp))
                 }
             }
@@ -59,10 +71,17 @@ fun WalkingRoutesScreen(navController: NavController, openDrawer: () -> Unit) {
 }
 
 @Composable
-private fun WalkingRow(m: MovingEntity, onRespond: (Boolean) -> Unit) {
+private fun WalkingRow(
+    m: MovingEntity,
+    onSave: () -> Unit,
+    onRespond: (Boolean) -> Unit
+) {
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         Text(m.routeName)
         Row {
+            TextButton(onClick = onSave) {
+                Text(stringResource(R.string.save))
+            }
             TextButton(onClick = { onRespond(true) }) {
                 Text(stringResource(R.string.accept_offer))
             }
