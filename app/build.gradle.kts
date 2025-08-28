@@ -1,18 +1,12 @@
 import java.util.Properties
 import java.io.FileInputStream
 
-
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
     id("kotlin-kapt")
     id("com.google.gms.google-services")
-}
-
-repositories {
-    google()
-    mavenCentral()
 }
 
 // Διαβάζουμε τα API keys από το local.properties ή από μεταβλητή περιβάλλοντος
@@ -55,7 +49,7 @@ android {
 
     composeOptions {
         // Χρήση της νεότερης σταθερής έκδοσης του compiler
-        kotlinCompilerExtensionVersion = "1.7.0"
+        kotlinCompilerExtensionVersion = "1.6.7"
     }
 
     compileOptions {
@@ -81,13 +75,15 @@ kotlin {
 }
 
 dependencies {
-    // Firebase βιβλιοθήκες
-    implementation(platform("com.google.firebase:firebase-bom:33.4.0"))
+    // Firebase (BoM για αυτόματες εκδόσεις όλων των modules)
+    implementation(platform("com.google.firebase:firebase-bom:34.1.0"))
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
-    implementation("com.google.firebase:firebase-dynamic-links-ktx")
-    implementation("com.google.firebase:firebase-common-ktx")
     implementation("com.google.firebase:firebase-storage-ktx")
+
+    // Το Dynamic Links δεν καλύπτεται από το BoM, δηλώνουμε ρητά την έκδοση
+    implementation("com.google.firebase:firebase-dynamic-links:22.1.0")
+
 
     // Android core
     implementation(libs.androidx.core.ktx)
@@ -100,8 +96,8 @@ dependencies {
     implementation(platform("androidx.compose:compose-bom:2025.07.00"))
     androidTestImplementation(platform("androidx.compose:compose-bom:2025.07.00"))
 
-    // Χρήση του BOM - χωρίς έκδοση
-    implementation("androidx.compose.material3:material3")
+    // Χρήση της σταθερής έκδοσης Material3
+    implementation("androidx.compose.material3:material3:1.3.2")
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-text")
     implementation("androidx.compose.ui:ui-tooling-preview")
@@ -110,6 +106,7 @@ dependencies {
     implementation("androidx.compose.runtime:runtime")
     implementation("androidx.navigation:navigation-compose:2.9.1")
     implementation("androidx.compose.material:material-icons-extended")
+    implementation("io.coil-kt:coil-compose:2.7.0")
 
     // DataStore για αποθήκευση ρυθμίσεων
     implementation("androidx.datastore:datastore-preferences:1.1.7")
@@ -126,10 +123,10 @@ dependencies {
     implementation("com.google.android.gms:play-services-location:21.3.0")
     implementation("com.google.android.libraries.places:places:3.4.0")
 
-    // Coroutines
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0")
+    // Coroutines (νεότερη σταθερή έκδοση)
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.10.2")
 
     // HTTP Networking
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
@@ -139,9 +136,6 @@ dependencies {
 
     // Crash reporting με ACRA
     implementation("ch.acra:acra-mail:5.12.0")
-
-    // Coil για φόρτωση εικόνων
-    implementation("io.coil-kt:coil-compose:2.4.0")
 
     // Testing
     testImplementation("junit:junit:4.13.2")

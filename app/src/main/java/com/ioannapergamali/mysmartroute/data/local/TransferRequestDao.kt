@@ -12,6 +12,9 @@ interface TransferRequestDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(request: TransferRequestEntity): Long
 
+    @Query("SELECT * FROM transfer_requests")
+    fun getAll(): Flow<List<TransferRequestEntity>>
+
     @Query("UPDATE transfer_requests SET status = :status WHERE requestNumber = :requestNumber")
     suspend fun updateStatus(requestNumber: Int, status: RequestStatus)
 

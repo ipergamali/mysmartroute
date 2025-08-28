@@ -1,7 +1,3 @@
-
-    <!-- Άλλες υπάρχουσες συμβολοσειρές -->
-
-    <!-- Μπορείτε να αλλάξετε το "Profile Picture" σε όποιο κείμενο θέλετε -->
 <resources>
     <string name="app_name">mysmartroute</string>
     <string name="invalid_coordinates">Invalid coordinates</string>
@@ -30,10 +26,15 @@
     <string name="logout">Logout</string>
     <string name="email">Email</string>
     <string name="password">Password</string>
-    <string name="forgot_password">Forgot password?</string>
-    <string name="reset_email_sent">Password reset email sent</string>
     <string name="no_account">If you don\'t have an account</string>
     <string name="sign_up">Sign Up</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="reset_password">Reset Password</string>
+    <string name="send_reset_email">Send reset email</string>
+    <string name="back_to_login">Back to login</string>
+    <string name="password_reset_email_sent">Password reset email sent</string>
+
+
     <string name="first_name">Name</string>
     <string name="last_name">Surname</string>
     <string name="username">Username</string>
@@ -59,6 +60,7 @@
     <string name="sync_db">Synchronization</string>
     <string name="admin_option">Admin Option</string>
     <string name="profile">Profile</string>
+    <string name="upload_photo">Ανέβασμα φωτογραφίας</string>
     <string name="guest">Guest</string>
     <string name="exit">Exit</string>
     <string name="credits">Credits</string>
@@ -123,6 +125,10 @@
     <string name="view_pois">View PoIs</string>
     <string name="view_users">View Users</string>
     <string name="no_users">No users found</string>
+    <string name="total_cost_label">Total cost: %1$.2f€</string>
+    <string name="vehicles_label">Vehicles</string>
+    <string name="passenger_avg_rating_label">Passenger satisfaction: %1$.1f/5</string>
+    <string name="no_completed_movings">No completed movings</string>
     <string name="advance_date">Advance Date</string>
     <string name="declare_route">Declare Route</string>
     <string name="announce_transport">Announce Transport</string>
@@ -239,6 +245,10 @@
     <string name="walking_routes">Walking routes</string>
     <string name="no_walking_routes">No walking routes</string>
 
+    <string name="distance_meters">Distance (m)</string>
+    <string name="calculate">Calculate</string>
+    <string name="walking_duration_result">Duration: %1$s</string>
+
     <!-- Notification text -->
     <string name="app_started_notification">App started successfully</string>
     <string name="driver_offer_notification">Ο οδηγός %1$s προσφέρθηκε να σας μεταφέρει. Αίτημα αριθμός %2$d</string>
@@ -259,14 +269,9 @@
     <string name="no_transports_found">No transports found</string>
     <string name="rating_label">Rating: %1$d/5</string>
     <string name="comment_label">Comment</string>
+    <string name="save">Save</string>
     <string name="no_completed_transports">No completed transports</string>
     <string name="view_details">View details</string>
     <string name="reservation_details">Reservation details</string>
     <string name="no_reservation_found">No reservation found</string>
-    <string name="print_completed_passenger_list">Εκτύπωση λίστας επιβατών ολοκληρωμένων διαδρομών</string>
-    <string name="select_from_gallery">Select from Gallery</string>
-    <string name="take_photo">Take Photo</string>
-    <string name="profile_updated">Profile updated successfully</string>
-    <string name="save">Save</string>
-    <string name="profile_picture">Profile Picture</string>
 </resources>

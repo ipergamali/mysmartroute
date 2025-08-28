@@ -40,6 +40,11 @@ class PointRepository {
         if (pointB.name.isNotEmpty()) {
             pointA.name = "${'$'}{pointA.name} / ${'$'}{pointB.name}"
         }
+        if (pointB.details.isNotEmpty()) {
+            pointA.details = listOf(pointA.details, pointB.details)
+                .filter { it.isNotEmpty() }
+                .joinToString("\n")
+        }
 
         routes.values.forEach { route ->
             route.pointIds.replaceAll { id -> if (id == pointBId) pointAId else id }

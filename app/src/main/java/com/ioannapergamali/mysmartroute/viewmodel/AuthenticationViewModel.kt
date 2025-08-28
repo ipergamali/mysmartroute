@@ -5,9 +5,10 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ioannapergamali.mysmartroute.R
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
-import com.google.firebase.auth.ktx.actionCodeSettings
+import com.google.firebase.auth.EmailAuthProvider
+import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.DocumentReference
 import com.google.gson.Gson
@@ -27,7 +28,6 @@ import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import com.ioannapergamali.mysmartroute.model.menus.MenuConfig
 import com.ioannapergamali.mysmartroute.model.menus.RoleMenuConfig
-import com.ioannapergamali.mysmartroute.BuildConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -58,6 +58,9 @@ class AuthenticationViewModel : ViewModel() {
 
     private val _resetPasswordState = MutableStateFlow<ResetPasswordState>(ResetPasswordState.Idle)
     val resetPasswordState: StateFlow<ResetPasswordState> = _resetPasswordState
+
+    private val _changePasswordState = MutableStateFlow<ChangePasswordState>(ChangePasswordState.Idle)
+    val changePasswordState: StateFlow<ChangePasswordState> = _changePasswordState
 
     private val _currentUserRole = MutableStateFlow<UserRole?>(null)
     val currentUserRole: StateFlow<UserRole?> = _currentUserRole
@@ -205,32 +208,31 @@ class AuthenticationViewModel : ViewModel() {
         }
     }
 
-    fun resetPassword(email: String) {
+    fun resetPassword(email: String, context: Context) {
         viewModelScope.launch {
             _resetPasswordState.value = ResetPasswordState.Loading
             if (email.isBlank()) {
-                val message = "Email is required"
+                val message = context.getString(R.string.email_required)
                 Log.w(TAG, message)
                 _resetPasswordState.value = ResetPasswordState.Error(message)
                 return@launch
             }
-            val domain = BuildConfig.PASSWORD_RESET_DOMAIN
-            val actionCodeSettings = actionCodeSettings {
-                url = "https://$domain/reset"
-                handleCodeInApp = true
-                setAndroidPackageName(
-                    BuildConfig.APPLICATION_ID,
-                    true,
-                    null
-                )
-            }
-            auth.sendPasswordResetEmail(email, actionCodeSettings)
+            auth.sendPasswordResetEmail(email)
                 .addOnSuccessListener {
                     Log.i(TAG, "Password reset email sent to $email")
                     _resetPasswordState.value = ResetPasswordState.Success
                 }
                 .addOnFailureListener { e ->
-                    val message = e.localizedMessage ?: "Failed to send reset email"
+                    val message = if (e is FirebaseAuthException) {
+                        when (e.errorCode) {
+                            "ERROR_INVALID_EMAIL" -> context.getString(R.string.error_invalid_email)
+                            "ERROR_USER_NOT_FOUND" -> context.getString(R.string.error_user_not_found)
+                            "ERROR_OPERATION_NOT_ALLOWED" -> context.getString(R.string.error_operation_not_allowed)
+                            else -> e.localizedMessage ?: context.getString(R.string.error_send_reset)
+                        }
+                    } else {
+                        e.localizedMessage ?: context.getString(R.string.error_send_reset)
+                    }
                     Log.e(TAG, message, e)
                     _resetPasswordState.value = ResetPasswordState.Error(message)
                 }
@@ -253,18 +255,41 @@ class AuthenticationViewModel : ViewModel() {
                         }
                 }
                 .addOnFailureListener { e ->
-                    val message = if (e is FirebaseAuthInvalidCredentialsException) {
-                        "Ο σύνδεσμος επαναφοράς δεν είναι έγκυρος ή έχει λήξει"
-                    } else {
-                        e.localizedMessage ?: "Invalid or expired reset link"
-                    }
-                    _resetPasswordState.value = ResetPasswordState.Error(message)
+                    _resetPasswordState.value = ResetPasswordState.Error(
+                        e.localizedMessage ?: "Invalid or expired reset link",
+                    )
                 }
         }
     }
 
     fun clearResetPasswordState() {
         _resetPasswordState.value = ResetPasswordState.Idle
+    }
+
+    fun changePassword(oldPassword: String, newPassword: String) {
+        val user = auth.currentUser ?: run {
+            _changePasswordState.value = ChangePasswordState.Error("Δεν υπάρχει συνδεδεμένος χρήστης")
+            return
+        }
+        val email = user.email ?: run {
+            _changePasswordState.value = ChangePasswordState.Error("Το email δεν βρέθηκε")
+            return
+        }
+        val credential = EmailAuthProvider.getCredential(email, oldPassword)
+        _changePasswordState.value = ChangePasswordState.Loading
+        user.reauthenticate(credential).addOnCompleteListener { reauth ->
+            if (reauth.isSuccessful) {
+                user.updatePassword(newPassword).addOnCompleteListener { update ->
+                    _changePasswordState.value =
+                        if (update.isSuccessful) ChangePasswordState.Success
+                        else ChangePasswordState.Error(update.exception?.localizedMessage ?: "Αποτυχία ενημέρωσης κωδικού")
+                }
+            } else {
+                _changePasswordState.value = ChangePasswordState.Error(
+                    reauth.exception?.localizedMessage ?: "Αποτυχία επαλήθευσης ταυτότητας"
+                )
+            }
+        }
     }
 
 
@@ -287,6 +312,13 @@ class AuthenticationViewModel : ViewModel() {
         object Loading : ResetPasswordState()
         object Success : ResetPasswordState()
         data class Error(val message: String) : ResetPasswordState()
+    }
+
+    sealed class ChangePasswordState {
+        object Idle : ChangePasswordState()
+        object Loading : ChangePasswordState()
+        object Success : ChangePasswordState()
+        data class Error(val message: String) : ChangePasswordState()
     }
 
     fun loadCurrentUserRole(context: Context, loadMenus: Boolean = false) {

@@ -31,6 +31,8 @@ import androidx.room.TypeConverters
 import com.ioannapergamali.mysmartroute.data.local.Converters
 import com.ioannapergamali.mysmartroute.data.local.TripRatingEntity
 import com.ioannapergamali.mysmartroute.data.local.TripRatingDao
+import com.ioannapergamali.mysmartroute.data.local.WalkingRouteEntity
+import com.ioannapergamali.mysmartroute.data.local.WalkingDao
 
 @Database(
     entities = [
@@ -52,9 +54,10 @@ import com.ioannapergamali.mysmartroute.data.local.TripRatingDao
         FavoriteEntity::class,
         TransferRequestEntity::class,
         TripRatingEntity::class,
-        NotificationEntity::class
+        NotificationEntity::class,
+        WalkingRouteEntity::class
     ],
-    version = 52
+    version = 54
 )
 @TypeConverters(Converters::class)
 abstract class MySmartRouteDatabase : RoomDatabase() {
@@ -77,6 +80,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
     abstract fun transferRequestDao(): TransferRequestDao
     abstract fun tripRatingDao(): TripRatingDao
     abstract fun notificationDao(): NotificationDao
+    abstract fun walkingDao(): WalkingDao
 
     companion object {
         @Volatile
@@ -282,9 +286,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                 insertOption("opt_admin_8", adminMenuId, "rank_drivers", "rankDrivers")
                 insertOption("opt_admin_9", adminMenuId, "rank_passengers", "rankPassengers")
                 insertOption("opt_admin_10", adminMenuId, "view_vehicles", "viewVehicles")
-                insertOption("opt_admin_11", adminMenuId, "view_pois", "viewPois")
-                insertOption("opt_admin_12", adminMenuId, "view_users", "viewUsers")
-                insertOption("opt_admin_13", adminMenuId, "advance_date", "advanceDate")
+                insertOption("opt_admin_11", adminMenuId, "view_users", "viewUsers")
+                insertOption("opt_admin_12", adminMenuId, "advance_date", "advanceDate")
             }
         }
 
@@ -685,7 +688,31 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
 
         private val MIGRATION_51_52 = object : Migration(51, 52) {
             override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("ALTER TABLE users ADD COLUMN photoUrl TEXT NOT NULL DEFAULT ''")
+                database.execSQL(
+                    "INSERT INTO `menu_options` (`id`, `menuId`, `titleResKey`, `route`) " +
+                        "VALUES ('opt_admin_11', 'menu_admin_main', 'view_users', 'viewUsers')"
+                )
+            }
+        }
+
+        private val MIGRATION_52_53 = object : Migration(52, 53) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE `users` ADD COLUMN `photoUrl` TEXT")
+            }
+        }
+
+        private val MIGRATION_53_54 = object : Migration(53, 54) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `walking` (" +
+                        "`id` TEXT NOT NULL, " +
+                        "`userId` TEXT NOT NULL, " +
+                        "`routeId` TEXT NOT NULL, " +
+                        "`fromPoiId` TEXT NOT NULL, " +
+                        "`toPoiId` TEXT NOT NULL, " +
+                        "`date` INTEGER NOT NULL, " +
+                        "PRIMARY KEY(`id`))"
+                )
             }
         }
 
@@ -765,9 +792,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             insertOption("opt_admin_8", adminMenuId, "rank_drivers", "rankDrivers")
             insertOption("opt_admin_9", adminMenuId, "rank_passengers", "rankPassengers")
             insertOption("opt_admin_10", adminMenuId, "view_vehicles", "viewVehicles")
-            insertOption("opt_admin_11", adminMenuId, "view_pois", "viewPois")
-            insertOption("opt_admin_12", adminMenuId, "view_users", "viewUsers")
-            insertOption("opt_admin_13", adminMenuId, "advance_date", "advanceDate")
+            insertOption("opt_admin_11", adminMenuId, "view_users", "viewUsers")
+            insertOption("opt_admin_12", adminMenuId, "advance_date", "advanceDate")
 
             Log.d(TAG, "Prepopulate complete")
             db.execSQL("INSERT INTO app_language (id, language) VALUES (1, 'el')")
@@ -821,7 +847,9 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_48_49,
                     MIGRATION_49_50,
                     MIGRATION_50_51,
-                    MIGRATION_51_52
+                    MIGRATION_51_52,
+                    MIGRATION_52_53,
+                    MIGRATION_53_54
                 )
                     .addCallback(object : RoomDatabase.Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {

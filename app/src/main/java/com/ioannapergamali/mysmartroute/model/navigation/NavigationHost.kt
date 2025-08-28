@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.ioannapergamali.mysmartroute.view.ui.screens.HomeScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.ResetPasswordScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.SignUpScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.MenuScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.RegisterVehicleScreen
@@ -14,6 +15,7 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.DeclareRouteScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.DirectionsMapScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.PoIListScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.DefinePoiScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.DefineDurationScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.SettingsScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.AboutScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.SupportScreen
@@ -37,6 +39,7 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.PrintDeclarationsScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.PrintTicketScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.PrepareCompleteRouteScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.ViewVehiclesScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.ViewUsersScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.ViewTransportRequestsScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.ViewRequestsScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.PassengerMovingsScreen
@@ -75,8 +78,9 @@ fun NavigationHost(
                 openDrawer = openDrawer
             )
         }
-
-
+        composable("resetPassword") {
+            ResetPasswordScreen(navController = navController, openDrawer = openDrawer)
+        }
 
         composable("Signup") {
             SignUpScreen(
@@ -136,6 +140,10 @@ fun NavigationHost(
                 routeId = routeIdArg
             )
         }
+        composable("defineDuration") {
+            DefineDurationScreen(navController = navController, openDrawer = openDrawer)
+        }
+
 
 
 
@@ -318,6 +326,10 @@ fun NavigationHost(
 
         composable("viewVehicles") {
             ViewVehiclesScreen(navController = navController, openDrawer = openDrawer)
+        }
+
+        composable("viewUsers") {
+            ViewUsersScreen(navController = navController, openDrawer = openDrawer)
         }
 
         composable("soundPicker") {

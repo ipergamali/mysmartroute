@@ -5,23 +5,74 @@
       {
         "titleKey": "passenger_menu_title",
         "options": [
-          {"titleKey": "sign_out", "route": "signOut"},
-          {"titleKey": "manage_favorites", "route": "manageFavorites"},
-          {"titleKey": "route_mode", "route": "routeMode"},
-          {"titleKey": "find_vehicle", "route": "findVehicle"},
-          {"titleKey": "find_way", "route": "findWay"},
-          {"titleKey": "book_seat", "route": "bookSeat"},
-          {"titleKey": "view_routes", "route": "viewRoutes"},
-          {"titleKey": "select_pois_screen_title", "route": "selectRoutePois"},
-          {"titleKey": "view_transports", "route": "viewTransports"},
-          {"titleKey": "view_requests", "route": "viewRequests"},
-          {"titleKey": "view_movings", "route": "viewMovings"},
-          {"titleKey": "walking", "route": "walking"},
-          {"titleKey": "walking_routes", "route": "walkingRoutes"},
-          {"titleKey": "print_ticket", "route": "printTicket"},
-          {"titleKey": "cancel_seat", "route": "cancelSeat"},
-          {"titleKey": "rank_transports", "route": "rankTransports"},
-          {"titleKey": "shutdown", "route": "shutdown"}
+          {
+            "titleKey": "sign_out",
+            "route": "signOut"
+          },
+          {
+            "titleKey": "manage_favorites",
+            "route": "manageFavorites"
+          },
+          {
+            "titleKey": "route_mode",
+            "route": "routeMode"
+          },
+          {
+            "titleKey": "find_vehicle",
+            "route": "findVehicle"
+          },
+          {
+            "titleKey": "find_way",
+            "route": "findWay"
+          },
+          {
+            "titleKey": "book_seat",
+            "route": "bookSeat"
+          },
+          {
+            "titleKey": "view_routes",
+            "route": "viewRoutes"
+          },
+          {
+            "titleKey": "select_pois_screen_title",
+            "route": "selectRoutePois"
+          },
+          {
+            "titleKey": "view_transports",
+            "route": "viewTransports"
+          },
+          {
+            "titleKey": "view_requests",
+            "route": "viewRequests"
+          },
+          {
+            "titleKey": "view_movings",
+            "route": "viewMovings"
+          },
+          {
+            "titleKey": "walking",
+            "route": "walking"
+          },
+          {
+            "titleKey": "walking_routes",
+            "route": "walkingRoutes"
+          },
+          {
+            "titleKey": "print_ticket",
+            "route": "printTicket"
+          },
+          {
+            "titleKey": "cancel_seat",
+            "route": "cancelSeat"
+          },
+          {
+            "titleKey": "rank_transports",
+            "route": "rankTransports"
+          },
+          {
+            "titleKey": "shutdown",
+            "route": "shutdown"
+          }
         ]
       }
     ]
@@ -32,20 +83,46 @@
       {
         "titleKey": "driver_menu_title",
         "options": [
-          {"titleKey": "register_vehicle", "route": "registerVehicle"},
-          {"titleKey": "declare_route", "route": "declareRoute"},
-          {"titleKey": "announce_availability", "route": "announceAvailability"},
-          {"titleKey": "print_declarations", "route": "printDeclarations"},
-          {"titleKey": "find_passengers", "route": "findPassengers"},
-          {"titleKey": "print_list", "route": "printList"},
-          {"titleKey": "print_scheduled", "route": "printScheduled"},
-          {"titleKey": "print_completed", "route": "printCompleted"},
           {
-            "titleKey": "print_completed_passenger_list",
-            "route": "printCompletedPassengers"
+            "titleKey": "register_vehicle",
+            "route": "registerVehicle"
           },
-          {"titleKey": "prepare_complete_route", "route": "prepareCompleteRoute"},
-          {"titleKey": "view_transport_requests", "route": "viewTransportRequests"}
+          {
+            "titleKey": "declare_route",
+            "route": "declareRoute"
+          },
+          {
+            "titleKey": "announce_availability",
+            "route": "announceAvailability"
+          },
+          {
+            "titleKey": "print_declarations",
+            "route": "printDeclarations"
+          },
+          {
+            "titleKey": "find_passengers",
+            "route": "findPassengers"
+          },
+          {
+            "titleKey": "print_list",
+            "route": "printList"
+          },
+          {
+            "titleKey": "print_scheduled",
+            "route": "printScheduled"
+          },
+          {
+            "titleKey": "print_completed",
+            "route": "printCompleted"
+          },
+          {
+            "titleKey": "prepare_complete_route",
+            "route": "prepareCompleteRoute"
+          },
+          {
+            "titleKey": "view_transport_requests",
+            "route": "viewTransportRequests"
+          }
         ]
       }
     ]
@@ -56,20 +133,58 @@
       {
         "titleKey": "admin_menu_title",
         "options": [
-          {"titleKey": "init_system", "route": "initSystem"},
-          {"titleKey": "create_user", "route": "createUser"},
-          {"titleKey": "edit_privileges", "route": "editPrivileges"},
-          {"titleKey": "define_poi", "route": "definePoi"},
-          {"titleKey": "edit_route", "route": "editRoute"},
-          {"titleKey": "define_duration", "route": "defineDuration"},
-          {"titleKey": "view_unassigned", "route": "viewUnassigned"},
-          {"titleKey": "review_poi", "route": "reviewPoi"},
-          {"titleKey": "rank_drivers", "route": "rankDrivers"},
-          {"titleKey": "rank_passengers", "route": "rankPassengers"},
-          {"titleKey": "view_vehicles", "route": "viewVehicles"},
-          {"titleKey": "view_pois", "route": "viewPois"},
-          {"titleKey": "view_users", "route": "viewUsers"},
-          {"titleKey": "advance_date", "route": "advanceDate"}
+          {
+            "titleKey": "init_system",
+            "route": "initSystem"
+          },
+          {
+            "titleKey": "create_user",
+            "route": "createUser"
+          },
+          {
+            "titleKey": "edit_privileges",
+            "route": "editPrivileges"
+          },
+          {
+            "titleKey": "define_poi",
+            "route": "definePoi"
+          },
+          {
+            "titleKey": "edit_route",
+            "route": "editRoute"
+          },
+          {
+            "titleKey": "define_duration",
+            "route": "defineDuration"
+          },
+          {
+            "titleKey": "view_unassigned",
+            "route": "viewUnassigned"
+          },
+          {
+            "titleKey": "review_poi",
+            "route": "reviewPoi"
+          },
+          {
+            "titleKey": "rank_drivers",
+            "route": "rankDrivers"
+          },
+          {
+            "titleKey": "rank_passengers",
+            "route": "rankPassengers"
+          },
+          {
+            "titleKey": "view_vehicles",
+            "route": "viewVehicles"
+          },
+          {
+            "titleKey": "view_users",
+            "route": "viewUsers"
+          },
+          {
+            "titleKey": "advance_date",
+            "route": "advanceDate"
+          }
         ]
       }
     ]

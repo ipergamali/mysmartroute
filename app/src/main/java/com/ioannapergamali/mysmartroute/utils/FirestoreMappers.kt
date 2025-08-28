@@ -1,4 +1,6 @@
 package com.ioannapergamali.mysmartroute.utils
+
+import android.util.Log
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.SettingsEntity
@@ -24,24 +26,33 @@ import com.ioannapergamali.mysmartroute.model.enumerations.RequestStatus
 
 /** Βοηθητικά extensions για μετατροπή οντοτήτων σε δομές κατάλληλες για το Firestore. */
 /** Μετατροπή ενός [UserEntity] σε Map. */
+fun UserEntity.toFirestoreMap(): Map<String, Any> = buildMap {
+    Log.d("FirestoreMappers", "Αποθήκευση χρήστη $id με photoUrl=$photoUrl")
+    put(
+        "id", FirebaseFirestore.getInstance()
+            .collection("Authedication")
+            .document(id)
+    )
+    put("name", name)
+    put("surname", surname)
+    put("username", username)
+    put("email", email)
+    put("phoneNum", phoneNum)
+    if (!photoUrl.isNullOrBlank()) {
+        put("photoUrl", photoUrl!!)
+        Log.d("FirestoreMappers", "photoUrl προστέθηκε: $photoUrl")
+    } else {
+        Log.d("FirestoreMappers", "photoUrl κενό - δεν προστέθηκε")
+    }
+    put("password", password)
+    put("role", role)
+    put("roleId", roleId)
+    put("city", city)
+    put("streetName", streetName)
+    put("streetNum", streetNum)
+    put("postalCode", postalCode)
+}
 
-/** Μετατροπή ενός [UserEntity] σε Map. */
-fun UserEntity.toFirestoreMap(): Map<String, Any> = mapOf(
-    "id" to id,  // Αφαίρεσα το DocumentReference - απλά string
-    "name" to name,
-    "surname" to surname,
-    "username" to username,
-    "email" to email,
-    "phoneNum" to phoneNum,
-    "password" to password,
-    "role" to role,
-    "roleId" to roleId,
-    "city" to city,
-    "streetName" to streetName,
-    "streetNum" to streetNum,
-    "postalCode" to postalCode,
-    "photoUrl" to (photoUrl ?: "")
-)
 /** Μετατροπή [VehicleEntity] σε Map. */
 fun VehicleEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     "id" to id,
@@ -120,6 +131,8 @@ fun DocumentSnapshot.toUserEntity(): UserEntity? {
         is String -> rawId
         else -> getString("id")
     } ?: return null
+    val photo = getString("photoUrl")
+    Log.d("FirestoreMappers", "Φόρτωση χρήστη $id με photoUrl=$photo")
     return UserEntity(
         id = id,
         name = getString("name") ?: "",
@@ -127,6 +140,7 @@ fun DocumentSnapshot.toUserEntity(): UserEntity? {
         username = getString("username") ?: "",
         email = getString("email") ?: "",
         phoneNum = getString("phoneNum") ?: "",
+        photoUrl = photo,
         password = getString("password") ?: "",
         role = getString("role") ?: "",
         roleId = when (val rawRole = get("roleId")) {
@@ -137,8 +151,7 @@ fun DocumentSnapshot.toUserEntity(): UserEntity? {
         city = getString("city") ?: "",
         streetName = getString("streetName") ?: "",
         streetNum = (getLong("streetNum") ?: 0L).toInt(),
-        postalCode = (getLong("postalCode") ?: 0L).toInt(),
-        photoUrl = getString("photoUrl") ?: ""   // ✅ πρόσθεσε αυτό
+        postalCode = (getLong("postalCode") ?: 0L).toInt()
     )
 }
 
