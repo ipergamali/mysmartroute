@@ -236,7 +236,7 @@
     <string name="no_transports_found">Δεν βρέθηκαν μεταφορές</string>
     <string name="rating_label">Βαθμολογία: %1$d</string>
     <string name="comment_label">Σχόλιο</string>
-    <string name="save">Καταχώρηση</string>
+    <string name="save">Αποθήκευση</string>
     <string name="no_completed_transports">Δεν υπάρχουν ολοκληρωμένες μεταφορές</string>
     <string name="find_now">Εύρεση τώρα</string>
     <string name="save_request">Αποθήκευση αιτήματος</string>
