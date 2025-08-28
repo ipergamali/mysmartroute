@@ -8,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.menuAnchor
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -40,6 +41,7 @@ import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import android.app.TimePickerDialog
@@ -50,6 +52,7 @@ fun WalkingScreen(navController: NavController, openDrawer: () -> Unit) {
     val context = LocalContext.current
     val routeViewModel: RouteViewModel = viewModel()
     val poiViewModel: PoIViewModel = viewModel()
+    val vehicleRequestViewModel: VehicleRequestViewModel = viewModel()
     val routes by routeViewModel.routes.collectAsState()
     val allPois by poiViewModel.pois.collectAsState()
 
@@ -187,6 +190,27 @@ fun WalkingScreen(navController: NavController, openDrawer: () -> Unit) {
                 showMenu = true,
                 onMenuClick = openDrawer
             )
+        },
+        floatingActionButton = {
+            if (selectedRouteId != null && startIndex != null && endIndex != null) {
+                ExtendedFloatingActionButton(
+                    onClick = {
+                        val rId = selectedRouteId ?: return@ExtendedFloatingActionButton
+                        val start = startIndex?.let { routePois[it].id } ?: return@ExtendedFloatingActionButton
+                        val end = endIndex?.let { routePois[it].id } ?: return@ExtendedFloatingActionButton
+                        val timestamp = System.currentTimeMillis()
+                        vehicleRequestViewModel.saveWalkingRoute(
+                            context,
+                            rId,
+                            start,
+                            end,
+                            timestamp
+                        )
+                    },
+                    icon = { Icon(Icons.Default.Save, contentDescription = null) },
+                    text = { Text(stringResource(R.string.save)) }
+                )
+            }
         }
     ) { padding ->
         ScreenContainer(modifier = Modifier.padding(padding)) {
@@ -370,4 +394,5 @@ fun WalkingScreen(navController: NavController, openDrawer: () -> Unit) {
 
             Spacer(Modifier.height(16.dp))
         }
-    } }
+    }
+}
