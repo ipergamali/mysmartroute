@@ -8,5 +8,6 @@ plugins {
     kotlin("kapt") version "2.0.20" apply false
 
     id("org.jetbrains.kotlin.android") version "2.0.20" apply false
+    // Plugin Google Services για Firebase
     id("com.google.gms.google-services") version "4.4.3" apply false
 }
