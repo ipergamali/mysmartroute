@@ -59,6 +59,12 @@ fun ProfileScreen(navController: NavController, openDrawer: () -> Unit) {
                 docRef.set(mapOf("photoUrl" to url), SetOptions.merge())
                     .addOnSuccessListener {
                         Log.d("ProfileScreen", "photoUrl αποθηκεύτηκε επιτυχώς")
+                        docRef.get().addOnSuccessListener { refreshed ->
+                            Log.d(
+                                "ProfileScreen",
+                                "photoUrl μετά την αποθήκευση: ${refreshed.getString("photoUrl")}"
+                            )
+                        }
                     }
                     .addOnFailureListener { e ->
                         Log.e("ProfileScreen", "Αποτυχία αποθήκευσης photoUrl", e)
