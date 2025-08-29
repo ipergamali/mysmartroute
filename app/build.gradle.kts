@@ -4,8 +4,8 @@ import java.io.FileInputStream
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("org.jetbrains.kotlin.plugin.compose") version "2.2.10"
-    kotlin("kapt")
+    id("org.jetbrains.kotlin.plugin.compose")
+    id("org.jetbrains.kotlin.kapt")
     id("com.google.gms.google-services")
 }
 
@@ -49,7 +49,7 @@ android {
 
     composeOptions {
         // Χρήση της νεότερης σταθερής έκδοσης του compiler
-        kotlinCompilerExtensionVersion = "1.6.7"
+        kotlinCompilerExtensionVersion = "1.7.1"
     }
 
     compileOptions {
