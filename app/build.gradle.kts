@@ -21,6 +21,17 @@ android {
 
     buildFeatures {
         compose = true
+        viewBinding = false
+    }
+    buildToolsVersion = "34.0.0"
+    ndkVersion = "29.0.13846066 rc3"
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_1_7
+    }
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
     }
 }
 
