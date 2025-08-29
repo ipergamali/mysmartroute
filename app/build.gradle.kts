@@ -5,7 +5,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
-    id("kotlin-kapt")
+    kotlin("kapt")
     id("com.google.gms.google-services")
 }
 
@@ -75,13 +75,13 @@ kotlin {
 }
 
 dependencies {
-    // Firebase (BoM για αυτόματες εκδόσεις όλων των modules)
-    implementation(platform("com.google.firebase:firebase-bom:34.1.0"))
+    // Firebase
+    val firebaseBom = platform("com.google.firebase:firebase-bom:34.2.0")
+    implementation(firebaseBom)
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.firebase:firebase-storage-ktx")
-    implementation("com.google.firebase:firebase-dynamic-links:22.1.0")
-
+    implementation("com.google.firebase:firebase-dynamic-links-ktx")
 
     // Android core
     implementation(libs.androidx.core.ktx)
