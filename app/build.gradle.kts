@@ -8,7 +8,6 @@ val mapsApiKey: String = gradleLocalProperties(rootDir, providers)
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("org.jetbrains.kotlin.plugin.compose")
     id("kotlin-kapt")
     id("com.google.gms.google-services")
 }
@@ -33,6 +32,10 @@ android {
         buildConfig = true
         compose = true
     }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.14"
+    }
+
     buildToolsVersion = "34.0.0"
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
