@@ -16,12 +16,12 @@ plugins {
 android {
     // Απαραίτητο namespace για AGP 8+
     namespace = "com.ioannapergamali.mysmartroute"
-    compileSdk = 35
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.ioannapergamali.mysmartroute"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 

@@ -9,6 +9,7 @@
 .DS_Store
 /build
 /captures
+/caches
 .externalNativeBuild
 .cxx
 .idea/
