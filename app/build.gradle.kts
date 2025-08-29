@@ -10,17 +10,18 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("kotlin-kapt")
     id("com.google.gms.google-services")
+    id("org.jetbrains.kotlin.plugin.compose")
 }
 
 android {
     // Απαραίτητο namespace για AGP 8+
     namespace = "com.ioannapergamali.mysmartroute"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.ioannapergamali.mysmartroute"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -72,6 +73,7 @@ dependencies {
 
     debugImplementation("androidx.compose.ui:ui-tooling:1.6.4")
     debugImplementation("androidx.compose.ui:ui-test-manifest:1.6.4")
+
 }
 
 kotlin {
