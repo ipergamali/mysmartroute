@@ -44,6 +44,8 @@ android {
         includeInApk = false
         includeInBundle = false
     }
+
+    sourceSets["main"].java.exclude("**/caches/**")
 }
 
 dependencies {
