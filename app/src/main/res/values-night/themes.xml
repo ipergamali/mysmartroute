@@ -5,6 +5,7 @@
     <style name="Base.Theme.Mysmartroute" parent="Theme.Material3.DayNight">
         <item name="windowNoTitle">true</item>
         <item name="windowActionBar">false</item>
+    </style>
 
     <style name="Base.Theme.MySmartRoute" parent="Theme.Material3.DayNight.NoActionBar">
 
