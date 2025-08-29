@@ -47,7 +47,9 @@ android {
         includeInBundle = false
     }
 
-    sourceSets["main"].java.exclude("**/caches/**")
+    sourceSets.named("main") {
+        java.exclude("**/caches/**")
+    }
 
 }
 
