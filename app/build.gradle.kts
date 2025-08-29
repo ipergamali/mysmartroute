@@ -38,6 +38,14 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+    }
+
+    sourceSets["main"].java.exclude("**/caches/**")
+
 }
 
 dependencies {

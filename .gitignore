@@ -13,3 +13,6 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Αποφεύγουμε την έκδοση cache φακέλων μέσα στο δέντρο πηγαίου κώδικα
+**/caches/
