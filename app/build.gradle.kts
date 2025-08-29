@@ -30,6 +30,7 @@ android {
     }
 
     buildFeatures {
+        buildConfig = true
         compose = true
         viewBinding = false
     }
@@ -37,7 +38,7 @@ android {
     ndkVersion = "29.0.13846066 rc3"
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_1_7
+        targetCompatibility = JavaVersion.VERSION_17
     }
     dependenciesInfo {
         includeInApk = false
