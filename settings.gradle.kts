@@ -17,6 +17,7 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven("https://maven.google.com") // Επίλυση βιβλιοθηκών Firebase
     }
 }
 
