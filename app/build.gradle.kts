@@ -40,8 +40,8 @@ android {
     }
 
     composeOptions {
-        // Τελευταία σταθερή έκδοση του compiler για Compose και Kotlin 1.9.23
-        kotlinCompilerExtensionVersion = "1.5.14"
+        // Τελευταία σταθερή έκδοση του compiler για Compose και Kotlin 1.9.25
+        kotlinCompilerExtensionVersion = "1.5.15"
     }
 
     dependenciesInfo {
@@ -61,7 +61,7 @@ kotlin {
 }
 dependencies {
     // 🔹 Firebase BOM (versions managed centrally)
-    implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
+    implementation(platform("com.google.firebase:firebase-bom:34.2.0"))
 
     // 🔹 Firebase dependencies
     implementation("com.google.firebase:firebase-auth-ktx")
@@ -70,10 +70,10 @@ dependencies {
     implementation("com.google.firebase:firebase-dynamic-links-ktx")
 
     // 🔹 AndroidX & Compose
-    implementation("androidx.core:core-ktx:1.13.1")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.4")
-    implementation("androidx.activity:activity-compose:1.9.0")
-    implementation(platform("androidx.compose:compose-bom:2024.06.00"))
+    implementation("androidx.core:core-ktx:1.17.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.9.3")
+    implementation("androidx.activity:activity-compose:1.10.1")
+    implementation(platform("androidx.compose:compose-bom:2025.08.01"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
