@@ -51,7 +51,8 @@ fun ResetPasswordScreen(navController: NavController, openDrawer: () -> Unit) {
                         .observeBubble(bubbleState, 0) { email }
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-     Text(stringResource(R.string.send_reset_email))
+                Button(onClick = { viewModel.resetPassword(email) }) {
+                    Text(stringResource(R.string.send_reset_email))
                 }
                 when (uiState) {
                     is AuthenticationViewModel.ResetPasswordState.Loading -> {
