@@ -5,23 +5,22 @@ import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 val mapsApiKey: String = gradleLocalProperties(rootDir, providers)
     .getProperty("MAPS_API_KEY") ?: ""
 
-plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("kotlin-kapt")
-    id("com.google.gms.google-services")
-    id("org.jetbrains.kotlin.plugin.compose")
-}
+    plugins {
+        id("com.android.application")
+        id("org.jetbrains.kotlin.android")
+        id("kotlin-kapt")
+        id("com.google.gms.google-services")
+    }
 
 android {
     // Απαραίτητο namespace για AGP 8+
     namespace = "com.ioannapergamali.mysmartroute"
-    compileSdk = 35
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.ioannapergamali.mysmartroute"
-        minSdk = 26
-        targetSdk = 35
+        minSdk = 24
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
