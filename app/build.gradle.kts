@@ -8,7 +8,6 @@ val mapsApiKey: String = gradleLocalProperties(rootDir, providers)
     plugins {
         id("com.android.application")
         id("org.jetbrains.kotlin.android")
-        id("org.jetbrains.kotlin.plugin.compose")
         id("kotlin-kapt")
         id("com.google.gms.google-services")
     }
@@ -38,6 +37,11 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    composeOptions {
+        // Τελευταία σταθερή έκδοση του compiler για Compose και Kotlin 1.9.23
+        kotlinCompilerExtensionVersion = "1.5.14"
     }
 
     dependenciesInfo {
