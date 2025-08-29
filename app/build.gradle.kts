@@ -19,7 +19,7 @@ android {
 
     defaultConfig {
         applicationId = "com.ioannapergamali.mysmartroute"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -50,9 +50,13 @@ android {
     sourceSets.named("main") {
         java.exclude("**/caches/**")
     }
-
+    kotlinOptions {
+        jvmTarget = "17"
+    }
 }
-
+kotlin {
+    jvmToolchain(21)
+}
 dependencies {
     // 🔹 Firebase BOM (versions managed centrally)
     implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
@@ -77,9 +81,7 @@ dependencies {
 
 }
 
-kotlin {
-    jvmToolchain(17)
-    compilerOptions {
-        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
-    }
+
+kapt {
+    correctErrorTypes = true
 }
