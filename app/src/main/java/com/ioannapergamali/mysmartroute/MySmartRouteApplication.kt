@@ -9,8 +9,7 @@ import com.ioannapergamali.mysmartroute.utils.ShortcutUtils
 import com.ioannapergamali.mysmartroute.utils.populatePoiTypes
 import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.DatabaseViewModel
-import kotlinx.coroutines.runBlocking   id("com.android.application") version "8.5.2" apply false
-    id("org.jetbrains.kotlin.android") version "2.0.0" apply false
+import kotlinx.coroutines.runBlocking
 import org.acra.data.StringFormat
 import org.acra.ktx.initAcra
 import org.acra.config.mailSender
