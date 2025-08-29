@@ -1,6 +1,9 @@
 import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 
-val mapsApiKey: String = gradleLocalProperties(rootDir).getProperty("MAPS_API_KEY") ?: ""
+// Διαβάζουμε το MAPS_API_KEY από το local.properties με την νέα υπογραφή που
+// απαιτεί τον παράγοντα providers στο AGP 8.5+
+val mapsApiKey: String = gradleLocalProperties(rootDir, providers)
+    .getProperty("MAPS_API_KEY") ?: ""
 
 plugins {
     id("com.android.application")
