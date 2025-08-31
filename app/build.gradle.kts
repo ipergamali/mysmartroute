@@ -15,12 +15,12 @@ val mapsApiKey: String = gradleLocalProperties(rootDir, providers)
 android {
     // Απαραίτητο namespace για AGP 8+
     namespace = "com.ioannapergamali.mysmartroute"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.ioannapergamali.mysmartroute"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
@@ -61,7 +61,7 @@ kotlin {
 }
 dependencies {
     // 🔹 Firebase BOM (versions managed centrally)
-    implementation(platform("com.google.firebase:firebase-bom:34.2.0"))
+    implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
 
     // 🔹 Firebase dependencies
     implementation("com.google.firebase:firebase-auth-ktx")
