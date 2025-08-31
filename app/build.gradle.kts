@@ -79,6 +79,10 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     implementation("com.google.android.material:material:1.12.0")
 
+    // 🔹 ACRA για αναφορές σφαλμάτων
+    implementation("ch.acra:acra-ktx:5.12.0")
+    implementation("ch.acra:acra-mail:5.12.0")
+
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
