@@ -36,6 +36,12 @@
     <string name="back_to_login">Επιστροφή στη σύνδεση</string>
     <string name="password_reset_email_sent">Στάλθηκε email επαναφοράς κωδικού</string>
 
+    <string name="email_required">Απαιτείται email</string>
+    <string name="error_invalid_email">Μη έγκυρο email</string>
+    <string name="error_user_not_found">Ο χρήστης δεν βρέθηκε</string>
+    <string name="error_operation_not_allowed">Η λειτουργία δεν επιτρέπεται</string>
+    <string name="error_send_reset">Αποτυχία αποστολής email επαναφοράς κωδικού</string>
+
     <string name="first_name">Όνομα</string>
     <string name="last_name">Επώνυμο</string>
     <string name="username">Όνομα χρήστη</string>
