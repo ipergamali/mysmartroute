@@ -27,7 +27,7 @@ class DriverRatingViewModel : ViewModel() {
                 val topIds = top.map { it.driverId }.toSet()
                 _bestDrivers.value = top
                 _worstDrivers.value = worst.filterNot { it.driverId in topIds }
-            }.collect()
+            }.collect { }
         }
     }
 }
