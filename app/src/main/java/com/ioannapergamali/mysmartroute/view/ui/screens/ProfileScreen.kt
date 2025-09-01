@@ -41,18 +41,13 @@ fun ProfileScreen(navController: NavController, openDrawer: () -> Unit) {
     val imagePicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         val uid = user?.uid ?: return@rememberLauncherForActivityResult
         uri ?: return@rememberLauncherForActivityResult
-filescreen-ppycbc
+
         Log.d("ProfileScreen", "Επιλέχθηκε εικόνα: $uri")
 
         val storageRef = FirebaseStorage.getInstance().reference
             .child("profileImages/$uid.jpg")
 
         Log.d("ProfileScreen", "Διαδρομή Storage: ${'$'}{storageRef.path}")
-
-
-        val storageRef = FirebaseStorage.getInstance().reference
-            .child("profileImages/$uid.jpg")
-
 
         storageRef.putFile(uri)
             .addOnSuccessListener {
@@ -62,13 +57,11 @@ filescreen-ppycbc
 
                     Log.d("ProfileScreen", "Λήφθηκε download URL: $url")
 
-
                     val docRef = FirebaseFirestore.getInstance()
                         .collection("users")
                         .document(uid)
 
                     docRef.update("photoUrl", url)
-
                         .addOnSuccessListener {
                             Log.d("ProfileScreen", "Αποθηκεύτηκε το URL στο Firestore")
                         }
@@ -76,9 +69,6 @@ filescreen-ppycbc
                             Log.e("ProfileScreen", "Αποτυχία ενημέρωσης Firestore", error)
                             docRef.set(mapOf("photoUrl" to url))
                         }
-
-                        .addOnFailureListener { docRef.set(mapOf("photoUrl" to url)) }
-
                 }
             }
             .addOnFailureListener { e ->
