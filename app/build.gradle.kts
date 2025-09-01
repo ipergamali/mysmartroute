@@ -40,8 +40,8 @@ android {
     }
 
     composeOptions {
-        // Τελευταία σταθερή έκδοση του compiler για Compose και Kotlin 1.9.25
-        kotlinCompilerExtensionVersion = "1.5.15"
+        // Τελευταία σταθερή έκδοση του compiler για Kotlin 2.0.21
+        kotlinCompilerExtensionVersion = "1.6.11"
     }
 
     dependenciesInfo {
