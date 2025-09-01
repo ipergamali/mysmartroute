@@ -57,7 +57,7 @@ import com.ioannapergamali.mysmartroute.data.local.WalkingDao
         NotificationEntity::class,
         WalkingRouteEntity::class
     ],
-    version = 54
+    version = 55
 )
 @TypeConverters(Converters::class)
 abstract class MySmartRouteDatabase : RoomDatabase() {
@@ -716,6 +716,12 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_54_55 = object : Migration(54, 55) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE `routes` ADD COLUMN `walkDurationMinutes` INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
         private fun prepopulate(db: SupportSQLiteDatabase) {
             Log.d(TAG, "Prepopulating database")
             db.execSQL(
@@ -849,7 +855,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_50_51,
                     MIGRATION_51_52,
                     MIGRATION_52_53,
-                    MIGRATION_53_54
+                    MIGRATION_53_54,
+                    MIGRATION_54_55
                 )
                     .addCallback(object : RoomDatabase.Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {
