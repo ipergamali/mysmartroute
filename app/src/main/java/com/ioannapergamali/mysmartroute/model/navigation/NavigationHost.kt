@@ -16,6 +16,7 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.DirectionsMapScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.PoIListScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.DefinePoiScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.DefineDurationScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.ViewUnassignedScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.SettingsScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.AboutScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.SupportScreen
@@ -143,6 +144,10 @@ fun NavigationHost(
         }
         composable("defineDuration") {
             DefineDurationScreen(navController = navController, openDrawer = openDrawer)
+        }
+
+        composable("viewUnassigned") {
+            ViewUnassignedScreen(navController = navController, openDrawer = openDrawer)
         }
 
 

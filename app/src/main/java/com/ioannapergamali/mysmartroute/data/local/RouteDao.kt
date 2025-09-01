@@ -22,6 +22,12 @@ interface RouteDao {
     @Query("SELECT * FROM routes WHERE id = :id LIMIT 1")
     suspend fun findById(id: String): RouteEntity?
 
+    @Query("SELECT * FROM routes WHERE walkDurationMinutes = 0")
+    fun getRoutesWithoutWalkDuration(): kotlinx.coroutines.flow.Flow<List<RouteEntity>>
+
+    @Query("UPDATE routes SET walkDurationMinutes = :minutes WHERE id = :id")
+    suspend fun updateWalkDuration(id: String, minutes: Int)
+
     @Query("UPDATE routes SET startPoiId = CASE WHEN startPoiId = :oldId THEN :newId ELSE startPoiId END, endPoiId = CASE WHEN endPoiId = :oldId THEN :newId ELSE endPoiId END")
     suspend fun updatePoiReferences(oldId: String, newId: String)
 }

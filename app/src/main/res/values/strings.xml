@@ -118,6 +118,7 @@
     <string name="define_poi">Define Point of Interest</string>
     <string name="define_duration">Define Duration of Travel by Foot</string>
     <string name="view_unassigned">View List of Unassigned Routes</string>
+    <string name="no_unassigned_routes">No routes without walking duration</string>
     <string name="review_poi">Review Point of Interest Names</string>
     <string name="rank_drivers">Show 10 Best and Worst Drivers</string>
     <string name="top_drivers">Top 10 drivers</string>

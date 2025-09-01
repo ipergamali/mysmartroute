@@ -149,6 +149,21 @@ class RouteViewModel : ViewModel() {
         points.forEach { pointDao.insert(it) }
     }
 
+    fun updateWalkDuration(context: Context, routeId: String, minutes: Int) {
+        viewModelScope.launch {
+            val db = MySmartRouteDatabase.getInstance(context)
+            val dao = db.routeDao()
+            dao.updateWalkDuration(routeId, minutes)
+            if (NetworkUtils.isInternetAvailable(context)) {
+                firestore.collection("routes").document(routeId)
+                    .update("walkDurationMinutes", minutes).await()
+            }
+            _routes.value = _routes.value.map {
+                if (it.id == routeId) it.copy(walkDurationMinutes = minutes) else it
+            }
+        }
+    }
+
     /**
      * Υπολογίζει τη διάρκεια διαδρομής με βάση τα αποθηκευμένα σημεία και το επιλεγμένο όχημα.
      * Χρησιμοποιεί το Google Maps Directions API για να επιστρέψει τη διάρκεια σε λεπτά.
