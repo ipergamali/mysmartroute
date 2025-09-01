@@ -100,19 +100,19 @@ class AuthenticationViewModel : ViewModel() {
 
             val userIdLocal = UUID.randomUUID().toString()
             val userEntity = UserEntity(
-                userIdLocal,
-                name,
-                surname,
-                username,
-                email,
-                phoneNum,
-                password,
-                role.name,
-                "",
-                address.city,
-                address.streetName,
-                address.streetNum,
-                address.postalCode
+                id = userIdLocal,
+                name = name,
+                surname = surname,
+                username = username,
+                email = email,
+                phoneNum = phoneNum,
+                password = password,
+                role = role.name,
+                roleId = "",
+                city = address.city,
+                streetName = address.streetName,
+                streetNum = address.streetNum,
+                postalCode = address.postalCode
             )
             val dbLocal = MySmartRouteDatabase.getInstance(context)
             val userDao = dbLocal.userDao()
