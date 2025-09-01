@@ -3,8 +3,8 @@
 plugins {
     id("com.android.application") version "8.12.2" apply false
 
-    // Χρήση της τελευταίας σταθερής έκδοσης 1.9.25 του Kotlin για συμβατότητα με το KAPT
-    id("org.jetbrains.kotlin.android") version "1.9.25" apply false
+    // Χρήση της τελευταίας σταθερής έκδοσης 2.0.21 του Kotlin
+    id("org.jetbrains.kotlin.android") version "2.0.21" apply false
 
     id("com.google.gms.google-services") version "4.4.3" apply false
 }
