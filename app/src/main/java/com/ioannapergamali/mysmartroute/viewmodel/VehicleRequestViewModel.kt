@@ -163,6 +163,7 @@ class VehicleRequestViewModel : ViewModel() {
         viewModelScope.launch {
             val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
             val id = UUID.randomUUID().toString()
+            val userRef = db.collection("users").document(userId)
             val entity = WalkingRouteEntity(
                 id = id,
                 userId = userId,
@@ -176,15 +177,14 @@ class VehicleRequestViewModel : ViewModel() {
                 "fromPoiId" to fromPoiId,
                 "toPoiId" to toPoiId,
                 "date" to dateTime,
-                "userId" to userId
+                "userId" to userRef
             )
             try {
                 val dbInstance = MySmartRouteDatabase.getInstance(context)
                 dbInstance.walkingDao().insert(entity)
 
                 db.collection("walking").document(id).set(data).await()
-                db.collection("users")
-                    .document(userId)
+                userRef
                     .collection("walking")
                     .document(id)
                     .set(data)
