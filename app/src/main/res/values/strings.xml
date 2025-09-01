@@ -34,6 +34,11 @@
     <string name="back_to_login">Back to login</string>
     <string name="password_reset_email_sent">Password reset email sent</string>
 
+    <string name="email_required">Email is required</string>
+    <string name="error_invalid_email">Invalid email address</string>
+    <string name="error_user_not_found">User not found</string>
+    <string name="error_operation_not_allowed">Operation not allowed</string>
+    <string name="error_send_reset">Failed to send password reset email</string>
 
     <string name="first_name">Name</string>
     <string name="last_name">Surname</string>
