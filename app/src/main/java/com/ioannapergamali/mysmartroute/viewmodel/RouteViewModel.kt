@@ -164,6 +164,16 @@ class RouteViewModel : ViewModel() {
         }
     }
 
+    suspend fun getRouteDistance(context: Context, routeId: String): Int {
+        val pois = getRoutePois(context, routeId)
+        if (pois.size < 2) return 0
+        val origin = LatLng(pois.first().lat, pois.first().lng)
+        val destination = LatLng(pois.last().lat, pois.last().lng)
+        val waypoints = pois.drop(1).dropLast(1).map { LatLng(it.lat, it.lng) }
+        val apiKey = MapsUtils.getApiKey(context)
+        return MapsUtils.fetchWalkingDistance(origin, destination, apiKey, waypoints)
+    }
+
     /**
      * Υπολογίζει τη διάρκεια διαδρομής με βάση τα αποθηκευμένα σημεία και το επιλεγμένο όχημα.
      * Χρησιμοποιεί το Google Maps Directions API για να επιστρέψει τη διάρκεια σε λεπτά.

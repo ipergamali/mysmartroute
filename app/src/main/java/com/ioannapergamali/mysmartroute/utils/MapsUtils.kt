@@ -98,6 +98,20 @@ object MapsUtils {
         return "https://maps.googleapis.com/maps/api/directions/json?origin=$originParam&destination=$destParam&mode=$modeParam$waypointParam&key=$apiKey"
     }
 
+    private fun buildWalkingDirectionsUrl(
+        origin: LatLng,
+        destination: LatLng,
+        apiKey: String,
+        waypoints: List<LatLng> = emptyList()
+    ): String {
+        val originParam = "${origin.latitude},${origin.longitude}"
+        val destParam = "${destination.latitude},${destination.longitude}"
+        val waypointParam = if (waypoints.isNotEmpty()) {
+            "&waypoints=" + waypoints.joinToString("|") { "${it.latitude},${it.longitude}" }
+        } else ""
+        return "https://maps.googleapis.com/maps/api/directions/json?origin=$originParam&destination=$destParam&mode=walking$waypointParam&key=$apiKey"
+    }
+
     private fun parseDuration(json: String): Int {
         val jsonObj = JSONObject(json)
         val routes = jsonObj.getJSONArray("routes")
@@ -112,6 +126,22 @@ object MapsUtils {
                 .getInt("value")
         }
         return (durationSec + 59) / 60
+    }
+
+    private fun parseDistance(json: String): Int {
+        val jsonObj = JSONObject(json)
+        val routes = jsonObj.getJSONArray("routes")
+        if (routes.length() == 0) return 0
+        val legs = routes.getJSONObject(0).getJSONArray("legs")
+        if (legs.length() == 0) return 0
+
+        var distanceMeters = 0
+        for (i in 0 until legs.length()) {
+            distanceMeters += legs.getJSONObject(i)
+                .getJSONObject("distance")
+                .getInt("value")
+        }
+        return distanceMeters
     }
 
     private fun parseDirections(json: String): DirectionsData {
@@ -153,6 +183,27 @@ object MapsUtils {
             }
         } catch (e: IOException) {
             Log.e(TAG, "Duration request failed", e)
+            return@withContext 0
+        }
+    }
+
+    suspend fun fetchWalkingDistance(
+        origin: LatLng,
+        destination: LatLng,
+        apiKey: String,
+        waypoints: List<LatLng> = emptyList()
+    ): Int = withContext(Dispatchers.IO) {
+        val request = Request.Builder().url(
+            buildWalkingDirectionsUrl(origin, destination, apiKey, waypoints)
+        ).build()
+        try {
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) return@withContext 0
+                val body = response.body?.string() ?: return@withContext 0
+                return@withContext parseDistance(body)
+            }
+        } catch (e: IOException) {
+            Log.e(TAG, "Distance request failed", e)
             return@withContext 0
         }
     }
