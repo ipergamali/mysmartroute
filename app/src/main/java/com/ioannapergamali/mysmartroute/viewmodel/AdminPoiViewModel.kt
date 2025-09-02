@@ -22,6 +22,13 @@ class AdminPoiViewModel(private val repo: AdminPoiRepository) : ViewModel() {
         initialValue = emptyList()
     )
 
+    /** Λίστα με τα ονόματα των σημείων για γρήγορη επισκόπηση. */
+    val poiNames: StateFlow<List<String>> = repo.getPoiNames().stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Eagerly,
+        initialValue = emptyList()
+    )
+
     fun updatePoi(poi: PoIEntity) {
         viewModelScope.launch { repo.updatePoi(poi) }
     }
