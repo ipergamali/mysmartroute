@@ -26,7 +26,7 @@ fun ViewUnassignedScreen(navController: NavController, openDrawer: () -> Unit) {
     val inputs = remember { mutableStateMapOf<String, String>() }
     val coroutineScope = rememberCoroutineScope()
 
-    LaunchedEffect(Unit) { routeViewModel.loadRoutesWithoutDuration(context) }
+    LaunchedEffect(Unit) { routeViewModel.loadRoutesWithoutDuration() }
 
     Scaffold(
         topBar = {
