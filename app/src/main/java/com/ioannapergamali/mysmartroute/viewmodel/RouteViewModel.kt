@@ -100,6 +100,7 @@ class RouteViewModel : ViewModel() {
         viewModelScope.launch {
             val db = MySmartRouteDatabase.getInstance(context)
             val routeDao = db.routeDao()
+
             val walkingIds = mutableSetOf<String>()
 
             if (NetworkUtils.isInternetAvailable(context)) {
@@ -112,6 +113,8 @@ class RouteViewModel : ViewModel() {
                 remoteWalks?.let { snap ->
                     walkingIds.addAll(snap.documents.mapNotNull { it.getString("routeId") })
                 }
+            } else {
+                walkingIds.addAll(walkingDao.getRouteIdsForUser(userId).first())
             }
 
             val local = routeDao.getRoutesWithoutWalkDuration().first()
