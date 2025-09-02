@@ -41,7 +41,7 @@ fun ViewUnassignedScreen(navController: NavController, openDrawer: () -> Unit) {
             )
         }
     ) { padding ->
-        ScreenContainer(modifier = Modifier.padding(padding)) {
+        ScreenContainer(modifier = Modifier.padding(padding), scrollable = false) {
             val unassigned = routes
             if (unassigned.isEmpty()) {
                 Text(stringResource(R.string.no_unassigned_routes))
