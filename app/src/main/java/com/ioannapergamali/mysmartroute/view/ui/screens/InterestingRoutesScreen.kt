@@ -12,9 +12,13 @@ import androidx.compose.foundation.lazy.items
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Save
+
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
+
+import androidx.compose.material3.FloatingActionButton
+
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -60,6 +64,29 @@ fun InterestingRoutesScreen(navController: NavController, openDrawer: () -> Unit
                 showMenu = true,
                 onMenuClick = openDrawer
             )
+
+        },
+        floatingActionButton = {
+            if (routes.isNotEmpty()) {
+                FloatingActionButton(
+                    onClick = {
+                        favViewModel.saveFavorites { success ->
+                            val msg = if (success) {
+                                R.string.favorite_routes_saved
+                            } else {
+                                R.string.favorite_routes_save_failed
+                            }
+                            Toast.makeText(context, context.getString(msg), Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                ) {
+                    Icon(
+                        Icons.Filled.Save,
+                        contentDescription = stringResource(R.string.save)
+                    )
+                }
+            }
+
         }
     ) { padding ->
         Column(
@@ -90,6 +117,7 @@ fun InterestingRoutesScreen(navController: NavController, openDrawer: () -> Unit
                         }
                     }
                 }
+
             }
 
             Button(
@@ -111,6 +139,7 @@ fun InterestingRoutesScreen(navController: NavController, openDrawer: () -> Unit
                 Icon(Icons.Filled.Save, contentDescription = stringResource(R.string.save))
                 Spacer(Modifier.width(8.dp))
                 Text(stringResource(R.string.save))
+
             }
         }
     }
