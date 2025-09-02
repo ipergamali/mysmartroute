@@ -40,7 +40,9 @@ fun DatabaseMenuScreen(navController: NavController, openDrawer: () -> Unit) {
             }
             Spacer(modifier = Modifier.padding(8.dp))
             Button(onClick = { navController.navigate("userPoints") }) {
+
                 Text(stringResource(R.string.user_points))
+
             }
         }
     }
