@@ -3,6 +3,8 @@ package com.ioannapergamali.mysmartroute.view.ui.screens
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
@@ -24,6 +26,7 @@ import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.repository.Point
 import com.ioannapergamali.mysmartroute.viewmodel.UserPointViewModel
+import androidx.compose.ui.unit.dp
 
 /**
  * Απλή οθόνη που εμφανίζει τα ονόματα όλων των σημείων που έχουν
@@ -56,11 +59,11 @@ fun UserPointsScreen(
             }
         }
     ) { padding ->
-        ScreenContainer(modifier = Modifier.padding(padding)) {
+        ScreenContainer(modifier = Modifier.padding(padding), scrollable = false) {
             if (pointsState.value.isEmpty()) {
                 Text("Δεν υπάρχουν σημεία")
             } else {
-                LazyColumn {
+                LazyColumn(modifier = Modifier.fillMaxWidth()) {
                     items(pointsState.value) { point ->
                         Row {
                             Column {
@@ -142,7 +145,7 @@ fun UserPointsScreen(
             onDismissRequest = { mergingPoint = null },
             title = { Text("Συγχώνευση με...") },
             text = {
-                LazyColumn {
+                LazyColumn(modifier = Modifier.heightIn(max = 300.dp)) {
                     items(pointsState.value.filter { it.id != point.id }) { other ->
                         TextButton(onClick = {
                             viewModel.mergePoints(point.id, other.id)
