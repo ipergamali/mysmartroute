@@ -12,9 +12,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.R
+import com.ioannapergamali.mysmartroute.utils.WalkingUtils
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun ViewUnassignedScreen(navController: NavController, openDrawer: () -> Unit) {
@@ -22,6 +24,7 @@ fun ViewUnassignedScreen(navController: NavController, openDrawer: () -> Unit) {
     val routeViewModel: RouteViewModel = viewModel()
     val routes by routeViewModel.routes.collectAsState()
     val inputs = remember { mutableStateMapOf<String, String>() }
+    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) { routeViewModel.loadRoutes(context, includeAll = true) }
 
@@ -55,6 +58,17 @@ fun ViewUnassignedScreen(navController: NavController, openDrawer: () -> Unit) {
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             modifier = Modifier.width(100.dp)
                         )
+                        Button(onClick = {
+                            coroutineScope.launch {
+                                val distance = routeViewModel.getRouteDistance(context, route.id)
+                                val mins =
+                                    WalkingUtils.walkingDuration(distance.toDouble()).inWholeMinutes
+                                        .toInt()
+                                inputs[route.id] = mins.toString()
+                            }
+                        }) {
+                            Text(stringResource(R.string.calculate))
+                        }
                         Button(onClick = {
                             inputs[route.id]?.toIntOrNull()?.let { mins ->
                                 routeViewModel.updateWalkDuration(context, route.id, mins)
