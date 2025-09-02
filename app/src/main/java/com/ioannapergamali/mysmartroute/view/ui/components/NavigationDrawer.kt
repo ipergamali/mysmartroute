@@ -117,17 +117,6 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
             },
             icon = { Icon(Icons.Filled.Storage, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
         )
-        if (role.value == "ADMIN") {
-            NavigationDrawerItem(
-                label = { Text(stringResource(R.string.user_points)) },
-                selected = false,
-                onClick = {
-                    navController.navigate("userPoints")
-                    closeDrawer()
-                },
-                icon = { Icon(Icons.Filled.Place, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
-            )
-        }
         NavigationDrawerItem(
             label = { Text(stringResource(R.string.admin_option)) },
             selected = false,
