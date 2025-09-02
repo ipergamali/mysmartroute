@@ -37,8 +37,10 @@ fun DefineDurationScreen(navController: NavController, openDrawer: () -> Unit) {
     val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
-        routeViewModel.loadAllWalksForAdmin()
-        routeViewModel.loadRoutesWithoutDuration(context)
+
+        routeViewModel.loadRoutesWithoutDuration()
+
+
     }
 
     Scaffold(

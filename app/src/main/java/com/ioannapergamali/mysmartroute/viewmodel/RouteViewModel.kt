@@ -114,49 +114,27 @@ class RouteViewModel : ViewModel() {
         }
     }
 
-    fun loadRoutesWithoutDuration(context: Context) {
+    fun loadRoutesWithoutDuration() {
         viewModelScope.launch {
-            val db = MySmartRouteDatabase.getInstance(context)
-            val routeDao = db.routeDao()
-            val walkingDao = db.walkingDao()
-            val userId = FirebaseAuth.getInstance().currentUser?.uid
+            val snapshot = runCatching {
+                firestore.collectionGroup("walks").get().await()
+            }.getOrNull()
 
-            val walkingIds = mutableSetOf<String>()
+            val routeIds = snapshot?.documents
+                ?.mapNotNull { it.getString("routeId") }
+                ?: emptyList()
 
-            if (NetworkUtils.isInternetAvailable(context)) {
-                val remoteWalks = runCatching {
-                    firestore.collectionGroup("walks")
-                        .get()
-                        .await()
+            val fetched = mutableListOf<RouteEntity>()
+            for (id in routeIds) {
+                val doc = runCatching {
+                    firestore.collection("routes").document(id).get().await()
                 }.getOrNull()
-
-                remoteWalks?.let { snap ->
-                    walkingIds.addAll(snap.documents.mapNotNull { it.getString("routeId") })
+                val route = doc?.toRouteEntity()
+                if (route != null && route.walkDurationMinutes == 0) {
+                    fetched += route
                 }
-            } else if (userId != null) {
-                walkingIds.addAll(walkingDao.getRouteIdsForUser(userId).first())
             }
-
-            val local = routeDao.getRoutesWithoutWalkDuration().first()
-                .filter { walkingIds.isEmpty() || it.id in walkingIds }
-
-            if (NetworkUtils.isInternetAvailable(context)) {
-                val fetched = mutableListOf<RouteEntity>()
-                for (id in walkingIds) {
-                    val doc = runCatching {
-                        firestore.collection("routes").document(id).get().await()
-                    }.getOrNull()
-                    val route = doc?.toRouteEntity()
-                    if (route != null && route.walkDurationMinutes == 0) {
-                        fetched += route
-                        routeDao.insert(route)
-                    }
-
-                }
-                _routes.value = if (fetched.isNotEmpty()) fetched else local
-            } else {
-                _routes.value = local
-            }
+            _routes.value = fetched
         }
     }
 
