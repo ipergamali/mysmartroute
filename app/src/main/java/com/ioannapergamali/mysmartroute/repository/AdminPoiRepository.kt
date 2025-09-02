@@ -25,6 +25,11 @@ class AdminPoiRepository(private val db: MySmartRouteDatabase) {
         poiDao.insert(poi)
     }
 
+    /** Διαγραφή σημείου. */
+    suspend fun deletePoi(id: String) {
+        poiDao.deleteById(id)
+    }
+
     /**
      * Συγχώνευση δύο σημείων. Το removeId διαγράφεται και όλες οι
      * διαδρομές/σημεία που το αναφέρουν ενημερώνονται να δείχνουν στο keepId.
