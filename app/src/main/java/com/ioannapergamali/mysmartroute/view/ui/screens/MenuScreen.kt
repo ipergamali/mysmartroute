@@ -72,14 +72,14 @@ fun MenuScreen(navController: NavController, openDrawer: () -> Unit) {
             } else {
                 RoleMenu(role, menus) { route ->
                     val targetRoute = if (route == "definePoi") {
-                        "definePoi?lat=&lng=&source=&view=false"
+                        "definePoi?lat=&lng=&source=&view=false&routeId="
                     } else {
                         route
                     }
                     if (
                         targetRoute == "viewUsers" ||
                         (targetRoute.isNotEmpty() && navController.graph.any {
-                            it.route == "definePoi?lat={lat}&lng={lng}&source={source}&view={view}" ||
+                            it.route == "definePoi?lat={lat}&lng={lng}&source={source}&view={view}&routeId={routeId}" ||
                                 it.route == targetRoute
                         })
                     ) {
