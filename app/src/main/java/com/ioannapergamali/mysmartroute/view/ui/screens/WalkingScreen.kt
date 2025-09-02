@@ -396,27 +396,6 @@ fun WalkingScreen(navController: NavController, openDrawer: () -> Unit) {
             )
 
             Spacer(Modifier.height(16.dp))
-
-            Button(
-                onClick = {
-                    val rId = selectedRouteId ?: return@Button
-                    val start = startIndex?.let { routePois[it].id } ?: return@Button
-                    val end = endIndex?.let { routePois[it].id } ?: return@Button
-                    val timestamp = System.currentTimeMillis()
-                    vehicleRequestViewModel.saveWalkingRoute(
-                        context,
-                        rId,
-                        start,
-                        end,
-                        timestamp
-                    )
-                },
-                enabled = selectedRouteId != null && startIndex != null && endIndex != null
-            ) {
-                Text(stringResource(R.string.save))
-            }
-
-            Spacer(Modifier.height(16.dp))
         }
     }
 }

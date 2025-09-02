@@ -134,11 +134,13 @@ fun DocumentSnapshot.toUserEntity(): UserEntity? {
         is String -> rawId
         else -> getString("id")
     } ?: return null
+
     val name = nonBlank("name") ?: return null
     val surname = nonBlank("surname") ?: return null
     val username = nonBlank("username") ?: return null
     val email = nonBlank("email") ?: return null
     val phoneNum = nonBlank("phoneNum") ?: return null
+
     val photo = getString("photoUrl")
     Log.d("FirestoreMappers", "Φόρτωση χρήστη $id με photoUrl=$photo")
     return UserEntity(
