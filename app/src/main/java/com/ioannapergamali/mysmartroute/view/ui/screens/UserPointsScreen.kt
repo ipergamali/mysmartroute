@@ -21,11 +21,12 @@ import androidx.navigation.NavController
 import androidx.compose.ui.Modifier
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import java.util.UUID
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.repository.Point
 import com.ioannapergamali.mysmartroute.viewmodel.UserPointViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 
 /**
@@ -39,6 +40,10 @@ fun UserPointsScreen(
     openDrawer: () -> Unit,
     viewModel: UserPointViewModel = viewModel()
 ) {
+    val poiViewModel: PoIViewModel = viewModel()
+    val context = LocalContext.current
+    val pois by poiViewModel.pois.collectAsState()
+    LaunchedEffect(Unit) { poiViewModel.loadPois(context) }
     val pointsState = viewModel.points.collectAsState()
     var editingPoint by remember { mutableStateOf<Point?>(null) }
     var mergingPoint by remember { mutableStateOf<Point?>(null) }
@@ -114,26 +119,26 @@ fun UserPointsScreen(
     }
 
     if (addingPoint) {
-        var name by remember { mutableStateOf("") }
-        var details by remember { mutableStateOf("") }
-
         AlertDialog(
             onDismissRequest = { addingPoint = false },
-            title = { Text("Νέο σημείο") },
+            title = { Text("Επιλογή POI") },
             text = {
-                Column {
-                    OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Όνομα") })
-                    OutlinedTextField(value = details, onValueChange = { details = it }, label = { Text("Στοιχεία") })
+                if (pois.isEmpty()) {
+                    Text("Δεν υπάρχουν διαθέσιμα POI")
+                } else {
+                    LazyColumn(modifier = Modifier.heightIn(max = 300.dp)) {
+                        items(pois) { poi ->
+                            TextButton(onClick = {
+                                viewModel.addPoint(Point(poi.id, poi.name, ""))
+                                addingPoint = false
+                            }) {
+                                Text(poi.name)
+                            }
+                        }
+                    }
                 }
             },
-            confirmButton = {
-                TextButton(onClick = {
-                    if (name.isNotBlank()) {
-                        viewModel.addPoint(Point(UUID.randomUUID().toString(), name, details))
-                    }
-                    addingPoint = false
-                }) { Text("Προσθήκη") }
-            },
+            confirmButton = {},
             dismissButton = {
                 TextButton(onClick = { addingPoint = false }) { Text("Άκυρο") }
             }
