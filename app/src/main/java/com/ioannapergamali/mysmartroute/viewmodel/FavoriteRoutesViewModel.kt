@@ -8,20 +8,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-import java.util.UUID
 
 /**
  * ViewModel για αποθήκευση και ανάκτηση διαδρομών που ενδιαφέρουν τον επιβάτη.
- * Οι διαδρομές αποθηκεύονται στο υποσυλλογή favorites -> routes του χρήστη.
+ * Οι διαδρομές αποθηκεύονται στο πεδίο "favorites.routes" του εγγράφου χρήστη.
  */
 class FavoriteRoutesViewModel : ViewModel() {
     private val firestore = FirebaseFirestore.getInstance()
 
-    private fun userRoutes(uid: String) = firestore.collection("users")
-        .document(uid)
-        .collection("favorites")
-        .document("routes")
-        .collection("items")
+    private fun userDoc(uid: String) = firestore.collection("users").document(uid)
 
     private fun userId() = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
@@ -33,10 +28,9 @@ class FavoriteRoutesViewModel : ViewModel() {
         val uid = userId()
         if (uid.isBlank()) return
         viewModelScope.launch {
-            val snap = runCatching { userRoutes(uid).get().await() }.getOrNull()
-            _favorites.value = snap?.documents
-                ?.mapNotNull { it.getString("routeId") }
-                ?.toSet() ?: emptySet()
+            val snap = runCatching { userDoc(uid).get().await() }.getOrNull()
+            val list = snap?.get("favorites.routes") as? List<*>
+            _favorites.value = list?.filterIsInstance<String>()?.toSet() ?: emptySet()
         }
     }
 
@@ -55,19 +49,10 @@ class FavoriteRoutesViewModel : ViewModel() {
             return
         }
         viewModelScope.launch {
-            val routesRef = userRoutes(uid)
             val result = runCatching {
-                val snap = routesRef.get().await()
-                snap.documents.forEach { it.reference.delete().await() }
-                _favorites.value.forEach { routeId ->
-                    val id = UUID.randomUUID().toString()
-                    val data = mapOf("id" to id, "routeId" to routeId)
-                    routesRef.document(id).set(data).await()
-                }
+                userDoc(uid).update("favorites.routes", _favorites.value.toList()).await()
             }.isSuccess
             onComplete(result)
-
-
         }
     }
 }
