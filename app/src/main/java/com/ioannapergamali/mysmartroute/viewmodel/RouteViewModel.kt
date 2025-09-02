@@ -162,13 +162,16 @@ class RouteViewModel : ViewModel() {
                     val userRef = firestore.collection("users").document(uid)
                     val walkEntry = mapOf(
                         "durationMinutes" to minutes,
-                        "userId" to userRef,
+                        "userId" to uid,
                         "routeId" to routeId
                     )
 
-                    userRef.collection("walking")
-                        .add(walkEntry)
-                        .await()
+                    val snapshot = userRef.get().await()
+                    if (snapshot.exists()) {
+                        userRef.collection("walking")
+                            .add(walkEntry)
+                            .await()
+                    }
 
                     firestore.collection("walking")
                         .add(walkEntry)

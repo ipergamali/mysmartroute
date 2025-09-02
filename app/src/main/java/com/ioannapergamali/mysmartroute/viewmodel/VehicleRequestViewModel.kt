@@ -163,7 +163,6 @@ class VehicleRequestViewModel : ViewModel() {
         viewModelScope.launch {
             val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
             val id = UUID.randomUUID().toString()
-            val userRef = db.collection("users").document(userId)
             val entity = WalkingRouteEntity(
                 id = id,
                 userId = userId,
@@ -177,18 +176,22 @@ class VehicleRequestViewModel : ViewModel() {
                 "fromPoiId" to fromPoiId,
                 "toPoiId" to toPoiId,
                 "date" to dateTime,
-                "userId" to userRef
+                "userId" to userId
             )
             try {
                 val dbInstance = MySmartRouteDatabase.getInstance(context)
                 dbInstance.walkingDao().insert(entity)
 
                 db.collection("walking").document(id).set(data).await()
-                userRef
-                    .collection("walking")
-                    .document(id)
-                    .set(data)
-                    .await()
+                val userRef = db.collection("users").document(userId)
+                val snapshot = userRef.get().await()
+                if (snapshot.exists()) {
+                    userRef
+                        .collection("walking")
+                        .document(id)
+                        .set(data)
+                        .await()
+                }
                 Toast.makeText(context, R.string.route_saved, Toast.LENGTH_SHORT).show()
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to save walking route", e)
