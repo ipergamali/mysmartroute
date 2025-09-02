@@ -31,8 +31,6 @@ import androidx.room.TypeConverters
 import com.ioannapergamali.mysmartroute.data.local.Converters
 import com.ioannapergamali.mysmartroute.data.local.TripRatingEntity
 import com.ioannapergamali.mysmartroute.data.local.TripRatingDao
-import com.ioannapergamali.mysmartroute.data.local.WalkingRouteEntity
-import com.ioannapergamali.mysmartroute.data.local.WalkingDao
 
 @Database(
     entities = [
@@ -54,10 +52,9 @@ import com.ioannapergamali.mysmartroute.data.local.WalkingDao
         FavoriteEntity::class,
         TransferRequestEntity::class,
         TripRatingEntity::class,
-        NotificationEntity::class,
-        WalkingRouteEntity::class
+        NotificationEntity::class
     ],
-    version = 56
+    version = 57
 )
 @TypeConverters(Converters::class)
 abstract class MySmartRouteDatabase : RoomDatabase() {
@@ -80,7 +77,6 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
     abstract fun transferRequestDao(): TransferRequestDao
     abstract fun tripRatingDao(): TripRatingDao
     abstract fun notificationDao(): NotificationDao
-    abstract fun walkingDao(): WalkingDao
 
     companion object {
         @Volatile
@@ -730,6 +726,12 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_56_57 = object : Migration(56, 57) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("DROP TABLE IF EXISTS `walking`")
+            }
+        }
+
         private fun prepopulate(db: SupportSQLiteDatabase) {
             Log.d(TAG, "Prepopulating database")
             db.execSQL(
@@ -866,7 +868,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_52_53,
                     MIGRATION_53_54,
                     MIGRATION_54_55,
-                    MIGRATION_55_56
+                    MIGRATION_55_56,
+                    MIGRATION_56_57
                 )
                     .addCallback(object : RoomDatabase.Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {

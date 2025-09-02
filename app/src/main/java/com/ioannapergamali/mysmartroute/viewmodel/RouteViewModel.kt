@@ -100,13 +100,9 @@ class RouteViewModel : ViewModel() {
         viewModelScope.launch {
             val db = MySmartRouteDatabase.getInstance(context)
             val routeDao = db.routeDao()
-            val walkingDao = db.walkingDao()
 
             val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
             val walkingIds = mutableSetOf<String>()
-            walkingIds.addAll(walkingDao.getRouteIdsForUser(userId))
-
-         
 
             if (NetworkUtils.isInternetAvailable(context)) {
                 val remoteWalks = runCatching {
