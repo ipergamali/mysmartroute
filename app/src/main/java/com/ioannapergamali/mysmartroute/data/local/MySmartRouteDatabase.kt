@@ -262,6 +262,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                 insertOption("opt_passenger_13", passengerMenuId, "view_movings", "viewMovings")
                 insertOption("opt_passenger_14", passengerMenuId, "walking", "walking")
                 insertOption("opt_passenger_15", passengerMenuId, "walking_routes", "walkingRoutes")
+                insertOption("opt_passenger_16", passengerMenuId, "interesting_routes", "interestingRoutes")
 
                 val driverMenuId = "menu_driver_main"
                 insertMenu(driverMenuId, "role_driver", "driver_menu_title")
@@ -796,6 +797,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             insertOption("opt_passenger_13", passengerMenuId, "view_movings", "viewMovings")
             insertOption("opt_passenger_14", passengerMenuId, "walking", "walking")
             insertOption("opt_passenger_15", passengerMenuId, "walking_routes", "walkingRoutes")
+            insertOption("opt_passenger_16", passengerMenuId, "interesting_routes", "interestingRoutes")
 
             val driverMenuId = "menu_driver_main"
             insertMenu(driverMenuId, "role_driver", "driver_menu_title")

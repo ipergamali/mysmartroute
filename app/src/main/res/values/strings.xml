@@ -222,6 +222,8 @@
     <string name="passenger">Passenger</string>
     <string name="favorites_preferred">Preferred transport modes</string>
     <string name="favorites_non_preferred">Non-preferred transport modes</string>
+    <string name="interesting_routes">Interesting routes</string>
+    <string name="no_interesting_routes">No routes available</string>
     <string name="add_favorite">Add</string>
     <string name="delete_favorite">Delete</string>
     <string name="delete_selected">Delete selected</string>
