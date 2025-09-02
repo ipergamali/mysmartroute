@@ -13,5 +13,5 @@ data class Walk(
     val toPoiRef: DocumentReference? = null,
     val startTime: Timestamp? = null,
     val endTime: Timestamp? = null,
-    val durationMinutes: Long = 0L
+    val walkDurationMinutes: Long = 0L
 )
