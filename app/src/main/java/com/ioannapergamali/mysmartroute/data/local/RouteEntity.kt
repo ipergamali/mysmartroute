@@ -9,7 +9,5 @@ data class RouteEntity(
     val userId: String = "",
     val name: String = "",
     val startPoiId: String = "",
-    val endPoiId: String = "",
-    /** Διάρκεια διαδρομής πεζή σε λεπτά (0 αν δεν έχει οριστεί). */
-    val walkDurationMinutes: Int = 0
+    val endPoiId: String = ""
 )

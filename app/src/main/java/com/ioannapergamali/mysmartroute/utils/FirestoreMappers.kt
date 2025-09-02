@@ -189,7 +189,6 @@ fun RouteEntity.toFirestoreMap(points: List<RoutePointEntity> = emptyList()): Ma
     "name" to name,
     "start" to FirebaseFirestore.getInstance().collection("pois").document(startPoiId),
     "end" to FirebaseFirestore.getInstance().collection("pois").document(endPoiId),
-    "walkDurationMinutes" to walkDurationMinutes,
     "points" to points.sortedBy { it.position }.map {
         FirebaseFirestore.getInstance().collection("pois").document(it.poiId)
     }
@@ -209,8 +208,7 @@ fun DocumentSnapshot.toRouteEntity(): RouteEntity? {
         is String -> raw
         else -> getString("end")
     } ?: return null
-    val walkDur = (getLong("walkDurationMinutes") ?: 0L).toInt()
-    return RouteEntity(routeId, userId, routeName, start, end, walkDur)
+    return RouteEntity(routeId, userId, routeName, start, end)
 }
 
 fun DocumentSnapshot.toRouteWithPoints(): Pair<RouteEntity, List<RoutePointEntity>>? {

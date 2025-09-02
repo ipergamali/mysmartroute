@@ -30,6 +30,9 @@ fun DefineDurationScreen(navController: NavController, openDrawer: () -> Unit) {
     val context = LocalContext.current
     val routeViewModel: RouteViewModel = viewModel()
     val routes by routeViewModel.routes.collectAsState()
+
+    val pendingRoutes = routes
+
     var routeExpanded by remember { mutableStateOf(false) }
     var selectedRouteId by rememberSaveable { mutableStateOf<String?>(null) }
     var durationMinutes by remember { mutableStateOf<Int?>(null) }

@@ -115,15 +115,17 @@ class RouteViewModel : ViewModel() {
     fun loadRoutesWithoutDuration() {
         viewModelScope.launch {
             val snapshot = runCatching {
-                firestore.collection("routes")
-                    .whereEqualTo("walkDurationMinutes", 0)
-                    .get()
-                    .await()
+                firestore.collection("routes").get().await()
             }.getOrNull()
 
-            _routes.value = snapshot?.documents
-                ?.mapNotNull { it.toRouteEntity() }
-                ?: emptyList()
+            val result = snapshot?.documents?.mapNotNull { doc ->
+                val hasWalks = runCatching {
+                    doc.reference.collection("walks").limit(1).get().await().isEmpty.not()
+                }.getOrDefault(false)
+                if (!hasWalks) doc.toRouteEntity() else null
+            } ?: emptyList()
+
+            _routes.value = result
         }
     }
 
@@ -205,32 +207,23 @@ class RouteViewModel : ViewModel() {
     fun updateWalkDuration(context: Context, routeId: String, minutes: Int) {
         viewModelScope.launch {
             val db = MySmartRouteDatabase.getInstance(context)
-            val dao = db.routeDao()
-            dao.updateWalkDuration(routeId, minutes)
-            val route = dao.findById(routeId)
-            if (NetworkUtils.isInternetAvailable(context)) {
-                firestore.collection("routes").document(routeId)
-                    .update("walkDurationMinutes", minutes).await()
-
-                if (route != null) {
-                    FirebaseAuth.getInstance().currentUser?.uid?.let { uid ->
-                        val walkEntry = mapOf(
-                            "durationMinutes" to minutes,
-                            "routeId" to firestore.collection("routes").document(routeId),
-                            "fromPoiId" to firestore.collection("pois").document(route.startPoiId),
-                            "toPoiId" to firestore.collection("pois").document(route.endPoiId)
-                        )
-                        firestore.collection("users")
-                            .document(uid)
-                            .collection("walks")
-                            .add(walkEntry)
-                            .await()
-                    }
+            val route = db.routeDao().findById(routeId)
+            if (NetworkUtils.isInternetAvailable(context) && route != null) {
+                FirebaseAuth.getInstance().currentUser?.uid?.let { uid ->
+                    val walkEntry = mapOf(
+                        "durationMinutes" to minutes,
+                        "routeId" to firestore.collection("routes").document(routeId),
+                        "fromPoiId" to firestore.collection("pois").document(route.startPoiId),
+                        "toPoiId" to firestore.collection("pois").document(route.endPoiId),
+                        "userId" to firestore.collection("users").document(uid)
+                    )
+                    firestore.collection("routes").document(routeId)
+                        .collection("walks")
+                        .add(walkEntry)
+                        .await()
                 }
             }
-            _routes.value = _routes.value.map {
-                if (it.id == routeId) it.copy(walkDurationMinutes = minutes) else it
-            }
+            _routes.value = _routes.value.filterNot { it.id == routeId }
         }
     }
 
