@@ -25,3 +25,12 @@ fun MovingEntity.movingStatus(now: Long = System.currentTimeMillis()): MovingSta
     status != "accepted" && date > now -> MovingStatus.PENDING
     else -> MovingStatus.UNSUCCESSFUL
 }
+
+/**
+ * Ομαδοποιεί μια λίστα από [MovingEntity] ανά [MovingStatus].
+ */
+fun categorizeMovings(
+    movings: List<MovingEntity>,
+    now: Long = System.currentTimeMillis()
+): Map<MovingStatus, List<MovingEntity>> =
+    movings.groupBy { it.movingStatus(now) }
