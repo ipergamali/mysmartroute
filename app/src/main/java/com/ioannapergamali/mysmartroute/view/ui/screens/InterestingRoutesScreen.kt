@@ -5,7 +5,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+
 import androidx.compose.material3.Button
+
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
@@ -21,7 +23,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+
 import android.widget.Toast
+
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
@@ -55,7 +59,11 @@ fun InterestingRoutesScreen(navController: NavController, openDrawer: () -> Unit
             if (routes.isEmpty()) {
                 Text(stringResource(R.string.no_interesting_routes), modifier = Modifier.padding(16.dp))
             } else {
+
                 LazyColumn(modifier = Modifier.weight(1f)) {
+
+               
+
                     items(routes) { route ->
                         val checked = favorites.contains(route.id)
                         Row(
@@ -72,6 +80,7 @@ fun InterestingRoutesScreen(navController: NavController, openDrawer: () -> Unit
                         }
                     }
                 }
+
                 Button(
                     onClick = {
                         favViewModel.saveFavorites { success ->
@@ -89,6 +98,7 @@ fun InterestingRoutesScreen(navController: NavController, openDrawer: () -> Unit
                 ) {
                     Text(stringResource(R.string.save))
                 }
+
             }
         }
     }

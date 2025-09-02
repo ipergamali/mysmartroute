@@ -66,6 +66,8 @@ class FavoriteRoutesViewModel : ViewModel() {
                 }
             }.isSuccess
             onComplete(result)
+
+
         }
     }
 }
