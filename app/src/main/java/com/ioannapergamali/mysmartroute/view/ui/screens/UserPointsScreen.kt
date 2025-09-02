@@ -64,6 +64,9 @@ fun UserPointsScreen(
                             Button(onClick = { mergingPoint = point }) {
                                 Text("Συγχώνευση")
                             }
+                            Button(onClick = { viewModel.deletePoint(point.id) }) {
+                                Text("Διαγραφή")
+                            }
                         }
                     }
                 }
