@@ -49,8 +49,9 @@ class FavoriteRoutesViewModel : ViewModel() {
             return
         }
         viewModelScope.launch {
+            val routesList = _favorites.value.toList()
             val result = runCatching {
-                userDoc(uid).update("favorites.routes", _favorites.value.toList()).await()
+                userDoc(uid).update("favorites.routes", routesList).await()
             }.isSuccess
             onComplete(result)
         }
