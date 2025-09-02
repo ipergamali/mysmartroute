@@ -185,9 +185,10 @@ fun RouteEditorScreen(navController: NavController, openDrawer: () -> Unit) {
                     onClick = { refreshRoute() },
                     enabled = routePoiIds.size >= 2 && !isKeyMissing
                 ) {
-                    Icon(Icons.Default.Refresh, contentDescription = null)
-                    Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.refresh_route))
+                    Icon(
+                        Icons.Default.Refresh,
+                        contentDescription = stringResource(R.string.refresh_route)
+                    )
                 }
             }
             DropdownMenu(
