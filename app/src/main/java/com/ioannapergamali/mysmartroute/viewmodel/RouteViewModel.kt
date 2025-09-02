@@ -101,26 +101,44 @@ class RouteViewModel : ViewModel() {
             val db = MySmartRouteDatabase.getInstance(context)
             val routeDao = db.routeDao()
             val walkingDao = db.walkingDao()
-            val walkingIds = walkingDao.getAllRouteIds()
+
+            val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+            val walkingIds = mutableSetOf<String>()
+            walkingIds.addAll(walkingDao.getRouteIdsForUser(userId))
+
+         
+
+            if (NetworkUtils.isInternetAvailable(context)) {
+                val remoteWalks = runCatching {
+                    firestore.collection("users")
+                        .document(userId)
+                        .collection("walks")
+                        .get()
+                        .await()
+                }.getOrNull()
+
+                remoteWalks?.let { snap ->
+                    walkingIds.addAll(snap.documents.mapNotNull { it.getString("routeId") })
+                }
+            }
+
             val local = routeDao.getRoutesWithoutWalkDuration().first()
                 .filter { it.id in walkingIds }
 
             if (NetworkUtils.isInternetAvailable(context)) {
-                val snapshot = runCatching {
-                    firestore.collection("routes")
-                        .whereEqualTo("walkDurationMinutes", 0)
-                        .get()
-                        .await()
-                }.getOrNull()
-                if (snapshot != null) {
-                    val list = snapshot.documents
-                        .mapNotNull { it.toRouteEntity() }
-                        .filter { it.id in walkingIds }
-                    _routes.value = list
-                    list.forEach { routeDao.insert(it) }
-                } else {
-                    _routes.value = local
+                val fetched = mutableListOf<RouteEntity>()
+                for (id in walkingIds) {
+                    val doc = runCatching {
+                        firestore.collection("routes").document(id).get().await()
+                    }.getOrNull()
+                    val route = doc?.toRouteEntity()
+                    if (route != null && route.walkDurationMinutes == 0) {
+                        fetched += route
+                        routeDao.insert(route)
+                    }
+
                 }
+                _routes.value = if (fetched.isNotEmpty()) fetched else local
             } else {
                 _routes.value = local
             }
