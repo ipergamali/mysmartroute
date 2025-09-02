@@ -221,9 +221,9 @@ class RouteViewModel : ViewModel() {
             if (NetworkUtils.isInternetAvailable(context) && route != null) {
                 FirebaseAuth.getInstance().currentUser?.uid?.let { uid ->
                     val walkEntry = mapOf(
-
-                        "durationMinutes" to minutes,
-
+                        // Αποθηκεύουμε τη διάρκεια με το ίδιο κλειδί που
+                        // χρησιμοποιεί το υπόλοιπο σύστημα (walkDurationMinutes)
+                        "walkDurationMinutes" to minutes,
                         "routeId" to firestore.collection("routes").document(routeId),
                         "fromPoiId" to firestore.collection("pois").document(route.startPoiId),
                         "toPoiId" to firestore.collection("pois").document(route.endPoiId),
