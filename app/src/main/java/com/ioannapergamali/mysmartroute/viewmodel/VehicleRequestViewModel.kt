@@ -12,7 +12,6 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.MovingEntity
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.RouteDao
-import com.ioannapergamali.mysmartroute.data.local.WalkingRouteEntity
 import kotlinx.coroutines.Dispatchers
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.utils.toMovingEntity
@@ -170,14 +169,6 @@ class VehicleRequestViewModel : ViewModel() {
         viewModelScope.launch {
             val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
             val id = UUID.randomUUID().toString()
-            val entity = WalkingRouteEntity(
-                id = id,
-                userId = userId,
-                routeId = routeId,
-                fromPoiId = fromPoiId,
-                toPoiId = toPoiId,
-                date = dateTime
-            )
             val data = mapOf(
                 "routeId" to routeId,
                 "fromPoiId" to fromPoiId,
@@ -186,8 +177,6 @@ class VehicleRequestViewModel : ViewModel() {
                 "userId" to userId
             )
             try {
-                val dbInstance = MySmartRouteDatabase.getInstance(context)
-                dbInstance.walkingDao().insert(entity)
                 val userRef = db.collection("users").document(userId)
                 userRef.collection("walks").document(id).set(data).await()
                 Toast.makeText(context, R.string.route_saved, Toast.LENGTH_SHORT).show()
