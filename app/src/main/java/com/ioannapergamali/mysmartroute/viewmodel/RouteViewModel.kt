@@ -101,9 +101,12 @@ class RouteViewModel : ViewModel() {
             val db = MySmartRouteDatabase.getInstance(context)
             val routeDao = db.routeDao()
             val walkingDao = db.walkingDao()
+
             val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
             val walkingIds = mutableSetOf<String>()
             walkingIds.addAll(walkingDao.getRouteIdsForUser(userId))
+
+         
 
             if (NetworkUtils.isInternetAvailable(context)) {
                 val remoteWalks = runCatching {
@@ -113,6 +116,7 @@ class RouteViewModel : ViewModel() {
                         .get()
                         .await()
                 }.getOrNull()
+
                 remoteWalks?.let { snap ->
                     walkingIds.addAll(snap.documents.mapNotNull { it.getString("routeId") })
                 }
@@ -132,6 +136,7 @@ class RouteViewModel : ViewModel() {
                         fetched += route
                         routeDao.insert(route)
                     }
+
                 }
                 _routes.value = if (fetched.isNotEmpty()) fetched else local
             } else {
