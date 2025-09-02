@@ -14,6 +14,7 @@ import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.RouteDao
 import com.ioannapergamali.mysmartroute.data.local.WalkingRouteEntity
 import kotlinx.coroutines.Dispatchers
+import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.utils.toMovingEntity
 import com.ioannapergamali.mysmartroute.utils.toTransportDeclarationEntity
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
