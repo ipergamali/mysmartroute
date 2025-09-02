@@ -116,6 +116,7 @@ class RouteViewModel : ViewModel() {
         viewModelScope.launch {
             val snapshot = runCatching {
                 firestore.collection("routes").get().await()
+
             }.getOrNull()
 
             val result = snapshot?.documents?.mapNotNull { doc ->
@@ -126,6 +127,40 @@ class RouteViewModel : ViewModel() {
             } ?: emptyList()
 
             _routes.value = result
+
+            }.getOrNull()
+
+            val result = snapshot?.documents?.mapNotNull { doc ->
+                val hasWalks = runCatching {
+                    doc.reference.collection("walks").limit(1).get().await().isEmpty.not()
+                }.getOrDefault(false)
+                if (!hasWalks) doc.toRouteEntity() else null
+            } ?: emptyList()
+
+            _routes.value = result
+        }
+    }
+
+    /**
+     * Φορτώνει τα routes που εμφανίζονται στις υποσυλλογές `walks`.
+     * Χρησιμοποιεί το reference του `routeId` για να ανακτήσει τα στοιχεία της διαδρομής.
+     */
+    fun loadRoutesFromWalks() {
+        viewModelScope.launch {
+            val snapshot = runCatching {
+                firestore.collectionGroup("walks").get().await()
+            }.getOrNull()
+
+            val routeEntities = snapshot?.documents
+                ?.mapNotNull { it.getDocumentReference("routeId") }
+                ?.distinct()
+                ?.mapNotNull { ref ->
+                    runCatching { ref.get().await().toRouteEntity() }.getOrNull()
+                }
+                ?: emptyList()
+
+            _routes.value = routeEntities
+
         }
     }
 
@@ -189,7 +224,9 @@ class RouteViewModel : ViewModel() {
             if (NetworkUtils.isInternetAvailable(context) && route != null) {
                 FirebaseAuth.getInstance().currentUser?.uid?.let { uid ->
                     val walkEntry = mapOf(
-                        "walkDurationMinutes" to minutes,
+
+                        "durationMinutes" to minutes,
+
                         "routeId" to firestore.collection("routes").document(routeId),
                         "fromPoiId" to firestore.collection("pois").document(route.startPoiId),
                         "toPoiId" to firestore.collection("pois").document(route.endPoiId),
