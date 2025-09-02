@@ -808,6 +808,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             insertOption("opt_admin_10", adminMenuId, "view_vehicles", "viewVehicles")
             insertOption("opt_admin_11", adminMenuId, "view_users", "viewUsers")
             insertOption("opt_admin_12", adminMenuId, "advance_date", "advanceDate")
+            // PoI list is now accessed from the admin menu instead of the drawer
             insertOption("opt_admin_13", adminMenuId, "view_pois", "viewPois")
             Log.d(TAG, "Prepopulate complete")
             db.execSQL("INSERT INTO app_language (id, language) VALUES (1, 'el')")
