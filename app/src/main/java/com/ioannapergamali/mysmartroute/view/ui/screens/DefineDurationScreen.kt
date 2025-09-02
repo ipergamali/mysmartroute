@@ -37,7 +37,10 @@ fun DefineDurationScreen(navController: NavController, openDrawer: () -> Unit) {
     val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
+
         routeViewModel.loadRoutesWithoutDuration()
+
+
     }
 
     Scaffold(
