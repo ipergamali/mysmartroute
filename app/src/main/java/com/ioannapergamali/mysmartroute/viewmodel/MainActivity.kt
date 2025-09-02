@@ -37,9 +37,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.launch
 import com.ioannapergamali.mysmartroute.model.interfaces.ThemeOption
 import android.view.WindowManager
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
 
 
 
@@ -69,12 +66,6 @@ class MainActivity : ComponentActivity() {
         // Συγχρονισμός ρυθμίσεων από τη βάση
         settingsViewModel.syncSettings(this)
         requestViewModel.loadRequests(this)
-        // Απλό παράδειγμα χρήσης Firebase Auth & Firestore
-        val auth = Firebase.auth
-        val db = Firebase.firestore
-        auth.signInAnonymously()
-            .addOnFailureListener { e -> Log.e("Auth", "Αποτυχία σύνδεσης", e) }
-        db.collection("debug").add(mapOf("ts" to System.currentTimeMillis()))
         // Έλεγχος φόρτωσης του Maps API key
         val apiKey = MapsUtils.getApiKey(this)
         Log.d("Maps", "API key loaded? ${apiKey.isNotEmpty()}")
