@@ -28,6 +28,8 @@ import com.ioannapergamali.mysmartroute.viewmodel.UserPointViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.ioannapergamali.mysmartroute.data.local.PoIEntity
+import com.ioannapergamali.mysmartroute.utils.duplicatePois
 
 /**
  * Απλή οθόνη που εμφανίζει τα ονόματα όλων των σημείων που έχουν
@@ -45,9 +47,11 @@ fun UserPointsScreen(
     val pois by poiViewModel.pois.collectAsState()
     LaunchedEffect(Unit) { poiViewModel.loadPois(context) }
     val pointsState = viewModel.points.collectAsState()
+    val duplicates = remember(pois) { duplicatePois(pois) }
     var editingPoint by remember { mutableStateOf<Point?>(null) }
     var mergingPoint by remember { mutableStateOf<Point?>(null) }
     var addingPoint by remember { mutableStateOf(false) }
+    var mergingPois by remember { mutableStateOf<List<PoIEntity>?>(null) }
 
     Scaffold(
         topBar = {
@@ -63,8 +67,21 @@ fun UserPointsScreen(
                 Icon(Icons.Filled.Add, contentDescription = "Προσθήκη")
             }
         }
-    ) { padding ->
-        ScreenContainer(modifier = Modifier.padding(padding), scrollable = false) {
+      ) { padding ->
+          ScreenContainer(modifier = Modifier.padding(padding), scrollable = false) {
+            if (duplicates.isNotEmpty()) {
+                Text("POI με ίδιες συντεταγμένες")
+                duplicates.forEach { group ->
+                    Row {
+                        Column {
+                            group.forEach { Text(it.name) }
+                        }
+                        Button(onClick = { mergingPois = group }) {
+                            Text("Συγχώνευση")
+                        }
+                    }
+                }
+            }
             if (pointsState.value.isEmpty()) {
                 Text("Δεν υπάρχουν σημεία")
             } else {
@@ -90,8 +107,8 @@ fun UserPointsScreen(
                     }
                 }
             }
-        }
-    }
+          }
+      }
 
     editingPoint?.let { point ->
         var name by remember { mutableStateOf(point.name) }
@@ -118,8 +135,8 @@ fun UserPointsScreen(
         )
     }
 
-    if (addingPoint) {
-        AlertDialog(
+      if (addingPoint) {
+          AlertDialog(
             onDismissRequest = { addingPoint = false },
             title = { Text("Επιλογή POI") },
             text = {
@@ -143,10 +160,10 @@ fun UserPointsScreen(
                 TextButton(onClick = { addingPoint = false }) { Text("Άκυρο") }
             }
         )
-    }
+      }
 
-    mergingPoint?.let { point ->
-        AlertDialog(
+      mergingPoint?.let { point ->
+          AlertDialog(
             onDismissRequest = { mergingPoint = null },
             title = { Text("Συγχώνευση με...") },
             text = {
@@ -165,6 +182,31 @@ fun UserPointsScreen(
             dismissButton = {
                 TextButton(onClick = { mergingPoint = null }) { Text("Άκυρο") }
             }
-        )
-    }
-}
+          )
+      }
+
+      mergingPois?.let { group ->
+          var name by remember { mutableStateOf(group.first().name) }
+          AlertDialog(
+              onDismissRequest = { mergingPois = null },
+              title = { Text("Συγχώνευση POI") },
+              text = {
+                  Column {
+                      OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Όνομα") })
+                      Text("Θα συγχωνευθούν: " + group.joinToString { it.name })
+                  }
+              },
+              confirmButton = {
+                  TextButton(onClick = {
+                      val keep = group.first()
+                      group.drop(1).forEach { poiViewModel.mergePois(context, keep.id, it.id) }
+                      poiViewModel.updatePoi(context, keep.copy(name = name))
+                      mergingPois = null
+                  }) { Text("Αποθήκευση") }
+              },
+              dismissButton = {
+                  TextButton(onClick = { mergingPois = null }) { Text("Άκυρο") }
+              }
+          )
+      }
+  }
