@@ -30,17 +30,13 @@ fun DefineDurationScreen(navController: NavController, openDrawer: () -> Unit) {
     val context = LocalContext.current
     val routeViewModel: RouteViewModel = viewModel()
     val routes by routeViewModel.routes.collectAsState()
-    val pendingRoutes = routes.filter { it.walkDurationMinutes == 0 }
     var routeExpanded by remember { mutableStateOf(false) }
     var selectedRouteId by rememberSaveable { mutableStateOf<String?>(null) }
     var durationMinutes by remember { mutableStateOf<Int?>(null) }
     val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
-
-        routeViewModel.loadRoutesWithoutDuration()
-
-
+        routeViewModel.loadRoutesFromWalks()
     }
 
     Scaffold(
@@ -54,14 +50,14 @@ fun DefineDurationScreen(navController: NavController, openDrawer: () -> Unit) {
         }
     ) { padding ->
         ScreenContainer(modifier = Modifier.padding(padding)) {
-            if (pendingRoutes.isEmpty()) {
+            if (routes.isEmpty()) {
                 Text(stringResource(R.string.no_walking_routes))
             } else {
                 ExposedDropdownMenuBox(
                     expanded = routeExpanded,
                     onExpandedChange = { routeExpanded = !routeExpanded }
                 ) {
-                    val selectedRoute = pendingRoutes.find { it.id == selectedRouteId }
+                    val selectedRoute = routes.find { it.id == selectedRouteId }
                     OutlinedTextField(
                         value = selectedRoute?.name ?: "",
                         onValueChange = {},
@@ -74,7 +70,7 @@ fun DefineDurationScreen(navController: NavController, openDrawer: () -> Unit) {
                         expanded = routeExpanded,
                         onDismissRequest = { routeExpanded = false }
                     ) {
-                        pendingRoutes.forEach { route ->
+                        routes.forEach { route ->
                             DropdownMenuItem(
                                 text = { Text(route.name) },
                                 onClick = {
