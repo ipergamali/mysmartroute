@@ -127,6 +127,28 @@ class RouteViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Φορτώνει τα routes που εμφανίζονται στις υποσυλλογές `walks`.
+     * Χρησιμοποιεί το reference του `routeId` για να ανακτήσει τα στοιχεία της διαδρομής.
+     */
+    fun loadRoutesFromWalks() {
+        viewModelScope.launch {
+            val snapshot = runCatching {
+                firestore.collectionGroup("walks").get().await()
+            }.getOrNull()
+
+            val routeEntities = snapshot?.documents
+                ?.mapNotNull { it.getDocumentReference("routeId") }
+                ?.distinct()
+                ?.mapNotNull { ref ->
+                    runCatching { ref.get().await().toRouteEntity() }.getOrNull()
+                }
+                ?: emptyList()
+
+            _routes.value = routeEntities
+        }
+    }
+
     suspend fun getPointsCount(context: Context, routeId: String): Int {
         val dao = MySmartRouteDatabase.getInstance(context).routePointDao()
         return dao.getPointsForRoute(routeId).first().size
