@@ -52,4 +52,16 @@ class PointRepositoryTest {
         assertEquals("Λεπτομέρειες Α\nΛεπτομέρειες Β", merged?.details)
         assertEquals(listOf("1", "1"), repo.getRoute("r")?.pointIds)
     }
+
+    @Test
+    fun deletePoint_removesPointAndUpdatesRoutes() {
+        val repo = PointRepository()
+        repo.addPoint(Point("1", "Α", ""))
+        repo.addRoute(Route("r", mutableListOf("1")))
+
+        repo.deletePoint("1")
+
+        assertNull(repo.getPoint("1"))
+        assertEquals(emptyList<String>(), repo.getRoute("r")?.pointIds)
+    }
 }

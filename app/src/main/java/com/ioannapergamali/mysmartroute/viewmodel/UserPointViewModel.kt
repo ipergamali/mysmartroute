@@ -46,6 +46,12 @@ class UserPointViewModel(
         refreshPoints()
     }
 
+    /** Διαγραφή σημείου */
+    fun deletePoint(id: String) {
+        repository.deletePoint(id)
+        refreshPoints()
+    }
+
     /** Προσθήκη διαδρομής για τις δοκιμές. */
     fun addRoute(route: Route) {
         repository.addRoute(route)
