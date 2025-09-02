@@ -23,8 +23,9 @@ class AdminWalkRepository {
             } else 0L
             Walk(
                 id = doc.id,
-                userId = doc.getString("userId") ?: "",
-                routeId = doc.getString("routeId") ?: "",
+                fromPoiRef = doc.getDocumentReference("fromPoiId"),
+                routeRef = doc.getDocumentReference("routeId"),
+                toPoiRef = doc.getDocumentReference("toPoiId"),
                 startTime = start,
                 endTime = end,
                 durationMinutes = duration
