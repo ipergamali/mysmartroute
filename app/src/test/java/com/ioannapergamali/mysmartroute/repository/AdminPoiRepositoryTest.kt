@@ -55,5 +55,20 @@ class AdminPoiRepositoryTest {
         val points = db.routePointDao().getPointsForRoute("r").first()
         assertTrue(points.all { it.poiId == "1" })
     }
+
+    @Test
+    fun getPoisWithSameCoordinatesDifferentName_returnsDuplicateGroups() = runBlocking {
+        val type = PoiTypeEntity(id = Place.Type.ESTABLISHMENT.name, name = "")
+        db.poiTypeDao().insertAll(listOf(type))
+        val poi1 = PoIEntity(id = "1", name = "A", type = Place.Type.ESTABLISHMENT, lat = 1.0, lng = 2.0)
+        val poi2 = PoIEntity(id = "2", name = "B", type = Place.Type.ESTABLISHMENT, lat = 1.0, lng = 2.0)
+        val poi3 = PoIEntity(id = "3", name = "C", type = Place.Type.ESTABLISHMENT, lat = 3.0, lng = 4.0)
+        db.poIDao().insertAll(listOf(poi1, poi2, poi3))
+
+        val duplicates = repo.getPoisWithSameCoordinatesDifferentName().first()
+
+        assertEquals(1, duplicates.size)
+        assertTrue(duplicates[0].map { it.id }.toSet() == setOf("1", "2"))
+    }
 }
 

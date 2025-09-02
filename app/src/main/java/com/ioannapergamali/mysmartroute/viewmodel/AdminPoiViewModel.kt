@@ -29,6 +29,14 @@ class AdminPoiViewModel(private val repo: AdminPoiRepository) : ViewModel() {
         initialValue = emptyList()
     )
 
+    /** Ομάδες πιθανών διπλών σημείων βάσει συντεταγμένων. */
+    val duplicatePois: StateFlow<List<List<PoIEntity>>> =
+        repo.getPoisWithSameCoordinatesDifferentName().stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = emptyList()
+        )
+
     fun updatePoi(poi: PoIEntity) {
         viewModelScope.launch { repo.updatePoi(poi) }
     }
