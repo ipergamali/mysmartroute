@@ -71,10 +71,10 @@ fun MenuScreen(navController: NavController, openDrawer: () -> Unit) {
                 CircularProgressIndicator()
             } else {
                 RoleMenu(role, menus) { route ->
-                    val targetRoute = if (route == "definePoi") {
-                        "definePoi?lat=&lng=&source=&view=false&routeId="
-                    } else {
-                        route
+                    val targetRoute = when (route) {
+                        "definePoi" -> "definePoi?lat=&lng=&source=&view=false&routeId="
+                        "createUser" -> "adminSignup"
+                        else -> route
                     }
                     if (
                         targetRoute == "viewUsers" ||
