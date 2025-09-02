@@ -116,6 +116,18 @@ class RouteViewModel : ViewModel() {
         viewModelScope.launch {
             val snapshot = runCatching {
                 firestore.collection("routes").get().await()
+
+            }.getOrNull()
+
+            val result = snapshot?.documents?.mapNotNull { doc ->
+                val hasWalks = runCatching {
+                    doc.reference.collection("walks").limit(1).get().await().isEmpty.not()
+                }.getOrDefault(false)
+                if (!hasWalks) doc.toRouteEntity() else null
+            } ?: emptyList()
+
+            _routes.value = result
+
             }.getOrNull()
 
             val result = snapshot?.documents?.mapNotNull { doc ->
@@ -148,6 +160,7 @@ class RouteViewModel : ViewModel() {
                 ?: emptyList()
 
             _routes.value = routeEntities
+
         }
     }
 
@@ -211,7 +224,9 @@ class RouteViewModel : ViewModel() {
             if (NetworkUtils.isInternetAvailable(context) && route != null) {
                 FirebaseAuth.getInstance().currentUser?.uid?.let { uid ->
                     val walkEntry = mapOf(
+
                         "durationMinutes" to minutes,
+
                         "routeId" to firestore.collection("routes").document(routeId),
                         "fromPoiId" to firestore.collection("pois").document(route.startPoiId),
                         "toPoiId" to firestore.collection("pois").document(route.endPoiId),

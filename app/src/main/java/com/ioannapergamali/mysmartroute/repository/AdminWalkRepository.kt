@@ -11,16 +11,14 @@ class AdminWalkRepository {
     private val db = FirebaseFirestore.getInstance()
 
     /**
-     * Ανακτά όλα τα walks και υπολογίζει τη διάρκεια τους βάσει startTime/endTime.
+     * Ανακτά όλα τα walks και διαβάζει το αποθηκευμένο `walkDurationMinutes`.
      */
     suspend fun fetchAllWalks(): List<Walk> {
         val snapshot = db.collectionGroup("walks").get().await()
         return snapshot.documents.map { doc ->
             val start = doc.getTimestamp("startTime")
             val end = doc.getTimestamp("endTime")
-            val duration = if (start != null && end != null) {
-                (end.seconds - start.seconds) / 60
-            } else 0L
+            val duration = doc.getLong("walkDurationMinutes") ?: 0L
             Walk(
                 id = doc.id,
                 fromPoiRef = doc.getDocumentReference("fromPoiId"),
@@ -28,7 +26,7 @@ class AdminWalkRepository {
                 toPoiRef = doc.getDocumentReference("toPoiId"),
                 startTime = start,
                 endTime = end,
-                durationMinutes = duration
+                walkDurationMinutes = duration
             )
         }
     }
