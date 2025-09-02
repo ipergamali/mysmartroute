@@ -48,6 +48,8 @@ fun AdminSignUpScreen(
     var streetNumInput by remember { mutableStateOf("") }
     var postalCodeInput by remember { mutableStateOf("") }
 
+    var selectedRole by remember { mutableStateOf(UserRole.PASSENGER) }
+
 
 
 
@@ -215,6 +217,26 @@ fun AdminSignUpScreen(
                     )
                 )
 
+                Spacer(Modifier.height(16.dp))
+                Text(stringResource(R.string.select_role), style = MaterialTheme.typography.titleMedium)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    RadioButton(
+                        selected = selectedRole == UserRole.PASSENGER,
+                        onClick = { selectedRole = UserRole.PASSENGER }
+                    )
+                    Text(stringResource(R.string.role_passenger), modifier = Modifier.padding(end = 16.dp))
+                    RadioButton(
+                        selected = selectedRole == UserRole.DRIVER,
+                        onClick = { selectedRole = UserRole.DRIVER }
+                    )
+                    Text(stringResource(R.string.role_driver), modifier = Modifier.padding(end = 16.dp))
+                    RadioButton(
+                        selected = selectedRole == UserRole.ADMIN,
+                        onClick = { selectedRole = UserRole.ADMIN }
+                    )
+                    Text(stringResource(R.string.role_admin))
+                }
+
                 if (uiState is AuthenticationViewModel.SignUpState.Error) {
                     val message = (uiState as AuthenticationViewModel.SignUpState.Error).message
                     Spacer(modifier = Modifier.height(8.dp))
@@ -237,7 +259,7 @@ fun AdminSignUpScreen(
                                 streetNum,
                                 postalCode
                             ),
-                            UserRole.ADMIN
+                            selectedRole
                         )
                     }
                 }) {
