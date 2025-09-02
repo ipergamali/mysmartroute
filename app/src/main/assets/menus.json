@@ -142,6 +142,10 @@
             "route": "createUser"
           },
           {
+            "titleKey": "user_points",
+            "route": "userPoints"
+          },
+          {
             "titleKey": "edit_privileges",
             "route": "editPrivileges"
           },
