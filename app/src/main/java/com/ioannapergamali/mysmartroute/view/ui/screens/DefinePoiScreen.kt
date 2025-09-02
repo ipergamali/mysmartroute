@@ -27,6 +27,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.maps.android.compose.*
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
+import com.ioannapergamali.mysmartroute.utils.offsetPois
 import com.google.android.libraries.places.api.model.Place
 import com.ioannapergamali.mysmartroute.utils.PlacesHelper
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
@@ -171,9 +172,9 @@ fun DefinePoiScreen(
                     if (pathPoints.isNotEmpty()) {
                         Polyline(points = pathPoints, color = Color.Green)
                     }
-                    routePois.forEach { poi ->
+                    offsetPois(routePois).forEach { (poi, position) ->
                         Marker(
-                            state = MarkerState(position = LatLng(poi.lat, poi.lng)),
+                            state = MarkerState(position = position),
                             title = poi.name,
                             icon = BitmapDescriptorFactory.defaultMarker(MARKER_BLUE)
                         )

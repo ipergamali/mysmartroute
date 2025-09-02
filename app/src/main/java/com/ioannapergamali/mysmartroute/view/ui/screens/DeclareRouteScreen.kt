@@ -43,6 +43,7 @@ import com.google.maps.android.compose.Polyline
 import com.ioannapergamali.mysmartroute.utils.nullableLatLngSaver
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
+import com.ioannapergamali.mysmartroute.utils.offsetPois
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import androidx.navigation.NavController
@@ -256,9 +257,9 @@ fun DeclareRouteScreen(navController: NavController, openDrawer: () -> Unit) {
                         }
                     }
                 ) {
-                    routePois.forEachIndexed { index, poi ->
+                    offsetPois(routePois).forEachIndexed { index, (poi, position) ->
                         val hue = MARKER_BLUE
-                        val state = rememberMarkerState(position = LatLng(poi.lat, poi.lng))
+                        val state = rememberMarkerState(position = position)
                         Marker(
                             state = state,
                             title = poi.name,

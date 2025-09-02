@@ -47,6 +47,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.utils.WalkingUtils
+import com.ioannapergamali.mysmartroute.utils.offsetPois
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import java.util.Calendar
@@ -294,9 +295,9 @@ fun WalkingScreen(navController: NavController, openDrawer: () -> Unit) {
                     cameraPositionState = cameraPositionState
                 ) {
                     Polyline(points = pathPoints)
-                    routePois.forEach { poi ->
+                    offsetPois(routePois).forEach { (poi, position) ->
                         Marker(
-                            state = MarkerState(position = LatLng(poi.lat, poi.lng)),
+                            state = MarkerState(position = position),
                             title = poi.name
                         )
                     }

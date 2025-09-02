@@ -39,6 +39,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
+import com.ioannapergamali.mysmartroute.utils.offsetPois
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -271,9 +272,9 @@ fun RouteModeScreen(
                         cameraPositionState = cameraPositionState
                     ) {
                         Polyline(points = pathPoints)
-                        routePois.forEach { poi ->
+                        offsetPois(routePois).forEach { (poi, position) ->
                             Marker(
-                                state = MarkerState(position = LatLng(poi.lat, poi.lng)),
+                                state = MarkerState(position = position),
                                 title = poi.name
                             )
                         }

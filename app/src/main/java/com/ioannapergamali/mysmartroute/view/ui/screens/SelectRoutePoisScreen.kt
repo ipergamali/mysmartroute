@@ -28,6 +28,7 @@ import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.data.local.RouteEntity
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
+import com.ioannapergamali.mysmartroute.utils.offsetPois
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
@@ -129,9 +130,9 @@ fun SelectRoutePoisScreen(navController: NavController, openDrawer: () -> Unit) 
                     cameraPositionState = cameraPositionState
                 ) {
                     Polyline(points = pathPoints)
-                    pois.forEach { poi ->
+                    offsetPois(pois).forEach { (poi, position) ->
                         Marker(
-                            state = MarkerState(position = LatLng(poi.lat, poi.lng)),
+                            state = MarkerState(position = position),
                             title = poi.name
                         )
                     }

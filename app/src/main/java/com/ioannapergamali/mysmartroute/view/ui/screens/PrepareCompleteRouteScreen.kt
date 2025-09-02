@@ -34,6 +34,7 @@ import com.ioannapergamali.mysmartroute.data.local.RouteEntity
 import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationEntity
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
+import com.ioannapergamali.mysmartroute.utils.offsetPois
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.view.ui.util.iconForVehicle
@@ -381,8 +382,8 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                     cameraPositionState = cameraPositionState
                 ) {
                     Polyline(points = pathPoints)
-                    pois.forEach { poi ->
-                        Marker(state = MarkerState(position = LatLng(poi.lat, poi.lng)), title = poi.name)
+                    offsetPois(pois).forEach { (poi, position) ->
+                        Marker(state = MarkerState(position = position), title = poi.name)
                     }
                 }
                 Spacer(Modifier.height(16.dp))
