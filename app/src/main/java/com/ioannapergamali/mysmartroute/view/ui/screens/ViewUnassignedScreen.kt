@@ -26,9 +26,7 @@ fun ViewUnassignedScreen(navController: NavController, openDrawer: () -> Unit) {
     val inputs = remember { mutableStateMapOf<String, String>() }
     val coroutineScope = rememberCoroutineScope()
 
-    LaunchedEffect(Unit) { routeViewModel.loadRoutes(context, includeAll = true) }
-
-    val unassigned = routes.filter { it.walkDurationMinutes == 0 }
+    LaunchedEffect(Unit) { routeViewModel.loadRoutesWithoutDuration(context) }
 
     Scaffold(
         topBar = {
@@ -41,10 +39,10 @@ fun ViewUnassignedScreen(navController: NavController, openDrawer: () -> Unit) {
         }
     ) { padding ->
         ScreenContainer(modifier = Modifier.padding(padding)) {
-            if (unassigned.isEmpty()) {
+            if (routes.isEmpty()) {
                 Text(stringResource(R.string.no_unassigned_routes))
             } else {
-                unassigned.forEach { route ->
+                routes.forEach { route ->
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)

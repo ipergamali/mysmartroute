@@ -96,6 +96,32 @@ class RouteViewModel : ViewModel() {
         }
     }
 
+    fun loadRoutesWithoutDuration(context: Context) {
+        viewModelScope.launch {
+            val db = MySmartRouteDatabase.getInstance(context)
+            val routeDao = db.routeDao()
+            val local = routeDao.getRoutesWithoutWalkDuration().first()
+
+            if (NetworkUtils.isInternetAvailable(context)) {
+                val snapshot = runCatching {
+                    firestore.collection("routes")
+                        .whereEqualTo("walkDurationMinutes", 0)
+                        .get()
+                        .await()
+                }.getOrNull()
+                if (snapshot != null) {
+                    val list = snapshot.documents.mapNotNull { it.toRouteEntity() }
+                    _routes.value = list
+                    list.forEach { routeDao.insert(it) }
+                } else {
+                    _routes.value = local
+                }
+            } else {
+                _routes.value = local
+            }
+        }
+    }
+
     suspend fun getPointsCount(context: Context, routeId: String): Int {
         val dao = MySmartRouteDatabase.getInstance(context).routePointDao()
         return dao.getPointsForRoute(routeId).first().size
