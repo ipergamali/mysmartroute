@@ -133,7 +133,7 @@ class VehicleRequestViewModel : ViewModel() {
         viewModelScope.launch {
             val dbInstance = MySmartRouteDatabase.getInstance(context)
             val dao = dbInstance.movingDao()
-            val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+            val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
             val id = UUID.randomUUID().toString()
             val entity = MovingEntity(
                 id = id,
