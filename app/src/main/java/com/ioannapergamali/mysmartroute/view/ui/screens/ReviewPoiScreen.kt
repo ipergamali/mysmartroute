@@ -51,7 +51,7 @@ fun ReviewPoiScreen(navController: NavController, openDrawer: () -> Unit) {
     var editedName by remember { mutableStateOf("") }
     var mergeKeepId by remember { mutableStateOf<String?>(null) }
 
-    Scaffold(topBar = { TopBar(title = stringResource(R.string.view_pois), navController = navController, showMenu = true, onMenuClick = openDrawer) }) { padding ->
+    Scaffold(topBar = { TopBar(title = stringResource(R.string.review_poi), navController = navController, showMenu = true, onMenuClick = openDrawer) }) { padding ->
         ScreenContainer(modifier = Modifier.padding(padding), scrollable = false) {
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 items(pois) { poi ->
