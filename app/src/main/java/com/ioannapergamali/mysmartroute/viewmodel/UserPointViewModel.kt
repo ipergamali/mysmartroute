@@ -20,27 +20,7 @@ class UserPointViewModel(
     val points: StateFlow<List<Point>> = _points
 
     init {
-        preloadPoints()
         refreshPoints()
-    }
-
-    /** Προσθήκη αρχικών ενδεικτικών σημείων αν η λίστα είναι άδεια. */
-    private fun preloadPoints() {
-        if (repository.getAllPoints().isNotEmpty()) return
-        repository.addPoint(
-            Point(
-                id = "1",
-                name = "Πλατεία Συντάγματος",
-                details = "Κέντρο Αθήνας"
-            )
-        )
-        repository.addPoint(
-            Point(
-                id = "2",
-                name = "Ακρόπολη",
-                details = "Αρχαιολογικός χώρος"
-            )
-        )
     }
 
     /** Φόρτωση όλων των σημείων για προβολή στον χρήστη. */
