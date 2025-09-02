@@ -14,7 +14,6 @@ import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.RouteDao
 import com.ioannapergamali.mysmartroute.data.local.WalkingRouteEntity
 import kotlinx.coroutines.Dispatchers
-import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.utils.toMovingEntity
 import com.ioannapergamali.mysmartroute.utils.toTransportDeclarationEntity
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
@@ -145,7 +144,14 @@ class VehicleRequestViewModel : ViewModel() {
             )
             dao.insert(entity)
             try {
-                db.collection("movings").document(id).set(entity.toFirestoreMap()).await()
+                val data = mapOf(
+                    "id" to id,
+                    "userId" to userId,
+                    "date" to dateTime,
+                    "vehicleId" to WALKING_ID,
+                    "status" to "open"
+                )
+                db.collection("movings").document(id).set(data).await()
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to log walking", e)
             }
