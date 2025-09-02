@@ -14,6 +14,7 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.AnnounceTransportScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.DeclareRouteScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.DirectionsMapScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.PoIListScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.ReviewPoiScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.DefinePoiScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.DefineDurationScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.ViewUnassignedScreen
@@ -115,7 +116,7 @@ fun NavigationHost(
             PoIListScreen(navController = navController, openDrawer = openDrawer)
         }
         composable("reviewPoi") {
-            PoIListScreen(navController = navController, openDrawer = openDrawer)
+            ReviewPoiScreen(navController = navController, openDrawer = openDrawer)
         }
         composable("editRoute") {
             RouteEditorScreen(navController = navController, openDrawer = openDrawer)
