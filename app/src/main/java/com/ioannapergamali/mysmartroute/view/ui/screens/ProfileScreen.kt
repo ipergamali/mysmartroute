@@ -5,15 +5,14 @@ import android.graphics.Bitmap
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Photo
+import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
@@ -40,6 +39,10 @@ import java.io.ByteArrayOutputStream
 @Composable
 fun ProfileScreen(navController: NavController, openDrawer: () -> Unit) {
     val user = FirebaseAuth.getInstance().currentUser
+    val name = remember { mutableStateOf("") }
+    val surname = remember { mutableStateOf("") }
+    val phone = remember { mutableStateOf("") }
+    val address = remember { mutableStateOf("") }
     val username = remember { mutableStateOf("") }
     val photoUrl = remember { mutableStateOf<String?>(null) }
 
@@ -113,15 +116,17 @@ fun ProfileScreen(navController: NavController, openDrawer: () -> Unit) {
                 .document(uid)
                 .get()
                 .addOnSuccessListener { doc ->
+                    name.value = doc.getString("name") ?: ""
+                    surname.value = doc.getString("surname") ?: ""
+                    phone.value = doc.getString("phoneNum") ?: ""
+                    address.value = doc.getString("address") ?: ""
                     username.value = doc.getString("username") ?: ""
                     photoUrl.value = doc.getString("photoUrl")
-
 
                     Log.d(
                         "ProfileScreen",
                         "Φορτώθηκε χρήστης: ${'$'}{username.value}, photoUrl: ${'$'}{photoUrl.value}"
                     )
-
                 }
                 .addOnFailureListener { e ->
                     Log.e("ProfileScreen", "Αποτυχία φόρτωσης photoUrl", e)
@@ -144,25 +149,75 @@ fun ProfileScreen(navController: NavController, openDrawer: () -> Unit) {
                 modifier = Modifier.padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                photoUrl.value?.let {
-                    AsyncImage(
-                        model = it,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(96.dp)
-                            .clip(CircleShape)
-                    )
+                Box(
+                    modifier = Modifier
+                        .size(120.dp)
+                        .clip(CircleShape)
+                        .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (photoUrl.value != null) {
+                        AsyncImage(
+                            model = photoUrl.value,
+                            contentDescription = null,
+                            modifier = Modifier.size(120.dp)
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Filled.AccountCircle,
+                            contentDescription = null,
+                            modifier = Modifier.size(96.dp)
+                        )
+                    }
                 }
 
-                Button(onClick = { imagePicker.launch("image/*") }) {
-                    Text(text = stringResource(id = R.string.upload_photo))
-                }
-
-                Button(onClick = { permissionLauncher.launch(Manifest.permission.CAMERA) }) {
-                    Text(text = stringResource(id = R.string.take_photo))
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.padding(top = 8.dp)
+                ) {
+                    IconButton(onClick = { imagePicker.launch("image/*") }) {
+                        Icon(
+                            imageVector = Icons.Filled.Photo,
+                            contentDescription = stringResource(R.string.upload_photo)
+                        )
+                    }
+                    IconButton(onClick = { permissionLauncher.launch(Manifest.permission.CAMERA) }) {
+                        Icon(
+                            imageVector = Icons.Filled.PhotoCamera,
+                            contentDescription = stringResource(R.string.take_photo)
+                        )
+                    }
                 }
 
                 Text(text = "Email: ${user?.email ?: ""}")
+
+                OutlinedTextField(
+                    value = name.value,
+                    onValueChange = { name.value = it },
+                    label = { Text(stringResource(R.string.first_name)) },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                OutlinedTextField(
+                    value = surname.value,
+                    onValueChange = { surname.value = it },
+                    label = { Text(stringResource(R.string.last_name)) },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                OutlinedTextField(
+                    value = phone.value,
+                    onValueChange = { phone.value = it },
+                    label = { Text(stringResource(R.string.phone_number)) },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                OutlinedTextField(
+                    value = address.value,
+                    onValueChange = { address.value = it },
+                    label = { Text(stringResource(R.string.address)) },
+                    modifier = Modifier.fillMaxWidth()
+                )
 
                 OutlinedTextField(
                     value = username.value,
@@ -174,8 +229,14 @@ fun ProfileScreen(navController: NavController, openDrawer: () -> Unit) {
                 Button(onClick = {
                     val uid = user?.uid ?: return@Button
                     val docRef = FirebaseFirestore.getInstance().collection("users").document(uid)
-                    docRef.update("username", username.value)
-                        .addOnFailureListener { docRef.set(mapOf("username" to username.value)) }
+                    val updates = mapOf(
+                        "name" to name.value,
+                        "surname" to surname.value,
+                        "phoneNum" to phone.value,
+                        "address" to address.value,
+                        "username" to username.value
+                    )
+                    docRef.update(updates).addOnFailureListener { docRef.set(updates) }
                 }) {
                     Text(text = stringResource(id = R.string.save))
                 }
