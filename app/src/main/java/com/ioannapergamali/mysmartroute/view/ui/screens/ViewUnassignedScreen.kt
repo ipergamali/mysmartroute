@@ -39,10 +39,11 @@ fun ViewUnassignedScreen(navController: NavController, openDrawer: () -> Unit) {
         }
     ) { padding ->
         ScreenContainer(modifier = Modifier.padding(padding)) {
-            if (routes.isEmpty()) {
+            val unassigned = routes.filter { it.walkDurationMinutes == 0 }
+            if (unassigned.isEmpty()) {
                 Text(stringResource(R.string.no_unassigned_routes))
             } else {
-                routes.forEach { route ->
+                unassigned.forEach { route ->
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -70,6 +71,7 @@ fun ViewUnassignedScreen(navController: NavController, openDrawer: () -> Unit) {
                         Button(onClick = {
                             inputs[route.id]?.toIntOrNull()?.let { mins ->
                                 routeViewModel.updateWalkDuration(context, route.id, mins)
+                                inputs.remove(route.id)
                             }
                         }) {
                             Text(stringResource(R.string.save))

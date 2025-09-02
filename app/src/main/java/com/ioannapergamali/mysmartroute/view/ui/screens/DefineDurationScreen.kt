@@ -30,7 +30,7 @@ fun DefineDurationScreen(navController: NavController, openDrawer: () -> Unit) {
     val context = LocalContext.current
     val routeViewModel: RouteViewModel = viewModel()
     val routes by routeViewModel.routes.collectAsState()
-    val pendingRoutes = routes
+    val pendingRoutes = routes.filter { it.walkDurationMinutes == 0 }
     var routeExpanded by remember { mutableStateOf(false) }
     var selectedRouteId by rememberSaveable { mutableStateOf<String?>(null) }
     var durationMinutes by remember { mutableStateOf<Int?>(null) }
@@ -110,6 +110,8 @@ fun DefineDurationScreen(navController: NavController, openDrawer: () -> Unit) {
                     Button(onClick = {
                         val rId = selectedRouteId ?: return@Button
                         routeViewModel.updateWalkDuration(context, rId, mins)
+                        selectedRouteId = null
+                        durationMinutes = null
                     }) {
                         Text(stringResource(R.string.save))
                     }
