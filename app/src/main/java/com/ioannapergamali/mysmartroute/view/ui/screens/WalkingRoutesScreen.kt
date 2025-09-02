@@ -39,7 +39,7 @@ fun WalkingRoutesScreen(navController: NavController, openDrawer: () -> Unit) {
             onMenuClick = openDrawer
         )
     }) { padding ->
-        ScreenContainer(modifier = Modifier.padding(padding)) {
+        ScreenContainer(modifier = Modifier.padding(padding), scrollable = false) {
             if (routes.isEmpty()) {
                 Text(stringResource(R.string.no_walking_routes), modifier = Modifier.padding(16.dp))
             } else {
