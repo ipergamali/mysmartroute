@@ -20,6 +20,21 @@ class AdminPoiRepository(private val db: MySmartRouteDatabase) {
     /** Επιστροφή όλων των σημείων. */
     fun getAllPois(): Flow<List<PoIEntity>> = poiDao.getAll()
 
+    /**
+     * Επιστρέφει ομάδες σημείων που μοιράζονται ίδιες συντεταγμένες
+     * αλλά έχουν διαφορετικό όνομα. Χρήσιμο για εντοπισμό διπλών
+     * καταχωρίσεων ώστε να συγχωνευθούν.
+     */
+    fun getPoisWithSameCoordinatesDifferentName(): Flow<List<List<PoIEntity>>> =
+        poiDao.getAll().map { pois ->
+            pois.groupBy { it.lat to it.lng }
+                .values
+                .filter { group ->
+                    group.size > 1 && group.map { it.name }.toSet().size > 1
+                }
+                .map { it }
+        }
+
     /** Ενημέρωση στοιχείων σημείου. */
     suspend fun updatePoi(poi: PoIEntity) {
         poiDao.insert(poi)
