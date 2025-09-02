@@ -114,6 +114,9 @@ fun NavigationHost(
         composable("viewPois") {
             PoIListScreen(navController = navController, openDrawer = openDrawer)
         }
+        composable("reviewPoi") {
+            PoIListScreen(navController = navController, openDrawer = openDrawer)
+        }
         composable("editRoute") {
             RouteEditorScreen(navController = navController, openDrawer = openDrawer)
         }
