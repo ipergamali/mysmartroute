@@ -157,6 +157,23 @@ class RouteViewModel : ViewModel() {
             if (NetworkUtils.isInternetAvailable(context)) {
                 firestore.collection("routes").document(routeId)
                     .update("walkDurationMinutes", minutes).await()
+
+                FirebaseAuth.getInstance().currentUser?.uid?.let { uid ->
+                    val userRef = firestore.collection("users").document(uid)
+                    val data = mapOf(
+                        "userId" to userRef,
+                        "routeId" to routeId,
+                        "durationMinutes" to minutes
+                    )
+                    firestore.collection("walking").document(routeId)
+                        .set(data)
+                        .await()
+                    userRef
+                        .collection("walking")
+                        .document(routeId)
+                        .set(data)
+                        .await()
+                }
             }
             _routes.value = _routes.value.map {
                 if (it.id == routeId) it.copy(walkDurationMinutes = minutes) else it
