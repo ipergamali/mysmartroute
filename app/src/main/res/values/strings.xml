@@ -169,6 +169,8 @@
     <string name="not_implemented">Functionality not available</string>
     <string name="route_editor">Route Editor</string>
     <string name="add_stop">Add stop</string>
+    <string name="refresh_route">Refresh route</string>
+    <string name="remove_last_stop">Remove last stop</string>
     <string name="add_point">Add point</string>
     <string name="remove_point">Remove point</string>
     <string name="reset_field">Clear field</string>

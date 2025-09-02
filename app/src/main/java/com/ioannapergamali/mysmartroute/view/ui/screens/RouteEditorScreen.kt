@@ -3,6 +3,8 @@ package com.ioannapergamali.mysmartroute.view.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import android.widget.Toast
@@ -12,23 +14,60 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.compose.ui.platform.LocalContext
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.Polyline
+import com.google.maps.android.compose.rememberCameraPositionState
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
-import com.ioannapergamali.mysmartroute.data.local.PoIEntity
+import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
+import com.ioannapergamali.mysmartroute.utils.MapsUtils
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RouteEditorScreen(navController: NavController, openDrawer: () -> Unit) {
-    val viewModel: PoIViewModel = viewModel()
-    val availablePois by viewModel.pois.collectAsState()
+    val poiViewModel: PoIViewModel = viewModel()
+    val availablePois by poiViewModel.pois.collectAsState()
     val context = LocalContext.current
+    LaunchedEffect(Unit) { poiViewModel.loadPois(context) }
 
-    LaunchedEffect(Unit) { viewModel.loadPois(context) }
-
-    val routePois = remember { mutableStateListOf<PoIEntity>() }
+    val routePoiIds = remember { mutableStateListOf<String>() }
     var menuExpanded by remember { mutableStateOf(false) }
+    var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
+    val cameraPositionState = rememberCameraPositionState()
+    val scope = rememberCoroutineScope()
+    val apiKey = MapsUtils.getApiKey(context)
+    val isKeyMissing = apiKey.isBlank()
+
+    fun refreshRoute() {
+        val pois = routePoiIds.mapNotNull { id -> availablePois.find { it.id == id } }
+        if (pois.size >= 2 && !isKeyMissing) {
+            scope.launch {
+                val origin = LatLng(pois.first().lat, pois.first().lng)
+                val destination = LatLng(pois.last().lat, pois.last().lng)
+                val waypoints = pois.drop(1).dropLast(1).map { LatLng(it.lat, it.lng) }
+                val data = MapsUtils.fetchDurationAndPath(
+                    origin,
+                    destination,
+                    apiKey,
+                    VehicleType.CAR,
+                    waypoints
+                )
+                pathPoints = data.points
+                data.points.firstOrNull()?.let {
+                    cameraPositionState.move(CameraUpdateFactory.newLatLngZoom(it, 13f))
+                }
+            }
+        } else {
+            pathPoints = emptyList()
+        }
+    }
 
     Scaffold(topBar = {
         TopBar(
@@ -39,40 +78,89 @@ fun RouteEditorScreen(navController: NavController, openDrawer: () -> Unit) {
         )
     }) { padding ->
         ScreenContainer(modifier = Modifier.padding(padding)) {
-            routePois.forEachIndexed { index, poi ->
-                Text(text = "${index + 1}. ${poi.name}")
+            Box(modifier = Modifier.weight(1f)) {
+                if (isKeyMissing) {
+                    Text(stringResource(R.string.map_api_key_missing))
+                } else {
+                    GoogleMap(
+                        modifier = Modifier.fillMaxSize(),
+                        cameraPositionState = cameraPositionState
+                    ) {
+                        if (pathPoints.isNotEmpty()) {
+                            Polyline(points = pathPoints)
+                        }
+                        routePoiIds.mapNotNull { id -> availablePois.find { it.id == id } }
+                            .forEach { poi ->
+                                Marker(
+                                    state = MarkerState(LatLng(poi.lat, poi.lng)),
+                                    title = poi.name
+                                )
+                            }
+                    }
+                }
             }
             Spacer(Modifier.height(16.dp))
-            Box {
+            routePoiIds.forEachIndexed { index, id ->
+                availablePois.find { it.id == id }?.let { poi ->
+                    Text(text = "${index + 1}. ${poi.name}")
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+            Row {
                 Button(onClick = { menuExpanded = true }) {
                     Icon(Icons.Default.Add, contentDescription = null)
                     Spacer(Modifier.width(8.dp))
                     Text(stringResource(R.string.add_stop))
                 }
-                DropdownMenu(
-                    expanded = menuExpanded,
-                    onDismissRequest = { menuExpanded = false },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(max = 300.dp)
+                Spacer(Modifier.width(8.dp))
+                IconButton(
+                    onClick = {
+                        if (routePoiIds.isNotEmpty()) {
+                            routePoiIds.removeLast()
+                            refreshRoute()
+                        }
+                    },
+                    enabled = routePoiIds.isNotEmpty()
                 ) {
-                    availablePois.forEach { poi ->
-                        DropdownMenuItem(
-                            text = { Text(poi.name) },
-                            onClick = {
-                                if (routePois.lastOrNull()?.id != poi.id) {
-                                    routePois.add(poi)
-                                } else {
-                                    Toast.makeText(
-                                        context,
-                                        context.getString(R.string.poi_already_last),
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
-                                menuExpanded = false
+                    Icon(
+                        Icons.Default.Delete,
+                        contentDescription = stringResource(R.string.remove_last_stop)
+                    )
+                }
+                Spacer(Modifier.width(8.dp))
+                Button(
+                    onClick = { refreshRoute() },
+                    enabled = routePoiIds.size >= 2 && !isKeyMissing
+                ) {
+                    Icon(Icons.Default.Refresh, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(R.string.refresh_route))
+                }
+            }
+            DropdownMenu(
+                expanded = menuExpanded,
+                onDismissRequest = { menuExpanded = false },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 300.dp)
+            ) {
+                availablePois.forEach { poi ->
+                    DropdownMenuItem(
+                        text = { Text(poi.name) },
+                        onClick = {
+                            if (routePoiIds.lastOrNull() != poi.id) {
+                                routePoiIds.add(poi.id)
+                                refreshRoute()
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    context.getString(R.string.poi_already_last),
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
-                        )
-                    }
+                            menuExpanded = false
+                        }
+                    )
                 }
             }
         }
