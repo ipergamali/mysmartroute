@@ -5,10 +5,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.toObject
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.RouteEntity
 import com.ioannapergamali.mysmartroute.data.local.RoutePointEntity
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
+import com.ioannapergamali.mysmartroute.model.Walk
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.utils.toRouteEntity
 import com.ioannapergamali.mysmartroute.utils.toRouteWithPoints
@@ -31,6 +33,10 @@ class RouteViewModel : ViewModel() {
 
     private val _routes = MutableStateFlow<List<RouteEntity>>(emptyList())
     val routes: StateFlow<List<RouteEntity>> = _routes
+
+    // Όλες οι πεζές μετακινήσεις για τον διαχειριστή
+    private val _walks = MutableStateFlow<List<Walk>>(emptyList())
+    val walks: StateFlow<List<Walk>> = _walks
 
     // Διατηρούμε προσωρινά τα επιλεγμένα σημεία μιας διαδρομής
     private val _currentRoute = MutableStateFlow<List<PoIEntity>>(emptyList())
@@ -61,6 +67,18 @@ class RouteViewModel : ViewModel() {
 
     fun clearCurrentRoute() {
         _currentRoute.value = emptyList()
+    }
+
+    /**
+     * Φορτώνει όλες τις πεζές μετακινήσεις από όλα τα `walks` υποσυλλογές.
+     */
+    fun loadAllWalksForAdmin() {
+        viewModelScope.launch {
+            val snapshot = runCatching {
+                firestore.collectionGroup("walks").get().await()
+            }.getOrNull()
+            _walks.value = snapshot?.documents?.mapNotNull { it.toObject<Walk>() } ?: emptyList()
+        }
     }
 
     fun loadRoutes(context: Context, includeAll: Boolean = false) {

@@ -36,7 +36,10 @@ fun DefineDurationScreen(navController: NavController, openDrawer: () -> Unit) {
     var durationMinutes by remember { mutableStateOf<Int?>(null) }
     val coroutineScope = rememberCoroutineScope()
 
-    LaunchedEffect(Unit) { routeViewModel.loadRoutesWithoutDuration(context) }
+    LaunchedEffect(Unit) {
+        routeViewModel.loadAllWalksForAdmin()
+        routeViewModel.loadRoutesWithoutDuration(context)
+    }
 
     Scaffold(
         topBar = {
