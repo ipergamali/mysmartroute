@@ -100,6 +100,8 @@ class RouteViewModel : ViewModel() {
         viewModelScope.launch {
             val db = MySmartRouteDatabase.getInstance(context)
             val routeDao = db.routeDao()
+            val walkingDao = db.walkingDao()
+            val userId = FirebaseAuth.getInstance().currentUser?.uid
 
             val walkingIds = mutableSetOf<String>()
 
@@ -113,7 +115,7 @@ class RouteViewModel : ViewModel() {
                 remoteWalks?.let { snap ->
                     walkingIds.addAll(snap.documents.mapNotNull { it.getString("routeId") })
                 }
-            } else {
+            } else if (userId != null) {
                 walkingIds.addAll(walkingDao.getRouteIdsForUser(userId).first())
             }
 
