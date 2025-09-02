@@ -48,11 +48,16 @@ fun RouteEditorScreen(navController: NavController, openDrawer: () -> Unit) {
     var routeMenuExpanded by remember { mutableStateOf(false) }
     var menuExpanded by remember { mutableStateOf(false) }
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
+    var routeName by remember { mutableStateOf("") }
     val cameraPositionState = rememberCameraPositionState()
     val scope = rememberCoroutineScope()
     val apiKey = MapsUtils.getApiKey(context)
     val isKeyMissing = apiKey.isBlank()
     val selectedRoute = routes.find { it.id == selectedRouteId }
+
+    LaunchedEffect(selectedRouteId) {
+        routeName = routes.find { it.id == selectedRouteId }?.name ?: ""
+    }
 
     fun refreshRoute() {
         val pois = routePoiIds.mapNotNull { id -> availablePois.find { it.id == id } }
@@ -119,6 +124,7 @@ fun RouteEditorScreen(navController: NavController, openDrawer: () -> Unit) {
                             onClick = {
                                 selectedRouteId = route.id
                                 routeMenuExpanded = false
+                                routeName = route.name
                                 scope.launch {
                                     val pois = routeViewModel.getRoutePois(context, route.id)
                                     routePoiIds.clear()
@@ -190,6 +196,37 @@ fun RouteEditorScreen(navController: NavController, openDrawer: () -> Unit) {
                         contentDescription = stringResource(R.string.refresh_route)
                     )
                 }
+            }
+            Spacer(Modifier.height(16.dp))
+            OutlinedTextField(
+                value = routeName,
+                onValueChange = { routeName = it },
+                label = { Text(stringResource(R.string.route_name)) },
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.small,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                )
+            )
+            Spacer(Modifier.height(8.dp))
+            Button(
+                onClick = {
+                    scope.launch {
+                        selectedRouteId?.let { id ->
+                            routeViewModel.updateRoute(context, id, routePoiIds, routeName)
+                            routeViewModel.loadRoutes(context, includeAll = true)
+                            Toast.makeText(
+                                context,
+                                context.getString(R.string.route_saved),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                },
+                enabled = selectedRouteId != null && routePoiIds.size >= 2 && routeName.isNotBlank()
+            ) {
+                Text(stringResource(R.string.save_route))
             }
             DropdownMenu(
                 expanded = menuExpanded,

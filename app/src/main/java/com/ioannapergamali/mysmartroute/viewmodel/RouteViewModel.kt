@@ -186,14 +186,23 @@ class RouteViewModel : ViewModel() {
         return id
     }
 
-    suspend fun updateRoute(context: Context, routeId: String, poiIds: List<String>) {
+    suspend fun updateRoute(
+        context: Context,
+        routeId: String,
+        poiIds: List<String>,
+        newName: String? = null
+    ) {
         if (routeId.isBlank() || poiIds.size < 2) return
         val db = MySmartRouteDatabase.getInstance(context)
         val routeDao = db.routeDao()
         val pointDao = db.routePointDao()
 
         val existing = routeDao.findById(routeId) ?: return
-        val updated = existing.copy(startPoiId = poiIds.first(), endPoiId = poiIds.last())
+        val updated = existing.copy(
+            name = newName.takeUnless { it.isNullOrBlank() } ?: existing.name,
+            startPoiId = poiIds.first(),
+            endPoiId = poiIds.last()
+        )
         val points = poiIds.mapIndexed { index, p -> RoutePointEntity(routeId, index, p) }
 
         if (NetworkUtils.isInternetAvailable(context)) {
