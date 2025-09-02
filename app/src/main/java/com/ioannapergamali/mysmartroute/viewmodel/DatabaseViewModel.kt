@@ -445,10 +445,11 @@ class DatabaseViewModel : ViewModel() {
                         "Local data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} poiTypes:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size} routes:${routes.size} points:${routePoints.size} movings:${movings.size} declarations:${declarations.size} availabilities:${availabilities.size} favorites:${favorites.size}"
                     )
 
-                    users.forEach {
+                    // Αποφεύγουμε την δημιουργία κενών εγγράφων στο Firestore
+                    users.filter { it.id.isNotBlank() && it.name.isNotBlank() }.forEach { user ->
                         firestore.collection("users")
-                            .document(it.id)
-                            .set(it.toFirestoreMap()).await()
+                            .document(user.id)
+                            .set(user.toFirestoreMap()).await()
                     }
                     vehicles.forEach {
                         firestore.collection("vehicles")
