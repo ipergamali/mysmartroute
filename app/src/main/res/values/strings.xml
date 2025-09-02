@@ -67,6 +67,7 @@
     <string name="admin_option">Admin Option</string>
     <string name="profile">Profile</string>
     <string name="upload_photo">Ανέβασμα φωτογραφίας</string>
+    <string name="take_photo">Λήψη από κάμερα</string>
     <string name="guest">Guest</string>
     <string name="exit">Exit</string>
     <string name="credits">Credits</string>

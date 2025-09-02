@@ -68,6 +68,8 @@
     <string name="user_points">Σημεία χρηστών</string>
     <string name="admin_option">Επιλογή Διαχειριστή</string>
     <string name="profile">Προφίλ</string>
+    <string name="upload_photo">Ανέβασμα φωτογραφίας</string>
+    <string name="take_photo">Λήψη από κάμερα</string>
     <string name="guest">Επισκέπτης</string>
     <string name="exit">Έξοδος</string>
     <string name="credits">Ευχαριστίες</string>
