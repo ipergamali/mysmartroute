@@ -51,6 +51,15 @@ class PointRepository {
         }
     }
 
+    /** Διαγραφή σημείου και ενημέρωση διαδρομών */
+    fun deletePoint(pointId: String) {
+        if (points.remove(pointId) != null) {
+            routes.values.forEach { route ->
+                route.pointIds.removeIf { it == pointId }
+            }
+        }
+    }
+
     /** Προσθήκη νέου σημείου */
     fun addPoint(point: Point) {
         points[point.id] = point
