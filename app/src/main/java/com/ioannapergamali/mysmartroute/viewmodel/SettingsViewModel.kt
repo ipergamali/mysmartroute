@@ -10,7 +10,6 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.SettingsEntity
-import com.ioannapergamali.mysmartroute.data.local.UserEntity
 import com.ioannapergamali.mysmartroute.data.local.insertSettingsSafely
 import com.ioannapergamali.mysmartroute.view.ui.AppTheme
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
@@ -174,7 +173,8 @@ class SettingsViewModel : ViewModel() {
             val dbLocal = MySmartRouteDatabase.getInstance(context)
             val userDao = dbLocal.userDao()
             if (userDao.getUser(userId) == null) {
-                userDao.insert(UserEntity(id = userId))
+                // Αν δεν υπάρχει ο χρήστης, δεν συγχρονίζουμε ρυθμίσεις
+                return@launch
             }
             val dao = dbLocal.settingsDao()
 
