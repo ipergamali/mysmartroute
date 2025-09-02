@@ -2,16 +2,20 @@ package com.ioannapergamali.mysmartroute.view.ui.screens
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.Button
-
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -48,27 +52,28 @@ fun InterestingRoutesScreen(navController: NavController, openDrawer: () -> Unit
         favViewModel.loadFavorites()
     }
 
-    Scaffold(topBar = {
-        TopBar(
-            title = stringResource(R.string.interesting_routes),
-            navController = navController,
-            showMenu = true,
-            onMenuClick = openDrawer
-        )
-    }) { padding ->
+    Scaffold(
+        topBar = {
+            TopBar(
+                title = stringResource(R.string.interesting_routes),
+                navController = navController,
+                showMenu = true,
+                onMenuClick = openDrawer
+            )
+        }
+    ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
         ) {
             if (routes.isEmpty()) {
-                Text(stringResource(R.string.no_interesting_routes), modifier = Modifier.padding(16.dp))
+                Text(
+                    stringResource(R.string.no_interesting_routes),
+                    modifier = Modifier.weight(1f).padding(16.dp)
+                )
             } else {
-
                 LazyColumn(modifier = Modifier.weight(1f)) {
-
-               
-
                     items(routes) { route ->
                         val checked = favorites.contains(route.id)
                         Row(
@@ -85,25 +90,27 @@ fun InterestingRoutesScreen(navController: NavController, openDrawer: () -> Unit
                         }
                     }
                 }
+            }
 
-                Button(
-                    onClick = {
-                        favViewModel.saveFavorites { success ->
-                            val msg = if (success) {
-                                R.string.favorite_routes_saved
-                            } else {
-                                R.string.favorite_routes_save_failed
-                            }
-                            Toast.makeText(context, context.getString(msg), Toast.LENGTH_SHORT).show()
+            Button(
+                onClick = {
+                    favViewModel.saveFavorites { success ->
+                        val msg = if (success) {
+                            R.string.favorite_routes_saved
+                        } else {
+                            R.string.favorite_routes_save_failed
                         }
-                    },
-                    modifier = Modifier
-                        .align(Alignment.End)
-                        .padding(16.dp)
-                ) {
-                    Text(stringResource(R.string.save))
-                }
-
+                        Toast.makeText(context, context.getString(msg), Toast.LENGTH_SHORT).show()
+                    }
+                },
+                enabled = routes.isNotEmpty(),
+                modifier = Modifier
+                    .align(Alignment.End)
+                    .padding(16.dp)
+            ) {
+                Icon(Icons.Filled.Save, contentDescription = stringResource(R.string.save))
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.save))
             }
         }
     }
