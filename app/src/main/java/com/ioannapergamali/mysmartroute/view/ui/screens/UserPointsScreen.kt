@@ -7,6 +7,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -15,6 +17,9 @@ import androidx.compose.runtime.*
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.compose.ui.Modifier
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import java.util.UUID
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.repository.Point
@@ -34,6 +39,7 @@ fun UserPointsScreen(
     val pointsState = viewModel.points.collectAsState()
     var editingPoint by remember { mutableStateOf<Point?>(null) }
     var mergingPoint by remember { mutableStateOf<Point?>(null) }
+    var addingPoint by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -43,6 +49,11 @@ fun UserPointsScreen(
                 showMenu = true,
                 onMenuClick = openDrawer
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = { addingPoint = true }) {
+                Icon(Icons.Filled.Add, contentDescription = "Προσθήκη")
+            }
         }
     ) { padding ->
         ScreenContainer(modifier = Modifier.padding(padding)) {
@@ -95,6 +106,33 @@ fun UserPointsScreen(
             },
             dismissButton = {
                 TextButton(onClick = { editingPoint = null }) { Text("Άκυρο") }
+            }
+        )
+    }
+
+    if (addingPoint) {
+        var name by remember { mutableStateOf("") }
+        var details by remember { mutableStateOf("") }
+
+        AlertDialog(
+            onDismissRequest = { addingPoint = false },
+            title = { Text("Νέο σημείο") },
+            text = {
+                Column {
+                    OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Όνομα") })
+                    OutlinedTextField(value = details, onValueChange = { details = it }, label = { Text("Στοιχεία") })
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    if (name.isNotBlank()) {
+                        viewModel.addPoint(Point(UUID.randomUUID().toString(), name, details))
+                    }
+                    addingPoint = false
+                }) { Text("Προσθήκη") }
+            },
+            dismissButton = {
+                TextButton(onClick = { addingPoint = false }) { Text("Άκυρο") }
             }
         )
     }
