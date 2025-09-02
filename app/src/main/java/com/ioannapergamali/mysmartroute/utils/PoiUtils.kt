@@ -2,6 +2,7 @@ package com.ioannapergamali.mysmartroute.utils
 
 import com.google.android.gms.maps.model.LatLng
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
+import kotlin.math.abs
 
 /**
  * Επιστρέφει λίστα από POI μαζί με μετατοπισμένες θέσεις ώστε
@@ -20,4 +21,19 @@ fun offsetPois(
         poi to position
     }
 }
+
+/**
+ * Βρίσκει όλα τα POI που έχουν ακριβώς τις ίδιες συντεταγμένες με το
+ * δοθέν σημείο [point]. Ένα μικρό [tolerance] χρησιμοποιείται για την
+ * σύγκριση των δεκαδικών.
+ */
+fun poisAtLocation(
+    pois: List<PoIEntity>,
+    point: LatLng,
+    tolerance: Double = 1e-5
+): List<PoIEntity> =
+    pois.filter {
+        abs(it.lat - point.latitude) < tolerance &&
+        abs(it.lng - point.longitude) < tolerance
+    }
 
