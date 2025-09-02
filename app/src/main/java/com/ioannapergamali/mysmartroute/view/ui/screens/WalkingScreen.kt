@@ -7,6 +7,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Save
@@ -46,6 +47,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.utils.WalkingUtils
+import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import java.util.Calendar
 
@@ -69,8 +71,11 @@ fun WalkingScreen(navController: NavController, openDrawer: () -> Unit) {
     val routePois = routePoiIds.mapNotNull { id -> allPois.find { it.id == id } }
     var startIndex by rememberSaveable { mutableStateOf<Int?>(null) }
     var endIndex by rememberSaveable { mutableStateOf<Int?>(null) }
+    var dateText by rememberSaveable { mutableStateOf("") }
     var timeText by rememberSaveable { mutableStateOf("") }
+    var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
+    val calendar = remember { Calendar.getInstance() }
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     var calculating by remember { mutableStateOf(false) }
     var pendingPoi by remember { mutableStateOf<Triple<String, Double, Double>?>(null) }
@@ -79,11 +84,27 @@ fun WalkingScreen(navController: NavController, openDrawer: () -> Unit) {
     val coroutineScope = rememberCoroutineScope()
     val apiKey = MapsUtils.getApiKey(context)
     val isKeyMissing = apiKey.isBlank()
+    if (showDatePicker) {
+        DatePickerDialog(
+            context,
+            { _, year, month, dayOfMonth ->
+                calendar.set(Calendar.YEAR, year)
+                calendar.set(Calendar.MONTH, month)
+                calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+                dateText = "%02d/%02d/%04d".format(dayOfMonth, month + 1, year)
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        ).show()
+        showDatePicker = false
+    }
     if (showTimePicker) {
-        val calendar = Calendar.getInstance()
         TimePickerDialog(
             context,
             { _, hour, minute ->
+                calendar.set(Calendar.HOUR_OF_DAY, hour)
+                calendar.set(Calendar.MINUTE, minute)
                 timeText = "%02d:%02d".format(hour, minute)
             },
             calendar.get(Calendar.HOUR_OF_DAY),
@@ -200,7 +221,7 @@ fun WalkingScreen(navController: NavController, openDrawer: () -> Unit) {
                         val rId = selectedRouteId ?: return@ExtendedFloatingActionButton
                         val start = startIndex?.let { routePois[it].id } ?: return@ExtendedFloatingActionButton
                         val end = endIndex?.let { routePois[it].id } ?: return@ExtendedFloatingActionButton
-                        val timestamp = System.currentTimeMillis()
+                        val timestamp = calendar.timeInMillis
                         coroutineScope.launch {
                             val distance = routeViewModel.getRouteDistance(context, rId)
                             val minutes = WalkingUtils.walkingDuration(distance.toDouble()).inWholeMinutes.toInt()
@@ -385,6 +406,23 @@ fun WalkingScreen(navController: NavController, openDrawer: () -> Unit) {
 
                 Spacer(Modifier.height(16.dp))
             }
+
+            OutlinedTextField(
+                value = dateText,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text(stringResource(R.string.date)) },
+                trailingIcon = {
+                    IconButton(onClick = { showDatePicker = true }) {
+                        Icon(Icons.Default.DateRange, contentDescription = stringResource(R.string.date))
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { showDatePicker = true }
+            )
+
+            Spacer(Modifier.height(8.dp))
 
             OutlinedTextField(
                 value = timeText,
