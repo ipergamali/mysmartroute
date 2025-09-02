@@ -188,8 +188,8 @@ class VehicleRequestViewModel : ViewModel() {
             try {
                 val dbInstance = MySmartRouteDatabase.getInstance(context)
                 dbInstance.walkingDao().insert(entity)
-
-                db.collection("walking").document(id).set(data).await()
+                val userRef = db.collection("users").document(userId)
+                userRef.collection("walks").document(id).set(data).await()
                 Toast.makeText(context, R.string.route_saved, Toast.LENGTH_SHORT).show()
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to save walking route", e)

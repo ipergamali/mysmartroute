@@ -190,8 +190,9 @@ class RouteViewModel : ViewModel() {
                         "userId" to uid,
                         "routeId" to routeId
                     )
-
-                    firestore.collection("walking")
+                    firestore.collection("users")
+                        .document(uid)
+                        .collection("walks")
                         .add(walkEntry)
                         .await()
                 }
