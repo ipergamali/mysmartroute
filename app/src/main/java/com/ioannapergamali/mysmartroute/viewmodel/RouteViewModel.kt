@@ -100,7 +100,10 @@ class RouteViewModel : ViewModel() {
         viewModelScope.launch {
             val db = MySmartRouteDatabase.getInstance(context)
             val routeDao = db.routeDao()
+            val walkingDao = db.walkingDao()
+            val walkingIds = walkingDao.getAllRouteIds()
             val local = routeDao.getRoutesWithoutWalkDuration().first()
+                .filter { it.id in walkingIds }
 
             if (NetworkUtils.isInternetAvailable(context)) {
                 val snapshot = runCatching {
@@ -110,7 +113,9 @@ class RouteViewModel : ViewModel() {
                         .await()
                 }.getOrNull()
                 if (snapshot != null) {
-                    val list = snapshot.documents.mapNotNull { it.toRouteEntity() }
+                    val list = snapshot.documents
+                        .mapNotNull { it.toRouteEntity() }
+                        .filter { it.id in walkingIds }
                     _routes.value = list
                     list.forEach { routeDao.insert(it) }
                 } else {
