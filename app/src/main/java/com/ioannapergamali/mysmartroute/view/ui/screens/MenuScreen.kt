@@ -74,6 +74,7 @@ fun MenuScreen(navController: NavController, openDrawer: () -> Unit) {
                     val targetRoute = when (route) {
                         "definePoi" -> "definePoi?lat=&lng=&source=&view=false&routeId="
                         "createUser" -> "adminSignup"
+                        "initSystem" -> "databaseMenu"
                         else -> route
                     }
                     if (
