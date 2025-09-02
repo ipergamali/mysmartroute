@@ -11,7 +11,9 @@ import kotlinx.coroutines.tasks.await
 
 /**
  * ViewModel για αποθήκευση και ανάκτηση διαδρομών που ενδιαφέρουν τον επιβάτη.
- * Οι διαδρομές αποθηκεύονται στο πεδίο "favorites.routes" του εγγράφου χρήστη.
+ * Οι διαδρομές αποθηκεύονται στη διαδρομή
+ * `users/{uid}/favorites/data/routes/{routeId}` ως αναφορές σε έγγραφα της
+ * συλλογής `routes`.
  */
 class FavoriteRoutesViewModel : ViewModel() {
     private val firestore = FirebaseFirestore.getInstance()
@@ -19,6 +21,9 @@ class FavoriteRoutesViewModel : ViewModel() {
     private fun userDoc(uid: String) = firestore.collection("users").document(uid)
 
     private fun userId() = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+
+    private fun routesCollection(uid: String) =
+        userDoc(uid).collection("favorites").document("data").collection("routes")
 
     private val _favorites = MutableStateFlow<Set<String>>(emptySet())
     val favorites: StateFlow<Set<String>> = _favorites
@@ -28,9 +33,8 @@ class FavoriteRoutesViewModel : ViewModel() {
         val uid = userId()
         if (uid.isBlank()) return
         viewModelScope.launch {
-            val snap = runCatching { userDoc(uid).get().await() }.getOrNull()
-            val list = snap?.get("favorites.routes") as? List<*>
-            _favorites.value = list?.filterIsInstance<String>()?.toSet() ?: emptySet()
+            val snap = runCatching { routesCollection(uid).get().await() }.getOrNull()
+            _favorites.value = snap?.documents?.map { it.id }?.toSet() ?: emptySet()
         }
     }
 
@@ -51,7 +55,15 @@ class FavoriteRoutesViewModel : ViewModel() {
         viewModelScope.launch {
             val routesList = _favorites.value.toList()
             val result = runCatching {
-                userDoc(uid).update("favorites.routes", routesList).await()
+                val col = routesCollection(uid)
+                val batch = firestore.batch()
+                val existing = col.get().await()
+                existing.documents.forEach { batch.delete(it.reference) }
+                routesList.forEach { routeId ->
+                    val ref = firestore.collection("routes").document(routeId)
+                    batch.set(col.document(routeId), mapOf("routeRef" to ref))
+                }
+                batch.commit().await()
             }.isSuccess
             onComplete(result)
         }
