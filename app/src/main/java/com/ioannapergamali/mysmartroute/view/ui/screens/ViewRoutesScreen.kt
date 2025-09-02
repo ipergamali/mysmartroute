@@ -11,6 +11,7 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
@@ -44,7 +45,10 @@ fun ViewRoutesScreen(navController: NavController, openDrawer: () -> Unit) {
     val apiKey = MapsUtils.getApiKey(context)
     val isKeyMissing = apiKey.isBlank()
 
-    LaunchedEffect(Unit) { routeViewModel.loadRoutes(context, includeAll = true) }
+    LaunchedEffect(Unit) {
+        MapsInitializer.initialize(context)
+        routeViewModel.loadRoutes(context, includeAll = true)
+    }
 
     Scaffold(
         topBar = {
