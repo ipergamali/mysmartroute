@@ -164,7 +164,8 @@ class VehicleRequestViewModel : ViewModel() {
         routeId: String,
         fromPoiId: String,
         toPoiId: String,
-        dateTime: Long
+        dateTime: Long,
+        walkDurationMinutes: Int
     ) {
         viewModelScope.launch {
             val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
@@ -176,7 +177,8 @@ class VehicleRequestViewModel : ViewModel() {
                 "routeId" to routeRef,
                 "fromPoiId" to fromPoiRef,
                 "toPoiId" to toPoiRef,
-                "date" to dateTime
+                "date" to dateTime,
+                "walkDurationMinutes" to walkDurationMinutes
             )
             try {
                 val userRef = db.collection("users").document(userId)

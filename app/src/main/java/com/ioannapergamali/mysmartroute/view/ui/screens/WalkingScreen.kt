@@ -45,6 +45,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
+import com.ioannapergamali.mysmartroute.utils.WalkingUtils
 import android.app.TimePickerDialog
 import java.util.Calendar
 
@@ -200,13 +201,18 @@ fun WalkingScreen(navController: NavController, openDrawer: () -> Unit) {
                         val start = startIndex?.let { routePois[it].id } ?: return@ExtendedFloatingActionButton
                         val end = endIndex?.let { routePois[it].id } ?: return@ExtendedFloatingActionButton
                         val timestamp = System.currentTimeMillis()
-                        vehicleRequestViewModel.saveWalkingRoute(
-                            context,
-                            rId,
-                            start,
-                            end,
-                            timestamp
-                        )
+                        coroutineScope.launch {
+                            val distance = routeViewModel.getRouteDistance(context, rId)
+                            val minutes = WalkingUtils.walkingDuration(distance.toDouble()).inWholeMinutes.toInt()
+                            vehicleRequestViewModel.saveWalkingRoute(
+                                context,
+                                rId,
+                                start,
+                                end,
+                                timestamp,
+                                minutes
+                            )
+                        }
                     },
                     icon = { Icon(Icons.Default.Save, contentDescription = null) },
                     text = { Text(stringResource(R.string.save)) }
