@@ -11,7 +11,6 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Login
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.LocationOn
 import com.google.firebase.auth.FirebaseAuth
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme
