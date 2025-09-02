@@ -161,25 +161,23 @@ class RouteViewModel : ViewModel() {
                 FirebaseAuth.getInstance().currentUser?.uid?.let { uid ->
 
                     val userRef = firestore.collection("users").document(uid)
-                    val data = mapOf(
+                    val walkData = mapOf(
                         "userId" to userRef,
                         "routeId" to routeId,
                         "durationMinutes" to minutes
                     )
                     firestore.collection("walking").document(routeId)
-                        .set(data)
+                        .set(walkData)
                         .await()
-                    userRef
 
-                    val data = mapOf(
+                    val userData = mapOf(
                         "routeId" to routeId,
                         "durationMinutes" to minutes
                     )
                     firestore.collection("users").document(uid)
-
                         .collection("walking")
                         .document(routeId)
-                        .set(data)
+                        .set(userData)
                         .await()
                 }
             }
