@@ -37,7 +37,7 @@ fun ViewUsersScreen(navController: NavController, openDrawer: () -> Unit) {
             )
         }
     ) { padding ->
-        ScreenContainer(modifier = Modifier.padding(padding)) {
+        ScreenContainer(modifier = Modifier.padding(padding), scrollable = false) {
             if (summaries.isEmpty()) {
                 Text(stringResource(R.string.no_users))
             } else {
