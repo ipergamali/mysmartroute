@@ -1,9 +1,12 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -43,41 +46,54 @@ fun ViewUnassignedScreen(navController: NavController, openDrawer: () -> Unit) {
             if (unassigned.isEmpty()) {
                 Text(stringResource(R.string.no_unassigned_routes))
             } else {
-                unassigned.forEach { route ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(route.name, modifier = Modifier.weight(1f))
-                        OutlinedTextField(
-                            value = inputs.getOrElse(route.id) { "" },
-                            onValueChange = { inputs[route.id] = it },
-                            label = { Text(stringResource(R.string.duration)) },
-                            singleLine = true,
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            modifier = Modifier.width(100.dp)
-                        )
-                        Button(onClick = {
-                            coroutineScope.launch {
-                                val distance = routeViewModel.getRouteDistance(context, route.id)
-                                val mins =
-                                    WalkingUtils.walkingDuration(distance.toDouble()).inWholeMinutes
-                                        .toInt()
-                                inputs[route.id] = mins.toString()
-                            }
-                        }) {
+                LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    item {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(stringResource(R.string.route), modifier = Modifier.weight(1f))
+                            Text(stringResource(R.string.duration), modifier = Modifier.width(100.dp))
                             Text(stringResource(R.string.calculate))
-                        }
-                        Button(onClick = {
-                            inputs[route.id]?.toIntOrNull()?.let { mins ->
-                                routeViewModel.updateWalkDuration(context, route.id, mins)
-                                inputs.remove(route.id)
-                            }
-                        }) {
                             Text(stringResource(R.string.save))
                         }
                     }
-                    Spacer(Modifier.height(8.dp))
+                    items(unassigned) { route ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(route.name, modifier = Modifier.weight(1f))
+                            OutlinedTextField(
+                                value = inputs.getOrElse(route.id) { "" },
+                                onValueChange = { inputs[route.id] = it },
+                                singleLine = true,
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                modifier = Modifier.width(100.dp),
+                                placeholder = { Text(stringResource(R.string.duration)) }
+                            )
+                            Button(onClick = {
+                                coroutineScope.launch {
+                                    val distance = routeViewModel.getRouteDistance(context, route.id)
+                                    val mins =
+                                        WalkingUtils.walkingDuration(distance.toDouble()).inWholeMinutes
+                                            .toInt()
+                                    inputs[route.id] = mins.toString()
+                                }
+                            }) {
+                                Text(stringResource(R.string.calculate))
+                            }
+                            Button(onClick = {
+                                inputs[route.id]?.toIntOrNull()?.let { mins ->
+                                    routeViewModel.updateWalkDuration(context, route.id, mins)
+                                    inputs.remove(route.id)
+                                }
+                            }) {
+                                Text(stringResource(R.string.save))
+                            }
+                        }
+                    }
                 }
             }
         }
