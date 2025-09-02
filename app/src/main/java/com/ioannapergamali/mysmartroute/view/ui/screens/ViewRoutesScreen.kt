@@ -1,13 +1,15 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.res.dimensionResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -26,8 +28,10 @@ import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.utils.offsetPois
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
+import com.ioannapergamali.mysmartroute.viewmodel.FavoriteRoutesViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import kotlinx.coroutines.launch
+import android.widget.Toast
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,6 +39,8 @@ fun ViewRoutesScreen(navController: NavController, openDrawer: () -> Unit) {
     val context = LocalContext.current
     val routeViewModel: RouteViewModel = viewModel()
     val routes by routeViewModel.routes.collectAsState()
+    val favViewModel: FavoriteRoutesViewModel = viewModel()
+    val favorites by favViewModel.favorites.collectAsState()
     val scope = rememberCoroutineScope()
 
     var selectedRoute by remember { mutableStateOf<RouteEntity?>(null) }
@@ -49,6 +55,7 @@ fun ViewRoutesScreen(navController: NavController, openDrawer: () -> Unit) {
     LaunchedEffect(Unit) {
         MapsInitializer.initialize(context)
         routeViewModel.loadRoutes(context, includeAll = true)
+        favViewModel.loadFavorites()
     }
 
     Scaffold(
@@ -59,6 +66,36 @@ fun ViewRoutesScreen(navController: NavController, openDrawer: () -> Unit) {
                 showMenu = true,
                 onMenuClick = openDrawer
             )
+        },
+        floatingActionButton = {
+            if (selectedRoute != null) {
+                FloatingActionButton(
+                    onClick = {
+                        selectedRoute?.let { route ->
+                            if (!favorites.contains(route.id)) {
+                                favViewModel.toggleFavorite(route.id)
+                            }
+                            favViewModel.saveFavorites { success ->
+                                val msg = if (success) {
+                                    R.string.favorite_routes_saved
+                                } else {
+                                    R.string.favorite_routes_save_failed
+                                }
+                                Toast.makeText(
+                                    context,
+                                    context.getString(msg),
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
+                    }
+                ) {
+                    Icon(
+                        Icons.Filled.Save,
+                        contentDescription = stringResource(R.string.save)
+                    )
+                }
+            }
         }
     ) { padding ->
         ScreenContainer(modifier = Modifier.padding(padding)) {
