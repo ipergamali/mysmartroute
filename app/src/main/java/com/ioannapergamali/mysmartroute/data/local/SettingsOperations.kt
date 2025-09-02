@@ -4,8 +4,7 @@ import androidx.room.Transaction
 
 
 /**
- * Εισάγει ρυθμίσεις μόνο εφόσον υπάρχει η αντίστοιχη εγγραφή χρήστη.
- * Αν δεν υπάρχει, δημιουργείται πρώτα ένας χρήστης με το δοσμένο id.
+ * Εισάγει ρυθμίσεις μόνο αν υπάρχει ήδη ο χρήστης.
  */
 @Transaction
 suspend fun insertSettingsSafely(
@@ -13,9 +12,7 @@ suspend fun insertSettingsSafely(
     userDao: UserDao,
     settings: SettingsEntity
 ) {
-    val userId = settings.userId
-    if (userDao.getUser(userId) == null) {
-        userDao.insert(UserEntity(id = userId))
+    if (userDao.getUser(settings.userId) != null) {
+        settingsDao.insert(settings)
     }
-    settingsDao.insert(settings)
 }
