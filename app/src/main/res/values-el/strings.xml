@@ -65,6 +65,7 @@
     <string name="local_db">Τοπική ΒΔ</string>
     <string name="firebase_db">Firestore ΒΔ</string>
     <string name="sync_db">Συγχρονισμός</string>
+    <string name="user_points">Σημεία χρηστών</string>
     <string name="admin_option">Επιλογή Διαχειριστή</string>
     <string name="profile">Προφίλ</string>
     <string name="guest">Επισκέπτης</string>

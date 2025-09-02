@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Login
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Place
 import com.google.firebase.auth.FirebaseAuth
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme
@@ -116,6 +117,17 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
             },
             icon = { Icon(Icons.Filled.Storage, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
         )
+        if (role.value == "ADMIN") {
+            NavigationDrawerItem(
+                label = { Text(stringResource(R.string.user_points)) },
+                selected = false,
+                onClick = {
+                    navController.navigate("userPoints")
+                    closeDrawer()
+                },
+                icon = { Icon(Icons.Filled.Place, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
+            )
+        }
         NavigationDrawerItem(
             label = { Text(stringResource(R.string.admin_option)) },
             selected = false,

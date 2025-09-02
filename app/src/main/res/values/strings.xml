@@ -63,6 +63,7 @@
     <string name="local_db">Local DB</string>
     <string name="firebase_db">Firestore DB</string>
     <string name="sync_db">Synchronization</string>
+    <string name="user_points">User Points</string>
     <string name="admin_option">Admin Option</string>
     <string name="profile">Profile</string>
     <string name="upload_photo">Ανέβασμα φωτογραφίας</string>
