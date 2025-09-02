@@ -259,5 +259,7 @@
     <string name="distance_meters">Απόσταση (μ)</string>
     <string name="calculate">Υπολογισμός</string>
     <string name="walking_duration_result">Διάρκεια: %1$s</string>
+    <string name="favorite_routes_saved">Οι διαδρομές αποθηκεύτηκαν</string>
+    <string name="favorite_routes_save_failed">Αποτυχία αποθήκευσης διαδρομών</string>
 
 </resources>

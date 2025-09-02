@@ -288,4 +288,6 @@
     <string name="view_details">View details</string>
     <string name="reservation_details">Reservation details</string>
     <string name="no_reservation_found">No reservation found</string>
+    <string name="favorite_routes_saved">Routes saved</string>
+    <string name="favorite_routes_save_failed">Unable to save routes</string>
 </resources>

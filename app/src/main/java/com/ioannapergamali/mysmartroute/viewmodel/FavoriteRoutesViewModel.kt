@@ -40,27 +40,34 @@ class FavoriteRoutesViewModel : ViewModel() {
         }
     }
 
-    /** Προσθέτει ή αφαιρεί μια διαδρομή από τα αγαπημένα. */
+    /** Ενημερώνει τοπικά το σύνολο διαδρομών που ενδιαφέρουν τον χρήστη. */
     fun toggleFavorite(routeId: String) {
+        val current = _favorites.value.toMutableSet()
+        if (current.contains(routeId)) current.remove(routeId) else current.add(routeId)
+        _favorites.value = current
+    }
+
+    /** Αποθηκεύει τις επιλεγμένες διαδρομές στη βάση. */
+    fun saveFavorites(onComplete: (Boolean) -> Unit = {}) {
         val uid = userId()
-        if (uid.isBlank()) return
+        if (uid.isBlank()) {
+            onComplete(false)
+            return
+        }
         viewModelScope.launch {
-            val current = _favorites.value
-            if (current.contains(routeId)) {
-                runCatching {
-                    userRoutes(uid)
-                        .whereEqualTo("routeId", routeId)
-                        .get()
-                        .await()
-                        .documents
-                        .forEach { it.reference.delete().await() }
+            val routesRef = userRoutes(uid)
+            val result = runCatching {
+                val snap = routesRef.get().await()
+                snap.documents.forEach { it.reference.delete().await() }
+                _favorites.value.forEach { routeId ->
+                    val id = UUID.randomUUID().toString()
+                    val data = mapOf("id" to id, "routeId" to routeId)
+                    routesRef.document(id).set(data).await()
                 }
-            } else {
-                val id = UUID.randomUUID().toString()
-                val data = mapOf("id" to id, "routeId" to routeId)
-                runCatching { userRoutes(uid).document(id).set(data).await() }
-            }
-            loadFavorites()
+            }.isSuccess
+            onComplete(result)
+
+
         }
     }
 }
