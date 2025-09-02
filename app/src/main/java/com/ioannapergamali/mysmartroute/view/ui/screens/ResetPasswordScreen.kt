@@ -24,7 +24,6 @@ fun ResetPasswordScreen(navController: NavController, openDrawer: () -> Unit) {
     val uiState by viewModel.resetPasswordState.collectAsState()
     var email by remember { mutableStateOf("") }
     val context = LocalContext.current
-    val bubbleState = LocalKeyboardBubbleState.current!!
 
 
     Scaffold(
@@ -40,6 +39,7 @@ fun ResetPasswordScreen(navController: NavController, openDrawer: () -> Unit) {
         }
     ) { padding ->
         ScreenContainer(modifier = Modifier.padding(padding)) {
+            val bubbleState = LocalKeyboardBubbleState.current!!
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
