@@ -30,6 +30,7 @@ fun DefineDurationScreen(navController: NavController, openDrawer: () -> Unit) {
     val context = LocalContext.current
     val routeViewModel: RouteViewModel = viewModel()
     val routes by routeViewModel.routes.collectAsState()
+    val pendingRoutes = routes.filter { it.walkDurationMinutes == 0 }
     var routeExpanded by remember { mutableStateOf(false) }
     var selectedRouteId by rememberSaveable { mutableStateOf<String?>(null) }
     var durationMinutes by remember { mutableStateOf<Int?>(null) }
@@ -48,54 +49,65 @@ fun DefineDurationScreen(navController: NavController, openDrawer: () -> Unit) {
         }
     ) { padding ->
         ScreenContainer(modifier = Modifier.padding(padding)) {
-            ExposedDropdownMenuBox(expanded = routeExpanded, onExpandedChange = { routeExpanded = !routeExpanded }) {
-                val selectedRoute = routes.find { it.id == selectedRouteId }
-                OutlinedTextField(
-                    value = selectedRoute?.name ?: "",
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text(stringResource(R.string.select_route)) },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = routeExpanded) },
-                    modifier = Modifier.menuAnchor().fillMaxWidth()
-                )
-                DropdownMenu(expanded = routeExpanded, onDismissRequest = { routeExpanded = false }) {
-                    routes.forEach { route ->
-                        DropdownMenuItem(
-                            text = { Text(route.name) },
-                            onClick = {
-                                selectedRouteId = route.id
-                                routeExpanded = false
-                                durationMinutes = null
-                            }
-                        )
+            if (pendingRoutes.isEmpty()) {
+                Text(stringResource(R.string.no_walking_routes))
+            } else {
+                ExposedDropdownMenuBox(
+                    expanded = routeExpanded,
+                    onExpandedChange = { routeExpanded = !routeExpanded }
+                ) {
+                    val selectedRoute = pendingRoutes.find { it.id == selectedRouteId }
+                    OutlinedTextField(
+                        value = selectedRoute?.name ?: "",
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text(stringResource(R.string.select_route)) },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = routeExpanded) },
+                        modifier = Modifier.menuAnchor().fillMaxWidth()
+                    )
+                    DropdownMenu(
+                        expanded = routeExpanded,
+                        onDismissRequest = { routeExpanded = false }
+                    ) {
+                        pendingRoutes.forEach { route ->
+                            DropdownMenuItem(
+                                text = { Text(route.name) },
+                                onClick = {
+                                    selectedRouteId = route.id
+                                    routeExpanded = false
+                                    durationMinutes = null
+                                }
+                            )
+                        }
                     }
                 }
-            }
 
-            Spacer(Modifier.height(16.dp))
-
-            Button(
-                onClick = {
-                    val rId = selectedRouteId ?: return@Button
-                    coroutineScope.launch {
-                        val distance = routeViewModel.getRouteDistance(context, rId)
-                        durationMinutes = WalkingUtils.walkingDuration(distance.toDouble()).inWholeMinutes.toInt()
-                    }
-                },
-                enabled = selectedRouteId != null
-            ) {
-                Text(stringResource(R.string.calculate))
-            }
-
-            durationMinutes?.let { mins ->
                 Spacer(Modifier.height(16.dp))
-                Text(stringResource(R.string.duration_format, mins))
-                Spacer(Modifier.height(8.dp))
-                Button(onClick = {
-                    val rId = selectedRouteId ?: return@Button
-                    routeViewModel.updateWalkDuration(context, rId, mins)
-                }) {
-                    Text(stringResource(R.string.save))
+
+                Button(
+                    onClick = {
+                        val rId = selectedRouteId ?: return@Button
+                        coroutineScope.launch {
+                            val distance = routeViewModel.getRouteDistance(context, rId)
+                            durationMinutes =
+                                WalkingUtils.walkingDuration(distance.toDouble()).inWholeMinutes.toInt()
+                        }
+                    },
+                    enabled = selectedRouteId != null
+                ) {
+                    Text(stringResource(R.string.calculate))
+                }
+
+                durationMinutes?.let { mins ->
+                    Spacer(Modifier.height(16.dp))
+                    Text(stringResource(R.string.duration_format, mins))
+                    Spacer(Modifier.height(8.dp))
+                    Button(onClick = {
+                        val rId = selectedRouteId ?: return@Button
+                        routeViewModel.updateWalkDuration(context, rId, mins)
+                    }) {
+                        Text(stringResource(R.string.save))
+                    }
                 }
             }
         }
