@@ -7,10 +7,10 @@ import androidx.room.Query
 
 @Dao
 interface PoIDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertAll(pois: List<PoIEntity>)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(poi: PoIEntity)
 
     @Query("SELECT * FROM pois")
