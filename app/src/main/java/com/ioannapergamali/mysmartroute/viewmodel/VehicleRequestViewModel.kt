@@ -169,12 +169,14 @@ class VehicleRequestViewModel : ViewModel() {
         viewModelScope.launch {
             val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
             val id = UUID.randomUUID().toString()
+            val routeRef = db.collection("routes").document(routeId)
+            val fromPoiRef = db.collection("pois").document(fromPoiId)
+            val toPoiRef = db.collection("pois").document(toPoiId)
             val data = mapOf(
-                "routeId" to routeId,
-                "fromPoiId" to fromPoiId,
-                "toPoiId" to toPoiId,
-                "date" to dateTime,
-                "userId" to userId
+                "routeId" to routeRef,
+                "fromPoiId" to fromPoiRef,
+                "toPoiId" to toPoiRef,
+                "date" to dateTime
             )
             try {
                 val userRef = db.collection("users").document(userId)

@@ -185,21 +185,25 @@ class RouteViewModel : ViewModel() {
             val db = MySmartRouteDatabase.getInstance(context)
             val dao = db.routeDao()
             dao.updateWalkDuration(routeId, minutes)
+            val route = dao.findById(routeId)
             if (NetworkUtils.isInternetAvailable(context)) {
                 firestore.collection("routes").document(routeId)
                     .update("walkDurationMinutes", minutes).await()
 
-                FirebaseAuth.getInstance().currentUser?.uid?.let { uid ->
-                    val walkEntry = mapOf(
-                        "durationMinutes" to minutes,
-                        "userId" to uid,
-                        "routeId" to routeId
-                    )
-                    firestore.collection("users")
-                        .document(uid)
-                        .collection("walks")
-                        .add(walkEntry)
-                        .await()
+                if (route != null) {
+                    FirebaseAuth.getInstance().currentUser?.uid?.let { uid ->
+                        val walkEntry = mapOf(
+                            "durationMinutes" to minutes,
+                            "routeId" to firestore.collection("routes").document(routeId),
+                            "fromPoiId" to firestore.collection("pois").document(route.startPoiId),
+                            "toPoiId" to firestore.collection("pois").document(route.endPoiId)
+                        )
+                        firestore.collection("users")
+                            .document(uid)
+                            .collection("walks")
+                            .add(walkEntry)
+                            .await()
+                    }
                 }
             }
             _routes.value = _routes.value.map {
