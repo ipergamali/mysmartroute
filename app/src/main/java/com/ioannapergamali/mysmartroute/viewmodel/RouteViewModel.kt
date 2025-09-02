@@ -100,15 +100,11 @@ class RouteViewModel : ViewModel() {
         viewModelScope.launch {
             val db = MySmartRouteDatabase.getInstance(context)
             val routeDao = db.routeDao()
-
-            val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
             val walkingIds = mutableSetOf<String>()
 
             if (NetworkUtils.isInternetAvailable(context)) {
                 val remoteWalks = runCatching {
-                    firestore.collection("users")
-                        .document(userId)
-                        .collection("walks")
+                    firestore.collectionGroup("walks")
                         .get()
                         .await()
                 }.getOrNull()
@@ -119,7 +115,7 @@ class RouteViewModel : ViewModel() {
             }
 
             val local = routeDao.getRoutesWithoutWalkDuration().first()
-                .filter { it.id in walkingIds }
+                .filter { walkingIds.isEmpty() || it.id in walkingIds }
 
             if (NetworkUtils.isInternetAvailable(context)) {
                 val fetched = mutableListOf<RouteEntity>()
