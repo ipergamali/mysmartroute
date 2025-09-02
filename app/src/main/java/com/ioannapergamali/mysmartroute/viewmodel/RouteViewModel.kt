@@ -100,8 +100,12 @@ class RouteViewModel : ViewModel() {
         viewModelScope.launch {
             val db = MySmartRouteDatabase.getInstance(context)
             val routeDao = db.routeDao()
-            val walkingDao = db.walkingDao()
-            val walkingIds = walkingDao.getAllRouteIds()
+            val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+            val walkDocs = runCatching {
+                firestore.collection("users").document(userId)
+                    .collection("walks").get().await()
+            }.getOrNull()
+            val walkingIds = walkDocs?.documents?.mapNotNull { it.getString("routeId") } ?: emptyList()
             val local = routeDao.getRoutesWithoutWalkDuration().first()
                 .filter { it.id in walkingIds }
 
