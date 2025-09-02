@@ -1,5 +1,6 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -27,7 +28,6 @@ import androidx.navigation.NavController
 import android.widget.Toast
 
 import com.ioannapergamali.mysmartroute.R
-import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.FavoriteRoutesViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
@@ -55,7 +55,7 @@ fun InterestingRoutesScreen(navController: NavController, openDrawer: () -> Unit
             onMenuClick = openDrawer
         )
     }) { padding ->
-        ScreenContainer(modifier = Modifier.padding(padding), scrollable = false) {
+        Column(modifier = Modifier.padding(padding)) {
             if (routes.isEmpty()) {
                 Text(stringResource(R.string.no_interesting_routes), modifier = Modifier.padding(16.dp))
             } else {
