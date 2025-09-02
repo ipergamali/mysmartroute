@@ -2,15 +2,21 @@ package com.ioannapergamali.mysmartroute.view.ui.screens
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.*
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.compose.ui.Modifier
+import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
+import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.repository.Point
 import com.ioannapergamali.mysmartroute.viewmodel.UserPointViewModel
 
@@ -20,25 +26,46 @@ import com.ioannapergamali.mysmartroute.viewmodel.UserPointViewModel
  * τα δεδομένα στο [UserPointViewModel].
  */
 @Composable
-fun UserPointsScreen(viewModel: UserPointViewModel = viewModel()) {
+fun UserPointsScreen(
+    navController: NavController,
+    openDrawer: () -> Unit,
+    viewModel: UserPointViewModel = viewModel()
+) {
     val pointsState = viewModel.points.collectAsState()
     var editingPoint by remember { mutableStateOf<Point?>(null) }
     var mergingPoint by remember { mutableStateOf<Point?>(null) }
 
-    LazyColumn {
-        items(pointsState.value) { point ->
-            Row {
-                Column {
-                    Text(text = point.name)
-                    if (point.details.isNotEmpty()) {
-                        Text(text = point.details)
+    Scaffold(
+        topBar = {
+            TopBar(
+                title = "Σημεία χρηστών",
+                navController = navController,
+                showMenu = true,
+                onMenuClick = openDrawer
+            )
+        }
+    ) { padding ->
+        ScreenContainer(modifier = Modifier.padding(padding)) {
+            if (pointsState.value.isEmpty()) {
+                Text("Δεν υπάρχουν σημεία")
+            } else {
+                LazyColumn {
+                    items(pointsState.value) { point ->
+                        Row {
+                            Column {
+                                Text(text = point.name)
+                                if (point.details.isNotEmpty()) {
+                                    Text(text = point.details)
+                                }
+                            }
+                            Button(onClick = { editingPoint = point }) {
+                                Text("Επεξεργασία")
+                            }
+                            Button(onClick = { mergingPoint = point }) {
+                                Text("Συγχώνευση")
+                            }
+                        }
                     }
-                }
-                Button(onClick = { editingPoint = point }) {
-                    Text("Επεξεργασία")
-                }
-                Button(onClick = { mergingPoint = point }) {
-                    Text("Συγχώνευση")
                 }
             }
         }

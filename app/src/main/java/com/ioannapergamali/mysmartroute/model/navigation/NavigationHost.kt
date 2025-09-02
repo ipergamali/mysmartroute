@@ -386,7 +386,7 @@ fun NavigationHost(
         }
 
         composable("userPoints") {
-            UserPointsScreen()
+            UserPointsScreen(navController = navController, openDrawer = openDrawer)
         }
 
 

@@ -38,6 +38,10 @@ fun DatabaseMenuScreen(navController: NavController, openDrawer: () -> Unit) {
             Button(onClick = { navController.navigate("syncDb") }) {
                 Text(stringResource(R.string.sync_db))
             }
+            Spacer(modifier = Modifier.padding(8.dp))
+            Button(onClick = { navController.navigate("userPoints") }) {
+                Text(stringResource(R.string.user_points))
+            }
         }
     }
 }
