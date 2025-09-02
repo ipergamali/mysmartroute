@@ -19,7 +19,10 @@ import com.google.android.libraries.places.api.model.Place
             onDelete = ForeignKey.RESTRICT
         )
     ],
-    indices = [Index("typeId")]
+    indices = [
+        Index(value = ["lat", "lng"], unique = true),
+        Index("typeId")
+    ]
 )
 data class PoIEntity(
     @PrimaryKey val id: String = "",
