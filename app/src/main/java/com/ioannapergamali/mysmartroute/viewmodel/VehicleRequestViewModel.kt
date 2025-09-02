@@ -183,15 +183,6 @@ class VehicleRequestViewModel : ViewModel() {
                 dbInstance.walkingDao().insert(entity)
 
                 db.collection("walking").document(id).set(data).await()
-                val userRef = db.collection("users").document(userId)
-                val snapshot = userRef.get().await()
-                if (snapshot.exists()) {
-                    userRef
-                        .collection("walking")
-                        .document(id)
-                        .set(data)
-                        .await()
-                }
                 Toast.makeText(context, R.string.route_saved, Toast.LENGTH_SHORT).show()
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to save walking route", e)

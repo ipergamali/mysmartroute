@@ -159,19 +159,11 @@ class RouteViewModel : ViewModel() {
                     .update("walkDurationMinutes", minutes).await()
 
                 FirebaseAuth.getInstance().currentUser?.uid?.let { uid ->
-                    val userRef = firestore.collection("users").document(uid)
                     val walkEntry = mapOf(
                         "durationMinutes" to minutes,
                         "userId" to uid,
                         "routeId" to routeId
                     )
-
-                    val snapshot = userRef.get().await()
-                    if (snapshot.exists()) {
-                        userRef.collection("walking")
-                            .add(walkEntry)
-                            .await()
-                    }
 
                     firestore.collection("walking")
                         .add(walkEntry)
