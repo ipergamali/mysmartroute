@@ -25,6 +25,7 @@ import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import kotlinx.coroutines.launch
@@ -33,17 +34,25 @@ import kotlinx.coroutines.launch
 @Composable
 fun RouteEditorScreen(navController: NavController, openDrawer: () -> Unit) {
     val poiViewModel: PoIViewModel = viewModel()
+    val routeViewModel: RouteViewModel = viewModel()
     val availablePois by poiViewModel.pois.collectAsState()
+    val routes by routeViewModel.routes.collectAsState()
     val context = LocalContext.current
-    LaunchedEffect(Unit) { poiViewModel.loadPois(context) }
+    LaunchedEffect(Unit) {
+        poiViewModel.loadPois(context)
+        routeViewModel.loadRoutes(context, includeAll = true)
+    }
 
     val routePoiIds = remember { mutableStateListOf<String>() }
+    var selectedRouteId by remember { mutableStateOf<String?>(null) }
+    var routeMenuExpanded by remember { mutableStateOf(false) }
     var menuExpanded by remember { mutableStateOf(false) }
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     val cameraPositionState = rememberCameraPositionState()
     val scope = rememberCoroutineScope()
     val apiKey = MapsUtils.getApiKey(context)
     val isKeyMissing = apiKey.isBlank()
+    val selectedRoute = routes.find { it.id == selectedRouteId }
 
     fun refreshRoute() {
         val pois = routePoiIds.mapNotNull { id -> availablePois.find { it.id == id } }
@@ -78,6 +87,50 @@ fun RouteEditorScreen(navController: NavController, openDrawer: () -> Unit) {
         )
     }) { padding ->
         ScreenContainer(modifier = Modifier.padding(padding)) {
+            ExposedDropdownMenuBox(
+                expanded = routeMenuExpanded,
+                onExpandedChange = { routeMenuExpanded = !routeMenuExpanded }
+            ) {
+                OutlinedTextField(
+                    value = selectedRoute?.name ?: "",
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text(stringResource(R.string.select_route)) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = routeMenuExpanded) },
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth(),
+                    shape = MaterialTheme.shapes.small,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                    )
+                )
+                DropdownMenu(
+                    expanded = routeMenuExpanded,
+                    onDismissRequest = { routeMenuExpanded = false },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 300.dp)
+                ) {
+                    routes.forEach { route ->
+                        DropdownMenuItem(
+                            text = { Text(route.name) },
+                            onClick = {
+                                selectedRouteId = route.id
+                                routeMenuExpanded = false
+                                scope.launch {
+                                    val pois = routeViewModel.getRoutePois(context, route.id)
+                                    routePoiIds.clear()
+                                    routePoiIds.addAll(pois.map { it.id })
+                                    refreshRoute()
+                                }
+                            }
+                        )
+                    }
+                }
+            }
+            Spacer(Modifier.height(16.dp))
             Box(modifier = Modifier.weight(1f)) {
                 if (isKeyMissing) {
                     Text(stringResource(R.string.map_api_key_missing))
