@@ -5,12 +5,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ktx.toObject
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.RouteEntity
 import com.ioannapergamali.mysmartroute.data.local.RoutePointEntity
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.model.Walk
+import com.ioannapergamali.mysmartroute.repository.AdminWalkRepository
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.utils.toRouteEntity
 import com.ioannapergamali.mysmartroute.utils.toRouteWithPoints
@@ -30,6 +30,7 @@ import java.util.UUID
  */
 class RouteViewModel : ViewModel() {
     private val firestore = FirebaseFirestore.getInstance()
+    private val adminWalkRepo = AdminWalkRepository()
 
     private val _routes = MutableStateFlow<List<RouteEntity>>(emptyList())
     val routes: StateFlow<List<RouteEntity>> = _routes
@@ -74,10 +75,7 @@ class RouteViewModel : ViewModel() {
      */
     fun loadAllWalksForAdmin() {
         viewModelScope.launch {
-            val snapshot = runCatching {
-                firestore.collectionGroup("walks").get().await()
-            }.getOrNull()
-            _walks.value = snapshot?.documents?.mapNotNull { it.toObject<Walk>() } ?: emptyList()
+            _walks.value = runCatching { adminWalkRepo.fetchAllWalks() }.getOrElse { emptyList() }
         }
     }
 
@@ -117,24 +115,15 @@ class RouteViewModel : ViewModel() {
     fun loadRoutesWithoutDuration() {
         viewModelScope.launch {
             val snapshot = runCatching {
-                firestore.collectionGroup("walks").get().await()
+                firestore.collection("routes")
+                    .whereEqualTo("walkDurationMinutes", 0)
+                    .get()
+                    .await()
             }.getOrNull()
 
-            val routeIds = snapshot?.documents
-                ?.mapNotNull { it.getString("routeId") }
+            _routes.value = snapshot?.documents
+                ?.mapNotNull { it.toRouteEntity() }
                 ?: emptyList()
-
-            val fetched = mutableListOf<RouteEntity>()
-            for (id in routeIds) {
-                val doc = runCatching {
-                    firestore.collection("routes").document(id).get().await()
-                }.getOrNull()
-                val route = doc?.toRouteEntity()
-                if (route != null && route.walkDurationMinutes == 0) {
-                    fetched += route
-                }
-            }
-            _routes.value = fetched
         }
     }
 
