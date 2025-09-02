@@ -115,24 +115,15 @@ class RouteViewModel : ViewModel() {
     fun loadRoutesWithoutDuration() {
         viewModelScope.launch {
             val snapshot = runCatching {
-                firestore.collectionGroup("walks").get().await()
+                firestore.collection("routes")
+                    .whereEqualTo("walkDurationMinutes", 0)
+                    .get()
+                    .await()
             }.getOrNull()
 
-            val routeIds = snapshot?.documents
-                ?.mapNotNull { it.getString("routeId") }
+            _routes.value = snapshot?.documents
+                ?.mapNotNull { it.toRouteEntity() }
                 ?: emptyList()
-
-            val fetched = mutableListOf<RouteEntity>()
-            for (id in routeIds) {
-                val doc = runCatching {
-                    firestore.collection("routes").document(id).get().await()
-                }.getOrNull()
-                val route = doc?.toRouteEntity()
-                if (route != null && route.walkDurationMinutes == 0) {
-                    fetched += route
-                }
-            }
-            _routes.value = fetched
         }
     }
 
