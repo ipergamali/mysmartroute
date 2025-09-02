@@ -46,6 +46,7 @@ import kotlinx.coroutines.launch
 import com.google.firebase.auth.FirebaseAuth
 import com.ioannapergamali.mysmartroute.model.classes.poi.PoiAddress
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
+import com.ioannapergamali.mysmartroute.utils.offsetPois
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -334,9 +335,9 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     if (pathPoints.isNotEmpty()) {
                         Polyline(points = pathPoints)
                     }
-                    pois.forEach { poi ->
+                    offsetPois(pois).forEach { (poi, position) ->
                         Marker(
-                            state = MarkerState(position = LatLng(poi.lat, poi.lng)),
+                            state = MarkerState(position = position),
                             title = poi.name
                         )
                     }

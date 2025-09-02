@@ -28,6 +28,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
+import com.ioannapergamali.mysmartroute.utils.offsetPois
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -148,13 +149,13 @@ fun RouteEditorScreen(navController: NavController, openDrawer: () -> Unit) {
                         if (pathPoints.isNotEmpty()) {
                             Polyline(points = pathPoints)
                         }
-                        routePoiIds.mapNotNull { id -> availablePois.find { it.id == id } }
-                            .forEach { poi ->
-                                Marker(
-                                    state = MarkerState(LatLng(poi.lat, poi.lng)),
-                                    title = poi.name
-                                )
-                            }
+                        val routePois = routePoiIds.mapNotNull { id -> availablePois.find { it.id == id } }
+                        offsetPois(routePois).forEach { (poi, position) ->
+                            Marker(
+                                state = MarkerState(position),
+                                title = poi.name
+                            )
+                        }
                     }
                 }
             }

@@ -55,6 +55,7 @@ import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
+import com.ioannapergamali.mysmartroute.utils.offsetPois
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.view.ui.components.BookingStepsIndicator
@@ -401,10 +402,10 @@ fun BookSeatScreen(
                     cameraPositionState = cameraPositionState
                 ) {
                     Polyline(points = pathPoints, color = Color.Green)
-                    pois.forEach { poi ->
+                    offsetPois(pois).forEach { (poi, position) ->
                         val hue = if (poi.id in userPoiIds) MARKER_ORANGE else MARKER_BLUE
                         Marker(
-                            state = MarkerState(position = LatLng(poi.lat, poi.lng)),
+                            state = MarkerState(position = position),
                             title = poi.name,
                             icon = BitmapDescriptorFactory.defaultMarker(hue)
                         )
