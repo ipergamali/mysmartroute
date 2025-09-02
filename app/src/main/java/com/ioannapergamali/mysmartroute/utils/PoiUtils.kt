@@ -37,3 +37,17 @@ fun poisAtLocation(
         abs(it.lng - point.longitude) < tolerance
     }
 
+/**
+ * Επιστρέφει ομάδες από POI που μοιράζονται τις ίδιες
+ * συντεταγμένες αλλά έχουν διαφορετικό όνομα. Χρησιμοποιείται
+ * ώστε ο διαχειριστής να μπορεί να τα συγχωνεύσει σε ένα.
+ */
+fun duplicatePois(
+    pois: List<PoIEntity>
+): List<List<PoIEntity>> =
+    pois.groupBy { it.lat to it.lng }
+        .values
+        .filter { group ->
+            group.size > 1 && group.map { it.name }.toSet().size > 1
+        }
+
