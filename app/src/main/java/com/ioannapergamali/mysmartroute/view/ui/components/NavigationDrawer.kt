@@ -154,18 +154,6 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
                 },
                 icon = { Icon(Icons.Filled.Menu, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
             )
-
-            if (role.value == "ADMIN") {
-                NavigationDrawerItem(
-                    label = { Text(stringResource(R.string.view_pois)) },
-                    selected = false,
-                    onClick = {
-                        navController.navigate("viewPois")
-                        closeDrawer()
-                    },
-                    icon = { Icon(Icons.Filled.LocationOn, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
-                )
-            }
             NavigationDrawerItem(
                 label = { Text(stringResource(R.string.logout)) },
                 selected = false,
