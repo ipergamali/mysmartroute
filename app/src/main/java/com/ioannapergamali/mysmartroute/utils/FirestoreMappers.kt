@@ -67,10 +67,10 @@ fun VehicleEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     "plate" to plate
 )
 
-fun com.google.firebase.firestore.DocumentSnapshot.toVehicleEntity(): VehicleEntity? {
+fun DocumentSnapshot.toVehicleEntity(): VehicleEntity? {
     val userId = when (val uid = get("userId")) {
         is String -> uid
-        is com.google.firebase.firestore.DocumentReference -> uid.id
+        is DocumentReference -> uid.id
         else -> return null
     }
     return VehicleEntity(
@@ -125,26 +125,34 @@ fun SettingsEntity.toFirestoreMap(): Map<String, Any> = mapOf(
 )
 
 /** Μετατροπή εγγράφου Firestore σε [UserEntity]. */
+private fun DocumentSnapshot.nonBlank(field: String): String? =
+    getString(field)?.takeIf { it.isNotBlank() }
+
 fun DocumentSnapshot.toUserEntity(): UserEntity? {
     val id = when (val rawId = get("id")) {
-        is com.google.firebase.firestore.DocumentReference -> rawId.id
+        is DocumentReference -> rawId.id
         is String -> rawId
         else -> getString("id")
     } ?: return null
+    val name = nonBlank("name") ?: return null
+    val surname = nonBlank("surname") ?: return null
+    val username = nonBlank("username") ?: return null
+    val email = nonBlank("email") ?: return null
+    val phoneNum = nonBlank("phoneNum") ?: return null
     val photo = getString("photoUrl")
     Log.d("FirestoreMappers", "Φόρτωση χρήστη $id με photoUrl=$photo")
     return UserEntity(
         id = id,
-        name = getString("name") ?: "",
-        surname = getString("surname") ?: "",
-        username = getString("username") ?: "",
-        email = getString("email") ?: "",
-        phoneNum = getString("phoneNum") ?: "",
+        name = name,
+        surname = surname,
+        username = username,
+        email = email,
+        phoneNum = phoneNum,
         photoUrl = photo,
         password = getString("password") ?: "",
         role = getString("role") ?: "",
         roleId = when (val rawRole = get("roleId")) {
-            is com.google.firebase.firestore.DocumentReference -> rawRole.id
+            is DocumentReference -> rawRole.id
             is String -> rawRole
             else -> getString("roleId")
         } ?: "",
