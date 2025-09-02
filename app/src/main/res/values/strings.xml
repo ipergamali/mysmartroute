@@ -253,6 +253,9 @@
     <string name="walking_routes">Walking routes</string>
     <string name="no_walking_routes">No walking routes</string>
 
+    <string name="passenger_routes">Passenger routes</string>
+    <string name="no_passenger_routes">No routes</string>
+
     <string name="distance_meters">Distance (m)</string>
     <string name="calculate">Calculate</string>
     <string name="walking_duration_result">Duration: %1$s</string>
