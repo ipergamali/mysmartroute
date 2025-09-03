@@ -536,7 +536,12 @@ class AuthenticationViewModel : ViewModel() {
         val menuDao = dbLocal.menuDao()
         val optionDao = dbLocal.menuOptionDao()
 
-        val existingRoles = db.collection("roles").get().await().documents.associateBy { it.id }
+        val existingRoles = try {
+            db.collection("roles").get().await().documents.associateBy { it.id }
+        } catch (e: Exception) {
+            Log.w(TAG, "Αποτυχία ανάκτησης ρόλων από το Firestore", e)
+            emptyMap()
+        }
         val batch = db.batch()
         var commitNeeded = false
 
@@ -585,7 +590,11 @@ class AuthenticationViewModel : ViewModel() {
         }
 
         if (commitNeeded) {
-            batch.commit().await()
+            try {
+                batch.commit().await()
+            } catch (e: Exception) {
+                Log.w(TAG, "Αποτυχία αποστολής μενού στο Firestore", e)
+            }
         }
     }
 
