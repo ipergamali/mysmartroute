@@ -30,19 +30,21 @@ class WalkRepository(
             .get()
             .await()
 
-        snapshot.documents.forEach { walk ->
-            val updates = hashMapOf<String, Any>(
-                "fromPoiId" to FieldValue.delete(),
-                "toPoiId" to FieldValue.delete()
-            )
 
+        val batch = db.batch()
+        snapshot.documents.forEach { walk ->
+            val updates = mutableMapOf<String, Any>()
+            // Διαγράφουμε πάντα τα πεδία fromPoiId/toPoiId αν υπάρχουν
+            updates["fromPoiId"] = FieldValue.delete()
+            updates["toPoiId"] = FieldValue.delete()
+            // Συμπληρώνουμε το startTime μόνο όταν λείπει
             if (walk.get("startTime") == null) {
                 updates["startTime"] = Timestamp(Date(startTimeMillis))
             }
-
-            walk.reference.update(updates).await()
+            batch.update(walk.reference, updates)
         }
-    }
+        batch.commit().await()
+
     /**
 
      * Καθαρίζει τυχόν παλιές εγγραφές `walks` του χρήστη αφαιρώντας τα
@@ -56,18 +58,7 @@ class WalkRepository(
             .get()
             .await()
 
-        snapshot.documents.forEach { walk ->
-            val updates = mutableMapOf<String, Any>(
-                "fromPoiId" to FieldValue.delete(),
-                "toPoiId" to FieldValue.delete()
-            )
-            if (!walk.contains("startTime")) {
-                updates["startTime"] = Timestamp(Date(startTimeMillis))
-
-            }
-            walk.reference.update(updates).await()
-        }
-    }
+  
     /**
 
      * Ξεκινά μια πεζή μετακίνηση καταγράφοντας την ώρα που επέλεξε ο χρήστης.
@@ -75,10 +66,8 @@ class WalkRepository(
     suspend fun startWalk(startTimeMillis: Long) {
         val uid = auth.currentUser?.uid ?: return
 
-      
-
-
         cleanupUserWalks(uid, startTimeMillis)
+
 
         val data = mapOf(
             "startTime" to Timestamp(Date(startTimeMillis))
