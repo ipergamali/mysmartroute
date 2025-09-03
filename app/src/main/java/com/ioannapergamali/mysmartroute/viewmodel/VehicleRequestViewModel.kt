@@ -157,7 +157,9 @@ class VehicleRequestViewModel(
                     "status" to "open"
                 )
                 db.collection("movings").document(id).set(data).await()
+
                 walkRepository.startWalk(dateTime)
+
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to log walking", e)
             }
