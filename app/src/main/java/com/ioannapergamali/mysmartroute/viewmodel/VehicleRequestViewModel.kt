@@ -22,6 +22,7 @@ import com.ioannapergamali.mysmartroute.utils.NotificationUtils
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.data.local.SeatReservationEntity
 import com.ioannapergamali.mysmartroute.viewmodel.MainActivity
+import com.ioannapergamali.mysmartroute.repository.WalkRepository
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -39,7 +40,9 @@ data class PassengerRequest(
     val date: Long
 )
 
-class VehicleRequestViewModel : ViewModel() {
+class VehicleRequestViewModel(
+    private val walkRepository: WalkRepository = WalkRepository()
+) : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
 
     private val _requests = MutableStateFlow<List<MovingEntity>>(emptyList())
@@ -154,6 +157,7 @@ class VehicleRequestViewModel : ViewModel() {
                     "status" to "open"
                 )
                 db.collection("movings").document(id).set(data).await()
+                walkRepository.startWalk(dateTime)
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to log walking", e)
             }
