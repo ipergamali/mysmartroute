@@ -19,16 +19,18 @@ class WalkRepository(
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 ) {
     /**
+
      * Καθαρίζει τυχόν παλιές εγγραφές `walks` του χρήστη αφαιρώντας τα
      * πεδία `fromPoiId`/`toPoiId` και συμπληρώνοντας το `startTime` με την
      * ώρα που επέλεξε ο χρήστης αν λείπει.
      */
     private suspend fun cleanupUserWalks(uid: String, startTimeMillis: Long) {
-        val snapshot = db.collection("users")
+        val snapshot = db.collection("users")     
             .document(uid)
             .collection("walks")
             .get()
             .await()
+
         snapshot.documents.forEach { walk ->
             val updates = mutableMapOf<String, Any>(
                 "fromPoiId" to FieldValue.delete(),
@@ -36,6 +38,7 @@ class WalkRepository(
             )
             if (!walk.contains("startTime")) {
                 updates["startTime"] = Timestamp(Date(startTimeMillis))
+
             }
             walk.reference.update(updates).await()
         }
@@ -46,7 +49,9 @@ class WalkRepository(
      */
     suspend fun startWalk(startTimeMillis: Long) {
         val uid = auth.currentUser?.uid ?: return
+
         cleanupUserWalks(uid, startTimeMillis)
+
         val data = mapOf(
             "startTime" to Timestamp(Date(startTimeMillis))
         )
