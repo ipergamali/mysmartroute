@@ -709,9 +709,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                         "`id` TEXT NOT NULL, " +
                         "`userId` TEXT NOT NULL, " +
                         "`routeId` TEXT NOT NULL, " +
-                        "`fromPoiId` TEXT NOT NULL, " +
-                        "`toPoiId` TEXT NOT NULL, " +
-                        "`date` INTEGER NOT NULL, " +
+                        "`startTime` INTEGER NOT NULL, " +
                         "PRIMARY KEY(`id`))"
                 )
             }
@@ -738,9 +736,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                         "`id` TEXT NOT NULL, " +
                         "`userId` TEXT NOT NULL, " +
                         "`routeId` TEXT NOT NULL, " +
-                        "`fromPoiId` TEXT NOT NULL, " +
-                        "`toPoiId` TEXT NOT NULL, " +
-                        "`date` INTEGER NOT NULL, " +
+                        "`startTime` INTEGER NOT NULL, " +
                         "PRIMARY KEY(`id`))"
                 )
             }

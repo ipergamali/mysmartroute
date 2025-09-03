@@ -11,7 +11,5 @@ data class WalkingEntity(
     @PrimaryKey val id: String,
     val userId: String,
     val routeId: String,
-    val fromPoiId: String,
-    val toPoiId: String,
-    val date: Long
+    val startTime: Long
 )
