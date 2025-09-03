@@ -20,12 +20,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import com.google.firebase.storage.FirebaseStorage
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
@@ -42,7 +44,9 @@ fun ProfileScreen(navController: NavController, openDrawer: () -> Unit) {
     val name = remember { mutableStateOf("") }
     val surname = remember { mutableStateOf("") }
     val phone = remember { mutableStateOf("") }
-    val address = remember { mutableStateOf("") }
+    val streetName = remember { mutableStateOf("") }
+    val streetNum = remember { mutableStateOf("") }
+    val postalCode = remember { mutableStateOf("") }
     val username = remember { mutableStateOf("") }
     val photoUrl = remember { mutableStateOf<String?>(null) }
 
@@ -64,7 +68,9 @@ fun ProfileScreen(navController: NavController, openDrawer: () -> Unit) {
                         .document(uid)
 
                     docRef.update("photoUrl", url)
-                        .addOnFailureListener { docRef.set(mapOf("photoUrl" to url)) }
+                        .addOnFailureListener {
+                            docRef.set(mapOf("photoUrl" to url), SetOptions.merge())
+                        }
                 }
             }
             .addOnFailureListener { e ->
@@ -94,7 +100,9 @@ fun ProfileScreen(navController: NavController, openDrawer: () -> Unit) {
                         .document(uid)
 
                     docRef.update("photoUrl", url)
-                        .addOnFailureListener { docRef.set(mapOf("photoUrl" to url)) }
+                        .addOnFailureListener {
+                            docRef.set(mapOf("photoUrl" to url), SetOptions.merge())
+                        }
                 }
             }
             .addOnFailureListener { e ->
@@ -119,7 +127,9 @@ fun ProfileScreen(navController: NavController, openDrawer: () -> Unit) {
                     name.value = doc.getString("name") ?: ""
                     surname.value = doc.getString("surname") ?: ""
                     phone.value = doc.getString("phoneNum") ?: ""
-                    address.value = doc.getString("address") ?: ""
+                    streetName.value = doc.getString("streetName") ?: ""
+                    streetNum.value = doc.getLong("streetNum")?.toString() ?: ""
+                    postalCode.value = doc.getLong("postalCode")?.toString() ?: ""
                     username.value = doc.getString("username") ?: ""
                     photoUrl.value = doc.getString("photoUrl")
 
@@ -160,7 +170,8 @@ fun ProfileScreen(navController: NavController, openDrawer: () -> Unit) {
                         AsyncImage(
                             model = photoUrl.value,
                             contentDescription = null,
-                            modifier = Modifier.size(120.dp)
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
                         )
                     } else {
                         Icon(
@@ -213,9 +224,23 @@ fun ProfileScreen(navController: NavController, openDrawer: () -> Unit) {
                 )
 
                 OutlinedTextField(
-                    value = address.value,
-                    onValueChange = { address.value = it },
-                    label = { Text(stringResource(R.string.address)) },
+                    value = streetName.value,
+                    onValueChange = { streetName.value = it },
+                    label = { Text(stringResource(R.string.street_name)) },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                OutlinedTextField(
+                    value = streetNum.value,
+                    onValueChange = { streetNum.value = it },
+                    label = { Text(stringResource(R.string.street_number)) },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                OutlinedTextField(
+                    value = postalCode.value,
+                    onValueChange = { postalCode.value = it },
+                    label = { Text(stringResource(R.string.postal_code)) },
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -229,14 +254,21 @@ fun ProfileScreen(navController: NavController, openDrawer: () -> Unit) {
                 Button(onClick = {
                     val uid = user?.uid ?: return@Button
                     val docRef = FirebaseFirestore.getInstance().collection("users").document(uid)
+                    val streetNumInt = streetNum.value.toIntOrNull()
+                    val postalCodeInt = postalCode.value.toIntOrNull()
+                    if (streetNumInt == null || postalCodeInt == null) return@Button
                     val updates = mapOf(
                         "name" to name.value,
                         "surname" to surname.value,
                         "phoneNum" to phone.value,
-                        "address" to address.value,
+                        "streetName" to streetName.value,
+                        "streetNum" to streetNumInt,
+                        "postalCode" to postalCodeInt,
                         "username" to username.value
                     )
-                    docRef.update(updates).addOnFailureListener { docRef.set(updates) }
+                    docRef.update(updates).addOnFailureListener {
+                        docRef.set(updates, SetOptions.merge())
+                    }
                 }) {
                     Text(text = stringResource(id = R.string.save))
                 }
