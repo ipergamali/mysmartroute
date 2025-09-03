@@ -22,10 +22,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
@@ -50,6 +52,7 @@ fun ProfileScreen(navController: NavController, openDrawer: () -> Unit) {
     val postalCode = remember { mutableStateOf("") }
     val username = remember { mutableStateOf("") }
     val photoUrl = remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
 
     val imagePicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         val uid = user?.uid ?: return@rememberLauncherForActivityResult
@@ -170,7 +173,21 @@ fun ProfileScreen(navController: NavController, openDrawer: () -> Unit) {
                 ) {
                     if (photoUrl.value != null) {
                         AsyncImage(
-                            model = photoUrl.value,
+                            model = ImageRequest.Builder(context)
+                                .data(photoUrl.value)
+                                .crossfade(true)
+                                .listener(
+                                    onStart = {
+                                        Log.d("ProfileScreen", "Ξεκίνησε η φόρτωση εικόνας")
+                                    },
+                                    onSuccess = { _, _ ->
+                                        Log.d("ProfileScreen", "Η εικόνα φορτώθηκε επιτυχώς")
+                                    },
+                                    onError = { _, throwable ->
+                                        Log.e("ProfileScreen", "Αποτυχία φόρτωσης εικόνας", throwable)
+                                    }
+                                )
+                                .build(),
                             contentDescription = null,
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop
