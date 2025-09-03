@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.FirebaseFirestoreException
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.utils.toUserEntity
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
@@ -151,86 +152,87 @@ class DatabaseViewModel : ViewModel() {
 
     fun loadFirebaseData() {
         viewModelScope.launch {
-            Log.d(TAG, "Loading Firebase data")
-            val users = firestore.collection("users").get().await()
-                .documents.mapNotNull { it.toUserEntity() }
-            Log.d(TAG, "Fetched ${users.size} users from Firebase")
-            val vehicles = firestore.collection("vehicles").get().await()
-                .documents.mapNotNull { doc -> doc.toVehicleEntity() }
-            Log.d(TAG, "Fetched ${vehicles.size} vehicles from Firebase")
-            val pois = firestore.collection("pois").get().await()
-                .documents.mapNotNull { it.toPoIEntity() }
-            Log.d(TAG, "Fetched ${pois.size} pois from Firebase")
-            val poiTypes = firestore.collection("poi_types").get().await()
-                .documents.mapNotNull { doc: com.google.firebase.firestore.DocumentSnapshot ->
-                    doc.toPoiTypeEntity()
-                }
-            Log.d(TAG, "Fetched ${poiTypes.size} poi types from Firebase")
-            val settings = firestore.collection("user_settings").get().await()
-                .documents.mapNotNull { doc ->
-                    val userId = when (val uid = doc.get("userId")) {
-                        is String -> uid
-                        is DocumentReference -> uid.id
-                        else -> null
-                    } ?: return@mapNotNull null
-                    SettingsEntity(
-                        userId = userId,
-                        theme = doc.getString("theme") ?: "",
-                        darkTheme = doc.getBoolean("darkTheme") ?: false,
-                        font = doc.getString("font") ?: "",
-                        soundEnabled = doc.getBoolean("soundEnabled") ?: false,
-                        soundVolume = (doc.getDouble("soundVolume") ?: 0.0).toFloat(),
-                        language = doc.getString("language") ?: "el"
-                    )
-                }
-            Log.d(TAG, "Fetched ${settings.size} settings from Firebase")
-
-            Log.d(TAG, "Fetching roles from Firestore")
-            val rolesSnap = firestore.collection("roles").get().await()
-            Log.d(TAG, "Fetched ${rolesSnap.documents.size} role documents")
-            val roles = rolesSnap.documents.map { doc ->
-                RoleEntity(
-                    id = doc.getString("id") ?: doc.id,
-                    name = doc.getString("name") ?: "",
-                    parentRoleId = doc.getString("parentRoleId")?.takeIf { it.isNotEmpty() }
-                )
-            }
-            Log.d(TAG, "Fetched ${roles.size} roles from Firebase")
-            val menus = mutableListOf<MenuEntity>()
-            val menuOptions = mutableListOf<MenuOptionEntity>()
-            for (roleDoc in rolesSnap.documents) {
-                val roleId = roleDoc.getString("id") ?: roleDoc.id
-                Log.d(TAG, "Fetching menus for role $roleId")
-                val menusSnap = roleDoc.reference.collection("menus").get().await()
-                Log.d(TAG, "Fetched ${menusSnap.documents.size} menus for role $roleId")
-                for (menuDoc in menusSnap.documents) {
-                    val menuId = menuDoc.getString("id") ?: menuDoc.id
-                    val menuTitleKey = menuDoc.getString("titleKey")
-                        ?: menuDoc.getString("titleResKey")
-                        ?: ""
-                    menus.add(
-                        MenuEntity(
-                            id = menuId,
-                            roleId = roleId,
-                            titleResKey = menuTitleKey
-                        )
-                    )
-                    Log.d(TAG, "Fetching options for menu $menuId")
-                    val optsSnap = menuDoc.reference.collection("options").get().await()
-                    Log.d(TAG, "Fetched ${optsSnap.documents.size} options for menu $menuId")
-                    for (optDoc in optsSnap.documents) {
-                        val optionTitleKey = optDoc.getString("titleKey") ?: optDoc.getString("titleResKey") ?: ""
-                        menuOptions.add(
-                            MenuOptionEntity(
-                                id = optDoc.getString("id") ?: optDoc.id,
-                                menuId = menuId,
-                                titleResKey = optionTitleKey,
-                                route = optDoc.getString("route") ?: ""
-                            )
+            try {
+                Log.d(TAG, "Loading Firebase data")
+                val users = firestore.collection("users").get().await()
+                    .documents.mapNotNull { it.toUserEntity() }
+                Log.d(TAG, "Fetched ${users.size} users from Firebase")
+                val vehicles = firestore.collection("vehicles").get().await()
+                    .documents.mapNotNull { doc -> doc.toVehicleEntity() }
+                Log.d(TAG, "Fetched ${vehicles.size} vehicles from Firebase")
+                val pois = firestore.collection("pois").get().await()
+                    .documents.mapNotNull { it.toPoIEntity() }
+                Log.d(TAG, "Fetched ${pois.size} pois from Firebase")
+                val poiTypes = firestore.collection("poi_types").get().await()
+                    .documents.mapNotNull { doc: com.google.firebase.firestore.DocumentSnapshot ->
+                        doc.toPoiTypeEntity()
+                    }
+                Log.d(TAG, "Fetched ${poiTypes.size} poi types from Firebase")
+                val settings = firestore.collection("user_settings").get().await()
+                    .documents.mapNotNull { doc ->
+                        val userId = when (val uid = doc.get("userId")) {
+                            is String -> uid
+                            is DocumentReference -> uid.id
+                            else -> null
+                        } ?: return@mapNotNull null
+                        SettingsEntity(
+                            userId = userId,
+                            theme = doc.getString("theme") ?: "",
+                            darkTheme = doc.getBoolean("darkTheme") ?: false,
+                            font = doc.getString("font") ?: "",
+                            soundEnabled = doc.getBoolean("soundEnabled") ?: false,
+                            soundVolume = (doc.getDouble("soundVolume") ?: 0.0).toFloat(),
+                            language = doc.getString("language") ?: "el"
                         )
                     }
+                Log.d(TAG, "Fetched ${settings.size} settings from Firebase")
+
+                Log.d(TAG, "Fetching roles from Firestore")
+                val rolesSnap = firestore.collection("roles").get().await()
+                Log.d(TAG, "Fetched ${rolesSnap.documents.size} role documents")
+                val roles = rolesSnap.documents.map { doc ->
+                    RoleEntity(
+                        id = doc.getString("id") ?: doc.id,
+                        name = doc.getString("name") ?: "",
+                        parentRoleId = doc.getString("parentRoleId")?.takeIf { it.isNotEmpty() }
+                    )
                 }
-            }
+                Log.d(TAG, "Fetched ${roles.size} roles from Firebase")
+                val menus = mutableListOf<MenuEntity>()
+                val menuOptions = mutableListOf<MenuOptionEntity>()
+                for (roleDoc in rolesSnap.documents) {
+                    val roleId = roleDoc.getString("id") ?: roleDoc.id
+                    Log.d(TAG, "Fetching menus for role $roleId")
+                    val menusSnap = roleDoc.reference.collection("menus").get().await()
+                    Log.d(TAG, "Fetched ${menusSnap.documents.size} menus for role $roleId")
+                    for (menuDoc in menusSnap.documents) {
+                        val menuId = menuDoc.getString("id") ?: menuDoc.id
+                        val menuTitleKey = menuDoc.getString("titleKey")
+                            ?: menuDoc.getString("titleResKey")
+                            ?: ""
+                        menus.add(
+                            MenuEntity(
+                                id = menuId,
+                                roleId = roleId,
+                                titleResKey = menuTitleKey
+                            )
+                        )
+                        Log.d(TAG, "Fetching options for menu $menuId")
+                        val optsSnap = menuDoc.reference.collection("options").get().await()
+                        Log.d(TAG, "Fetched ${optsSnap.documents.size} options for menu $menuId")
+                        for (optDoc in optsSnap.documents) {
+                            val optionTitleKey = optDoc.getString("titleKey") ?: optDoc.getString("titleResKey") ?: ""
+                            menuOptions.add(
+                                MenuOptionEntity(
+                                    id = optDoc.getString("id") ?: optDoc.id,
+                                    menuId = menuId,
+                                    titleResKey = optionTitleKey,
+                                    route = optDoc.getString("route") ?: ""
+                                )
+                            )
+                        }
+                    }
+                }
 
             val routePairs = firestore.collection("routes").get().await()
                 .documents.mapNotNull { it.toRouteWithPoints() }
@@ -253,6 +255,13 @@ class DatabaseViewModel : ViewModel() {
 
             Log.d(TAG, "Firebase data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} types:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size} routes:${routes.size} movings:${movings.size} declarations:${declarations.size} availabilities:${availabilities.size} favorites:${favorites.size}")
             _firebaseData.value = DatabaseData(users, vehicles, pois, poiTypes, settings, roles, menus, menuOptions, emptyList(), routes, routePoints, movings, declarations, availabilities, favorites)
+            } catch (e: FirebaseFirestoreException) {
+                Log.e(TAG, "Firestore permission error", e)
+                _syncState.value = SyncState.Error("Ανεπαρκή δικαιώματα στο Firestore")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error loading Firebase data", e)
+                _syncState.value = SyncState.Error("Σφάλμα φόρτωσης δεδομένων")
+            }
         }
     }
 
