@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
@@ -163,7 +164,8 @@ fun ProfileScreen(navController: NavController, openDrawer: () -> Unit) {
                     modifier = Modifier
                         .size(120.dp)
                         .clip(CircleShape)
-                        .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape),
+                        .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
+                        .clickable { imagePicker.launch("image/*") },
                     contentAlignment = Alignment.Center
                 ) {
                     if (photoUrl.value != null) {
