@@ -21,9 +21,7 @@ class AdminWalkRepository {
             val duration = doc.getLong("walkDurationMinutes") ?: 0L
             Walk(
                 id = doc.id,
-                fromPoiRef = doc.getDocumentReference("fromPoiId"),
                 routeRef = doc.getDocumentReference("routeId"),
-                toPoiRef = doc.getDocumentReference("toPoiId"),
                 startTime = start,
                 endTime = end,
                 walkDurationMinutes = duration
