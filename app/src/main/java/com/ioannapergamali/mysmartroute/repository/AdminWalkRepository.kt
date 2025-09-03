@@ -11,21 +11,19 @@ class AdminWalkRepository {
     private val db = FirebaseFirestore.getInstance()
 
     /**
-     * Ανακτά όλα τα walks και διαβάζει το αποθηκευμένο `walkDurationMinutes`.
+     * Ανακτά όλες τις πεζές μετακινήσεις από τα subcollections `walks` των διαδρομών.
+     * Κάθε έγγραφο περιέχει μόνο τη διάρκεια σε λεπτά.
      */
     suspend fun fetchAllWalks(): List<Walk> {
         val snapshot = db.collectionGroup("walks").get().await()
-        return snapshot.documents.map { doc ->
-            val start = doc.getTimestamp("startTime")
-            val end = doc.getTimestamp("endTime")
-            val duration = doc.getLong("walkDurationMinutes") ?: 0L
-            Walk(
-                id = doc.id,
-                routeRef = doc.getDocumentReference("routeId"),
-                startTime = start,
-                endTime = end,
-                walkDurationMinutes = duration
-            )
-        }
+        return snapshot.documents
+            .filter { it.reference.parent.parent?.parent?.id == "routes" }
+            .map { doc ->
+                val duration = doc.getLong("durationMinutes") ?: 0L
+                Walk(
+                    id = doc.id,
+                    durationMinutes = duration
+                )
+            }
     }
 }
