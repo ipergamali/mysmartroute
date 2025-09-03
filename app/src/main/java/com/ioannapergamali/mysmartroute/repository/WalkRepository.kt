@@ -19,6 +19,31 @@ class WalkRepository(
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 ) {
     /**
+     * Καθαρίζει τυχόν παλιές εγγραφές `walks` του χρήστη αφαιρώντας τα
+     * πεδία `fromPoiId`/`toPoiId` και συμπληρώνοντας το `startTime` με την
+     * ώρα που επέλεξε ο χρήστης αν λείπει.
+     */
+    private suspend fun cleanupUserWalks(uid: String, startTimeMillis: Long) {
+        val snapshot = db.collection("users")
+            .document(uid)
+            .collection("walks")
+            .get()
+            .await()
+
+        snapshot.documents.forEach { walk ->
+            val updates = hashMapOf<String, Any>(
+                "fromPoiId" to FieldValue.delete(),
+                "toPoiId" to FieldValue.delete()
+            )
+
+            if (walk.get("startTime") == null) {
+                updates["startTime"] = Timestamp(Date(startTimeMillis))
+            }
+
+            walk.reference.update(updates).await()
+        }
+    }
+    /**
 
      * Καθαρίζει τυχόν παλιές εγγραφές `walks` του χρήστη αφαιρώντας τα
      * πεδία `fromPoiId`/`toPoiId` και συμπληρώνοντας το `startTime` με την
@@ -50,6 +75,9 @@ class WalkRepository(
     suspend fun startWalk(startTimeMillis: Long) {
         val uid = auth.currentUser?.uid ?: return
 
+      
+
+
         cleanupUserWalks(uid, startTimeMillis)
 
         val data = mapOf(
@@ -62,25 +90,5 @@ class WalkRepository(
             .await()
     }
 
-    /**
-     * Μετατρέπει παλιές εγγραφές στο `walks` αφαιρώντας τα fromPoiId/toPoiId
-     * και προσθέτει startTime αν λείπει.
-     */
-    suspend fun migrateOldWalks() {
-        val users = db.collection("users").get().await()
-        users.forEach { user ->
-            val walks = user.reference.collection("walks").get().await()
-            walks.forEach { walk ->
-                val updates = hashMapOf<String, Any>(
-                    "fromPoiId" to FieldValue.delete(),
-                    "toPoiId" to FieldValue.delete()
-                )
-                if (walk.getTimestamp("startTime") == null) {
-                    updates["startTime"] = FieldValue.serverTimestamp()
-                }
-                walk.reference.update(updates).await()
-            }
-        }
-    }
 }
 
