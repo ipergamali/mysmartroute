@@ -67,12 +67,11 @@ class ProfileActivity : AppCompatActivity() {
     }
 
     private fun loadExistingPhoto() {
-        val uid = Firebase.auth.currentUser?.uid ?: return
-        Firebase.firestore.collection("users").document(uid).get()
-            .addOnSuccessListener { doc ->
-                val url = doc.getString("photoUrl")
+        val path = "profileImages/hcZBYbDteKWV8hrjnW9CqKfewFl2.jpg"
+        Firebase.storage.reference.child(path).downloadUrl
+            .addOnSuccessListener { uri ->
                 Glide.with(this)
-                    .load(url)
+                    .load(uri)
                     .into(binding.ivProfile)
             }
     }
