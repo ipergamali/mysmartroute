@@ -220,8 +220,6 @@ fun WalkingScreen(navController: NavController, openDrawer: () -> Unit) {
                 ExtendedFloatingActionButton(
                     onClick = {
                         val rId = selectedRouteId ?: return@ExtendedFloatingActionButton
-                        val start = startIndex?.let { routePois[it].id } ?: return@ExtendedFloatingActionButton
-                        val end = endIndex?.let { routePois[it].id } ?: return@ExtendedFloatingActionButton
                         val timestamp = calendar.timeInMillis
                         coroutineScope.launch {
                             val distance = routeViewModel.getRouteDistance(context, rId)
@@ -229,8 +227,6 @@ fun WalkingScreen(navController: NavController, openDrawer: () -> Unit) {
                             vehicleRequestViewModel.saveWalkingRoute(
                                 context,
                                 rId,
-                                start,
-                                end,
                                 timestamp,
                                 minutes
                             )
