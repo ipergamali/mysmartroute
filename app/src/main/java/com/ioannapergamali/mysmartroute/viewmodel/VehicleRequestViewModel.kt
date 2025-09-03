@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.Timestamp
 import com.ioannapergamali.mysmartroute.data.local.MovingEntity
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.RouteDao
@@ -27,6 +28,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import java.util.Date
 import java.util.UUID
 
 data class PassengerRequest(
@@ -162,22 +164,16 @@ class VehicleRequestViewModel : ViewModel() {
     fun saveWalkingRoute(
         context: Context,
         routeId: String,
-        fromPoiId: String,
-        toPoiId: String,
-        dateTime: Long,
+        startTimeMillis: Long,
         walkDurationMinutes: Int
     ) {
         viewModelScope.launch {
             val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
             val id = UUID.randomUUID().toString()
             val routeRef = db.collection("routes").document(routeId)
-            val fromPoiRef = db.collection("pois").document(fromPoiId)
-            val toPoiRef = db.collection("pois").document(toPoiId)
             val data = mapOf(
                 "routeId" to routeRef,
-                "fromPoiId" to fromPoiRef,
-                "toPoiId" to toPoiRef,
-                "date" to dateTime,
+                "startTime" to Timestamp(Date(startTimeMillis)),
                 "walkDurationMinutes" to walkDurationMinutes
             )
             try {

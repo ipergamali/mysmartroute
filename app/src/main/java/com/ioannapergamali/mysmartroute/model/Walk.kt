@@ -8,9 +8,7 @@ import com.google.firebase.firestore.DocumentReference
  */
 data class Walk(
     val id: String = "",
-    val fromPoiRef: DocumentReference? = null,
     val routeRef: DocumentReference? = null,
-    val toPoiRef: DocumentReference? = null,
     val startTime: Timestamp? = null,
     val endTime: Timestamp? = null,
     val walkDurationMinutes: Long = 0L
