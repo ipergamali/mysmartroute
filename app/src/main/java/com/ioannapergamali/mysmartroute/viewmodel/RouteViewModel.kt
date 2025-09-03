@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.Timestamp
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.RouteEntity
 import com.ioannapergamali.mysmartroute.data.local.RoutePointEntity
@@ -141,11 +140,15 @@ class RouteViewModel : ViewModel() {
             }.getOrNull()
 
             val routeEntities = snapshot?.documents
-                ?.mapNotNull { it.getDocumentReference("routeId") }
-                ?.distinct()
-                ?.mapNotNull { ref ->
-                    runCatching { ref.get().await().toRouteEntity() }.getOrNull()
+                ?.mapNotNull { doc ->
+                    val routeRef = doc.reference.parent.parent
+                    if (routeRef?.parent?.id == "routes") {
+                        runCatching { routeRef.get().await().toRouteEntity() }.getOrNull()
+                    } else {
+                        null
+                    }
                 }
+                ?.distinctBy { it.id }
                 ?: emptyList()
 
             _routes.value = routeEntities
@@ -247,20 +250,13 @@ class RouteViewModel : ViewModel() {
             val db = MySmartRouteDatabase.getInstance(context)
             val route = db.routeDao().findById(routeId)
             if (NetworkUtils.isInternetAvailable(context) && route != null) {
-                FirebaseAuth.getInstance().currentUser?.uid?.let { uid ->
-                    val walkEntry = mapOf(
-                        // Αποθηκεύουμε τη διάρκεια με το ίδιο κλειδί που
-                        // χρησιμοποιεί το υπόλοιπο σύστημα (walkDurationMinutes)
-                        "walkDurationMinutes" to minutes,
-                        "routeId" to firestore.collection("routes").document(routeId),
-                        "startTime" to Timestamp.now(),
-                        "userId" to firestore.collection("users").document(uid)
-                    )
-                    firestore.collection("routes").document(routeId)
-                        .collection("walks")
-                        .add(walkEntry)
-                        .await()
-                }
+                val walkEntry = mapOf(
+                    "durationMinutes" to minutes
+                )
+                firestore.collection("routes").document(routeId)
+                    .collection("walks")
+                    .add(walkEntry)
+                    .await()
             }
             _routes.value = _routes.value.filterNot { it.id == routeId }
         }
