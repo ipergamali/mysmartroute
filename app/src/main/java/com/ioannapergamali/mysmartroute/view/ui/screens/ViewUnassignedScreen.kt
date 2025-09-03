@@ -6,6 +6,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Calculate
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -104,7 +107,10 @@ fun ViewUnassignedScreen(navController: NavController, openDrawer: () -> Unit) {
                                     },
                                     modifier = Modifier.width(120.dp)
                                 ) {
-                                    Text(stringResource(R.string.calculate))
+                                    Icon(
+                                        imageVector = Icons.Default.Calculate,
+                                        contentDescription = stringResource(R.string.calculate)
+                                    )
                                 }
                                 Button(
                                     onClick = {
@@ -115,7 +121,10 @@ fun ViewUnassignedScreen(navController: NavController, openDrawer: () -> Unit) {
                                     },
                                     modifier = Modifier.width(80.dp)
                                 ) {
-                                    Text(stringResource(R.string.save))
+                                    Icon(
+                                        imageVector = Icons.Default.Save,
+                                        contentDescription = stringResource(R.string.save)
+                                    )
                                 }
                             }
                         }
