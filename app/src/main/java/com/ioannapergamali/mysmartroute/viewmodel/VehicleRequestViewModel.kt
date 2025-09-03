@@ -40,7 +40,9 @@ data class PassengerRequest(
     val date: Long
 )
 
-class VehicleRequestViewModel : ViewModel() {
+class VehicleRequestViewModel(
+    private val walkRepository: WalkRepository = WalkRepository()
+) : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
 
     private val _requests = MutableStateFlow<List<MovingEntity>>(emptyList())
@@ -155,7 +157,9 @@ class VehicleRequestViewModel : ViewModel() {
                     "status" to "open"
                 )
                 db.collection("movings").document(id).set(data).await()
-                WalkRepository().startWalk()
+
+                walkRepository.startWalk(dateTime)
+
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to log walking", e)
             }

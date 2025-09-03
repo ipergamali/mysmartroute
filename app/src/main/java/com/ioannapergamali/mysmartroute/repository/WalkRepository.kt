@@ -3,7 +3,11 @@ package com.ioannapergamali.mysmartroute.repository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+
+import com.google.firebase.Timestamp
 import kotlinx.coroutines.tasks.await
+import java.util.Date
+
 
 /**
  * Repository για διαχείριση των πεζών μετακινήσεων του χρήστη.
@@ -15,17 +19,22 @@ class WalkRepository(
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 ) {
     /**
-     * Ξεκινά μια πεζή μετακίνηση καταγράφοντας μόνο την ώρα έναρξης.
+
+     * Ξεκινά μια πεζή μετακίνηση καταγράφοντας την ώρα που επέλεξε ο χρήστης.
      */
-    fun startWalk() {
+    suspend fun startWalk(startTimeMillis: Long) {
         val uid = auth.currentUser?.uid ?: return
         val data = mapOf(
-            "startTime" to FieldValue.serverTimestamp()
+            "startTime" to Timestamp(Date(startTimeMillis))
+
         )
         db.collection("users")
             .document(uid)
             .collection("walks")
             .add(data)
+
+            .await()
+
     }
 
     /**
