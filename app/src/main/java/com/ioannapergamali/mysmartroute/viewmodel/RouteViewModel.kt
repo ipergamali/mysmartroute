@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.Timestamp
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.RouteEntity
 import com.ioannapergamali.mysmartroute.data.local.RoutePointEntity
@@ -252,8 +253,7 @@ class RouteViewModel : ViewModel() {
                         // χρησιμοποιεί το υπόλοιπο σύστημα (walkDurationMinutes)
                         "walkDurationMinutes" to minutes,
                         "routeId" to firestore.collection("routes").document(routeId),
-                        "fromPoiId" to firestore.collection("pois").document(route.startPoiId),
-                        "toPoiId" to firestore.collection("pois").document(route.endPoiId),
+                        "startTime" to Timestamp.now(),
                         "userId" to firestore.collection("users").document(uid)
                     )
                     firestore.collection("routes").document(routeId)
