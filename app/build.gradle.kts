@@ -96,7 +96,6 @@ dependencies {
     implementation("androidx.compose.runtime:runtime")
     implementation("androidx.navigation:navigation-compose:2.9.1")
     implementation("androidx.compose.material:material-icons-extended")
-    implementation("io.coil-kt:coil-compose:2.7.0")
 
     // Glide για φόρτωση εικόνων προφίλ
     implementation("com.github.bumptech.glide:glide:4.16.0")
