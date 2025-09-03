@@ -183,8 +183,12 @@ fun ProfileScreen(navController: NavController, openDrawer: () -> Unit) {
                                     onSuccess = { _, _ ->
                                         Log.d("ProfileScreen", "Η εικόνα φορτώθηκε επιτυχώς")
                                     },
-                                    onError = { _, throwable ->
-                                        Log.e("ProfileScreen", "Αποτυχία φόρτωσης εικόνας", throwable)
+                                    onError = { _, errorResult ->
+                                        Log.e(
+                                            "ProfileScreen",
+                                            "Αποτυχία φόρτωσης εικόνας",
+                                            errorResult.throwable
+                                        )
                                     }
                                 )
                                 .build(),
