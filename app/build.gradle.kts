@@ -62,6 +62,7 @@ kotlin {
     jvmToolchain(21)
 }
 dependencies {
+    implementation("io.coil-kt:coil-compose:2.7.0") // φόρτωση εικόνας
     // Firebase (BoM για αυτόματες εκδόσεις όλων των modules)
     implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
     implementation("com.google.firebase:firebase-auth-ktx")

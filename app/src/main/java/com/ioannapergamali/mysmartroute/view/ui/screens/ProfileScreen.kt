@@ -60,6 +60,7 @@ fun ProfileScreen(navController: NavController, openDrawer: () -> Unit) {
 
         val storageRef = FirebaseStorage.getInstance().reference
             .child("profileImages/$uid.jpg")
+        Log.d("STORAGE", "Uploading to: ${storageRef.path}")
 
         storageRef.putFile(uri)
             .addOnSuccessListener {
