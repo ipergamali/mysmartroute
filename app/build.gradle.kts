@@ -67,6 +67,8 @@ dependencies {
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.firebase:firebase-storage-ktx")
+    implementation("com.google.firebase:firebase-appcheck-playintegrity")
+    debugImplementation("com.google.firebase:firebase-appcheck-debug")
 
     // Το Dynamic Links δεν καλύπτεται από το BoM, δηλώνουμε ρητά την έκδοση
     implementation("com.google.firebase:firebase-dynamic-links:22.1.0")
