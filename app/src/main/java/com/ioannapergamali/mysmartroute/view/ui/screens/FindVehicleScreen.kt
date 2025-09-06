@@ -3,6 +3,8 @@ package com.ioannapergamali.mysmartroute.view.ui.screens
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.R
+import androidx.compose.ui.platform.LocalContext
+
 
 /**
  * Οθόνη εύρεσης οχήματος βάσει κόστους. Επαναχρησιμοποιεί την RouteModeScreen
