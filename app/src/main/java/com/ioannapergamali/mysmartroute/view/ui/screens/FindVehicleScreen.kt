@@ -1,16 +1,56 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
-import androidx.compose.runtime.Composable
-import androidx.navigation.NavController
-import com.ioannapergamali.mysmartroute.R
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.listSaver
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
+import androidx.compose.material3.menuAnchor
+import androidx.lifecycle.*
+import androidx.lifecycle.compose.collectAsState
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.MapsInitializer
+import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.maps.android.compose.*
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import kotlin.math.abs
+import java.time.LocalDate
+import java.time.ZoneId
 
+import com.ioannapergamali.mysmartroute.R
+import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
+import com.ioannapergamali.mysmartroute.utils.MapsUtils
+import com.ioannapergamali.mysmartroute.utils.offsetPois
+import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
+import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
+import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.TransferRequestViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
 
 /**
  * Οθόνη εύρεσης οχήματος βάσει κόστους. Επαναχρησιμοποιεί την RouteModeScreen
  * ώστε να εμφανίζεται ο χάρτης, ο πίνακας με τα POI και τα κουμπιά "Εύρεση τώρα"
  * και "Αποθήκευση αιτήματος" όπως στην αναζήτηση βάσει ημερομηνίας.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
 
