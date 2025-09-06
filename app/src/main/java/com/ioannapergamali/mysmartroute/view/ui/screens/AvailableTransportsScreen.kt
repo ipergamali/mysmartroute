@@ -105,6 +105,7 @@ fun AvailableTransportsScreen(
 
     val today = remember { LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli() }
     val sortedDecls = declarations.filter { decl ->
+        // Η δήλωση πρέπει να έχει κόστος μικρότερο ή ίσο με αυτό που όρισε ο χρήστης
         if (maxCost != null && decl.cost > maxCost) return@filter false
         if (decl.date < today) return@filter false
         if (date != null && date >= today && decl.date != date) return@filter false
