@@ -27,6 +27,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.BookingViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.UserViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleViewModel
 import com.ioannapergamali.mysmartroute.utils.matchesFavorites
+import com.ioannapergamali.mysmartroute.utils.isUpcoming
 import kotlinx.coroutines.launch
 import kotlin.math.max
 import java.time.Instant
@@ -108,6 +109,7 @@ fun AvailableTransportsScreen(
         if (seats != null && decl.seats < seats) return@filter false
         if (vehicleType != null && runCatching { VehicleType.valueOf(decl.vehicleType) }.getOrNull() != vehicleType) return@filter false
         if (!decl.matchesFavorites(preferred, nonPreferred)) return@filter false
+        if (!decl.isUpcoming()) return@filter false
         true
 
 
