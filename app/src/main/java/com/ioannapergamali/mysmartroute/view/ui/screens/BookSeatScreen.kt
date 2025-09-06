@@ -565,7 +565,7 @@ fun BookSeatScreen(
                                     "&startId=" + startId +
                                     "&endId=" + endId +
                                     "&maxCost=&date=" + dateMillis +
-                                    "&seats=1"
+                                    "&seats=1&vehicleType="
                         )
                     }
                 ) {

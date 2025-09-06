@@ -44,6 +44,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.TransferRequestViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.utils.offsetPois
+import com.ioannapergamali.mysmartroute.view.ui.util.labelForVehicle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -86,6 +87,8 @@ fun RouteModeScreen(
     val originalPoiIds = remember { mutableStateListOf<String>() }
     var startIndex by rememberSaveable { mutableStateOf<Int?>(null) }
     var endIndex by rememberSaveable { mutableStateOf<Int?>(null) }
+    var vehicleTypeExpanded by remember { mutableStateOf(false) }
+    var selectedVehicleType by rememberSaveable { mutableStateOf<VehicleType?>(null) }
     var message by remember { mutableStateOf("") }
     val datePickerState = rememberDatePickerState(System.currentTimeMillis())
     var showDatePicker by remember { mutableStateOf(false) }
@@ -433,6 +436,27 @@ fun RouteModeScreen(
                 Spacer(Modifier.height(16.dp))
             }
 
+            ExposedDropdownMenuBox(expanded = vehicleTypeExpanded, onExpandedChange = { vehicleTypeExpanded = !vehicleTypeExpanded }) {
+                OutlinedTextField(
+                    value = selectedVehicleType?.let { labelForVehicle(it) } ?: "",
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text(stringResource(R.string.vehicle_type)) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = vehicleTypeExpanded) },
+                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                )
+                DropdownMenu(expanded = vehicleTypeExpanded, onDismissRequest = { vehicleTypeExpanded = false }) {
+                    VehicleType.values().forEach { type ->
+                        DropdownMenuItem(text = { Text(labelForVehicle(type)) }, onClick = {
+                            selectedVehicleType = type
+                            vehicleTypeExpanded = false
+                        })
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+
             OutlinedTextField(
                 value = seatsText,
                 onValueChange = { seatsText = it },
@@ -467,7 +491,8 @@ fun RouteModeScreen(
                                 "&endId=" + toId +
                                 "&maxCost=" + cost +
                                 "&date=" + date +
-                                "&seats=" + seats
+                                "&seats=" + seats +
+                                "&vehicleType=" + (selectedVehicleType?.name ?: "")
                         )
                     },
                     enabled = selectedRouteId != null && startIndex != null && endIndex != null,

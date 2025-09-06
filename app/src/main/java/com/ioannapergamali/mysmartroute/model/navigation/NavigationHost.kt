@@ -38,6 +38,7 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.InterestingRoutesScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.PrintCompletedScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.PrintListScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.PrintScheduledScreen
+import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.view.ui.screens.PrintDeclarationsScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.PrintTicketScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.PrepareCompleteRouteScreen
@@ -227,14 +228,15 @@ fun NavigationHost(
         }
 
         composable(
-            "availableTransports?routeId={routeId}&startId={startId}&endId={endId}&maxCost={maxCost}&date={date}&seats={seats}",
+            "availableTransports?routeId={routeId}&startId={startId}&endId={endId}&maxCost={maxCost}&date={date}&seats={seats}&vehicleType={vehicleType}",
             arguments = listOf(
                 navArgument("routeId") { defaultValue = "" },
                 navArgument("startId") { defaultValue = "" },
                 navArgument("endId") { defaultValue = "" },
                 navArgument("maxCost") { defaultValue = "" },
                 navArgument("date") { defaultValue = "" },
-                navArgument("seats") { defaultValue = "" }
+                navArgument("seats") { defaultValue = "" },
+                navArgument("vehicleType") { defaultValue = "" }
             )
         ) { backStackEntry ->
             val rid = backStackEntry.arguments?.getString("routeId")
@@ -243,6 +245,8 @@ fun NavigationHost(
             val maxCost = backStackEntry.arguments?.getString("maxCost")?.toDoubleOrNull()
             val date = backStackEntry.arguments?.getString("date")?.toLongOrNull()
             val seats = backStackEntry.arguments?.getString("seats")?.toIntOrNull()
+            val vehicleTypeArg = backStackEntry.arguments?.getString("vehicleType")?.takeIf { it.isNotBlank() }
+            val vType = vehicleTypeArg?.let { runCatching { VehicleType.valueOf(it) }.getOrNull() }
             AvailableTransportsScreen(
                 navController = navController,
                 openDrawer = openDrawer,
@@ -251,7 +255,8 @@ fun NavigationHost(
                 endId = eid,
                 maxCost = maxCost,
                 date = date,
-                seats = seats
+                seats = seats,
+                vehicleType = vType
             )
         }
 
