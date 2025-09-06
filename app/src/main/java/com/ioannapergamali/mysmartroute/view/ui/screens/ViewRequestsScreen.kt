@@ -156,6 +156,8 @@ fun ViewRequestsScreen(
                                 "$dateStr $timeStr"
                             } else ""
                             val costText = if (req.cost == Double.MAX_VALUE) "-" else req.cost.toString()
+                            val isExpired = req.date > 0L && System.currentTimeMillis() > req.date && req.status != "completed"
+                            val statusText = if (isExpired) stringResource(R.string.request_unsuccessful) else req.status
                             Row(
                                 modifier = Modifier.padding(vertical = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically,
@@ -164,7 +166,7 @@ fun ViewRequestsScreen(
                                 Text(routeName, modifier = Modifier.width(columnWidth))
                                 Text(costText, modifier = Modifier.width(columnWidth))
                                 Text(dateTimeText, modifier = Modifier.width(columnWidth))
-                                if (req.status == "pending") {
+                                if (req.status == "pending" && !isExpired) {
                                     val dName = driverNames[req.driverId] ?: ""
                                     Text(dName, modifier = Modifier.width(columnWidth))
                                     Button(onClick = {
@@ -200,7 +202,7 @@ fun ViewRequestsScreen(
                                         Text(stringResource(R.string.cancel_request))
                                     }
                                 } else {
-                                    Text(req.status, modifier = Modifier.width(columnWidth))
+                                    Text(statusText, modifier = Modifier.width(columnWidth))
                                 }
                             }
                             Divider()
