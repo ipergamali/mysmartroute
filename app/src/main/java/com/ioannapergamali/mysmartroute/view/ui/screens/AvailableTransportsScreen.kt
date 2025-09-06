@@ -26,6 +26,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.ReservationViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.BookingViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.UserViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleViewModel
+import com.ioannapergamali.mysmartroute.utils.matchesFavorites
 import kotlinx.coroutines.launch
 import kotlin.math.max
 import java.time.Instant
@@ -78,6 +79,7 @@ fun AvailableTransportsScreen(
     val drivers by userViewModel.drivers.collectAsState()
     val vehicles by vehicleViewModel.vehicles.collectAsState()
     val preferred by favoritesViewModel.preferredFlow(context).collectAsState(initial = emptySet())
+    val nonPreferred by favoritesViewModel.nonPreferredFlow(context).collectAsState(initial = emptySet())
 
     val reservationCounts = remember { mutableStateMapOf<String, Int>() }
     var message by remember { mutableStateOf("") }
