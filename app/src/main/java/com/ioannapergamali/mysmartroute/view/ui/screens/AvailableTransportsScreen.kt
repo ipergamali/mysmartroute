@@ -15,20 +15,17 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.R
-import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.view.ui.util.iconForVehicle
 import com.ioannapergamali.mysmartroute.view.ui.util.labelForVehicle
 import com.ioannapergamali.mysmartroute.viewmodel.FavoritesViewModel
-import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.TransportDeclarationViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.ReservationViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.BookingViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.UserViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleViewModel
-import com.ioannapergamali.mysmartroute.utils.matchesFavorites
 import kotlinx.coroutines.launch
 import kotlin.math.max
 import java.time.Instant
@@ -69,7 +66,6 @@ fun AvailableTransportsScreen(
     seats: Int?
 ) {
     val context = LocalContext.current
-    val routeViewModel: RouteViewModel = viewModel()
     val declarationViewModel: TransportDeclarationViewModel = viewModel()
     val userViewModel: UserViewModel = viewModel()
     val vehicleViewModel: VehicleViewModel = viewModel()
@@ -82,14 +78,9 @@ fun AvailableTransportsScreen(
     val drivers by userViewModel.drivers.collectAsState()
     val vehicles by vehicleViewModel.vehicles.collectAsState()
     val preferred by favoritesViewModel.preferredFlow(context).collectAsState(initial = emptySet())
-    val nonPreferred by favoritesViewModel.nonPreferredFlow(context).collectAsState(initial = emptySet())
 
     val reservationCounts = remember { mutableStateMapOf<String, Int>() }
     var message by remember { mutableStateOf("") }
-
-    val pois = remember { mutableStateListOf<PoIEntity>() }
-    var startIndex by remember { mutableStateOf(-1) }
-    var endIndex by remember { mutableStateOf(-1) }
 
     LaunchedEffect(Unit) {
         declarationViewModel.loadDeclarations(context)
@@ -97,35 +88,28 @@ fun AvailableTransportsScreen(
         vehicleViewModel.loadRegisteredVehicles(context, includeAll = true)
     }
 
-    LaunchedEffect(routeId) {
-        if (routeId != null) {
-            pois.clear()
-            pois.addAll(routeViewModel.getRoutePois(context, routeId))
-            startIndex = pois.indexOfFirst { it.id == startId }
-            endIndex = pois.indexOfFirst { it.id == endId }
-        }
-    }
-
     val driverNames = drivers.associate { it.id to "${it.name} ${it.surname}" }
     val vehiclesMap = vehicles.associateBy { it.id }
-    val sortedDecls = declarations.filter { decl ->
-        if (decl.routeId != routeId) return@filter false
-        if (startIndex < 0 || endIndex < 0 || startIndex >= endIndex) return@filter false
-        if (maxCost != null && decl.cost > maxCost) return@filter false
-        if (date != null && date > 0 && decl.date != date) return@filter false
-        if (seats != null && decl.seats < seats) return@filter false
-        if (!decl.matchesFavorites(preferred, nonPreferred)) return@filter false
-        true
-    }
-        // ταξινόμηση βάσει κόστους ώστε οι φθηνότερες επιλογές να εμφανίζονται πρώτες
-        .sortedBy { it.cost }
 
-    LaunchedEffect(sortedDecls) {
-        sortedDecls.forEach { decl ->
+    LaunchedEffect(declarations) {
+        declarations.forEach { decl ->
             val count = reservationViewModel.getReservationCount(context, decl.id)
             reservationCounts[decl.id] = count
         }
     }
+
+    val sortedDecls = declarations.filter { decl ->
+        if (maxCost != null && decl.cost > maxCost) return@filter false
+
+        if (date != null && date > 0 && decl.date != date) return@filter false
+        if (seats != null && decl.seats < seats) return@filter false
+        if (!decl.matchesFavorites(preferred, nonPreferred)) return@filter false
+        true
+
+
+    }
+        // ταξινόμηση βάσει κόστους ώστε οι φθηνότερες επιλογές να εμφανίζονται πρώτες
+        .sortedBy { it.cost }
 
 
     Scaffold(
