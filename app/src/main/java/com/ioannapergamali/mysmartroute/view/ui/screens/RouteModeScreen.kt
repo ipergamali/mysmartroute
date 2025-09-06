@@ -148,6 +148,22 @@ fun RouteModeScreen(
             pathPoints = emptyList()
         }
     }
+    suspend fun saveEditedRouteAsNewRoute(): String {
+        if (routePoiIds == originalPoiIds) return selectedRouteId ?: ""
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return selectedRouteId ?: ""
+        val username = FirebaseFirestore.getInstance()
+            .collection("users")
+            .document(uid)
+            .get()
+            .await()
+            .getString("username") ?: uid
+        val baseName = routes.find { it.id == selectedRouteId }?.name ?: "route"
+        return routeViewModel.addRoute(
+            context,
+            routePoiIds.toList(),
+            "${baseName}_edited_by_$username"
+        ) ?: selectedRouteId ?: ""
+    }
 
 
     LaunchedEffect(Unit) {
