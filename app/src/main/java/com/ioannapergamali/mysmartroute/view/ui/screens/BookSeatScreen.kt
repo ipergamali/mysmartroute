@@ -542,7 +542,7 @@ fun BookSeatScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(
                     enabled = selectedRoute != null && startIndex != null && endIndex != null &&
                             datePickerState.selectedDateMillis != null,
