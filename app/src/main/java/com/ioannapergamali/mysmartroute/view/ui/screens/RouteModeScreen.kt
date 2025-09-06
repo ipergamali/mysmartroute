@@ -443,7 +443,7 @@ fun RouteModeScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(
                     onClick = {
                         val fromIdx = startIndex ?: return@Button
