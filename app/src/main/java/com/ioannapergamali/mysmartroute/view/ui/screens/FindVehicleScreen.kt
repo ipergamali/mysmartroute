@@ -32,9 +32,6 @@ import com.google.maps.android.compose.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlin.math.abs
-import java.time.LocalDate
-import java.time.ZoneId
-
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
@@ -45,8 +42,6 @@ import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.TransferRequestViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
-import com.ioannapergamali.mysmartroute.view.ui.util.labelForVehicle
-import com.ioannapergamali.mysmartroute.viewmodel.FavoritesViewModel
 
 /**
  * Οθόνη εύρεσης οχήματος βάσει κόστους. Επαναχρησιμοποιεί την RouteModeScreen
@@ -78,19 +73,10 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
     var startIndex by rememberSaveable { mutableStateOf<Int?>(null) }
     var endIndex by rememberSaveable { mutableStateOf<Int?>(null) }
     var maxCostText by rememberSaveable { mutableStateOf("") }
-    val datePickerState = rememberDatePickerState(System.currentTimeMillis())
-    var seatsText by rememberSaveable { mutableStateOf("") }
-    var vehicleTypeExpanded by remember { mutableStateOf(false) }
-    var selectedVehicleType by remember { mutableStateOf<VehicleType?>(null) }
-    val favoritesViewModel: FavoritesViewModel = viewModel()
-    val preferred by favoritesViewModel.preferredFlow(context).collectAsState(initial = emptySet())
     var message by remember { mutableStateOf("") }
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     var calculating by remember { mutableStateOf(false) }
     var pendingPoi by remember { mutableStateOf<Triple<String, Double, Double>?>(null) }
-    val dateMillis = remember {
-        LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-    }
 
     val cameraPositionState = rememberCameraPositionState()
     val coroutineScope = rememberCoroutineScope()
@@ -416,42 +402,6 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
 
             Spacer(Modifier.height(16.dp))
 
-            ExposedDropdownMenuBox(expanded = vehicleTypeExpanded, onExpandedChange = { vehicleTypeExpanded = !vehicleTypeExpanded }) {
-                OutlinedTextField(
-                    value = selectedVehicleType?.let { labelForVehicle(it) } ?: "",
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text(stringResource(R.string.vehicle_type)) },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = vehicleTypeExpanded) },
-                    modifier = Modifier.menuAnchor().fillMaxWidth()
-                )
-                DropdownMenu(expanded = vehicleTypeExpanded, onDismissRequest = { vehicleTypeExpanded = false }) {
-                    val types = if (preferred.isNotEmpty()) preferred else VehicleType.values().toSet()
-                    types.forEach { type ->
-                        DropdownMenuItem(text = { Text(labelForVehicle(type)) }, onClick = {
-                            selectedVehicleType = type
-                            vehicleTypeExpanded = false
-                        })
-                    }
-                }
-            }
-
-            Spacer(Modifier.height(16.dp))
-
-            DatePicker(state = datePickerState)
-
-            Spacer(Modifier.height(16.dp))
-
-            OutlinedTextField(
-                value = seatsText,
-                onValueChange = { seatsText = it },
-                label = { Text(stringResource(R.string.seats_label)) },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(Modifier.height(16.dp))
-
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(
                     onClick = {
@@ -464,9 +414,8 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                         val fromId = routePois[fromIdx].id
                         val toId = routePois[toIdx].id
                         val cost = maxCostText.toDoubleOrNull() ?: Double.MAX_VALUE
-                        val seats = seatsText.toIntOrNull() ?: 1
                         val routeId = selectedRouteId ?: return@Button
-                        val date = datePickerState.selectedDateMillis ?: dateMillis
+                        val date = System.currentTimeMillis()
 
                         requestViewModel.requestTransport(context, routeId, fromId, toId, cost, date)
                         navController.navigate(
@@ -475,9 +424,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                                 "&startId=" + fromId +
                                 "&endId=" + toId +
                                 "&maxCost=" + cost +
-                                "&date=" + date +
-                                "&seats=" + seats +
-                                "&vehicleType=" + (selectedVehicleType?.name ?: "")
+                                "&date=&seats=&vehicleType="
                         )
                     },
                     enabled = selectedRouteId != null && startIndex != null && endIndex != null,
@@ -498,7 +445,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                             val fromId = routePois[fromIdx].id
                             val toId = routePois[toIdx].id
                             val cost = maxCostText.toDoubleOrNull() ?: Double.MAX_VALUE
-                            val date = datePickerState.selectedDateMillis ?: dateMillis
+                            val date = System.currentTimeMillis()
                             val routeId = saveEditedRouteAsNewRoute()
 
                             requestViewModel.requestTransport(context, routeId, fromId, toId, cost, date)
@@ -519,12 +466,4 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
             }
         }
     }
-
-    RouteModeScreen(
-        navController = navController,
-        openDrawer = openDrawer,
-        titleRes = R.string.find_vehicle,
-        includeCost = true
-    )
-
 }
