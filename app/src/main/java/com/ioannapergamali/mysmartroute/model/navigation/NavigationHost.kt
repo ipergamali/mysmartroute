@@ -227,13 +227,14 @@ fun NavigationHost(
         }
 
         composable(
-            "availableTransports?routeId={routeId}&startId={startId}&endId={endId}&maxCost={maxCost}&date={date}",
+            "availableTransports?routeId={routeId}&startId={startId}&endId={endId}&maxCost={maxCost}&date={date}&seats={seats}",
             arguments = listOf(
                 navArgument("routeId") { defaultValue = "" },
                 navArgument("startId") { defaultValue = "" },
                 navArgument("endId") { defaultValue = "" },
                 navArgument("maxCost") { defaultValue = "" },
-                navArgument("date") { defaultValue = "" }
+                navArgument("date") { defaultValue = "" },
+                navArgument("seats") { defaultValue = "" }
             )
         ) { backStackEntry ->
             val rid = backStackEntry.arguments?.getString("routeId")
@@ -241,6 +242,7 @@ fun NavigationHost(
             val eid = backStackEntry.arguments?.getString("endId")
             val maxCost = backStackEntry.arguments?.getString("maxCost")?.toDoubleOrNull()
             val date = backStackEntry.arguments?.getString("date")?.toLongOrNull()
+            val seats = backStackEntry.arguments?.getString("seats")?.toIntOrNull()
             AvailableTransportsScreen(
                 navController = navController,
                 openDrawer = openDrawer,
@@ -248,7 +250,8 @@ fun NavigationHost(
                 startId = sid,
                 endId = eid,
                 maxCost = maxCost,
-                date = date
+                date = date,
+                seats = seats
             )
         }
 
