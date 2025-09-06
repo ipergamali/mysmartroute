@@ -64,7 +64,8 @@ fun AvailableTransportsScreen(
     endId: String?,
     maxCost: Double?,
     date: Long?,
-    seats: Int?
+    seats: Int?,
+    vehicleType: VehicleType?
 ) {
     val context = LocalContext.current
     val declarationViewModel: TransportDeclarationViewModel = viewModel()
@@ -105,6 +106,7 @@ fun AvailableTransportsScreen(
 
         if (date != null && date > 0 && decl.date != date) return@filter false
         if (seats != null && decl.seats < seats) return@filter false
+        if (vehicleType != null && runCatching { VehicleType.valueOf(decl.vehicleType) }.getOrNull() != vehicleType) return@filter false
         if (!decl.matchesFavorites(preferred, nonPreferred)) return@filter false
         true
 
