@@ -62,7 +62,8 @@ fun AvailableTransportsScreen(
     startId: String?,
     endId: String?,
     maxCost: Double?,
-    date: Long?
+    date: Long?,
+    seats: Int?
 ) {
     val context = LocalContext.current
     val declarationViewModel: TransportDeclarationViewModel = viewModel()
@@ -99,8 +100,13 @@ fun AvailableTransportsScreen(
 
     val sortedDecls = declarations.filter { decl ->
         if (maxCost != null && decl.cost > maxCost) return@filter false
-        val reserved = reservationCounts[decl.id] ?: 0
-        decl.seats - reserved > 0
+
+        if (date != null && date > 0 && decl.date != date) return@filter false
+        if (seats != null && decl.seats < seats) return@filter false
+        if (!decl.matchesFavorites(preferred, nonPreferred)) return@filter false
+        true
+
+
     }
         // ταξινόμηση βάσει κόστους ώστε οι φθηνότερες επιλογές να εμφανίζονται πρώτες
         .sortedBy { it.cost }

@@ -37,6 +37,8 @@ import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.TransferRequestViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.utils.offsetPois
@@ -66,6 +68,8 @@ fun RouteModeScreen(
     val context = LocalContext.current
     val routeViewModel: RouteViewModel = viewModel()
     val poiViewModel: PoIViewModel = viewModel()
+    val requestViewModel: VehicleRequestViewModel = viewModel()
+    val transferRequestViewModel: TransferRequestViewModel = viewModel()
     val routes by routeViewModel.routes.collectAsState()
     val allPois by poiViewModel.pois.collectAsState()
 
@@ -96,6 +100,7 @@ fun RouteModeScreen(
     var calculating by remember { mutableStateOf(false) }
     var pendingPoi by remember { mutableStateOf<Triple<String, Double, Double>?>(null) }
     var maxCostText by rememberSaveable { mutableStateOf("") }
+    var seatsText by rememberSaveable { mutableStateOf("") }
 
     suspend fun saveEditedRouteIfChanged(): String {
         val routeId = selectedRouteId ?: return ""
@@ -410,6 +415,73 @@ fun RouteModeScreen(
                 Spacer(Modifier.height(16.dp))
             }
 
+            OutlinedTextField(
+                value = seatsText,
+                onValueChange = { seatsText = it },
+                label = { Text(stringResource(R.string.seats_label)) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(Modifier.height(16.dp))
+
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(
+                    onClick = {
+                        val fromIdx = startIndex ?: return@Button
+                        val toIdx = endIndex ?: return@Button
+                        if (fromIdx >= toIdx) {
+                            message = context.getString(R.string.invalid_stop_order)
+                            return@Button
+                        }
+                        val fromId = routePois[fromIdx].id
+                        val toId = routePois[toIdx].id
+                        val cost = maxCostText.toDoubleOrNull() ?: Double.MAX_VALUE
+                        val seats = seatsText.toIntOrNull() ?: 1
+                        val routeId = selectedRouteId ?: return@Button
+                        val date = datePickerState.selectedDateMillis ?: 0L
+
+                        requestViewModel.requestTransport(context, routeId, fromId, toId, cost, date)
+                        navController.navigate(
+                            "availableTransports?routeId=" +
+                                routeId +
+                                "&startId=" + fromId +
+                                "&endId=" + toId +
+                                "&maxCost=" + cost +
+                                "&date=" + date +
+                                "&seats=" + seats
+                        )
+                    },
+                    enabled = selectedRouteId != null && startIndex != null && endIndex != null,
+                ) {
+                    Text(stringResource(R.string.find_now))
+                }
+                Button(
+                    onClick = {
+                        coroutineScope.launch {
+                            val fromIdx = startIndex ?: return@launch
+                            val toIdx = endIndex ?: return@launch
+                            if (fromIdx >= toIdx) {
+                                message = context.getString(R.string.invalid_stop_order)
+                                return@launch
+                            }
+                            val fromId = routePois[fromIdx].id
+                            val toId = routePois[toIdx].id
+                            val cost = maxCostText.toDoubleOrNull() ?: Double.MAX_VALUE
+                            val seats = seatsText.toIntOrNull() ?: 1
+                            val date = datePickerState.selectedDateMillis ?: 0L
+                            val routeId = saveEditedRouteAsNewRoute()
+
+                            requestViewModel.requestTransport(context, routeId, fromId, toId, cost, date)
+                            transferRequestViewModel.submitRequest(context, routeId, date, cost)
+                            message = context.getString(R.string.request_sent)
+                        }
+                    },
+                    enabled = selectedRouteId != null && startIndex != null && endIndex != null,
+                ) {
+                    Text(stringResource(R.string.save_request))
+                }
+            }
 
             if (message.isNotBlank()) {
                 Spacer(Modifier.height(8.dp))
