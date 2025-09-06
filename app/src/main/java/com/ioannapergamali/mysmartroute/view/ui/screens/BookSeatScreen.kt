@@ -6,6 +6,8 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
@@ -567,7 +569,10 @@ fun BookSeatScreen(
                         )
                     }
                 ) {
-                    Text(stringResource(R.string.find_now))
+                    Icon(
+                        Icons.Default.Search,
+                        contentDescription = stringResource(R.string.find_now)
+                    )
                 }
                 Button(
                     enabled = selectedRoute != null && startIndex != null && endIndex != null &&
@@ -597,7 +602,10 @@ fun BookSeatScreen(
                         }
                     }
                 ) {
-                    Text(stringResource(R.string.save_request))
+                    Icon(
+                        Icons.Default.Save,
+                        contentDescription = stringResource(R.string.save_request)
+                    )
                 }
             }
 

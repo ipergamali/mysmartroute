@@ -5,6 +5,8 @@ import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.menuAnchor
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -434,7 +436,10 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                     },
                     enabled = selectedRouteId != null && startIndex != null && endIndex != null,
                 ) {
-                    Text(stringResource(R.string.find_now))
+                    Icon(
+                        Icons.Default.Search,
+                        contentDescription = stringResource(R.string.find_now)
+                    )
                 }
                 Button(
                     onClick = {
@@ -457,7 +462,10 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                     },
                     enabled = selectedRouteId != null && startIndex != null && endIndex != null,
                 ) {
-                    Text(stringResource(R.string.save_request))
+                    Icon(
+                        Icons.Default.Save,
+                        contentDescription = stringResource(R.string.save_request)
+                    )
                 }
             }
             if (message.isNotBlank()) {
