@@ -16,3 +16,10 @@ fun TransportDeclarationEntity.matchesFavorites(
     if (nonPreferred.contains(type)) return false
     return true
 }
+
+/**
+ * Επιστρέφει `true` αν η δήλωση αναφέρεται σε μελλοντικό χρόνο.
+ */
+fun TransportDeclarationEntity.isUpcoming(now: Long = System.currentTimeMillis()): Boolean {
+    return date + startTime > now
+}
