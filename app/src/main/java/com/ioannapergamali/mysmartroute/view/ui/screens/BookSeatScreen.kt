@@ -6,6 +6,8 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
@@ -567,6 +569,8 @@ fun BookSeatScreen(
                         )
                     }
                 ) {
+                    Icon(Icons.Default.Search, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
                     Text(stringResource(R.string.find_now))
                 }
                 Button(
@@ -597,6 +601,8 @@ fun BookSeatScreen(
                         }
                     }
                 ) {
+                    Icon(Icons.Default.Save, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
                     Text(stringResource(R.string.save_request))
                 }
             }
