@@ -47,6 +47,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.utils.offsetPois
+import com.ioannapergamali.mysmartroute.view.ui.util.labelForVehicle
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
@@ -76,6 +77,8 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
     val originalPoiIds = remember { mutableStateListOf<String>() }
     var startIndex by rememberSaveable { mutableStateOf<Int?>(null) }
     var endIndex by rememberSaveable { mutableStateOf<Int?>(null) }
+    var vehicleTypeExpanded by remember { mutableStateOf(false) }
+    var selectedVehicleType by rememberSaveable { mutableStateOf<VehicleType?>(null) }
     var maxCostText by rememberSaveable { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
@@ -409,6 +412,27 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
 
             Spacer(Modifier.height(16.dp))
 
+            ExposedDropdownMenuBox(expanded = vehicleTypeExpanded, onExpandedChange = { vehicleTypeExpanded = !vehicleTypeExpanded }) {
+                OutlinedTextField(
+                    value = selectedVehicleType?.let { labelForVehicle(it) } ?: "",
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text(stringResource(R.string.vehicle_type)) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = vehicleTypeExpanded) },
+                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                )
+                DropdownMenu(expanded = vehicleTypeExpanded, onDismissRequest = { vehicleTypeExpanded = false }) {
+                    VehicleType.values().forEach { type ->
+                        DropdownMenuItem(text = { Text(labelForVehicle(type)) }, onClick = {
+                            selectedVehicleType = type
+                            vehicleTypeExpanded = false
+                        })
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(
                     onClick = {
@@ -431,7 +455,8 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                                 "&endId=" + toId +
                                 "&maxCost=" + cost +
                                 "&date=" + dateMillis +
-                                "&seats=1"
+                                "&seats=1" +
+                                "&vehicleType=" + (selectedVehicleType?.name ?: "")
                         )
                     },
                     enabled = selectedRouteId != null && startIndex != null && endIndex != null,
