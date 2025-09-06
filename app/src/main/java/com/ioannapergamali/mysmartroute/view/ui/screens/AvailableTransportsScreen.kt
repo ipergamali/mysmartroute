@@ -33,6 +33,7 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import java.time.LocalDate
 
 
 @Composable
@@ -101,16 +102,15 @@ fun AvailableTransportsScreen(
         }
     }
 
+    val today = remember { LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli() }
     val sortedDecls = declarations.filter { decl ->
         if (maxCost != null && decl.cost > maxCost) return@filter false
-
-        if (date != null && date > 0 && decl.date != date) return@filter false
+        if (decl.date < today) return@filter false
+        if (date != null && date >= today && decl.date != date) return@filter false
         if (seats != null && decl.seats < seats) return@filter false
         if (vehicleType != null && runCatching { VehicleType.valueOf(decl.vehicleType) }.getOrNull() != vehicleType) return@filter false
         if (!decl.matchesFavorites(preferred, nonPreferred)) return@filter false
         true
-
-
     }
         // ταξινόμηση βάσει κόστους ώστε οι φθηνότερες επιλογές να εμφανίζονται πρώτες
         .sortedBy { it.cost }
