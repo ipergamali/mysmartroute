@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.*
@@ -73,8 +74,8 @@ fun ManageFavoritesScreen(navController: NavController, openDrawer: () -> Unit) 
                     }
                 }
                 Spacer(Modifier.width(8.dp))
-                Button(onClick = { viewModel.addPreferred(context, selectedPref) }) {
-                    Text(stringResource(R.string.add_favorite))
+                IconButton(onClick = { viewModel.addPreferred(context, selectedPref) }) {
+                    Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_favorite))
                 }
             }
             preferred.forEach { type ->
@@ -125,8 +126,8 @@ fun ManageFavoritesScreen(navController: NavController, openDrawer: () -> Unit) 
                     }
                 }
                 Spacer(Modifier.width(8.dp))
-                Button(onClick = { viewModel.addNonPreferred(context, selectedNonPref) }) {
-                    Text(stringResource(R.string.add_favorite))
+                IconButton(onClick = { viewModel.addNonPreferred(context, selectedNonPref) }) {
+                    Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_favorite))
                 }
             }
             nonPreferred.forEach { type ->
