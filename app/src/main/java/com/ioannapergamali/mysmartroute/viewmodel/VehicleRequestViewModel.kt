@@ -72,6 +72,8 @@ class VehicleRequestViewModel(
             val dbInstance = MySmartRouteDatabase.getInstance(context)
             val dao = dbInstance.movingDao()
             val routeDao = dbInstance.routeDao()
+            val userDao = dbInstance.userDao()
+            val vehicleDao = dbInstance.vehicleDao()
             val userId = FirebaseAuth.getInstance().currentUser?.uid
 
             _requests.value = if (allUsers) {
@@ -79,6 +81,16 @@ class VehicleRequestViewModel(
             } else {
                 userId?.let { dao.getMovingsForUser(it).first() } ?: emptyList()
             }
+
+            val enrichedLocal = mutableListOf<MovingEntity>()
+            for (m in _requests.value) {
+                m.routeName = routeDao.findById(m.routeId)?.name ?: ""
+                m.driverName = userDao.getUser(m.driverId)?.name ?: m.driverName
+                m.createdByName = userDao.getUser(m.userId)?.name ?: m.createdByName
+                m.vehicleName = vehicleDao.getVehicle(m.vehicleId)?.name ?: ""
+                enrichedLocal.add(m)
+            }
+            _requests.value = enrichedLocal
 
 
             val snapshot = if (NetworkUtils.isInternetAvailable(context)) {
@@ -94,9 +106,17 @@ class VehicleRequestViewModel(
 
             snapshot?.let { snap ->
                 val list = snap.documents.mapNotNull { it.toMovingEntity() }
-                if (list.isNotEmpty()) {
-                    _requests.value = list
-                    list.forEach { dao.insert(it) }
+                val enriched = mutableListOf<MovingEntity>()
+                for (m in list) {
+                    m.routeName = routeDao.findById(m.routeId)?.name ?: m.routeName
+                    m.driverName = userDao.getUser(m.driverId)?.name ?: m.driverName
+                    m.createdByName = userDao.getUser(m.userId)?.name ?: m.createdByName
+                    m.vehicleName = vehicleDao.getVehicle(m.vehicleId)?.name ?: m.vehicleName
+                    enriched.add(m)
+                }
+                if (enriched.isNotEmpty()) {
+                    _requests.value = enriched
+                    enriched.forEach { dao.insert(it) }
                 }
             }
 

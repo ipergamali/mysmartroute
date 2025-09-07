@@ -1,12 +1,14 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
 import android.text.format.DateFormat
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -86,21 +88,29 @@ private fun MovingCategory(title: String, list: List<MovingEntity>) {
     if (list.isNotEmpty()) {
         Text(title, style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(8.dp))
-        Row(modifier = Modifier.fillMaxWidth()) {
-            TableCell(stringResource(R.string.route))
-            TableCell(stringResource(R.string.date))
-            TableCell(stringResource(R.string.cost))
-            TableCell(stringResource(R.string.duration))
-        }
-        list.forEach { m ->
-            val dateText = if (m.date > 0L) {
-                DateFormat.getDateFormat(context).format(Date(m.date))
-            } else ""
-            Row(modifier = Modifier.fillMaxWidth()) {
-                TableCell(m.routeName)
-                TableCell(dateText)
-                TableCell(String.format(Locale.getDefault(), "%.2f€", m.cost))
-                TableCell(m.durationMinutes.toString())
+        Column(modifier = Modifier.horizontalScroll(rememberScrollState())) {
+            Row {
+                TableCell(stringResource(R.string.route))
+                TableCell(stringResource(R.string.driver))
+                TableCell(stringResource(R.string.vehicle_name))
+                TableCell(stringResource(R.string.passenger))
+                TableCell(stringResource(R.string.date))
+                TableCell(stringResource(R.string.cost))
+                TableCell(stringResource(R.string.duration))
+            }
+            list.forEach { m ->
+                val dateText = if (m.date > 0L) {
+                    DateFormat.getDateFormat(context).format(Date(m.date))
+                } else ""
+                Row {
+                    TableCell(m.routeName)
+                    TableCell(m.driverName)
+                    TableCell(m.vehicleName)
+                    TableCell(m.createdByName)
+                    TableCell(dateText)
+                    TableCell(String.format(Locale.getDefault(), "%.2f€", m.cost))
+                    TableCell(m.durationMinutes.toString())
+                }
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
@@ -108,11 +118,11 @@ private fun MovingCategory(title: String, list: List<MovingEntity>) {
 }
 
 @Composable
-private fun RowScope.TableCell(text: String) {
+private fun TableCell(text: String) {
     Text(
         text,
         modifier = Modifier
-            .weight(1f)
-            .padding(4.dp)
+            .width(120.dp)
+            .padding(4.dp),
     )
 }
