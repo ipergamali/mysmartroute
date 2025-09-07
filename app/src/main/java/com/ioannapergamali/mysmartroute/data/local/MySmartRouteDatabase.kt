@@ -31,6 +31,8 @@ import com.ioannapergamali.mysmartroute.data.local.FavoriteEntity
 import com.ioannapergamali.mysmartroute.data.local.FavoriteDao
 import com.ioannapergamali.mysmartroute.data.local.TransferRequestEntity
 import com.ioannapergamali.mysmartroute.data.local.TransferRequestDao
+import com.ioannapergamali.mysmartroute.data.local.UserPoiEntity
+import com.ioannapergamali.mysmartroute.data.local.UserPoiDao
 import androidx.room.TypeConverters
 import com.ioannapergamali.mysmartroute.data.local.Converters
 import com.ioannapergamali.mysmartroute.data.local.TripRatingEntity
@@ -57,9 +59,10 @@ import com.ioannapergamali.mysmartroute.data.local.TripRatingDao
         FavoriteEntity::class,
         TransferRequestEntity::class,
         TripRatingEntity::class,
-        NotificationEntity::class
+        NotificationEntity::class,
+        UserPoiEntity::class
     ],
-    version = 60
+    version = 61
 )
 @TypeConverters(Converters::class)
 abstract class MySmartRouteDatabase : RoomDatabase() {
@@ -83,6 +86,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
     abstract fun transferRequestDao(): TransferRequestDao
     abstract fun tripRatingDao(): TripRatingDao
     abstract fun notificationDao(): NotificationDao
+    abstract fun userPoiDao(): UserPoiDao
 
     companion object {
         @Volatile
@@ -768,6 +772,23 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_60_61 = object : Migration(60, 61) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `user_pois` (" +
+                        "`id` TEXT NOT NULL, " +
+                        "`userId` TEXT NOT NULL, " +
+                        "`poiId` TEXT NOT NULL, " +
+                        "PRIMARY KEY(`id`), " +
+                        "FOREIGN KEY(`userId`) REFERENCES `users`(`id`) ON DELETE CASCADE, " +
+                        "FOREIGN KEY(`poiId`) REFERENCES `pois`(`id`) ON DELETE CASCADE" +
+                    ")"
+                )
+                database.execSQL("CREATE INDEX IF NOT EXISTS `index_user_pois_userId` ON `user_pois` (`userId`)")
+                database.execSQL("CREATE INDEX IF NOT EXISTS `index_user_pois_poiId` ON `user_pois` (`poiId`)")
+            }
+        }
+
         private fun prepopulate(db: SupportSQLiteDatabase) {
             Log.d(TAG, "Prepopulating database")
             db.execSQL(
@@ -907,7 +928,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_55_56,
                     MIGRATION_56_57,
                     MIGRATION_57_58,
-                    MIGRATION_59_60
+                    MIGRATION_59_60,
+                    MIGRATION_60_61
                 )
                     .fallbackToDestructiveMigration()
                     .addCallback(object : RoomDatabase.Callback() {
