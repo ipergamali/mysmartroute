@@ -16,7 +16,6 @@ fun latLngSaver(): Saver<LatLng, List<Double>> = Saver(
 
 /**
 
-
  * Δημιουργεί ένα [Saver] που μπορεί να χειριστεί και `null` τιμές.
  * A [Saver] that also supports `null` values for [LatLng].
  *
