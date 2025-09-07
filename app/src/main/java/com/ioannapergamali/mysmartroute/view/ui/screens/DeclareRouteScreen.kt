@@ -186,18 +186,20 @@ fun DeclareRouteScreen(navController: NavController, openDrawer: () -> Unit) {
             savedStateHandle?.remove<String>("poiName")
             savedStateHandle?.remove<Double>("poiLat")
             savedStateHandle?.remove<Double>("poiLng")
-            pois.find {
-                it.name == name &&
-                    abs(it.lat - lat) < 0.00001 &&
+            val poi = pois.find {
+                abs(it.lat - lat) < 0.00001 &&
                     abs(it.lng - lng) < 0.00001
-            }?.let { poi ->
+            }
+            if (poi != null) {
                 selectedPoiId = poi.id
                 query = poi.name
-                unsavedPoint = null
-                unsavedAddress = null
-                focusRequester.requestFocus()
-                keyboardController?.show()
+            } else {
+                query = name
             }
+            unsavedPoint = null
+            unsavedAddress = null
+            focusRequester.requestFocus()
+            keyboardController?.show()
             pendingPoi = null
         }
     }

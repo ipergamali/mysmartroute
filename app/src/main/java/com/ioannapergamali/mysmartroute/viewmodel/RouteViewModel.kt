@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.util.UUID
+import kotlin.math.abs
 
 /**
  * ViewModel για διαχείριση διαδρομών στο Firestore και στη Room DB.
@@ -47,14 +48,18 @@ class RouteViewModel : ViewModel() {
     val currentRoute: StateFlow<List<PoIEntity>> = _currentRoute
 
     /**
-     * Προσθέτει ένα σημείο στη τρέχουσα διαδρομή εφόσον δεν είναι ίδιο με το
-     * τελευταίο καταχωρημένο.
-     * Adds a point to the current route if it isn't the same as the last one.
-     * @return true αν το σημείο προστέθηκε, false αν ήδη υπάρχει τελευταίο / true if the point was added, false if already last
+     * Προσθέτει ένα σημείο στην τρέχουσα διαδρομή αν δεν υπάρχει ήδη σημείο
+     * με τις ίδιες συντεταγμένες.
+     * Adds a point to the current route if no point with the same coordinates
+     * already exists.
+     * @return true αν το σημείο προστέθηκε, false διαφορετικά
      */
     fun addPoiToCurrentRoute(poi: PoIEntity): Boolean {
-        val last = _currentRoute.value.lastOrNull()
-        return if (last?.id != poi.id) {
+        val exists = _currentRoute.value.any {
+            abs(it.lat - poi.lat) < 0.00001 &&
+                abs(it.lng - poi.lng) < 0.00001
+        }
+        return if (!exists) {
             _currentRoute.value = _currentRoute.value + poi
             true
         } else {
