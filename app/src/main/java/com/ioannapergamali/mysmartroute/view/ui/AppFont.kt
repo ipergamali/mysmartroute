@@ -5,6 +5,9 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import com.ioannapergamali.mysmartroute.R
 
+// Διαθέσιμες οικογένειες γραμματοσειρών της εφαρμογής
+// Available font families used throughout the app
+
 enum class AppFont(val label: String, val fontFamily: FontFamily) {
     SansSerif("Sans Serif", FontFamily.SansSerif),
     Serif("Serif", FontFamily.Serif),

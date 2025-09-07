@@ -62,6 +62,8 @@ fun TopBar(
         }
     }
 ) {
+    // Γραμμή εφαρμογής με δυνατότητες πλοήγησης, γλώσσας και ειδοποιήσεων
+    // App bar providing navigation, language toggle, and notifications
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val settingsViewModel: SettingsViewModel = viewModel()
@@ -148,6 +150,8 @@ fun TopBar(
                 }
             }
             if (showLanguageToggle) {
+                // Εναλλαγή μεταξύ ελληνικής και αγγλικής γλώσσας
+                // Toggle between Greek and English languages
                 val nextLanguage = if (currentLanguage == AppLanguage.Greek.code) {
                     AppLanguage.English
                 } else {
