@@ -1,9 +1,13 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
 import android.text.format.DateFormat
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.weight
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -26,6 +30,7 @@ import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
 import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -81,19 +86,34 @@ private fun MovingCategory(title: String, list: List<MovingEntity>) {
     val context = LocalContext.current
     if (list.isNotEmpty()) {
         Text(title, style = MaterialTheme.typography.titleMedium)
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(modifier = Modifier.fillMaxWidth()) {
+            TableCell(stringResource(R.string.route))
+            TableCell(stringResource(R.string.date))
+            TableCell(stringResource(R.string.cost))
+            TableCell(stringResource(R.string.duration))
+        }
         list.forEach { m ->
             val dateText = if (m.date > 0L) {
                 DateFormat.getDateFormat(context).format(Date(m.date))
             } else ""
-            val info = buildString {
-                append(m.routeName)
-                if (dateText.isNotBlank()) {
-                    append(" - ")
-                    append(dateText)
-                }
+            Row(modifier = Modifier.fillMaxWidth()) {
+                TableCell(m.routeName)
+                TableCell(dateText)
+                TableCell(String.format(Locale.getDefault(), "%.2f€", m.cost))
+                TableCell(m.durationMinutes.toString())
             }
-            Text(info)
         }
         Spacer(modifier = Modifier.height(16.dp))
     }
+}
+
+@Composable
+private fun RowScope.TableCell(text: String) {
+    Text(
+        text,
+        modifier = Modifier
+            .weight(1f)
+            .padding(4.dp)
+    )
 }
