@@ -4,6 +4,8 @@ import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -172,7 +174,7 @@ fun SelectRoutePoisScreen(navController: NavController, openDrawer: () -> Unit) 
 
                 Spacer(Modifier.height(16.dp))
 
-                Button(onClick = {
+                IconButton(onClick = {
                     scope.launch {
                         val saved = saveEditedRouteIfChanged()
                         if (saved == true) {
@@ -184,7 +186,10 @@ fun SelectRoutePoisScreen(navController: NavController, openDrawer: () -> Unit) 
                         }
                     }
                 }) {
-                    Text(stringResource(R.string.confirm_poi_selection))
+                    Icon(
+                        imageVector = Icons.Filled.Save,
+                        contentDescription = stringResource(R.string.save)
+                    )
                 }
             }
         }
