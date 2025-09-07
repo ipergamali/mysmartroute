@@ -155,6 +155,7 @@
     <string name="ok">OK</string>
     <string name="cancel">Ακύρωση</string>
     <string name="announce">Αποστολή</string>
+    <string name="register">Καταχώρηση</string>
     <string name="duration_format">Διάρκεια: %1$d λεπτά</string>
     <string name="app_language">Γλώσσα εφαρμογής</string>
     <string name="poi_name">Όνομα POI</string>
