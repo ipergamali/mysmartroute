@@ -94,7 +94,7 @@
     <string name="find_way">Εύρεση μέσου μεταφοράς</string>
     <string name="book_seat">Κράτηση θέσης ή αγορά εισιτηρίου</string>
     <string name="view_routes">Αποθήκευση ενδιαφερουσών διαδρομών</string>
-    <string name="view_transports">Προβολή μεταφορών</string>
+    <string name="view_transports">Προβολή ενδιαφερουσών διαδρομών και σημείων ενδιαφέροντος</string>
     <string name="print_ticket">Εκτύπωση κράτησης ή εισιτηρίου</string>
     <string name="cancel_seat">Ακύρωση κράτησης</string>
     <string name="rank_transports">Βαθμολόγηση και σχόλια μεταφορών</string>
@@ -201,7 +201,7 @@
     <string name="add_poi_option">Προσθήκη POI</string>
     <string name="select_date">Επιλογή ημερομηνίας</string>
     <string name="select_time">Επιλογή ώρας</string>
-    <string name="select_pois_screen_title">Αποθήκευση ενδιαφερόντων POI</string>
+    <string name="select_pois_screen_title">Αποθήκευση ενδιαφερόντων σημείων ενδιαφέροντος</string>
     <string name="choose_pois">Επιλογή σημείων ενδιαφέροντος</string>
     <string name="confirm_poi_selection">Επιβεβαίωση επιλογής</string>
     <string name="route_saved">Η διαδρομή αποθηκεύτηκε</string>

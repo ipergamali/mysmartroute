@@ -91,7 +91,7 @@
     <string name="find_way">Find Way of Transport</string>
     <string name="book_seat">Book a Seat or Buy a Ticket</string>
     <string name="view_routes">Save Interesting Routes</string>
-    <string name="view_transports">View Transports</string>
+    <string name="view_transports">View interesting routes and points of interest</string>
     <string name="view_transport_requests">View Transport Requests</string>
     <string name="print_ticket">Print Booked Seat or Ticket</string>
     <string name="cancel_seat">Cancel Booked Seat</string>
@@ -213,7 +213,7 @@
     <string name="select_date">Select date</string>
     <string name="select_time">Select time</string>
     <string name="select_vehicle">Select vehicle</string>
-    <string name="select_pois_screen_title">Save interesting POIs</string>
+    <string name="select_pois_screen_title">Save interesting points of interest</string>
     <string name="choose_pois">Choose points of interest</string>
     <string name="confirm_poi_selection">Confirm selection</string>
     <string name="route_saved">Route saved</string>
