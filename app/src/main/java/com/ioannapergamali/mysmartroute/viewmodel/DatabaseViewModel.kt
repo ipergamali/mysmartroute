@@ -28,6 +28,9 @@ import com.ioannapergamali.mysmartroute.data.local.LanguageSettingEntity
 import com.ioannapergamali.mysmartroute.data.local.FavoriteEntity
 import com.ioannapergamali.mysmartroute.data.local.insertFavoriteSafely
 import com.ioannapergamali.mysmartroute.utils.toFavoriteEntity
+import com.ioannapergamali.mysmartroute.data.local.UserPoiEntity
+import com.ioannapergamali.mysmartroute.data.local.insertUserPoiSafely
+import com.ioannapergamali.mysmartroute.utils.toUserPoiEntity
 import com.ioannapergamali.mysmartroute.data.local.RouteEntity
 import com.ioannapergamali.mysmartroute.data.local.RoutePointEntity
 import com.ioannapergamali.mysmartroute.data.local.MovingEntity
@@ -112,7 +115,8 @@ class DatabaseViewModel : ViewModel() {
                 db.movingDao().getAll(),
                 db.transportDeclarationDao().getAll(),
                 db.availabilityDao().getAll(),
-                db.favoriteDao().getAll()
+                db.favoriteDao().getAll(),
+                db.userPoiDao().getAll()
             ) { values ->
                 val users = values[0] as List<UserEntity>
                 val vehicles = values[1] as List<VehicleEntity>
@@ -129,6 +133,7 @@ class DatabaseViewModel : ViewModel() {
                 val declarations = values[12] as List<TransportDeclarationEntity>
                 val availabilities = values[13] as List<AvailabilityEntity>
                 val favorites = values[14] as List<FavoriteEntity>
+                val userPois = values[15] as List<UserPoiEntity>
 
                 DatabaseData(
                     users,
@@ -145,16 +150,17 @@ class DatabaseViewModel : ViewModel() {
                     movings,
                     declarations,
                     availabilities,
-                    favorites
+                    favorites,
+                    userPois
                 )
             }.collect { data ->
                 Log.d(
                     TAG,
                     "Local data -> users:${data.users.size} vehicles:${data.vehicles.size} " +
                     "pois:${data.pois.size} poiTypes:${data.poiTypes.size} settings:${data.settings.size} roles:${data.roles.size} " +
-                        "menus:${data.menus.size} options:${data.menuOptions.size} routes:${data.routes.size} " +
+                    "menus:${data.menus.size} options:${data.menuOptions.size} routes:${data.routes.size} " +
                     "points:${data.routePoints.size} movings:${data.movings.size} declarations:${data.declarations.size}" +
-                        " availabilities:${data.availabilities.size} favorites:${data.favorites.size}"
+                    " availabilities:${data.availabilities.size} favorites:${data.favorites.size} userPois:${data.userPois.size}"
                 )
                 _localData.value = data
             }
@@ -268,8 +274,11 @@ class DatabaseViewModel : ViewModel() {
                 .await()
                 .documents.mapNotNull { it.toFavoriteEntity() }
 
-            Log.d(TAG, "Firebase data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} types:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size} routes:${routes.size} movings:${movings.size} declarations:${declarations.size} availabilities:${availabilities.size} favorites:${favorites.size}")
-            _firebaseData.value = DatabaseData(users, vehicles, pois, poiTypes, settings, roles, menus, menuOptions, emptyList(), routes, routePoints, movings, declarations, availabilities, favorites)
+            val userPois = firestore.collection("user_pois").get().await()
+                .documents.mapNotNull { it.toUserPoiEntity() }
+
+            Log.d(TAG, "Firebase data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} types:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size} routes:${routes.size} movings:${movings.size} declarations:${declarations.size} availabilities:${availabilities.size} favorites:${favorites.size} userPois:${userPois.size}")
+            _firebaseData.value = DatabaseData(users, vehicles, pois, poiTypes, settings, roles, menus, menuOptions, emptyList(), routes, routePoints, movings, declarations, availabilities, favorites, userPois)
             } catch (e: FirebaseFirestoreException) {
                 Log.e(TAG, "Firestore permission error", e)
                 _syncState.value = SyncState.Error("Ανεπαρκή δικαιώματα στο Firestore")
@@ -415,9 +424,12 @@ class DatabaseViewModel : ViewModel() {
                         .await()
                         .documents.mapNotNull { it.toFavoriteEntity() }
 
+                    val userPois = firestore.collection("user_pois").get().await()
+                        .documents.mapNotNull { it.toUserPoiEntity() }
+
                     Log.d(
                         TAG,
-                        "Remote data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} poiTypes:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size} routes:${routes.size} movings:${movings.size} declarations:${declarations.size} availabilities:${availabilities.size} favorites:${favorites.size}"
+                        "Remote data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} poiTypes:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size} routes:${routes.size} movings:${movings.size} declarations:${declarations.size} availabilities:${availabilities.size} favorites:${favorites.size} userPois:${userPois.size}"
                     )
                     users.forEach { db.userDao().insert(it) }
                     vehicles.forEach { insertVehicleSafely(db.vehicleDao(), db.userDao(), it) }
@@ -433,6 +445,7 @@ class DatabaseViewModel : ViewModel() {
                     declarations.forEach { db.transportDeclarationDao().insert(it) }
                     availabilities.forEach { db.availabilityDao().insert(it) }
                     favorites.forEach { insertFavoriteSafely(db.favoriteDao(), db.userDao(), it) }
+                    userPois.forEach { insertUserPoiSafely(db.userPoiDao(), db.userDao(), db.poIDao(), it) }
                     Log.d(TAG, "Inserted remote data to local DB")
                     prefs.edit().putLong("last_sync", remoteTs).apply()
                     _lastSyncTime.value = remoteTs
@@ -468,9 +481,12 @@ class DatabaseViewModel : ViewModel() {
                     val favorites = db.favoriteDao().getAll().first()
                     Log.d(TAG, "Fetched ${favorites.size} local favorites")
 
+                    val userPois = db.userPoiDao().getAll().first()
+                    Log.d(TAG, "Fetched ${userPois.size} local user pois")
+
                     Log.d(
                         TAG,
-                        "Local data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} poiTypes:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size} routes:${routes.size} points:${routePoints.size} movings:${movings.size} declarations:${declarations.size} availabilities:${availabilities.size} favorites:${favorites.size}"
+                        "Local data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} poiTypes:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size} routes:${routes.size} points:${routePoints.size} movings:${movings.size} declarations:${declarations.size} availabilities:${availabilities.size} favorites:${favorites.size} userPois:${userPois.size}"
                     )
 
                     // Αποφεύγουμε την δημιουργία κενών εγγράφων στο Firestore
@@ -543,6 +559,11 @@ class DatabaseViewModel : ViewModel() {
                             .document(fav.id)
                             .set(fav.toFirestoreMap()).await()
                     }
+                    userPois.forEach { up ->
+                        firestore.collection("user_pois")
+                            .document(up.id)
+                            .set(up.toFirestoreMap()).await()
+                    }
 
                     Log.d(TAG, "Uploaded local data to Firebase")
 
@@ -581,7 +602,8 @@ data class DatabaseData(
     val movings: List<MovingEntity>,
     val declarations: List<TransportDeclarationEntity>,
     val availabilities: List<AvailabilityEntity>,
-    val favorites: List<FavoriteEntity>
+    val favorites: List<FavoriteEntity>,
+    val userPois: List<UserPoiEntity>
 )
 
 sealed class SyncState {
