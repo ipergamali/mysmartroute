@@ -1,3 +1,5 @@
+// Μετατροπείς τύπων για την Room.
+// Type converters for Room.
 package com.ioannapergamali.mysmartroute.data.local
 
 import androidx.room.TypeConverter
