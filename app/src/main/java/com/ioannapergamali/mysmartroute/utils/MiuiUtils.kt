@@ -6,8 +6,10 @@ import android.os.Bundle
 import android.util.Log
 
 /**
+
  * Βοηθητικό αντικείμενο για παρόχους ειδικούς του MIUI.
  * Helper for MIUI specific providers.
+
  */
 object MiuiUtils {
     private const val TAG = "MiuiUtils"
@@ -17,12 +19,13 @@ object MiuiUtils {
     /**
      * Ασφαλής κλήση μεθόδου στον πάροχο MIUI Service Delivery.
      * Safely calls a method on the MIUI Service Delivery provider.
-     *
+
      * @param context Έγκυρο [Context].
      * @param methodName Η μέθοδος που θα καλεστεί στον πάροχο.
      * @param extras Προαιρετικά extras για την κλήση.
      * @return Το αποτέλεσμα [Bundle] ή `null` αν ο πάροχος δεν υπάρχει.
      *         The result [Bundle] from the provider, or null if it doesn't exist.
+
      */
     fun callServiceDelivery(
         context: Context,
