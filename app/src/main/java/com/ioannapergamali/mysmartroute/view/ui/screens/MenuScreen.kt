@@ -115,6 +115,7 @@ private fun RoleMenu(
             text = stringResource(R.string.menu_role_prefix, role?.localizedName() ?: ""),
             style = MaterialTheme.typography.titleLarge
         )
+
         val descKey = when (role) {
             UserRole.PASSENGER -> "role_passenger_desc"
             else -> null
@@ -126,6 +127,7 @@ private fun RoleMenu(
                 style = MaterialTheme.typography.bodyMedium
             )
         }
+
         Spacer(Modifier.height(8.dp))
         Card(
             modifier = Modifier.fillMaxWidth(),
