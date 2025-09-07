@@ -1,3 +1,5 @@
+// Βοηθητικές λειτουργίες για αγαπημένο.
+// Helper operations for favorite.
 package com.ioannapergamali.mysmartroute.data.local
 
 import androidx.room.Transaction

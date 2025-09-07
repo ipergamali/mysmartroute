@@ -1,3 +1,5 @@
+// Βοηθητικές λειτουργίες για οδηγού.
+// Helper operations for driver.
 package com.ioannapergamali.mysmartroute.data.local
 
 import com.google.firebase.firestore.FirebaseFirestore
