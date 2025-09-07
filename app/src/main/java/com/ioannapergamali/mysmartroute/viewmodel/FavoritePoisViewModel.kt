@@ -1,17 +1,15 @@
 package com.ioannapergamali.mysmartroute.viewmodel
 
 import androidx.lifecycle.ViewModel
-import com.google.firebase.firestore.DocumentReference
+import kotlinx.coroutines.flow.Flow
 import com.ioannapergamali.mysmartroute.repository.FavoritesRepository
 
 /**
  * ViewModel για τη διαχείριση αγαπημένων σημείων ενδιαφέροντος (POIs).
- * Τα αγαπημένα αποθηκεύονται στη διαδρομή
- * `users/{uid}/Favorites/data/pois/{poiId}` ως αναφορά
- * στο πραγματικό έγγραφο του POI.
+ * Τα αγαπημένα αποθηκεύονται τοπικά στη βάση Room μέσα από το `FavoritesRepository`.
  */
 class FavoritePoisViewModel(
-    private val repository: FavoritesRepository = FavoritesRepository()
+    private val repository: FavoritesRepository
 ) : ViewModel() {
 
     /**
@@ -27,6 +25,6 @@ class FavoritePoisViewModel(
     /**
      * Επιστρέφει όλες τις αναφορές στα αγαπημένα POIs του χρήστη.
      */
-    suspend fun getFavoritePois(): List<DocumentReference> = repository.getFavoriteRefs()
+    fun getFavoritePoiIds(): Flow<List<String>> = repository.getFavoriteIds()
 }
 
