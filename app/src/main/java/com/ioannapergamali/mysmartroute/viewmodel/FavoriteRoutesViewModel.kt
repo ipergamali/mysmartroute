@@ -1,11 +1,15 @@
 package com.ioannapergamali.mysmartroute.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.ioannapergamali.mysmartroute.data.local.FavoriteRouteEntity
+import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
@@ -36,12 +40,20 @@ class FavoriteRoutesViewModel : ViewModel() {
      * Φορτώνει τις αγαπημένες διαδρομές του χρήστη.
      * Loads the user's favorite routes.
      */
-    fun loadFavorites() {
+    fun loadFavorites(context: Context) {
         val uid = userId()
         if (uid.isBlank()) return
         viewModelScope.launch {
+            val dao = MySmartRouteDatabase.getInstance(context).favoriteRouteDao()
             val snap = runCatching { routesCollection(uid).get().await() }.getOrNull()
-            _favorites.value = snap?.documents?.map { it.id }?.toSet() ?: emptySet()
+            if (snap != null) {
+                val ids = snap.documents.map { it.id }.toSet()
+                _favorites.value = ids
+                dao.deleteAllForUser(uid)
+                ids.forEach { dao.insert(FavoriteRouteEntity(uid, it)) }
+            } else {
+                _favorites.value = dao.getFavoritesForUser(uid).first().toSet()
+            }
         }
     }
 
@@ -59,7 +71,7 @@ class FavoriteRoutesViewModel : ViewModel() {
      * Αποθηκεύει τις επιλεγμένες διαδρομές στη βάση.
      * Persists the selected routes to the database.
      */
-    fun saveFavorites(onComplete: (Boolean) -> Unit = {}) {
+    fun saveFavorites(context: Context, onComplete: (Boolean) -> Unit = {}) {
         val uid = userId()
         if (uid.isBlank()) {
             onComplete(false)
@@ -78,6 +90,11 @@ class FavoriteRoutesViewModel : ViewModel() {
                 }
                 batch.commit().await()
             }.isSuccess
+
+            val dao = MySmartRouteDatabase.getInstance(context).favoriteRouteDao()
+            dao.deleteAllForUser(uid)
+            routesList.forEach { dao.insert(FavoriteRouteEntity(uid, it)) }
+
             onComplete(result)
         }
     }

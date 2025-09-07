@@ -53,7 +53,7 @@ fun InterestingRoutesScreen(navController: NavController, openDrawer: () -> Unit
 
     LaunchedEffect(Unit) {
         routeViewModel.loadRoutes(context, includeAll = true)
-        favViewModel.loadFavorites()
+        favViewModel.loadFavorites(context)
     }
 
     Scaffold(
@@ -70,7 +70,7 @@ fun InterestingRoutesScreen(navController: NavController, openDrawer: () -> Unit
             if (routes.isNotEmpty()) {
                 FloatingActionButton(
                     onClick = {
-                        favViewModel.saveFavorites { success ->
+                        favViewModel.saveFavorites(context) { success ->
                             val msg = if (success) {
                                 R.string.favorite_routes_saved
                             } else {
@@ -122,7 +122,7 @@ fun InterestingRoutesScreen(navController: NavController, openDrawer: () -> Unit
 
             Button(
                 onClick = {
-                    favViewModel.saveFavorites { success ->
+                    favViewModel.saveFavorites(context) { success ->
                         val msg = if (success) {
                             R.string.favorite_routes_saved
                         } else {

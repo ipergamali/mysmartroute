@@ -28,6 +28,7 @@ import com.ioannapergamali.mysmartroute.data.local.LanguageSettingEntity
 import com.ioannapergamali.mysmartroute.data.local.FavoriteEntity
 import com.ioannapergamali.mysmartroute.data.local.insertFavoriteSafely
 import com.ioannapergamali.mysmartroute.utils.toFavoriteEntity
+import com.ioannapergamali.mysmartroute.data.local.FavoriteRouteEntity
 import com.ioannapergamali.mysmartroute.data.local.UserPoiEntity
 import com.ioannapergamali.mysmartroute.data.local.insertUserPoiSafely
 import com.ioannapergamali.mysmartroute.utils.toUserPoiEntity
@@ -116,6 +117,7 @@ class DatabaseViewModel : ViewModel() {
                 db.transportDeclarationDao().getAll(),
                 db.availabilityDao().getAll(),
                 db.favoriteDao().getAll(),
+                db.favoriteRouteDao().getAll(),
                 db.userPoiDao().getAll()
             ) { values ->
                 val users = values[0] as List<UserEntity>
@@ -133,7 +135,8 @@ class DatabaseViewModel : ViewModel() {
                 val declarations = values[12] as List<TransportDeclarationEntity>
                 val availabilities = values[13] as List<AvailabilityEntity>
                 val favorites = values[14] as List<FavoriteEntity>
-                val userPois = values[15] as List<UserPoiEntity>
+                val favoriteRoutes = values[15] as List<FavoriteRouteEntity>
+                val userPois = values[16] as List<UserPoiEntity>
 
                 DatabaseData(
                     users,
@@ -151,6 +154,7 @@ class DatabaseViewModel : ViewModel() {
                     declarations,
                     availabilities,
                     favorites,
+                    favoriteRoutes,
                     userPois
                 )
             }.collect { data ->
@@ -160,7 +164,8 @@ class DatabaseViewModel : ViewModel() {
                     "pois:${data.pois.size} poiTypes:${data.poiTypes.size} settings:${data.settings.size} roles:${data.roles.size} " +
                     "menus:${data.menus.size} options:${data.menuOptions.size} routes:${data.routes.size} " +
                     "points:${data.routePoints.size} movings:${data.movings.size} declarations:${data.declarations.size}" +
-                    " availabilities:${data.availabilities.size} favorites:${data.favorites.size} userPois:${data.userPois.size}"
+                    " availabilities:${data.availabilities.size} favorites:${data.favorites.size} favRoutes:${data.favoriteRoutes.size} " +
+                    "userPois:${data.userPois.size}"
                 )
                 _localData.value = data
             }
@@ -603,6 +608,7 @@ data class DatabaseData(
     val declarations: List<TransportDeclarationEntity>,
     val availabilities: List<AvailabilityEntity>,
     val favorites: List<FavoriteEntity>,
+    val favoriteRoutes: List<FavoriteRouteEntity>,
     val userPois: List<UserPoiEntity>
 )
 
