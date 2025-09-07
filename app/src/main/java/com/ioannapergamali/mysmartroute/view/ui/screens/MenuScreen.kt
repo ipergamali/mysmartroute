@@ -116,7 +116,11 @@ private fun RoleMenu(
             style = MaterialTheme.typography.titleLarge
         )
         val descKey = when (role) {
-            UserRole.DRIVER -> "role_driver_desc"
+
+            UserRole.PASSENGER -> "role_passenger_desc"
+            UserRole.DRIVER -> null
+            UserRole.ADMIN -> null
+
             else -> null
         }
         descKey?.let { key ->
