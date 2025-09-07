@@ -1,3 +1,5 @@
+// Βοηθητικές λειτουργίες για ρυθμίσεις.
+// Helper operations for settings.
 package com.ioannapergamali.mysmartroute.data.local
 
 import androidx.room.Transaction

@@ -1,3 +1,5 @@
+// Οντότητα Room για αγαπημένο.
+// Room entity for favorite.
 package com.ioannapergamali.mysmartroute.data.local
 
 import androidx.room.Entity

@@ -1,3 +1,5 @@
+// DAO πρόσβασης για πεζή μετακίνηση.
+// DAO for walking access.
 package com.ioannapergamali.mysmartroute.data.local
 
 import androidx.room.Dao

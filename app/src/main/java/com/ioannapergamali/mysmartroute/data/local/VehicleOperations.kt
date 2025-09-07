@@ -1,3 +1,5 @@
+// Βοηθητικές λειτουργίες για όχημα.
+// Helper operations for vehicle.
 package com.ioannapergamali.mysmartroute.data.local
 
 import androidx.room.Transaction

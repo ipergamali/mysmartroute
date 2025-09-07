@@ -1,3 +1,5 @@
+// DAO πρόσβασης για αξιολόγηση ταξιδιού.
+// DAO for trip rating access.
 package com.ioannapergamali.mysmartroute.data.local
 
 import androidx.room.Dao

@@ -18,6 +18,11 @@ import com.ioannapergamali.mysmartroute.data.local.MovingEntity
 import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationEntity
 import com.ioannapergamali.mysmartroute.data.local.AvailabilityEntity
 import com.ioannapergamali.mysmartroute.data.local.SeatReservationEntity
+
+/**
+ * Μετατρέπει έγγραφα Firestore σε τοπικές οντότητες Room και το αντίστροφο.
+ * Converts Firestore documents to local Room entities and vice versa.
+ */
 import com.ioannapergamali.mysmartroute.data.local.FavoriteEntity
 import com.ioannapergamali.mysmartroute.data.local.TransferRequestEntity
 import com.ioannapergamali.mysmartroute.data.local.NotificationEntity

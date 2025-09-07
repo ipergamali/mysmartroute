@@ -9,6 +9,10 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.ioannapergamali.mysmartroute.R
 
+/**
+ * Απλοποιεί τη δημιουργία ειδοποιήσεων.
+ * Simplifies building notifications.
+ */
 object NotificationUtils {
     private const val CHANNEL_ID = "default_channel"
 
@@ -20,6 +24,7 @@ object NotificationUtils {
         pendingIntent: PendingIntent? = null
     ) {
         // Δημιουργία καναλιού ειδοποίησης για Android 8+
+        // Create notification channel for Android 8+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,

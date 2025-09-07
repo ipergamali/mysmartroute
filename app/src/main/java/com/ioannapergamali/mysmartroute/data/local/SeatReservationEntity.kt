@@ -1,3 +1,5 @@
+// Οντότητα Room για κράτηση θέσης.
+// Room entity for seat reservation.
 package com.ioannapergamali.mysmartroute.data.local
 
 import androidx.room.Entity

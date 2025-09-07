@@ -1,3 +1,5 @@
+// Βοηθητικές λειτουργίες για μενού.
+// Helper operations for menu.
 package com.ioannapergamali.mysmartroute.data.local
 
 import androidx.room.Transaction

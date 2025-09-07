@@ -1,3 +1,5 @@
+// Κλάση φόρτωση θεμάτων.
+// Class for theme loader.
 package com.ioannapergamali.mysmartroute.data
 
 import android.content.Context

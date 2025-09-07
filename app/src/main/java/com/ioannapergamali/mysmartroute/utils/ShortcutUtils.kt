@@ -9,6 +9,10 @@ import androidx.core.graphics.drawable.IconCompat
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.viewmodel.MainActivity
 
+/**
+ * Δημιουργία συντόμευσης για την κύρια δραστηριότητα.
+ * Creates a launcher shortcut for the main activity.
+ */
 object ShortcutUtils {
     fun addMainShortcut(context: Context) {
         val shortcutManager = context.getSystemService(ShortcutManager::class.java)

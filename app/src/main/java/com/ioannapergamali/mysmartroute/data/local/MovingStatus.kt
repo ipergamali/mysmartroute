@@ -1,3 +1,5 @@
+// Καταστάσεις για μετακίνηση.
+// Statuses for moving.
 package com.ioannapergamali.mysmartroute.data.local
 
 /**

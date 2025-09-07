@@ -1,3 +1,5 @@
+// DAO πρόσβασης για αίτημα μεταφοράς.
+// DAO for transfer request access.
 package com.ioannapergamali.mysmartroute.data.local
 
 import androidx.room.Dao

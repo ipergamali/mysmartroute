@@ -5,7 +5,10 @@ import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 
-/** Helper for MIUI specific providers */
+/**
+ * Helper for MIUI specific providers.
+ * Βοηθητικό αντικείμενο για παρόχους ειδικούς του MIUI.
+ */
 object MiuiUtils {
     private const val TAG = "MiuiUtils"
     private const val SERVICE_DELIVERY_AUTHORITY =
@@ -13,11 +16,13 @@ object MiuiUtils {
 
     /**
      * Safely calls a method on the MIUI Service Delivery provider.
+     * Ασφαλής κλήση μεθόδου στον πάροχο MIUI Service Delivery.
      *
      * @param context A valid [Context].
      * @param methodName The method to invoke on the provider.
      * @param extras Optional extras for the call.
      * @return The result [Bundle] from the provider, or null if it doesn't exist.
+     *         Το αποτέλεσμα [Bundle] ή `null` αν ο πάροχος δεν υπάρχει.
      */
     fun callServiceDelivery(
         context: Context,

@@ -1,3 +1,5 @@
+// DAO πρόσβασης για ρύθμιση γλώσσας.
+// DAO for language setting access.
 package com.ioannapergamali.mysmartroute.data.local
 
 import androidx.room.Dao
