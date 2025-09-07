@@ -1,3 +1,5 @@
+// Οντότητα Room για ρύθμιση γλώσσας.
+// Room entity for language setting.
 package com.ioannapergamali.mysmartroute.data.local
 
 import androidx.room.Entity

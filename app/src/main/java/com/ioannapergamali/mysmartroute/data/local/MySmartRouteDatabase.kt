@@ -1,3 +1,5 @@
+// Βάση δεδομένων Room για my smart route.
+// Room database for my smart route.
 package com.ioannapergamali.mysmartroute.data.local
 
 import android.content.Context

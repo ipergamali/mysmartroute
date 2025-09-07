@@ -16,6 +16,10 @@ import org.json.JSONObject
 import org.json.JSONArray
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 
+/**
+ * Βοηθητικές συναρτήσεις για κλήσεις σε Google Maps και Directions APIs.
+ * Helper utilities for interacting with Google Maps and Directions APIs.
+ */
 object MapsUtils {
     private val client = OkHttpClient.Builder()
         .callTimeout(60, TimeUnit.SECONDS)

@@ -6,6 +6,8 @@ import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 /**
  * Επιστρέφει `true` εάν η συγκεκριμένη δήλωση μεταφοράς συμβαδίζει με τις προτιμήσεις
  * αγαπημένων ή μη αγαπημένων μέσων μεταφοράς του χρήστη.
+ * Returns `true` if this transport declaration matches user's preferred or
+ * non-preferred vehicle types.
  */
 fun TransportDeclarationEntity.matchesFavorites(
     preferred: Set<VehicleType>,
@@ -19,6 +21,7 @@ fun TransportDeclarationEntity.matchesFavorites(
 
 /**
  * Επιστρέφει `true` αν η δήλωση αναφέρεται σε μελλοντικό χρόνο.
+ * Returns `true` if the declaration is scheduled for the future.
  */
 fun TransportDeclarationEntity.isUpcoming(now: Long = System.currentTimeMillis()): Boolean {
     return date + startTime > now

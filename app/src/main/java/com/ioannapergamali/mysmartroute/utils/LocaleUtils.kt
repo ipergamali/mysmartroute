@@ -5,7 +5,15 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import java.util.Locale
 
+/**
+ * Ενημέρωση του locale της εφαρμογής.
+ * Updates the application's locale.
+ */
 object LocaleUtils {
+    /**
+     * Θέτει την εφαρμογή σε νέα γλώσσα και ανανεώνει τους πόρους.
+     * Sets the app to a new language and refreshes resources.
+     */
     fun updateLocale(context: Context, language: String) {
         val locale = Locale(language)
         Locale.setDefault(locale)

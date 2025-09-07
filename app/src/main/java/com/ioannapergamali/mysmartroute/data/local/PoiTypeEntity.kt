@@ -1,3 +1,5 @@
+// Οντότητα Room για τύπος σημείου ενδιαφέροντος.
+// Room entity for poi type.
 package com.ioannapergamali.mysmartroute.data.local
 
 import androidx.room.Entity

@@ -1,3 +1,5 @@
+// Οντότητα Room για διαθεσιμότητα.
+// Room entity for availability.
 package com.ioannapergamali.mysmartroute.data.local
 
 import androidx.room.Entity
