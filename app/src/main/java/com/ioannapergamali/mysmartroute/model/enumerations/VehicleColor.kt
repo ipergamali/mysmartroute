@@ -2,18 +2,21 @@ package com.ioannapergamali.mysmartroute.model.enumerations
 
 import androidx.compose.ui.graphics.Color
 
-/** Διαθέσιμα χρώματα οχημάτων με αντίστοιχο χρώμα για προεπισκόπηση. */
+/**
+ * Ελληνικά: Διαθέσιμα χρώματα οχημάτων με αντίστοιχη προεπισκόπηση.
+ * English: Available vehicle colors with corresponding preview color.
+ */
 enum class VehicleColor(val label: String, val color: Color) {
-    /** Μαύρο */
+    /** Μαύρο / Black */
     BLACK("Μαύρο", Color.Black),
-    /** Άσπρο */
+    /** Άσπρο / White */
     WHITE("Άσπρο", Color.White),
-    /** Κόκκινο */
+    /** Κόκκινο / Red */
     RED("Κόκκινο", Color.Red),
-    /** Μπλε */
+    /** Μπλε / Blue */
     BLUE("Μπλε", Color.Blue),
-    /** Πράσινο */
+    /** Πράσινο / Green */
     GREEN("Πράσινο", Color(0xFF4CAF50)),
-    /** Κίτρινο */
+    /** Κίτρινο / Yellow */
     YELLOW("Κίτρινο", Color(0xFFFFEB3B))
 }
