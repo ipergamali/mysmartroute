@@ -13,6 +13,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.material3.Typography
 import com.ioannapergamali.mysmartroute.model.interfaces.ThemeOption
 
+// Διαθέσιμα θέματα με βασικό χρώμα και γραμματοσειρά
+// Available themes with base color and font
 enum class AppTheme(
     override val label: String,
     override val seed: Color,
@@ -41,13 +43,19 @@ enum class AppTheme(
         get() = Typography()
 }
 
+// Υπολογίζει αν ένα χρώμα είναι σκοτεινό για αντίθετο κείμενο
+// Computes whether a color is dark to pick contrasting text
 private fun isColorDark(color: Color): Boolean {
     val darkness = 1 - (0.299 * color.red + 0.587 * color.green + 0.114 * color.blue)
     return darkness >= 0.5
 }
 
+// Επιλέγει λευκό ή μαύρο κείμενο ανάλογα με τη φωτεινότητα
+// Picks white or black text based on brightness
 private fun onColor(seed: Color): Color = if (isColorDark(seed)) Color.White else Color.Black
 
+// Παράγει ανοιχτή παλέτα χρωμάτων από το seed
+// Produces a light color scheme from the seed color
 fun ThemeOption.lightColors(): ColorScheme = lightColorScheme(
     primary = seed,
     secondary = seed,
@@ -57,6 +65,8 @@ fun ThemeOption.lightColors(): ColorScheme = lightColorScheme(
     onTertiary = onColor(seed)
 )
 
+// Παράγει σκοτεινή παλέτα χρωμάτων από το seed
+// Produces a dark color scheme from the seed color
 fun ThemeOption.darkColors(): ColorScheme = darkColorScheme(
     primary = seed,
     secondary = seed,
@@ -68,6 +78,8 @@ fun ThemeOption.darkColors(): ColorScheme = darkColorScheme(
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
+// Εφαρμόζει συγκεκριμένη γραμματοσειρά σε όλη την τυπογραφία
+// Applies a given font family to the entire typography
 private fun typographyWithFont(font: FontFamily): Typography {
     val base = Typography()
     return base.copy(
@@ -97,6 +109,8 @@ fun MysmartrouteTheme(
     font: FontFamily,
     content: @Composable () -> Unit
 ) {
+    // Επιλέγει χρωματική παλέτα και γραμματοσειρά για όλη την εφαρμογή
+    // Selects color scheme and typography for the entire app
     val colorScheme = if (darkTheme) theme.darkColors() else theme.lightColors()
     androidx.compose.material3.MaterialTheme(
         colorScheme = colorScheme,
