@@ -19,6 +19,13 @@ class WalkingUtilsTest {
     }
 
     @Test
+    fun walkingDuration_zeroDistance_throws() {
+        assertFailsWith<IllegalArgumentException> {
+            WalkingUtils.walkingDuration(0.0)
+        }
+    }
+
+    @Test
     fun walkingDuration_zeroSpeed_throws() {
         assertFailsWith<IllegalArgumentException> {
             WalkingUtils.walkingDuration(1000.0, 0.0)
