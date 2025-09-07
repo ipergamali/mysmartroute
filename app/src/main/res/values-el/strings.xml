@@ -186,7 +186,6 @@
     <string name="route_name">Όνομα διαδρομής</string>
     <string name="stops_header">Στάσεις</string>
     <!-- Περιγραφές ρόλων -->
-    <string name="role_passenger_desc">Μπορείτε να δείτε διαδρομές και να κάνετε κρατήσεις.</string>
     <string name="role_driver_desc">Μπορείτε να δηλώνετε διαθέσιμες μεταφορές και να διαχειρίζεστε οχήματα.</string>
     <string name="role_admin_desc">Έχετε πρόσβαση σε λειτουργίες διαχείρισης και ορισμού σημείων ενδιαφέροντος.</string>
     <string name="poi_outside_heraklion">Επιλέξτε σημείο εντός Ηρακλείου</string>
