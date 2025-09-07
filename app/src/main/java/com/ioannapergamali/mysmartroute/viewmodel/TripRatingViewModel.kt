@@ -47,7 +47,7 @@ class TripRatingViewModel : ViewModel() {
         viewModelScope.launch {
             val db = MySmartRouteDatabase.getInstance(context)
             db.tripRatingDao().upsert(
-                TripRatingEntity(moving.id, rating, comment)
+                TripRatingEntity(moving.id, moving.userId, rating, comment)
             )
             val data = hashMapOf(
                 "movingId" to moving.id,
