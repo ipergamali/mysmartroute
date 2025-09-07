@@ -49,7 +49,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import com.google.firebase.auth.FirebaseAuth
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> Unit) {
     val context = LocalContext.current
@@ -301,7 +301,10 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                 Spacer(Modifier.height(16.dp))
 
                 Text(stringResource(R.string.vehicle_type))
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     VehicleType.values().forEach { type ->
                         val isSelected = selectedVehicle == type
                         Column(
