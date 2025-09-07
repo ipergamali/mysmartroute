@@ -294,6 +294,8 @@
     <string name="no_reservation_found">No reservation found</string>
     <string name="favorite_routes_saved">Routes saved</string>
     <string name="favorite_routes_save_failed">Unable to save routes</string>
+    <string name="favorite_pois_saved">Points saved</string>
+    <string name="favorite_pois_save_failed">Unable to save points</string>
     <string name="declare_success">Transport declared successfully</string>
     <string name="declare_failure">Failed to declare transport</string>
 </resources>
