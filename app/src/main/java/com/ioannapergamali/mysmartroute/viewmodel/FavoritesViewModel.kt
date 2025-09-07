@@ -15,6 +15,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.util.UUID
 
+/**
+ * ViewModel για τη διαχείριση προτιμήσεων οχημάτων του χρήστη.
+ * ViewModel managing the user's vehicle preferences.
+ */
 class FavoritesViewModel : ViewModel() {
     private val firestore = FirebaseFirestore.getInstance()
 
@@ -26,6 +30,10 @@ class FavoritesViewModel : ViewModel() {
 
     private fun userId() = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
+    /**
+     * Ροή με τα οχήματα που προτιμά ο χρήστης.
+     * Flow emitting vehicles preferred by the user.
+     */
     fun preferredFlow(context: Context): Flow<Set<VehicleType>> {
         val dao = MySmartRouteDatabase.getInstance(context).favoriteDao()
         return dao.getPreferred(userId()).map { list ->
@@ -33,6 +41,10 @@ class FavoritesViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Ροή με τα οχήματα που ο χρήστης δεν προτιμά.
+     * Flow emitting vehicles the user dislikes.
+     */
     fun nonPreferredFlow(context: Context): Flow<Set<VehicleType>> {
         val dao = MySmartRouteDatabase.getInstance(context).favoriteDao()
         return dao.getNonPreferred(userId()).map { list ->
@@ -40,6 +52,10 @@ class FavoritesViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Προσθέτει όχημα στις προτιμήσεις του χρήστη.
+     * Adds a vehicle to the user's preferred list.
+     */
     fun addPreferred(context: Context, type: VehicleType) {
         viewModelScope.launch {
             val uid = userId()
@@ -56,6 +72,10 @@ class FavoritesViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Προσθέτει όχημα στη λίστα μη προτιμώμενων.
+     * Adds a vehicle to the non-preferred list.
+     */
     fun addNonPreferred(context: Context, type: VehicleType) {
         viewModelScope.launch {
             val uid = userId()
@@ -72,6 +92,10 @@ class FavoritesViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Αφαιρεί όχημα από τις προτιμήσεις του χρήστη.
+     * Removes a vehicle from the user's preferred list.
+     */
     fun removePreferred(context: Context, type: VehicleType) {
         viewModelScope.launch {
             val uid = userId()
@@ -91,6 +115,10 @@ class FavoritesViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Αφαιρεί όχημα από τη λίστα μη προτιμώμενων.
+     * Removes a vehicle from the non-preferred list.
+     */
     fun removeNonPreferred(context: Context, type: VehicleType) {
         viewModelScope.launch {
             val uid = userId()

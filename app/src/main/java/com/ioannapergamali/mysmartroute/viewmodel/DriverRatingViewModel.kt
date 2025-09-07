@@ -10,6 +10,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
+/**
+ * ViewModel που παρέχει κορυφαίους και χειρότερους οδηγούς βάσει αξιολογήσεων.
+ * ViewModel providing best and worst drivers based on ratings.
+ */
 class DriverRatingViewModel : ViewModel() {
     private val _bestDrivers = MutableStateFlow<List<DriverRating>>(emptyList())
     val bestDrivers: StateFlow<List<DriverRating>> = _bestDrivers
@@ -17,6 +21,10 @@ class DriverRatingViewModel : ViewModel() {
     private val _worstDrivers = MutableStateFlow<List<DriverRating>>(emptyList())
     val worstDrivers: StateFlow<List<DriverRating>> = _worstDrivers
 
+    /**
+     * Φορτώνει τις αξιολογήσεις οδηγών από την τοπική βάση δεδομένων.
+     * Loads driver ratings from the local database.
+     */
     fun loadRatings(context: Context) {
         val db = MySmartRouteDatabase.getInstance(context)
         viewModelScope.launch {

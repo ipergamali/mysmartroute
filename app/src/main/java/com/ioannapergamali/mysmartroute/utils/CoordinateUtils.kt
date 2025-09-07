@@ -3,7 +3,6 @@ package com.ioannapergamali.mysmartroute.utils
 import com.google.android.gms.maps.model.LatLng
 
 /**
-
  * Βοηθητικές συναρτήσεις για την επικύρωση συντεταγμένων.
  * Utility helpers for coordinate validation.
 
