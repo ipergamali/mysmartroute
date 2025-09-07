@@ -93,7 +93,7 @@
     <string name="find_vehicle">Εύρεση οχήματος βάσει κόστους</string>
     <string name="find_way">Εύρεση μέσου μεταφοράς</string>
     <string name="book_seat">Κράτηση θέσης ή αγορά εισιτηρίου</string>
-    <string name="view_routes">Προβολή ενδιαφερουσών διαδρομών</string>
+    <string name="view_routes">Αποθήκευση ενδιαφερουσών διαδρομών</string>
     <string name="view_transports">Προβολή μεταφορών</string>
     <string name="print_ticket">Εκτύπωση κράτησης ή εισιτηρίου</string>
     <string name="cancel_seat">Ακύρωση κράτησης</string>
