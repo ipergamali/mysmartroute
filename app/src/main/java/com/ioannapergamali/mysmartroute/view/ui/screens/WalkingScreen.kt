@@ -213,28 +213,6 @@ fun WalkingScreen(navController: NavController, openDrawer: () -> Unit) {
                 showMenu = true,
                 onMenuClick = openDrawer
             )
-        },
-        floatingActionButton = {
-            if (selectedRouteId != null && startIndex != null && endIndex != null) {
-                ExtendedFloatingActionButton(
-                    onClick = {
-                        val rId = selectedRouteId ?: return@ExtendedFloatingActionButton
-                        val timestamp = calendar.timeInMillis
-                        coroutineScope.launch {
-                            val distance = routeViewModel.getRouteDistance(context, rId)
-                            val minutes = WalkingUtils.walkingDuration(distance.toDouble()).inWholeMinutes.toInt()
-                            vehicleRequestViewModel.saveWalkingRoute(
-                                context,
-                                rId,
-                                timestamp,
-                                minutes
-                            )
-                        }
-                    },
-                    icon = { Icon(Icons.Default.Save, contentDescription = null) },
-                    text = { Text(stringResource(R.string.save)) }
-                )
-            }
         }
     ) { padding ->
         ScreenContainer(modifier = Modifier.padding(padding)) {
@@ -421,6 +399,31 @@ fun WalkingScreen(navController: NavController, openDrawer: () -> Unit) {
                 Icon(Icons.Default.AccessTime, contentDescription = stringResource(R.string.time))
                 Spacer(Modifier.width(8.dp))
                 Text(if (timeText.isEmpty()) stringResource(R.string.time) else timeText)
+            }
+
+            if (selectedRouteId != null && startIndex != null && endIndex != null) {
+                Spacer(Modifier.height(8.dp))
+                Button(
+                    onClick = {
+                        val rId = selectedRouteId ?: return@Button
+                        val timestamp = calendar.timeInMillis
+                        coroutineScope.launch {
+                            val distance = routeViewModel.getRouteDistance(context, rId)
+                            val minutes = WalkingUtils.walkingDuration(distance.toDouble()).inWholeMinutes.toInt()
+                            vehicleRequestViewModel.saveWalkingRoute(
+                                context,
+                                rId,
+                                timestamp,
+                                minutes
+                            )
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(Icons.Default.Save, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(R.string.save))
+                }
             }
 
             Spacer(Modifier.height(16.dp))
