@@ -1,3 +1,5 @@
+// Οντότητα Room για όχημα.
+// Room entity for vehicle.
 package com.ioannapergamali.mysmartroute.data.local
 
 import androidx.room.Entity

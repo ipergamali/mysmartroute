@@ -27,6 +27,7 @@ import java.util.UUID
 
 /**
  * ViewModel για διαχείριση διαδρομών στο Firestore και στη Room DB.
+ * ViewModel for managing routes in Firestore and the Room DB.
  */
 class RouteViewModel : ViewModel() {
     private val firestore = FirebaseFirestore.getInstance()
@@ -36,17 +37,20 @@ class RouteViewModel : ViewModel() {
     val routes: StateFlow<List<RouteEntity>> = _routes
 
     // Όλες οι πεζές μετακινήσεις για τον διαχειριστή
+    // All walking movements for the administrator
     private val _walks = MutableStateFlow<List<Walk>>(emptyList())
     val walks: StateFlow<List<Walk>> = _walks
 
     // Διατηρούμε προσωρινά τα επιλεγμένα σημεία μιας διαδρομής
+    // Temporarily store the selected points of a route
     private val _currentRoute = MutableStateFlow<List<PoIEntity>>(emptyList())
     val currentRoute: StateFlow<List<PoIEntity>> = _currentRoute
 
     /**
      * Προσθέτει ένα σημείο στη τρέχουσα διαδρομή εφόσον δεν είναι ίδιο με το
      * τελευταίο καταχωρημένο.
-     * @return true αν το σημείο προστέθηκε, false αν ήδη υπάρχει τελευταίο
+     * Adds a point to the current route if it isn't the same as the last one.
+     * @return true αν το σημείο προστέθηκε, false αν ήδη υπάρχει τελευταίο / true if the point was added, false if already last
      */
     fun addPoiToCurrentRoute(poi: PoIEntity): Boolean {
         val last = _currentRoute.value.lastOrNull()
@@ -72,6 +76,7 @@ class RouteViewModel : ViewModel() {
 
     /**
      * Φορτώνει όλες τις πεζές μετακινήσεις από όλα τα `walks` υποσυλλογές.
+     * Loads all walking movements from every `walks` subcollection.
      */
     fun loadAllWalksForAdmin() {
         viewModelScope.launch {
@@ -79,6 +84,10 @@ class RouteViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Φορτώνει διαδρομές από το Firestore ή την τοπική βάση.
+     * Loads routes from Firestore or the local database.
+     */
     fun loadRoutes(context: Context, includeAll: Boolean = false) {
         viewModelScope.launch {
             val db = MySmartRouteDatabase.getInstance(context)
@@ -112,6 +121,10 @@ class RouteViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Φορτώνει διαδρομές που δεν έχουν αποθηκευμένη διάρκεια περπατήματος.
+     * Loads routes lacking stored walking duration.
+     */
     fun loadRoutesWithoutDuration() {
         viewModelScope.launch {
             val snapshot = runCatching {
@@ -131,7 +144,7 @@ class RouteViewModel : ViewModel() {
 
     /**
      * Φορτώνει τα routes που εμφανίζονται στις υποσυλλογές `walks`.
-     * Χρησιμοποιεί το reference του `routeId` για να ανακτήσει τα στοιχεία της διαδρομής.
+     * Loads routes that appear in `walks` subcollections using the `routeId` reference.
      */
     fun loadRoutesFromWalks() {
         viewModelScope.launch {
@@ -158,7 +171,7 @@ class RouteViewModel : ViewModel() {
 
     /**
      * Φορτώνει τις διαδρομές που υπάρχουν στο subcollection `walks` του τρέχοντος χρήστη.
-     * Ανακτά το `routeId` από κάθε έγγραφο και διαβάζει τα στοιχεία της διαδρομής.
+     * Loads routes from the current user's `walks` subcollection by reading each `routeId`.
      */
     fun loadUserWalkingRoutes() {
         viewModelScope.launch {
@@ -183,11 +196,19 @@ class RouteViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Επιστρέφει τον αριθμό σημείων μιας διαδρομής.
+     * Returns the number of points for a route.
+     */
     suspend fun getPointsCount(context: Context, routeId: String): Int {
         val dao = MySmartRouteDatabase.getInstance(context).routePointDao()
         return dao.getPointsForRoute(routeId).first().size
     }
 
+    /**
+     * Ανακτά τα σημεία ενδιαφέροντος μιας διαδρομής.
+     * Retrieves the points of interest of a route.
+     */
     suspend fun getRoutePois(context: Context, routeId: String): List<PoIEntity> {
         val db = MySmartRouteDatabase.getInstance(context)
         val pointDao = db.routePointDao()
@@ -196,6 +217,10 @@ class RouteViewModel : ViewModel() {
         return points.mapNotNull { poiDao.findById(it.poiId) }
     }
 
+    /**
+     * Προσθέτει νέα διαδρομή με τα δοθέντα σημεία και όνομα.
+     * Adds a new route with the provided points and name.
+     */
     suspend fun addRoute(context: Context, poiIds: List<String>, name: String): String? {
         if (poiIds.size < 2 || name.isBlank()) return null
         val db = MySmartRouteDatabase.getInstance(context)
@@ -217,6 +242,10 @@ class RouteViewModel : ViewModel() {
         return id
     }
 
+    /**
+     * Ενημερώνει υπάρχουσα διαδρομή με νέα σημεία ή όνομα.
+     * Updates an existing route with new points or name.
+     */
     suspend fun updateRoute(
         context: Context,
         routeId: String,
@@ -245,6 +274,10 @@ class RouteViewModel : ViewModel() {
         points.forEach { pointDao.insert(it) }
     }
 
+    /**
+     * Αποθηκεύει διάρκεια πεζοπορίας για συγκεκριμένη διαδρομή.
+     * Saves walking duration for a specific route.
+     */
     fun updateWalkDuration(context: Context, routeId: String, minutes: Int) {
         viewModelScope.launch {
             val db = MySmartRouteDatabase.getInstance(context)
@@ -262,6 +295,10 @@ class RouteViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Υπολογίζει τη συνολική απόσταση της διαδρομής χρησιμοποιώντας το Maps API.
+     * Calculates total route distance using the Maps API.
+     */
     suspend fun getRouteDistance(context: Context, routeId: String): Int {
         val pois = getRoutePois(context, routeId)
         if (pois.size < 2) return 0
@@ -274,7 +311,7 @@ class RouteViewModel : ViewModel() {
 
     /**
      * Υπολογίζει τη διάρκεια διαδρομής με βάση τα αποθηκευμένα σημεία και το επιλεγμένο όχημα.
-     * Χρησιμοποιεί το Google Maps Directions API για να επιστρέψει τη διάρκεια σε λεπτά.
+     * Calculates route duration from stored points and the chosen vehicle using the Directions API.
      */
     suspend fun getRouteDuration(
         context: Context,
@@ -292,6 +329,7 @@ class RouteViewModel : ViewModel() {
 
     /**
      * Επιστρέφει τη διάρκεια και τα σημεία της διαδρομής μέσω του Directions API.
+     * Returns route duration and path using the Directions API.
      */
     suspend fun getRouteDirections(
         context: Context,

@@ -1,3 +1,5 @@
+// DAO πρόσβασης για κράτηση θέσης.
+// DAO for seat reservation access.
 package com.ioannapergamali.mysmartroute.data.local
 
 import androidx.room.Dao

@@ -21,12 +21,20 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.UUID
 
+/**
+ * ViewModel για διαχείριση κρατήσεων θέσεων και ολοκλήρωση διαδρομών.
+ * ViewModel managing seat reservations and route completion.
+ */
 class ReservationViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
 
     private val _reservations = MutableStateFlow<List<SeatReservationEntity>>(emptyList())
     val reservations: StateFlow<List<SeatReservationEntity>> = _reservations
 
+    /**
+     * Φορτώνει τις κρατήσεις μιας διαδρομής είτε τοπικά είτε από το cloud.
+     * Loads reservations for a route locally or from the cloud.
+     */
     fun loadReservations(context: Context, routeId: String, date: Long, startTime: Long, declarationId: String) {
         viewModelScope.launch {
             if (declarationId.isBlank()) {
@@ -56,7 +64,10 @@ class ReservationViewModel : ViewModel() {
         }
     }
 
-    /** Επιστρέφει τον αριθμό κρατήσεων για μια δήλωση μεταφοράς. */
+    /**
+     * Επιστρέφει τον αριθμό κρατήσεων για μια δήλωση μεταφοράς.
+     * Returns the reservation count for a transport declaration.
+     */
     suspend fun getReservationCount(context: Context, declarationId: String): Int {
         if (declarationId.isBlank()) return 0
 
@@ -82,6 +93,10 @@ class ReservationViewModel : ViewModel() {
         return localCount
     }
 
+    /**
+     * Ολοκληρώνει μια διαδρομή καταχωρώντας μετακινήσεις και ενημερώνοντας αιτήματα.
+     * Completes a route by recording movings and updating requests.
+     */
     fun completeRoute(
         context: Context,
         routeId: String,

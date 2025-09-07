@@ -11,9 +11,13 @@ import kotlinx.coroutines.tasks.await
 
 /**
  * ViewModel για αποθήκευση και ανάκτηση διαδρομών που ενδιαφέρουν τον επιβάτη.
+ * ViewModel for storing and retrieving routes that interest the passenger.
+ *
  * Οι διαδρομές αποθηκεύονται στη διαδρομή
  * `users/{uid}/favorites/data/routes/{routeId}` ως αναφορές σε έγγραφα της
  * συλλογής `routes`.
+ * Routes are stored at `users/{uid}/favorites/data/routes/{routeId}` as references
+ * to documents in the `routes` collection.
  */
 class FavoriteRoutesViewModel : ViewModel() {
     private val firestore = FirebaseFirestore.getInstance()
@@ -28,7 +32,10 @@ class FavoriteRoutesViewModel : ViewModel() {
     private val _favorites = MutableStateFlow<Set<String>>(emptySet())
     val favorites: StateFlow<Set<String>> = _favorites
 
-    /** Φορτώνει τις αγαπημένες διαδρομές του χρήστη. */
+    /**
+     * Φορτώνει τις αγαπημένες διαδρομές του χρήστη.
+     * Loads the user's favorite routes.
+     */
     fun loadFavorites() {
         val uid = userId()
         if (uid.isBlank()) return
@@ -38,14 +45,20 @@ class FavoriteRoutesViewModel : ViewModel() {
         }
     }
 
-    /** Ενημερώνει τοπικά το σύνολο διαδρομών που ενδιαφέρουν τον χρήστη. */
+    /**
+     * Ενημερώνει τοπικά το σύνολο διαδρομών που ενδιαφέρουν τον χρήστη.
+     * Locally updates the set of routes the user is interested in.
+     */
     fun toggleFavorite(routeId: String) {
         val current = _favorites.value.toMutableSet()
         if (current.contains(routeId)) current.remove(routeId) else current.add(routeId)
         _favorites.value = current
     }
 
-    /** Αποθηκεύει τις επιλεγμένες διαδρομές στη βάση. */
+    /**
+     * Αποθηκεύει τις επιλεγμένες διαδρομές στη βάση.
+     * Persists the selected routes to the database.
+     */
     fun saveFavorites(onComplete: (Boolean) -> Unit = {}) {
         val uid = userId()
         if (uid.isBlank()) {

@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 
 /**
  * ViewModel για τον έλεγχο και τη διαχείριση των ονομάτων των σημείων ενδιαφέροντος.
+ * ViewModel for reviewing and managing point-of-interest names.
  */
 class AdminPoiViewModel(private val repo: AdminPoiRepository) : ViewModel() {
     val pois: StateFlow<List<PoIEntity>> = repo.getAllPois().stateIn(
@@ -22,14 +23,20 @@ class AdminPoiViewModel(private val repo: AdminPoiRepository) : ViewModel() {
         initialValue = emptyList()
     )
 
-    /** Λίστα με τα ονόματα των σημείων για γρήγορη επισκόπηση. */
+    /**
+     * Λίστα με τα ονόματα των σημείων για γρήγορη επισκόπηση.
+     * List of point names for quick overview.
+     */
     val poiNames: StateFlow<List<String>> = repo.getPoiNames().stateIn(
         scope = viewModelScope,
         started = SharingStarted.Eagerly,
         initialValue = emptyList()
     )
 
-    /** Ομάδες πιθανών διπλών σημείων βάσει συντεταγμένων. */
+    /**
+     * Ομάδες πιθανών διπλών σημείων βάσει συντεταγμένων.
+     * Groups of potential duplicate points based on coordinates.
+     */
     val duplicatePois: StateFlow<List<List<PoIEntity>>> =
         repo.getPoisWithSameCoordinatesDifferentName().stateIn(
             scope = viewModelScope,
@@ -37,14 +44,26 @@ class AdminPoiViewModel(private val repo: AdminPoiRepository) : ViewModel() {
             initialValue = emptyList()
         )
 
+    /**
+     * Ενημερώνει τα στοιχεία ενός σημείου ενδιαφέροντος.
+     * Updates the details of a point of interest.
+     */
     fun updatePoi(poi: PoIEntity) {
         viewModelScope.launch { repo.updatePoi(poi) }
     }
 
+    /**
+     * Συγχωνεύει δύο σημεία, κρατώντας το ένα και διαγράφοντας το άλλο.
+     * Merges two points, keeping one and removing the other.
+     */
     fun mergePois(keepId: String, removeId: String) {
         viewModelScope.launch { repo.mergePois(keepId, removeId) }
     }
 
+    /**
+     * Διαγράφει ένα σημείο ενδιαφέροντος με βάση το αναγνωριστικό του.
+     * Deletes a point of interest by its identifier.
+     */
     fun deletePoi(id: String) {
         viewModelScope.launch { repo.deletePoi(id) }
     }

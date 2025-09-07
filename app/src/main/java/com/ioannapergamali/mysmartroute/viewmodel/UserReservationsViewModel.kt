@@ -17,6 +17,7 @@ import kotlinx.coroutines.tasks.await
 
 /**
  * ViewModel που φορτώνει τις κρατήσεις του τρέχοντος επιβάτη.
+ * ViewModel that loads reservations of the current passenger.
  */
 class UserReservationsViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
@@ -25,6 +26,10 @@ class UserReservationsViewModel : ViewModel() {
     private val _reservations = MutableStateFlow<List<SeatReservationEntity>>(emptyList())
     val reservations: StateFlow<List<SeatReservationEntity>> = _reservations
 
+    /**
+     * Φορτώνει τις κρατήσεις του τρέχοντος χρήστη από τη βάση και το cloud.
+     * Loads current user's reservations from the database and cloud.
+     */
     fun load(context: Context) {
         viewModelScope.launch {
             val userId = auth.currentUser?.uid ?: return@launch
@@ -46,6 +51,10 @@ class UserReservationsViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Διαγράφει μια κράτηση τόσο τοπικά όσο και από το Firestore.
+     * Deletes a reservation locally and from Firestore.
+     */
     fun delete(context: Context, reservation: SeatReservationEntity) {
         viewModelScope.launch {
             val dao = MySmartRouteDatabase.getInstance(context).seatReservationDao()

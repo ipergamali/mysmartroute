@@ -22,6 +22,10 @@ data class UserSummary(
     val driverAverageRating: Double
 )
 
+/**
+ * ViewModel που παράγει στατιστικά για μετακινήσεις, κόστη και αξιολογήσεις χρηστών.
+ * ViewModel producing statistics for trips, costs, and user ratings.
+ */
 class UserStatsViewModel(application: Application) : AndroidViewModel(application) {
     private val _userSummaries = MutableStateFlow<List<UserSummary>>(emptyList())
     val userSummaries: StateFlow<List<UserSummary>> = _userSummaries

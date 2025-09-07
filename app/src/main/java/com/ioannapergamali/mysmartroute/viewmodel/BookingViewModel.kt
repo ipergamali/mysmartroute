@@ -16,6 +16,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.util.UUID
 
+/**
+ * ViewModel που διαχειρίζεται τη διαδικασία κράτησης θέσεων.
+ * ViewModel that manages seat booking operations.
+ */
 class BookingViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
@@ -31,6 +35,10 @@ class BookingViewModel : ViewModel() {
         refreshRoutes()
     }
 
+    /**
+     * Ανανεώνει τις διαθέσιμες διαδρομές από το Firestore.
+     * Refreshes available routes from Firestore.
+     */
     fun refreshRoutes() {
         db.collection("routes").get().addOnSuccessListener { snapshot ->
             val list = snapshot.documents.mapNotNull { it.toObject(RouteEntity::class.java) }
@@ -38,6 +46,10 @@ class BookingViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Κρατά θέση για τον τρέχοντα χρήστη εφόσον δεν υπάρχει ήδη κράτηση.
+     * Reserves a seat for the current user if no reservation exists.
+     */
     suspend fun reserveSeat(
         context: Context,
         routeId: String,
@@ -53,6 +65,7 @@ class BookingViewModel : ViewModel() {
         val dao = MySmartRouteDatabase.getInstance(context).seatReservationDao()
 
         // Έλεγχος για ήδη υπάρχουσα κράτηση
+        // Check for an existing reservation
         val existing = dao.findUserReservation(userId, routeId, date, startTime)
         if (existing != null) {
             return@withContext Result.failure(Exception("Η θέση έχει ήδη κρατηθεί"))

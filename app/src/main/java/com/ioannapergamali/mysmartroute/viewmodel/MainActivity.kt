@@ -40,6 +40,10 @@ import android.view.WindowManager
 
 
 
+/**
+ * Κύρια δραστηριότητα που ρυθμίζει θέματα διεπαφής και πλοήγησης.
+ * Main activity configuring UI themes and navigation.
+ */
 class MainActivity : ComponentActivity() {
     private val settingsViewModel: SettingsViewModel by viewModels()
     private val requestViewModel: VehicleRequestViewModel by viewModels()
@@ -50,6 +54,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState : Bundle?)
     {
         // Εφαρμογή αποθηκευμένης γλώσσας πριν αρχίσει το lifecycle
+        // Apply saved language before lifecycle starts
         val startLang = runBlocking { LanguagePreferenceManager.getLanguage(this@MainActivity) }
         LocaleUtils.updateLocale(this, startLang)
         super.onCreate(savedInstanceState)
@@ -62,11 +67,14 @@ class MainActivity : ComponentActivity() {
             ActivityCompat.requestPermissions(this, locationPermissions, 0)
         }
         // Προαιρετικός έλεγχος ύπαρξης του MIUI Service Delivery provider
+        // Optional check for MIUI Service Delivery provider
         MiuiUtils.callServiceDelivery(this, "ping")
         // Συγχρονισμός ρυθμίσεων από τη βάση
+        // Sync settings from the database
         settingsViewModel.syncSettings(this)
         requestViewModel.loadRequests(this)
         // Έλεγχος φόρτωσης του Maps API key
+        // Verify Maps API key is loaded
         val apiKey = MapsUtils.getApiKey(this)
         Log.d("Maps", "API key loaded? ${apiKey.isNotEmpty()}")
         NotificationUtils.showNotification(
@@ -74,6 +82,7 @@ class MainActivity : ComponentActivity() {
             getString(R.string.welcome),
             getString(R.string.app_started_notification)
         )
+        // Αρχικοποίηση soundtrack και έναρξη αναπαραγωγής βάσει αποθηκευμένων ρυθμίσεων.
         // Initialize the soundtrack and start playback based on saved preferences.
         SoundManager.initialize(applicationContext)
         lifecycleScope.launch {

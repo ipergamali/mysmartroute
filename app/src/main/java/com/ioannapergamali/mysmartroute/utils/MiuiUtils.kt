@@ -5,19 +5,24 @@ import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 
-/** Helper for MIUI specific providers */
+/**
+ * Βοηθητικό αντικείμενο για παρόχους ειδικούς του MIUI.
+ * Helper for MIUI specific providers.
+ */
 object MiuiUtils {
     private const val TAG = "MiuiUtils"
     private const val SERVICE_DELIVERY_AUTHORITY =
         "com.miui.personalassistant.servicedeliver.system.provider"
 
     /**
+     * Ασφαλής κλήση μεθόδου στον πάροχο MIUI Service Delivery.
      * Safely calls a method on the MIUI Service Delivery provider.
      *
-     * @param context A valid [Context].
-     * @param methodName The method to invoke on the provider.
-     * @param extras Optional extras for the call.
-     * @return The result [Bundle] from the provider, or null if it doesn't exist.
+     * @param context Έγκυρο [Context].
+     * @param methodName Η μέθοδος που θα καλεστεί στον πάροχο.
+     * @param extras Προαιρετικά extras για την κλήση.
+     * @return Το αποτέλεσμα [Bundle] ή `null` αν ο πάροχος δεν υπάρχει.
+     *         The result [Bundle] from the provider, or null if it doesn't exist.
      */
     fun callServiceDelivery(
         context: Context,

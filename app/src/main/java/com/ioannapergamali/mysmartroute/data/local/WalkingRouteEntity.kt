@@ -1,3 +1,5 @@
+// Οντότητα Room για διαδρομή πεζών.
+// Room entity for walking route.
 package com.ioannapergamali.mysmartroute.data.local
 
 import androidx.room.Entity

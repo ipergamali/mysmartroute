@@ -11,6 +11,10 @@ import java.util.Date
  * Repository για διαχείριση των πεζών μετακινήσεων του χρήστη.
  * Αποθηκεύει την ώρα έναρξης και μετατρέπει παλιές εγγραφές
  * αφαιρώντας τα πεδία fromPoiId/toPoiId.
+ *
+ * Repository managing the user's walking sessions.
+ * It stores the chosen start time and cleans up old records
+ * by removing the fromPoiId/toPoiId fields.
  */
 class WalkRepository(
     private val db: FirebaseFirestore = FirebaseFirestore.getInstance(),
@@ -20,6 +24,10 @@ class WalkRepository(
      * Καθαρίζει τυχόν παλιές εγγραφές `walks` του χρήστη αφαιρώντας τα
      * πεδία `fromPoiId`/`toPoiId` και συμπληρώνοντας το `startTime` με την
      * ώρα που επέλεξε ο χρήστης αν λείπει.
+     *
+     * Cleans up any previous `walks` entries by removing
+     * `fromPoiId`/`toPoiId` fields and filling `startTime`
+     * with the user-selected time when missing.
      */
     private suspend fun cleanupUserWalks(uid: String, startTimeMillis: Long) {
         val snapshot = db.collection("users")
@@ -45,6 +53,8 @@ class WalkRepository(
 
     /**
      * Ξεκινά μια πεζή μετακίνηση καταγράφοντας την ώρα που επέλεξε ο χρήστης.
+     *
+     * Starts a walking session recording the time chosen by the user.
      */
     suspend fun startWalk(startTimeMillis: Long) {
         val uid = auth.currentUser?.uid ?: return

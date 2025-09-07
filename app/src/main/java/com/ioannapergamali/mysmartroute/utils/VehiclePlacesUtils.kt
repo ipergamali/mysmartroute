@@ -10,6 +10,8 @@ import com.ioannapergamali.mysmartroute.model.classes.vehicles.RemoteVehicle
 /**
  * Βοηθητικό αντικείμενο για άντληση διαθέσιμων οχημάτων από το Google Places API
  * για τον νομό Ηρακλείου.
+ * Helper for fetching available vehicles from the Google Places API
+ * for the region of Heraklion.
  */
 object VehiclePlacesUtils {
     private val client = OkHttpClient()

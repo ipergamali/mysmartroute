@@ -17,7 +17,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.UUID
 
-/** ViewModel για αποθήκευση δηλώσεων μεταφοράς. */
+/**
+ * ViewModel για αποθήκευση δηλώσεων μεταφοράς.
+ * ViewModel for storing transport declarations.
+ */
 class TransportDeclarationViewModel : ViewModel() {
     private val _declarations = MutableStateFlow<List<TransportDeclarationEntity>>(emptyList())
     val declarations: StateFlow<List<TransportDeclarationEntity>> = _declarations
@@ -32,6 +35,10 @@ class TransportDeclarationViewModel : ViewModel() {
         private const val TAG = "TransportDeclVM"
     }
 
+    /**
+     * Φορτώνει δηλώσεις μεταφοράς και τις χωρίζει σε εκκρεμείς και ολοκληρωμένες.
+     * Loads transport declarations splitting them into pending and completed.
+     */
     fun loadDeclarations(context: Context, driverId: String? = null) {
         viewModelScope.launch {
             val db = MySmartRouteDatabase.getInstance(context)
@@ -57,6 +64,10 @@ class TransportDeclarationViewModel : ViewModel() {
             }
         }
     }
+    /**
+     * Καταχωρεί νέα δήλωση μεταφοράς τοπικά και απομακρυσμένα.
+     * Registers a new transport declaration locally and remotely.
+     */
     fun declareTransport(
         context: Context,
         routeId: String,
@@ -84,10 +95,15 @@ class TransportDeclarationViewModel : ViewModel() {
             } catch (e: Exception) {
                 Log.w(TAG, "Remote store failed", e)
                 // Σε περίπτωση αποτυχίας, θα αποσταλεί αργότερα μέσω συγχρονισμού
+                // In case of failure, it will be sent later during sync
             }
         }
     }
 
+    /**
+     * Διαγράφει δηλώσεις μεταφοράς τόσο από τη βάση όσο και από το Firestore.
+     * Deletes transport declarations from the database and Firestore.
+     */
     fun deleteDeclarations(context: Context, ids: Set<String>) {
         viewModelScope.launch(Dispatchers.IO) {
             val dao = MySmartRouteDatabase.getInstance(context).transportDeclarationDao()

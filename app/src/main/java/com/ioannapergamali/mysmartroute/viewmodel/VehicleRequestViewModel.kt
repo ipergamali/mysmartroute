@@ -40,6 +40,10 @@ data class PassengerRequest(
     val date: Long
 )
 
+/**
+ * ViewModel για αιτήματα οχημάτων, πεζές διαδρομές και ειδοποιήσεις.
+ * ViewModel handling vehicle requests, walking routes, and notifications.
+ */
 class VehicleRequestViewModel(
     private val walkRepository: WalkRepository = WalkRepository()
 ) : ViewModel() {
@@ -47,7 +51,10 @@ class VehicleRequestViewModel(
 
     private val _requests = MutableStateFlow<List<MovingEntity>>(emptyList())
     val requests: StateFlow<List<MovingEntity>> = _requests
-    /** Alias for requests so UI components can refer to passenger movings directly */
+    /**
+     * Ψευδώνυμο της λίστας αιτημάτων ώστε το UI να αναφέρεται στα movings.
+     * Alias for requests so UI components can refer to passenger movings directly.
+     */
     val movings: StateFlow<List<MovingEntity>> = requests
     private val notifiedRequests = mutableSetOf<String>()
     private val passengerRequests = mutableSetOf<PassengerRequest>()
@@ -67,6 +74,10 @@ class VehicleRequestViewModel(
         return next
     }
 
+    /**
+     * Φορτώνει αιτήματα μετακίνησης για τον τρέχοντα χρήστη ή για όλους.
+     * Loads movement requests for the current user or for all users.
+     */
     fun loadRequests(context: Context, allUsers: Boolean = false) {
         viewModelScope.launch {
             val dbInstance = MySmartRouteDatabase.getInstance(context)
@@ -133,6 +144,10 @@ class VehicleRequestViewModel(
         }
     }
 
+    /**
+     * Καταγράφει ένα περπάτημα ως μετακίνηση στην τοπική και απομακρυσμένη βάση.
+     * Logs a walking session as a moving in local and remote storage.
+     */
     fun logWalking(context: Context, dateTime: Long) {
         viewModelScope.launch {
             val dbInstance = MySmartRouteDatabase.getInstance(context)
@@ -167,6 +182,10 @@ class VehicleRequestViewModel(
         }
     }
 
+    /**
+     * Αποθηκεύει διαδρομή πεζοπορίας στο υποσυλλογή `walks` του χρήστη.
+     * Saves a walking route to the user's `walks` subcollection.
+     */
     fun saveWalkingRoute(
         context: Context,
         routeId: String,
@@ -193,6 +212,10 @@ class VehicleRequestViewModel(
         }
     }
 
+    /**
+     * Σημειώνει τις ειδοποιήσεις ως αναγνωσμένες.
+     * Marks notifications as read.
+     */
     fun markNotificationsRead(allUsers: Boolean) {
         val userId = FirebaseAuth.getInstance().currentUser?.uid
         val notifications = if (allUsers) {
@@ -207,6 +230,10 @@ class VehicleRequestViewModel(
         _hasUnreadNotifications.value = false
     }
 
+    /**
+     * Διαγράφει αιτήματα μετακίνησης από τη βάση και το Firestore.
+     * Deletes movement requests from the database and Firestore.
+     */
     fun deleteRequests(context: Context, ids: Set<String>) {
         viewModelScope.launch(Dispatchers.IO) {
             val dao = MySmartRouteDatabase.getInstance(context).movingDao()
@@ -230,6 +257,10 @@ class VehicleRequestViewModel(
         }
     }
 
+    /**
+     * Υποβάλλει αίτημα μεταφοράς για συγκεκριμένη διαδρομή και επιβάτη.
+     * Submits a transport request for a specific route and passenger.
+     */
     fun requestTransport(
         context: Context,
         routeId: String,
@@ -282,6 +313,10 @@ class VehicleRequestViewModel(
         }
     }
 
+    /**
+     * Ενημερώνει τον επιβάτη ότι ένας οδηγός απάντησε στο αίτημά του.
+     * Notifies the passenger that a driver responded to their request.
+     */
     fun notifyPassenger(context: Context, requestId: String) {
         viewModelScope.launch {
             val dao = MySmartRouteDatabase.getInstance(context).movingDao()
@@ -316,6 +351,10 @@ class VehicleRequestViewModel(
         }
     }
 
+    /**
+     * Ο επιβάτης αποδέχεται ή απορρίπτει την προσφορά οδηγού.
+     * Passenger accepts or rejects the driver's offer.
+     */
     fun respondToOffer(context: Context, requestId: String, accept: Boolean) {
         viewModelScope.launch {
             val dao = MySmartRouteDatabase.getInstance(context).movingDao()
@@ -389,6 +428,10 @@ class VehicleRequestViewModel(
         }
     }
 
+    /**
+     * Θέτει την κατάσταση ενός αιτήματος πεζοπορίας ως αποδεκτή ή απορριφθείσα.
+     * Sets walking request status as accepted or rejected.
+     */
     fun setWalkingStatus(context: Context, requestId: String, accept: Boolean) {
         viewModelScope.launch {
             val dao = MySmartRouteDatabase.getInstance(context).movingDao()

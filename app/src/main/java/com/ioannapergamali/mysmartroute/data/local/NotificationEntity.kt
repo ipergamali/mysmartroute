@@ -1,3 +1,5 @@
+// Οντότητα Room για ειδοποίηση.
+// Room entity for notification.
 package com.ioannapergamali.mysmartroute.data.local
 
 import androidx.room.Entity

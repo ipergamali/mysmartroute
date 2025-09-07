@@ -1,3 +1,5 @@
+// DAO πρόσβασης για σημείο ενδιαφέροντος.
+// DAO for po i access.
 package com.ioannapergamali.mysmartroute.data.local
 
 import androidx.room.Dao

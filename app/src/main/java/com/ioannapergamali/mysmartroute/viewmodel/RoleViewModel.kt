@@ -11,11 +11,16 @@ import kotlinx.coroutines.launch
 
 /**
  * Απλό ViewModel για ανάκτηση των ρόλων από τη βάση.
+ * Simple ViewModel for fetching roles from the database.
  */
 class RoleViewModel : ViewModel() {
     private val _roles = MutableStateFlow<List<RoleEntity>>(emptyList())
     val roles: StateFlow<List<RoleEntity>> = _roles
 
+    /**
+     * Φορτώνει όλους τους ρόλους από την τοπική βάση δεδομένων.
+     * Loads all roles from the local database.
+     */
     fun loadRoles(context: Context) {
         viewModelScope.launch {
             val db = MySmartRouteDatabase.getInstance(context)

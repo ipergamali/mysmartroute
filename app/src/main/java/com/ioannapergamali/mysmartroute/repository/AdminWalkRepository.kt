@@ -6,6 +6,7 @@ import com.ioannapergamali.mysmartroute.model.Walk
 
 /**
  * Repository για συλλογή όλων των πεζών μετακινήσεων από όλα τα `walks` subcollections.
+ * Repository that collects all walking entries from every `walks` subcollection.
  */
 class AdminWalkRepository {
     private val db = FirebaseFirestore.getInstance()
@@ -13,6 +14,9 @@ class AdminWalkRepository {
     /**
      * Ανακτά όλες τις πεζές μετακινήσεις από τα subcollections `walks` των διαδρομών.
      * Κάθε έγγραφο περιέχει μόνο τη διάρκεια σε λεπτά.
+     *
+     * Fetches all walking sessions from route `walks` subcollections.
+     * Each document holds only the duration in minutes.
      */
     suspend fun fetchAllWalks(): List<Walk> {
         val snapshot = db.collectionGroup("walks").get().await()

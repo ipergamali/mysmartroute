@@ -22,6 +22,10 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
 
+/**
+ * ViewModel για αποθήκευση και ανάκτηση πεζών διαδρομών.
+ * ViewModel for storing and retrieving walking routes.
+ */
 class WalkingRoutesViewModel(private val dao: WalkingRouteDao) : ViewModel() {
     private val firestore = FirebaseFirestore.getInstance()
     private val client = OkHttpClient()
@@ -29,6 +33,10 @@ class WalkingRoutesViewModel(private val dao: WalkingRouteDao) : ViewModel() {
     val routes: StateFlow<List<WalkingRouteEntity>> =
         dao.getAll().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    /**
+     * Αποθηκεύει νέα διαδρομή πεζοπορίας και την ανεβάζει στο Firestore.
+     * Saves a new walking route and uploads it to Firestore.
+     */
     fun saveRoute(name: String, origin: LatLng, destination: LatLng, apiKey: String) {
         viewModelScope.launch {
             val points = getWalkingRoute(origin, destination, apiKey)
@@ -46,6 +54,10 @@ class WalkingRoutesViewModel(private val dao: WalkingRouteDao) : ViewModel() {
         }
     }
 
+    /**
+     * Καλεί το Directions API για να πάρει τη διαδρομή πεζοπορίας.
+     * Calls the Directions API to obtain the walking route.
+     */
     private suspend fun getWalkingRoute(
         origin: LatLng,
         destination: LatLng,

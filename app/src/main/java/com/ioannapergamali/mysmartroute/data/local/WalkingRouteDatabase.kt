@@ -1,3 +1,5 @@
+// Βάση δεδομένων Room για διαδρομή πεζών.
+// Room database for walking route.
 package com.ioannapergamali.mysmartroute.data.local
 
 import android.content.Context
