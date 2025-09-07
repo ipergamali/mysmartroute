@@ -11,6 +11,9 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.menuAnchor
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberTimePickerState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -111,10 +114,20 @@ fun FindPassengersScreen(
 
         ScreenContainer(modifier = Modifier.padding(padding), scrollable = false) {
             Button(onClick = { showDatePicker = true }) {
+                Icon(
+                    Icons.Default.DateRange,
+                    contentDescription = stringResource(R.string.date)
+                )
+                Spacer(Modifier.width(8.dp))
                 Text(selectedDateText)
             }
             Spacer(modifier = Modifier.height(8.dp))
             Button(onClick = { showTimePicker = true }) {
+                Icon(
+                    Icons.Default.AccessTime,
+                    contentDescription = stringResource(R.string.time)
+                )
+                Spacer(Modifier.width(8.dp))
                 Text(selectedTimeText)
             }
             Spacer(modifier = Modifier.height(8.dp))
