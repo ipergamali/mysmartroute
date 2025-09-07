@@ -103,6 +103,12 @@
     <string name="vehicle_name">Vehicle Name</string>
     <string name="license_plate">License Plate</string>
     <string name="seats_label">Seats</string>
+    <string name="user_not_logged_in">User not logged in</string>
+    <string name="name_required">Name required</string>
+    <string name="description_required">Description required</string>
+    <string name="license_plate_required">License plate required</string>
+    <string name="seats_must_be_greater_than_zero">Seats must be greater than 0</string>
+    <string name="color_required">Color required</string>
     <string name="announce_availability">Announce Availability for a specific Transport</string>
     <string name="find_passengers">Find Passengers</string>
     <string name="print_list">Print Passenger List</string>
