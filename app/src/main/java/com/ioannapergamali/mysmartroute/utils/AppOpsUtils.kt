@@ -6,10 +6,12 @@ import android.os.Build
 
 /**
  * Βοηθητικές συναρτήσεις για ελέγχους AppOps.
+ * Helper methods for querying AppOps permissions.
  */
 object AppOpsUtils {
     /**
      * Ελέγχει αν επιτρέπεται η λειτουργία READ_PHONE_STATE για την εφαρμογή.
+     * Checks whether READ_PHONE_STATE is allowed for this app.
      */
     fun isReadPhoneStateAllowed(context: Context): Boolean {
         val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
@@ -24,6 +26,7 @@ object AppOpsUtils {
 
     /**
      * Καταγράφει την ενέργεια READ_PHONE_STATE και επιστρέφει true αν έγινε δεκτή.
+     * Notes the READ_PHONE_STATE operation and returns true if permitted.
      */
     fun noteReadPhoneState(context: Context): Boolean {
         val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager

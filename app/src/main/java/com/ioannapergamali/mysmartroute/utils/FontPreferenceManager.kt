@@ -10,15 +10,27 @@ import kotlinx.coroutines.flow.map
 
 private val Context.fontDataStore by preferencesDataStore(name = "font_settings")
 
+/**
+ * Αποθηκεύει και ανακτά την προτιμώμενη γραμματοσειρά της εφαρμογής.
+ * Stores and retrieves the user's preferred application font.
+ */
 object FontPreferenceManager {
     private val FONT_KEY = intPreferencesKey("font")
 
+    /**
+     * Επιστρέφει ροή με την επιλεγμένη γραμματοσειρά.
+     * Emits a [Flow] of the selected [AppFont].
+     */
     fun fontFlow(context: Context): Flow<AppFont> =
         context.fontDataStore.data.map { prefs ->
             val index = prefs[FONT_KEY] ?: 0
             AppFont.values().getOrElse(index) { AppFont.SansSerif }
         }
 
+    /**
+     * Αποθηκεύει τη νέα γραμματοσειρά του χρήστη.
+     * Persists the new [AppFont] chosen by the user.
+     */
     suspend fun setFont(context: Context, font: AppFont) {
         context.fontDataStore.edit { prefs ->
             prefs[FONT_KEY] = font.ordinal

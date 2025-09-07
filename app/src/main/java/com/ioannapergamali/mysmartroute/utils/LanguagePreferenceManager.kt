@@ -17,14 +17,26 @@ import kotlinx.coroutines.flow.map
 
 private val Context.languageDataStore by preferencesDataStore(name = "language_settings")
 
+/**
+ * Αποθηκεύει και ανακτά την προτιμώμενη γλώσσα του χρήστη.
+ * Stores and retrieves the user's preferred language.
+ */
 object LanguagePreferenceManager {
     private val LANGUAGE_KEY = stringPreferencesKey("language")
 
+    /**
+     * Παρέχει ροή με τον τρέχοντα κωδικό γλώσσας.
+     * Emits a [Flow] containing the current language code.
+     */
     fun languageFlow(context: Context): Flow<String> =
         context.languageDataStore.data.map { prefs ->
             prefs[LANGUAGE_KEY] ?: "el"
         }
 
+    /**
+     * Αποθηκεύει και συγχρονίζει τη νέα γλώσσα.
+     * Saves and syncs the new language selection.
+     */
     suspend fun setLanguage(context: Context, language: String) {
         context.languageDataStore.edit { prefs ->
             prefs[LANGUAGE_KEY] = language
@@ -47,6 +59,10 @@ object LanguagePreferenceManager {
         }
     }
 
+    /**
+     * Ανακτά την αποθηκευμένη γλώσσα προτίμησης.
+     * Retrieves the stored language preference.
+     */
     suspend fun getLanguage(context: Context): String {
         val db = MySmartRouteDatabase.getInstance(context)
         val stored = db.languageSettingDao().get()?.language

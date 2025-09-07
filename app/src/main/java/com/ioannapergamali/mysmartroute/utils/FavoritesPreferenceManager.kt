@@ -10,10 +10,18 @@ import kotlinx.coroutines.flow.map
 
 private val Context.favoritesDataStore by preferencesDataStore(name = "favorites_settings")
 
+/**
+ * Διαχείριση προτιμήσεων αγαπημένων και μη οχημάτων.
+ * Handles user preferences for favorite and non-favorite vehicle types.
+ */
 object FavoritesPreferenceManager {
     private val PREFERRED_KEY = stringSetPreferencesKey("preferred")
     private val NON_PREFERRED_KEY = stringSetPreferencesKey("non_preferred")
 
+    /**
+     * Παρέχει ροή με τα αγαπημένα οχήματα του χρήστη.
+     * Emits a [Flow] of user's preferred vehicle types.
+     */
     fun preferredFlow(context: Context): Flow<Set<VehicleType>> =
         context.favoritesDataStore.data.map { prefs ->
             prefs[PREFERRED_KEY]
@@ -21,6 +29,10 @@ object FavoritesPreferenceManager {
                 ?.toSet() ?: emptySet()
         }
 
+    /**
+     * Παρέχει ροή με τα μη αγαπημένα οχήματα.
+     * Emits a [Flow] of non-preferred vehicle types.
+     */
     fun nonPreferredFlow(context: Context): Flow<Set<VehicleType>> =
         context.favoritesDataStore.data.map { prefs ->
             prefs[NON_PREFERRED_KEY]
