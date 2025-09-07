@@ -47,7 +47,10 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 
-/** ViewModel για προβολή δεδομένων βάσεων. */
+/**
+ * ViewModel για προβολή και συγχρονισμό δεδομένων βάσεων.
+ * ViewModel for viewing and synchronizing database data.
+ */
 class DatabaseViewModel : ViewModel() {
     private val firestore = FirebaseFirestore.getInstance()
 
@@ -77,11 +80,19 @@ class DatabaseViewModel : ViewModel() {
     private val _lastSyncTime = MutableStateFlow(0L)
     val lastSyncTime: StateFlow<Long> = _lastSyncTime
 
+    /**
+     * Φορτώνει τον χρόνο τελευταίου συγχρονισμού από τα SharedPreferences.
+     * Loads the last sync timestamp from SharedPreferences.
+     */
     fun loadLastSync(context: Context) {
         val prefs = context.getSharedPreferences("db_sync", Context.MODE_PRIVATE)
         _lastSyncTime.value = prefs.getLong("last_sync", 0L)
     }
 
+    /**
+     * Συλλέγει όλα τα δεδομένα από την τοπική βάση και τα εκθέτει ως ροές.
+     * Collects all data from the local database and exposes them as flows.
+     */
     fun loadLocalData(context: Context) {
         viewModelScope.launch {
             val db = MySmartRouteDatabase.getInstance(context)
@@ -150,6 +161,10 @@ class DatabaseViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Αντλεί δεδομένα από το Firebase Firestore για πλήρη εικόνα του συστήματος.
+     * Retrieves data from Firebase Firestore for a complete system view.
+     */
     fun loadFirebaseData() {
         viewModelScope.launch {
             try {
@@ -265,6 +280,10 @@ class DatabaseViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Συγχρονίζει την τοπική βάση με το Firebase, ενημερώνοντας και τις δύο πλευρές.
+     * Synchronizes the local database with Firebase, updating both sides.
+     */
     fun syncDatabases(context: Context) {
         viewModelScope.launch {
             syncDatabasesSuspend(context)
@@ -455,6 +474,7 @@ class DatabaseViewModel : ViewModel() {
                     )
 
                     // Αποφεύγουμε την δημιουργία κενών εγγράφων στο Firestore
+                    // Avoid creating empty documents in Firestore
                     users.filter { it.id.isNotBlank() && it.name.isNotBlank() }.forEach { user ->
                         firestore.collection("users")
                             .document(user.id)

@@ -9,6 +9,7 @@ import kotlinx.coroutines.runBlocking
 
 /**
  * Δημιουργεί τα έγγραφα της συλλογής `poi_types` στο Firestore αν δεν υπάρχουν.
+ * Creates Firestore `poi_types` documents if missing.
  */
 fun populatePoiTypes(context: Context) {
     val firestore = FirebaseFirestore.getInstance()

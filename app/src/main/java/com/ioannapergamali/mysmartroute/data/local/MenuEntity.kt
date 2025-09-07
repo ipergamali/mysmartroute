@@ -1,3 +1,5 @@
+// Οντότητα Room για μενού.
+// Room entity for menu.
 package com.ioannapergamali.mysmartroute.data.local
 
 import androidx.room.Entity

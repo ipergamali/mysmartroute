@@ -35,16 +35,22 @@ import kotlinx.coroutines.tasks.await
 import java.util.UUID
 import androidx.room.withTransaction
 
+/**
+ * ViewModel που διαχειρίζεται τη διαδικασία αυθεντικοποίησης και φόρτωσης ρόλων χρήστη.
+ * ViewModel handling authentication processes and user role loading.
+ */
 class AuthenticationViewModel : ViewModel() {
 
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
     // Χρήση του Gson για μετατροπή JSON σε αντικείμενα Kotlin
+    // Using Gson to convert JSON into Kotlin objects
     private val gson: Gson = Gson()
     private companion object { const val TAG = "AuthenticationViewModel" }
 
     /**
      * Παράδειγμα μετατροπής JSON σε αντικείμενο [UserAddress].
+     * Example conversion from JSON to a [UserAddress] object.
      */
     private fun parseUserAddressJson(json: String): UserAddress {
         return gson.fromJson(json, UserAddress::class.java)
@@ -74,6 +80,10 @@ class AuthenticationViewModel : ViewModel() {
         UserRole.ADMIN to "role_admin"
     )
 
+    /**
+     * Δημιουργεί νέο χρήστη και αποθηκεύει τα στοιχεία του τοπικά και στο Firebase.
+     * Registers a new user and stores their data locally and in Firebase.
+     */
     fun signUp(
         activity: Activity,
         context: Context,
@@ -134,6 +144,8 @@ class AuthenticationViewModel : ViewModel() {
 
                     // Αποθηκεύουμε το roleId ως απλό String ώστε να είναι πάντα
                     // συμβατό με την ανάγνωση από την εφαρμογή.
+                    // We store the roleId as a plain String so it remains
+                    // compatible with reading from the app.
                     val userData = mapOf(
                         "id" to authRef,
                         "name" to name,
@@ -187,7 +199,10 @@ class AuthenticationViewModel : ViewModel() {
         }
     }
 
-
+    /**
+     * Πραγματοποιεί είσοδο χρήστη και φορτώνει τον ρόλο του.
+     * Logs the user in and loads their role.
+     */
     fun login(context: Context, email: String, password: String) {
         viewModelScope.launch {
             _loginState.value = LoginState.Loading
@@ -208,6 +223,10 @@ class AuthenticationViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Στέλνει email για επαναφορά κωδικού στον χρήστη.
+     * Sends a password reset email to the user.
+     */
     fun resetPassword(email: String, context: Context) {
         viewModelScope.launch {
             _resetPasswordState.value = ResetPasswordState.Loading
@@ -239,6 +258,10 @@ class AuthenticationViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Επιβεβαιώνει τον κωδικό από το email επαναφοράς και ορίζει νέο.
+     * Verifies the reset code and sets a new password.
+     */
     fun confirmPasswordReset(oobCode: String, newPassword: String) {
         viewModelScope.launch {
             _resetPasswordState.value = ResetPasswordState.Loading
@@ -262,10 +285,18 @@ class AuthenticationViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Επαναφέρει την κατάσταση επαναφοράς κωδικού στην αρχική τιμή.
+     * Resets the password recovery state to idle.
+     */
     fun clearResetPasswordState() {
         _resetPasswordState.value = ResetPasswordState.Idle
     }
 
+    /**
+     * Αλλάζει τον κωδικό του συνδεδεμένου χρήστη μετά από επαναπιστοποίηση.
+     * Changes the connected user's password after re-authentication.
+     */
     fun changePassword(oldPassword: String, newPassword: String) {
         val user = auth.currentUser ?: run {
             _changePasswordState.value = ChangePasswordState.Error("Δεν υπάρχει συνδεδεμένος χρήστης")
@@ -321,6 +352,10 @@ class AuthenticationViewModel : ViewModel() {
         data class Error(val message: String) : ChangePasswordState()
     }
 
+    /**
+     * Φορτώνει τον ρόλο του τρέχοντος χρήστη από το Firestore ή την τοπική βάση.
+     * Loads the current user's role from Firestore or the local database.
+     */
     fun loadCurrentUserRole(context: Context, loadMenus: Boolean = false) {
         Log.i(TAG, "loadCurrentUserRole invoked")
         val uid = auth.currentUser?.uid ?: run {
@@ -333,6 +368,7 @@ class AuthenticationViewModel : ViewModel() {
             val userDao = dbLocal.userDao()
 
             // Πρώτα προσπαθούμε να πάρουμε τον ρόλο από το Firestore ώστε να είναι πάντα ενημερωμένος
+            // We first try to fetch the role from Firestore so it's always up to date
             val document = runCatching {
                 db.collection("users").document(uid).get().await()
             }.getOrNull()
@@ -358,6 +394,7 @@ class AuthenticationViewModel : ViewModel() {
             }
 
             // Αν αποτύχει η ανάκτηση από το Firestore, πέφτουμε στην τοπική τιμή
+            // If Firestore retrieval fails, we fall back to the local value
             val localRole = userDao.getUser(uid)?.role
             if (!localRole.isNullOrEmpty()) {
                 Log.i(TAG, "Role from local DB: $localRole")
@@ -381,6 +418,7 @@ class AuthenticationViewModel : ViewModel() {
             current = roleDao.getRole(current)?.parentRoleId
         }
         // Επιστρέφουμε όλα τα μενού όπως φορτώθηκαν
+        // Return all menus as loaded
         return result
     }
 
@@ -427,6 +465,7 @@ class AuthenticationViewModel : ViewModel() {
             }
         }
         // Επιστρέφουμε όλα τα μενού όπως φορτώθηκαν
+        // Return all menus as loaded
         return menus
     }
 
@@ -435,6 +474,10 @@ class AuthenticationViewModel : ViewModel() {
      * Αν δεν υπάρχουν και υπάρχει σύνδεση στο διαδίκτυο,
      * τα ανακτά από το Firestore. Σε περίπτωση που και εκεί
      * δεν βρεθούν, γίνεται αρχικοποίηση από το τοπικό menus.json.
+     */
+    /**
+     * Φορτώνει τα μενού που αντιστοιχούν στον ρόλο του χρήστη.
+     * Loads menus associated with the user's role.
      */
     fun loadCurrentUserMenus(context: Context) {
         viewModelScope.launch {
@@ -473,6 +516,7 @@ class AuthenticationViewModel : ViewModel() {
             val missingOptions = expectedOptionKeys.any { it !in existingOptionKeys }
             if (menusLocal.isEmpty() || !hasOptions || missingOptions) {
                 // Βεβαιωνόμαστε ότι η τοπική βάση περιέχει τα προεπιλεγμένα μενού
+                // Ensure the local database contains the default menus
                 try {
                     initializeRolesAndMenusIfNeeded(context)
                 } catch (e: Exception) {
@@ -512,6 +556,10 @@ class AuthenticationViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Αποσυνδέει τον χρήστη και καθαρίζει τις τοπικές καταστάσεις.
+     * Signs the user out and clears local states.
+     */
     fun signOut() {
         auth.signOut()
         _currentUserRole.value = null
@@ -519,6 +567,10 @@ class AuthenticationViewModel : ViewModel() {
     }
 
     /** Δημόσια μέθοδος που φροντίζει να δημιουργηθούν οι ρόλοι και τα μενού αν χρειάζεται. */
+    /**
+     * Εξασφαλίζει ότι τα προεπιλεγμένα μενού έχουν εισαχθεί στη βάση.
+     * Ensures default menus are inserted in the database.
+     */
     fun ensureMenusInitialized(context: Context) {
         viewModelScope.launch {
             initializeRolesAndMenusIfNeeded(context)

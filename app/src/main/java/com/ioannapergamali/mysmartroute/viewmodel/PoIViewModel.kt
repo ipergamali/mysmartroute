@@ -18,6 +18,7 @@ import kotlinx.coroutines.tasks.await
 import java.util.UUID
 
 /**
+ * ViewModel για τη διαχείριση σημείων ενδιαφέροντος (PoIs).
  * ViewModel to manage Points of Interest (PoIs).
  */
 class PoIViewModel : ViewModel() {
@@ -29,6 +30,10 @@ class PoIViewModel : ViewModel() {
     private val _addState = MutableStateFlow<AddPoiState>(AddPoiState.Idle)
     val addState: StateFlow<AddPoiState> = _addState
 
+    /**
+     * Φορτώνει όλα τα σημεία ενδιαφέροντος από την τοπική βάση και το Firestore.
+     * Loads all points of interest from the local database and Firestore.
+     */
     fun loadPois(context: Context) {
         viewModelScope.launch {
             val dao = MySmartRouteDatabase.getInstance(context).poIDao()
@@ -44,6 +49,10 @@ class PoIViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Προσθέτει νέο σημείο ενδιαφέροντος αν δεν υπάρχει με το ίδιο όνομα.
+     * Adds a new point of interest if no point with the same name exists.
+     */
     fun addPoi(
         context: Context,
         name: String,
@@ -55,6 +64,7 @@ class PoIViewModel : ViewModel() {
         viewModelScope.launch {
             val dao = MySmartRouteDatabase.getInstance(context).poIDao()
             // Επιτρέπουμε αποθήκευση ίδιου σημείου αν έχει διαφορετικό όνομα.
+            // Allow saving the same location if it has a different name.
             val exists = dao.findByName(name) != null
             if (exists) {
                 _addState.value = AddPoiState.Exists
@@ -86,10 +96,18 @@ class PoIViewModel : ViewModel() {
         data class Error(val message: String) : AddPoiState()
     }
 
+    /**
+     * Επαναφέρει την κατάσταση προσθήκης στην αδράνεια.
+     * Resets the add state to idle.
+     */
     fun resetAddState() {
         _addState.value = AddPoiState.Idle
     }
 
+    /**
+     * Διαγράφει σημείο ενδιαφέροντος από τη βάση και το Firestore.
+     * Deletes a point of interest from the database and Firestore.
+     */
     fun deletePoi(context: Context, id: String) {
         viewModelScope.launch {
             val dao = MySmartRouteDatabase.getInstance(context).poIDao()
@@ -99,6 +117,10 @@ class PoIViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Ενημερώνει τα δεδομένα ενός υπάρχοντος σημείου.
+     * Updates the data of an existing point.
+     */
     fun updatePoi(context: Context, poi: PoIEntity) {
         viewModelScope.launch {
             val dao = MySmartRouteDatabase.getInstance(context).poIDao()
@@ -108,6 +130,10 @@ class PoIViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Συγχωνεύει δύο σημεία, αντικαθιστώντας αναφορές του διαγραφόμενου.
+     * Merges two points, replacing references of the removed one.
+     */
     fun mergePois(context: Context, keepId: String, removeId: String) {
         viewModelScope.launch {
             val database = MySmartRouteDatabase.getInstance(context)
@@ -153,6 +179,7 @@ class PoIViewModel : ViewModel() {
 
                 // Ενημέρωση των τοπικών διαδρομών ώστε να μην παραμένουν
                 // αναφορές στο παλιό σημείο που διαγράφεται.
+                // Update local routes so they no longer reference the removed point.
                 routePointDao.updatePoiReferences(removeId, keepId)
                 routeDao.updatePoiReferences(removeId, keepId)
 
@@ -163,6 +190,10 @@ class PoIViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Ανακτά σημείο ενδιαφέροντος από τοπική ή απομακρυσμένη βάση.
+     * Retrieves a point of interest from local or remote storage.
+     */
     suspend fun getPoi(context: Context, id: String): PoIEntity? {
         val dao = MySmartRouteDatabase.getInstance(context).poIDao()
         val local = dao.findById(id)
@@ -172,6 +203,10 @@ class PoIViewModel : ViewModel() {
         }.getOrNull()?.also { dao.insert(it) }
     }
 
+    /**
+     * Επιστρέφει το όνομα του σημείου ή κενή συμβολοσειρά αν δεν βρεθεί.
+     * Returns the point's name or an empty string if not found.
+     */
     suspend fun getPoiName(context: Context, id: String): String {
         return getPoi(context, id)?.name ?: ""
     }

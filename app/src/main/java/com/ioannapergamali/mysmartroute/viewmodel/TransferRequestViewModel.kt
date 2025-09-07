@@ -14,6 +14,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
+/**
+ * ViewModel για υποβολή και διαχείριση αιτημάτων μεταφοράς.
+ * ViewModel for submitting and managing transfer requests.
+ */
 class TransferRequestViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
@@ -22,6 +26,10 @@ class TransferRequestViewModel : ViewModel() {
         private const val TAG = "TransferRequestVM"
     }
 
+    /**
+     * Υποβάλλει νέο αίτημα μεταφοράς και το αποθηκεύει σε Room και Firestore.
+     * Submits a new transfer request storing it in Room and Firestore.
+     */
     fun submitRequest(
         context: Context,
         routeId: String,
@@ -55,6 +63,10 @@ class TransferRequestViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Ενημερώνει τον οδηγό ότι έχει αναλάβει αίτημα μεταφοράς.
+     * Notifies the driver that they have taken a transfer request.
+     */
     fun notifyDriver(context: Context, requestNumber: Int) {
         val driverId = auth.currentUser?.uid ?: return
         viewModelScope.launch(Dispatchers.IO) {
@@ -79,6 +91,10 @@ class TransferRequestViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Ενημερώνει την κατάσταση ενός αιτήματος μεταφοράς.
+     * Updates the status of a transfer request.
+     */
     fun updateStatus(context: Context, requestNumber: Int, status: RequestStatus) {
         viewModelScope.launch(Dispatchers.IO) {
             val dao = MySmartRouteDatabase.getInstance(context).transferRequestDao()

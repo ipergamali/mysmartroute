@@ -22,6 +22,10 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.util.UUID
 
+/**
+ * ViewModel για εγγραφή και ανάκτηση οχημάτων από τη Room DB και το Firestore.
+ * ViewModel for registering and fetching vehicles from Room DB and Firestore.
+ */
 class VehicleViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
@@ -35,6 +39,10 @@ class VehicleViewModel : ViewModel() {
     private val _registerState = MutableStateFlow<RegisterState>(RegisterState.Idle)
     val registerState: StateFlow<RegisterState> = _registerState
 
+    /**
+     * Καταχωρεί νέο όχημα για τον τρέχοντα χρήστη και το αποθηκεύει.
+     * Registers a new vehicle for the current user and stores it.
+     */
     fun registerVehicle(
         context: Context,
         name: String,
@@ -104,6 +112,10 @@ class VehicleViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Φορτώνει οχήματα που έχουν καταχωρηθεί, είτε όλα είτε για συγκεκριμένο χρήστη.
+     * Loads registered vehicles, optionally for a specific user.
+     */
     fun loadRegisteredVehicles(
         context: Context,
         includeAll: Boolean = false,
@@ -142,6 +154,10 @@ class VehicleViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Ανακτά διαθέσιμα οχήματα από εξωτερική υπηρεσία.
+     * Fetches available vehicles from an external service.
+     */
     fun loadAvailableVehicles(context: Context) {
         viewModelScope.launch {
             val apiKey = MapsUtils.getApiKey(context)
@@ -149,6 +165,10 @@ class VehicleViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Φορτώνει όχημα βάσει αναγνωριστικού αν δεν υπάρχει ήδη στη μνήμη.
+     * Loads a vehicle by ID if not already in memory.
+     */
     fun loadVehicleById(context: Context, vehicleId: String) {
         viewModelScope.launch {
             if (vehicleId.isBlank()) return@launch

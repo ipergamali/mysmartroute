@@ -1,3 +1,5 @@
+// DAO πρόσβασης για όχημα.
+// DAO for vehicle access.
 package com.ioannapergamali.mysmartroute.data.local
 
 import androidx.room.Dao

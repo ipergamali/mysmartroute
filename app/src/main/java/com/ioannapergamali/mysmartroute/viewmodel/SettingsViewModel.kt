@@ -26,10 +26,18 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.Dispatchers
 
+/**
+ * ViewModel για εφαρμογή και συγχρονισμό ρυθμίσεων χρήστη.
+ * ViewModel for applying and synchronizing user settings.
+ */
 class SettingsViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
+    /**
+     * Ενημερώνει τις ρυθμίσεις του χρήστη τοπικά και στο cloud.
+     * Updates user settings locally and in the cloud.
+     */
     private suspend fun updateSettings(
         context: Context,
         transform: (SettingsEntity) -> SettingsEntity
@@ -109,6 +117,10 @@ class SettingsViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Εφαρμόζει όλες τις ρυθμίσεις διεπαφής και ήχου και τις αποθηκεύει.
+     * Applies all UI and sound settings and persists them.
+     */
     suspend fun applyAllSettings(
         context: Context,
         theme: ThemeOption,
@@ -135,6 +147,10 @@ class SettingsViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Ορίζει θέμα και σκοτεινή λειτουργία.
+     * Sets theme and dark mode.
+     */
     fun applyTheme(context: Context, theme: ThemeOption, dark: Boolean) {
         viewModelScope.launch {
             ThemePreferenceManager.setTheme(context, theme)
@@ -142,24 +158,40 @@ class SettingsViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Αλλάζει τη γραμματοσειρά της εφαρμογής.
+     * Changes the application's font.
+     */
     fun applyFont(context: Context, font: AppFont) {
         viewModelScope.launch {
             FontPreferenceManager.setFont(context, font)
         }
     }
 
+    /**
+     * Ενεργοποιεί ή απενεργοποιεί τον ήχο.
+     * Enables or disables sound.
+     */
     fun applySoundEnabled(context: Context, enabled: Boolean) {
         viewModelScope.launch {
             SoundPreferenceManager.setSoundEnabled(context, enabled)
         }
     }
 
+    /**
+     * Ορίζει την ένταση του ήχου.
+     * Sets the sound volume.
+     */
     fun applySoundVolume(context: Context, volume: Float) {
         viewModelScope.launch {
             SoundPreferenceManager.setSoundVolume(context, volume)
         }
     }
 
+    /**
+     * Αλλάζει τη γλώσσα της εφαρμογής και ενημερώνει το locale.
+     * Changes app language and updates locale.
+     */
     fun applyLanguage(context: Context, language: String) {
         viewModelScope.launch {
             LanguagePreferenceManager.setLanguage(context, language)
@@ -167,6 +199,10 @@ class SettingsViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Συγχρονίζει τις ρυθμίσεις μεταξύ τοπικής βάσης και Firebase.
+     * Synchronizes settings between local database and Firebase.
+     */
     fun syncSettings(context: Context) {
         viewModelScope.launch {
             val userId = auth.currentUser?.uid ?: return@launch
@@ -174,6 +210,7 @@ class SettingsViewModel : ViewModel() {
             val userDao = dbLocal.userDao()
             if (userDao.getUser(userId) == null) {
                 // Αν δεν υπάρχει ο χρήστης, δεν συγχρονίζουμε ρυθμίσεις
+                // If the user doesn't exist, we skip syncing settings
                 return@launch
             }
             val dao = dbLocal.settingsDao()
@@ -212,6 +249,10 @@ class SettingsViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Αποθηκεύει τις τρέχουσες ρυθμίσεις από τις ροές προτιμήσεων.
+     * Saves current settings from preference flows.
+     */
     fun saveCurrentSettings(context: Context) {
         viewModelScope.launch {
             Log.d("SettingsViewModel", "Εκκίνηση αποθήκευσης ρυθμίσεων")
@@ -226,6 +267,7 @@ class SettingsViewModel : ViewModel() {
             val language = LanguagePreferenceManager.languageFlow(context).first()
 
             // Αν δεν υπάρχει συνδεδεμένος χρήστης, αποθηκεύουμε μόνο τοπικά
+            // If no user is logged in, save only locally
             if (auth.currentUser?.uid == null) {
                 ThemePreferenceManager.setTheme(context, theme)
                 ThemePreferenceManager.setDarkTheme(context, dark)
@@ -253,6 +295,10 @@ class SettingsViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Επαναφέρει τις ρυθμίσεις στις προεπιλεγμένες τιμές.
+     * Resets settings to their default values.
+     */
     fun resetSettings(context: Context) {
         viewModelScope.launch {
             Log.d("SettingsViewModel", "Επαναφορά ρυθμίσεων στα προεπιλεγμένα")

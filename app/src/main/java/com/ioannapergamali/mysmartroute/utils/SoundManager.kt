@@ -6,11 +6,19 @@ import android.media.AudioManager
 import android.media.MediaPlayer
 import android.content.res.AssetFileDescriptor
 
+/**
+ * Αναπαραγωγή μουσικής υπόκρουσης στην εφαρμογή.
+ * Handles background soundtrack playback for the app.
+ */
 object SoundManager {
     private var mediaPlayer: MediaPlayer? = null
     private var audioManager: AudioManager? = null
     private var initialized = false
 
+    /**
+     * Αρχικοποιεί τον [MediaPlayer] με το προεπιλεγμένο κομμάτι.
+     * Initializes the [MediaPlayer] with the default track.
+     */
     fun initialize(context: Context) {
         if (initialized) return
 
@@ -31,6 +39,10 @@ object SoundManager {
         initialized = true
     }
 
+    /**
+     * Ξεκινά την αναπαραγωγή.
+     * Starts playback.
+     */
     fun play() {
         mediaPlayer?.let {
             audioManager?.requestAudioFocus(
@@ -41,11 +53,19 @@ object SoundManager {
             it.start()
         }
     }
+    /**
+     * Παύει την αναπαραγωγή.
+     * Pauses playback.
+     */
     fun pause() {
         mediaPlayer?.pause()
         audioManager?.abandonAudioFocus(null)
     }
 
+    /**
+     * Ρυθμίζει την ένταση αναπαραγωγής.
+     * Sets playback volume.
+     */
     fun setVolume(volume: Float) {
         mediaPlayer?.setVolume(volume, volume)
     }
@@ -53,6 +73,10 @@ object SoundManager {
     val isPlaying: Boolean
         get() = mediaPlayer?.isPlaying == true
 
+    /**
+     * Ελευθερώνει πόρους του [MediaPlayer].
+     * Releases [MediaPlayer] resources.
+     */
     fun release() {
         mediaPlayer?.release()
         mediaPlayer = null

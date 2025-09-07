@@ -1,3 +1,5 @@
+// Οντότητα Room για αξιολόγηση ταξιδιού.
+// Room entity for trip rating.
 package com.ioannapergamali.mysmartroute.data.local
 
 import androidx.room.Entity

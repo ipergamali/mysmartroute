@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 
 /**
  * ViewModel για προβολή και αποθήκευση βαθμολογιών μετακινήσεων.
+ * ViewModel for displaying and storing trip ratings.
  */
 class TripRatingViewModel : ViewModel() {
     private val firestore = FirebaseFirestore.getInstance()
@@ -22,6 +23,10 @@ class TripRatingViewModel : ViewModel() {
     private val _trips = MutableStateFlow<List<TripWithRating>>(emptyList())
     val trips: StateFlow<List<TripWithRating>> = _trips
 
+    /**
+     * Φορτώνει ολοκληρωμένες μετακινήσεις και τις τυχόν βαθμολογίες τους.
+     * Loads completed trips along with their ratings.
+     */
     fun loadTrips(context: Context) {
         viewModelScope.launch {
             val db = MySmartRouteDatabase.getInstance(context)
@@ -43,6 +48,10 @@ class TripRatingViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Ενημερώνει ή δημιουργεί βαθμολογία για μια μετακίνηση.
+     * Updates or creates a rating for a trip.
+     */
     fun updateRating(context: Context, moving: MovingEntity, rating: Int, comment: String) {
         viewModelScope.launch {
             val db = MySmartRouteDatabase.getInstance(context)

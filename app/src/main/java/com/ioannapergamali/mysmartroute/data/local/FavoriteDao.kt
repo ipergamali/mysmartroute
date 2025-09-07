@@ -1,3 +1,5 @@
+// DAO πρόσβασης για αγαπημένο.
+// DAO for favorite access.
 package com.ioannapergamali.mysmartroute.data.local
 
 import androidx.room.Dao

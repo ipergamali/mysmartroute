@@ -1,3 +1,5 @@
+// Οντότητα Room για διαδρομή.
+// Room entity for route.
 package com.ioannapergamali.mysmartroute.data.local
 
 import androidx.room.Entity

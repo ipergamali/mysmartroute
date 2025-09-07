@@ -16,6 +16,10 @@ import kotlinx.coroutines.flow.map
 
 private val Context.dataStore by preferencesDataStore(name = "settings")
 
+/**
+ * Διαχείριση προτιμήσεων εμφάνισης και χρωμάτων.
+ * Manages theme and custom color preferences.
+ */
 object ThemePreferenceManager {
     private val THEME_KEY = stringPreferencesKey("theme")
     private val DARK_MODE_KEY = booleanPreferencesKey("dark_mode")
@@ -45,22 +49,38 @@ object ThemePreferenceManager {
         return mode == Configuration.UI_MODE_NIGHT_YES
     }
 
+    /**
+     * Παρακολουθεί την επιλεγμένη θεματική.
+     * Observes the chosen [ThemeOption].
+     */
     fun themeFlow(context: Context): Flow<ThemeOption> =
         context.dataStore.data.map { prefs ->
             prefs[THEME_KEY]?.let { decode(it) } ?: AppTheme.Ocean
         }
 
+    /**
+     * Παρακολουθεί αν έχει ενεργοποιηθεί το σκοτεινό θέμα.
+     * Observes whether dark mode is enabled.
+     */
     fun darkThemeFlow(context: Context): Flow<Boolean> =
         context.dataStore.data.map { prefs ->
             prefs[DARK_MODE_KEY] ?: context.isSystemDarkTheme()
         }
 
+    /**
+     * Αποθηκεύει τη νέα θεματική επιλογή.
+     * Persists the new [ThemeOption].
+     */
     suspend fun setTheme(context: Context, theme: ThemeOption) {
         context.dataStore.edit { prefs ->
             prefs[THEME_KEY] = encode(theme)
         }
     }
 
+    /**
+     * Ορίζει αν θα χρησιμοποιείται σκοτεινό θέμα.
+     * Sets whether dark theme is used.
+     */
     suspend fun setDarkTheme(context: Context, dark: Boolean) {
         context.dataStore.edit { prefs ->
             prefs[DARK_MODE_KEY] = dark

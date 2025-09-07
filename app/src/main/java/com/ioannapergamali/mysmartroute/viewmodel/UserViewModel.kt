@@ -22,6 +22,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
+/**
+ * ViewModel για φόρτωση και διαχείριση χρηστών, ειδοποιήσεων και αλλαγών ρόλων.
+ * ViewModel for loading and managing users, notifications, and role changes.
+ */
 class UserViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
 
@@ -31,6 +35,10 @@ class UserViewModel : ViewModel() {
     private val _drivers = MutableStateFlow<List<UserEntity>>(emptyList())
     val drivers: StateFlow<List<UserEntity>> = _drivers
 
+    /**
+     * Φορτώνει όλους τους χρήστες από τη βάση και προαιρετικά από το cloud.
+     * Loads all users from the database and optionally from the cloud.
+     */
     fun loadUsers(context: Context) {
         viewModelScope.launch {
             val dao = MySmartRouteDatabase.getInstance(context).userDao()
@@ -52,6 +60,10 @@ class UserViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Φορτώνει όλους τους οδηγούς από τη βάση και το Firestore.
+     * Loads all drivers from the database and Firestore.
+     */
     fun loadDrivers(context: Context) {
         viewModelScope.launch {
             val dao = MySmartRouteDatabase.getInstance(context).userDao()
@@ -74,6 +86,10 @@ class UserViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Ανακτά χρήστη από την τοπική βάση ή το Firestore.
+     * Retrieves a user from the local database or Firestore.
+     */
     suspend fun getUser(context: Context, id: String): UserEntity? {
         val dao = MySmartRouteDatabase.getInstance(context).userDao()
         val local = dao.getUser(id)
@@ -84,15 +100,26 @@ class UserViewModel : ViewModel() {
         } else null
     }
 
+    /**
+     * Επιστρέφει το πλήρες όνομα του χρήστη.
+     * Returns the user's full name.
+     */
     suspend fun getUserName(context: Context, id: String): String {
         val user = getUser(context, id)
         return user?.let { "${it.name} ${it.surname}" } ?: ""
     }
 
+    /**
+     * Παρέχει ροή ειδοποιήσεων για συγκεκριμένο χρήστη.
+     * Provides a flow of notifications for a specific user.
+     */
     fun getNotifications(context: Context, userId: String) =
         MySmartRouteDatabase.getInstance(context).notificationDao().getForUser(userId)
 
-    /** Διαγράφει τις ειδοποιήσεις του χρήστη αφού διαβαστούν. */
+    /**
+     * Διαγράφει τις ειδοποιήσεις του χρήστη αφού διαβαστούν.
+     * Deletes a user's notifications after they are read.
+     */
     fun markNotificationsRead(context: Context, userId: String) {
         viewModelScope.launch {
             val dao = MySmartRouteDatabase.getInstance(context).notificationDao()
@@ -106,6 +133,10 @@ class UserViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Αλλάζει τον ρόλο ενός χρήστη και ενημερώνει τα σχετικά δεδομένα.
+     * Changes a user's role and updates related data.
+     */
     fun changeUserRole(
         context: Context,
         userId: String,
@@ -149,6 +180,7 @@ class UserViewModel : ViewModel() {
         val firestore = FirebaseFirestore.getInstance()
 
         // Ανακτούμε όλες τις δηλώσεις μεταφοράς του οδηγού από το Firestore
+        // Retrieve all transport declarations of the driver from Firestore
         val declarations = runCatching {
             firestore.collection("transport_declarations")
                 .whereEqualTo("driverId", driverId)
@@ -159,6 +191,7 @@ class UserViewModel : ViewModel() {
 
         declarations.forEach { declaration ->
             // διαγράφουμε τις κρατήσεις θέσεων για κάθε δήλωση
+            // delete seat reservations for each declaration
             val reservations = seatDao.getReservationsForDeclaration(declaration.id).first()
             reservations.forEach { reservation ->
                 seatDao.deleteById(reservation.id)
@@ -170,6 +203,7 @@ class UserViewModel : ViewModel() {
                 }
 
                 // ενημερώνουμε τον επιβάτη με ειδοποίηση
+                // notify the passenger with a notification
                 val notification = NotificationEntity(
                     id = java.util.UUID.randomUUID().toString(),
                     userId = reservation.userId,
@@ -186,6 +220,7 @@ class UserViewModel : ViewModel() {
         }
 
         // Καθαρίζουμε τα δεδομένα του οδηγού από Room και Firestore
+        // Clear driver's data from Room and Firestore
         demoteDriverToPassenger(dbInstance, driverId = driverId)
     }
 

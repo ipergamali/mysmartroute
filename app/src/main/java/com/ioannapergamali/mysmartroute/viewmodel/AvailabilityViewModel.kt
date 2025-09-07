@@ -11,8 +11,15 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.launch
 import java.util.UUID
 
-/** ViewModel για αποθήκευση διαθεσιμότητας οδηγού. */
+/**
+ * ViewModel για αποθήκευση διαθεσιμότητας οδηγού.
+ * ViewModel for storing driver availability.
+ */
 class AvailabilityViewModel : ViewModel() {
+    /**
+     * Δηλώνει τις ώρες διαθεσιμότητας ενός οδηγού και τις αποθηκεύει τοπικά και απομακρυσμένα.
+     * Declares a driver's availability window and stores it locally and remotely.
+     */
     fun declareAvailability(
         context: Context,
         date: Long,
@@ -32,7 +39,8 @@ class AvailabilityViewModel : ViewModel() {
                     .set(entity.toFirestoreMap())
                     .await()
             } catch (_: Exception) {
-                // ignore failures; will sync later
+                // Αγνοούμε αποτυχίες· θα συγχρονιστεί αργότερα
+                // Ignore failures; will sync later
             }
         }
     }
