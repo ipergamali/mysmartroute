@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import com.ioannapergamali.mysmartroute.repository.Point
 import com.ioannapergamali.mysmartroute.repository.PointRepository
 import com.ioannapergamali.mysmartroute.repository.Route
+import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -17,10 +19,17 @@ class UserPointViewModel(
     private val repository: PointRepository = PointRepository()
 ) : ViewModel() {
 
+    private val firestore = runCatching { FirebaseFirestore.getInstance() }.getOrNull()
+
     private val _points = MutableStateFlow<List<Point>>(emptyList())
     val points: StateFlow<List<Point>> = _points
 
     init {
+        firestore?.collection("user_points")?.get()?.addOnSuccessListener { snapshot ->
+            val remote = snapshot.documents.mapNotNull { it.toPoint() }
+            remote.forEach { repository.addPoint(it) }
+            _points.value = repository.getAllPoints()
+        }
         refreshPoints()
     }
 
@@ -38,6 +47,7 @@ class UserPointViewModel(
      */
     fun addPoint(point: Point) {
         repository.addPoint(point)
+        firestore?.collection("user_points")?.document(point.id)?.set(point)
         refreshPoints()
     }
 
@@ -47,6 +57,9 @@ class UserPointViewModel(
      */
     fun updatePoint(id: String, name: String, details: String) {
         repository.updatePoint(id, name, details)
+        repository.getPoint(id)?.let { updated ->
+            firestore?.collection("user_points")?.document(id)?.set(updated)
+        }
         refreshPoints()
     }
 
@@ -56,6 +69,10 @@ class UserPointViewModel(
      */
     fun mergePoints(keepId: String, removeId: String) {
         repository.mergePoints(keepId, removeId)
+        repository.getPoint(keepId)?.let { keep ->
+            firestore?.collection("user_points")?.document(keepId)?.set(keep)
+        }
+        firestore?.collection("user_points")?.document(removeId)?.delete()
         refreshPoints()
     }
 
@@ -65,6 +82,7 @@ class UserPointViewModel(
      */
     fun deletePoint(id: String) {
         repository.deletePoint(id)
+        firestore?.collection("user_points")?.document(id)?.delete()
         refreshPoints()
     }
 
@@ -75,4 +93,11 @@ class UserPointViewModel(
     fun addRoute(route: Route) {
         repository.addRoute(route)
     }
+
+    private fun DocumentSnapshot.toPoint(): Point? = runCatching {
+        val pid = getString("id") ?: id
+        val name = getString("name") ?: ""
+        val details = getString("details") ?: ""
+        Point(pid, name, details)
+    }.getOrNull()
 }
