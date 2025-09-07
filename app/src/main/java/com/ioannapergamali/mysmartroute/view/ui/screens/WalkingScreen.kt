@@ -2,7 +2,6 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.clickable
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
@@ -404,37 +403,25 @@ fun WalkingScreen(navController: NavController, openDrawer: () -> Unit) {
                 Spacer(Modifier.height(16.dp))
             }
 
-            OutlinedTextField(
-                value = dateText,
-                onValueChange = {},
-                readOnly = true,
-                label = { Text(stringResource(R.string.date)) },
-                trailingIcon = {
-                    IconButton(onClick = { showDatePicker = true }) {
-                        Icon(Icons.Default.DateRange, contentDescription = stringResource(R.string.date))
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { showDatePicker = true }
-            )
+            Button(
+                onClick = { showDatePicker = true },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(Icons.Default.DateRange, contentDescription = stringResource(R.string.date))
+                Spacer(Modifier.width(8.dp))
+                Text(if (dateText.isEmpty()) stringResource(R.string.date) else dateText)
+            }
 
             Spacer(Modifier.height(8.dp))
 
-            OutlinedTextField(
-                value = timeText,
-                onValueChange = {},
-                readOnly = true,
-                label = { Text(stringResource(R.string.time)) },
-                trailingIcon = {
-                    IconButton(onClick = { showTimePicker = true }) {
-                        Icon(Icons.Default.AccessTime, contentDescription = stringResource(R.string.time))
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { showTimePicker = true }
-            )
+            Button(
+                onClick = { showTimePicker = true },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(Icons.Default.AccessTime, contentDescription = stringResource(R.string.time))
+                Spacer(Modifier.width(8.dp))
+                Text(if (timeText.isEmpty()) stringResource(R.string.time) else timeText)
+            }
 
             Spacer(Modifier.height(16.dp))
         }
