@@ -79,8 +79,9 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.2.1")
 
     // Jetpack Compose
-    implementation(platform("androidx.compose:compose-bom:2025.08.01"))
-    androidTestImplementation(platform("androidx.compose:compose-bom:2025.08.01"))
+    // Jetpack Compose BOM (σταθερή έκδοση 1.6.7)
+    implementation(platform("androidx.compose:compose-bom:2024.06.00"))
+    androidTestImplementation(platform("androidx.compose:compose-bom:2024.06.00"))
 
     // Χρήση της σταθερής έκδοσης Material3
     implementation("androidx.compose.material3:material3:1.3.2")
