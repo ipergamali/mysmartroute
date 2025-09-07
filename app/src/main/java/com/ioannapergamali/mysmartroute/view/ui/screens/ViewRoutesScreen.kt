@@ -55,7 +55,7 @@ fun ViewRoutesScreen(navController: NavController, openDrawer: () -> Unit) {
     LaunchedEffect(Unit) {
         MapsInitializer.initialize(context)
         routeViewModel.loadRoutes(context, includeAll = true)
-        favViewModel.loadFavorites()
+        favViewModel.loadFavorites(context)
     }
 
     Scaffold(
@@ -75,7 +75,7 @@ fun ViewRoutesScreen(navController: NavController, openDrawer: () -> Unit) {
                             if (!favorites.contains(route.id)) {
                                 favViewModel.toggleFavorite(route.id)
                             }
-                            favViewModel.saveFavorites { success ->
+                            favViewModel.saveFavorites(context) { success ->
                                 val msg = if (success) {
                                     R.string.favorite_routes_saved
                                 } else {
