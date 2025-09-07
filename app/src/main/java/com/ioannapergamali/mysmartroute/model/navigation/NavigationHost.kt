@@ -35,6 +35,7 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.ProfileScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.RouteEditorScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.ManageFavoritesScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.InterestingRoutesScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.InterestingPoisScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.PrintCompletedScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.PrintListScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.PrintScheduledScreen
@@ -271,6 +272,10 @@ fun NavigationHost(
 
         composable("selectRoutePois") {
             SelectRoutePoisScreen(navController = navController, openDrawer = openDrawer)
+        }
+
+        composable("viewPois") {
+            InterestingPoisScreen(navController = navController, openDrawer = openDrawer)
         }
 
         composable("viewRequests") {

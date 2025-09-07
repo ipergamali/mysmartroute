@@ -26,4 +26,7 @@ interface UserPoiDao {
 
     @Query("DELETE FROM user_pois WHERE userId = :userId AND poiId = :poiId")
     suspend fun delete(userId: String, poiId: String)
+
+    @Query("DELETE FROM user_pois WHERE userId = :userId")
+    suspend fun deleteAll(userId: String)
 }

@@ -42,6 +42,24 @@ class FavoritesRepository(private val db: MySmartRouteDatabase) {
     }
 
     /**
+     * Αντικαθιστά όλα τα αγαπημένα POI με τη νέα λίστα.
+     * Replaces all favorite POIs with the provided list.
+     */
+    suspend fun replaceFavorites(poiIds: List<String>) {
+        val uid = userId()
+        if (uid.isBlank()) return
+        userPoiDao.deleteAll(uid)
+        poiIds.forEach { poiId ->
+            val entity = UserPoiEntity(
+                id = "$uid-$poiId",
+                userId = uid,
+                poiId = poiId
+            )
+            insertUserPoiSafely(userPoiDao, userDao, poiDao, entity)
+        }
+    }
+
+    /**
      * Επιστρέφει τα αναγνωριστικά των αγαπημένων POIs του τρέχοντος χρήστη.
      */
     fun getFavoriteIds(): Flow<List<String>> {

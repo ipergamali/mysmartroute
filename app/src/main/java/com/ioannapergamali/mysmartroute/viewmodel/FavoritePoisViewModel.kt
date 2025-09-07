@@ -1,30 +1,52 @@
 package com.ioannapergamali.mysmartroute.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.flow.Flow
+import androidx.lifecycle.viewModelScope
+import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.repository.FavoritesRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
 /**
- * ViewModel για τη διαχείριση αγαπημένων σημείων ενδιαφέροντος (POIs).
- * Τα αγαπημένα αποθηκεύονται τοπικά στη βάση Room μέσα από το `FavoritesRepository`.
+ * ViewModel για τη διαχείριση αγαπημένων σημείων ενδιαφέροντος.
+ * Τα αγαπημένα αποθηκεύονται τοπικά στη βάση Room.
  */
-class FavoritePoisViewModel(
-    private val repository: FavoritesRepository
-) : ViewModel() {
+class FavoritePoisViewModel : ViewModel() {
+    private var repository: FavoritesRepository? = null
+    private fun repo(context: Context): FavoritesRepository {
+        return repository ?: FavoritesRepository(MySmartRouteDatabase.getInstance(context)).also {
+            repository = it
+        }
+    }
 
-    /**
-     * Προσθέτει ένα POI στα αγαπημένα του χρήστη.
-     */
-    suspend fun addFavoritePoi(poiId: String) = repository.saveFavorite(poiId)
+    private val _favorites = MutableStateFlow<Set<String>>(emptySet())
+    val favorites: StateFlow<Set<String>> = _favorites
 
-    /**
-     * Αφαιρεί ένα POI από τα αγαπημένα του χρήστη.
-     */
-    suspend fun removeFavoritePoi(poiId: String) = repository.removeFavorite(poiId)
+    /** Φόρτωση αγαπημένων σημείων του χρήστη. */
+    fun loadFavorites(context: Context) {
+        viewModelScope.launch {
+            repo(context).getFavoriteIds().collect { ids ->
+                _favorites.value = ids.toSet()
+            }
+        }
+    }
 
-    /**
-     * Επιστρέφει όλες τις αναφορές στα αγαπημένα POIs του χρήστη.
-     */
-    fun getFavoritePoiIds(): Flow<List<String>> = repository.getFavoriteIds()
+    /** Τοπική εναλλαγή αγαπημένου σημείου. */
+    fun toggleFavorite(poiId: String) {
+        val current = _favorites.value.toMutableSet()
+        if (current.contains(poiId)) current.remove(poiId) else current.add(poiId)
+        _favorites.value = current
+    }
+
+    /** Αποθήκευση των επιλεγμένων αγαπημένων. */
+    fun saveFavorites(context: Context, onComplete: (Boolean) -> Unit = {}) {
+        viewModelScope.launch {
+            val result = runCatching {
+                repo(context).replaceFavorites(_favorites.value.toList())
+            }.isSuccess
+            onComplete(result)
+        }
+    }
 }
-
