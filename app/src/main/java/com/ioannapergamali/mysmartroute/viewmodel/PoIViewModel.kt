@@ -80,12 +80,19 @@ class PoIViewModel : ViewModel() {
                 lat = lat,
                 lng = lng
             )
-            dao.insert(poi)
-            _pois.value = _pois.value + poi
-            db.collection("pois")
-                .document(id)
-                .set(poi.toFirestoreMap())
-            _addState.value = AddPoiState.Success(id)
+            try {
+                db.collection("pois")
+                    .document(id)
+                    .set(poi.toFirestoreMap())
+                    .await()
+                dao.insert(poi)
+                _pois.value = _pois.value + poi
+                _addState.value = AddPoiState.Success(id)
+            } catch (e: Exception) {
+                _addState.value = AddPoiState.Error(
+                    e.localizedMessage ?: "Αποτυχία αποθήκευσης στο Firebase"
+                )
+            }
         }
     }
 
