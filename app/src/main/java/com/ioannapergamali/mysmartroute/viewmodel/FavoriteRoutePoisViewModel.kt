@@ -67,9 +67,9 @@ class FavoriteRoutePoisViewModel : ViewModel() {
             // Εισαγωγή κάθε POI και σύνδεσή του με τον χρήστη
             poiIds.forEach { poiId ->
                 poiDao.insert(PoIEntity(id = poiId))
+            }
 
             poiIds.forEach { poiId ->
-
                 val entity = UserPoiEntity(
                     id = "$uid-$poiId",
                     userId = uid,
@@ -77,7 +77,6 @@ class FavoriteRoutePoisViewModel : ViewModel() {
                 )
 
                 userPoiDao.insert(entity)
-
             }
             onComplete(remoteResult)
         }
