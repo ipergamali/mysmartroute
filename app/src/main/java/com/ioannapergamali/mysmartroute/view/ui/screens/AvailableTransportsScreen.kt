@@ -19,7 +19,6 @@ import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.view.ui.util.iconForVehicle
-import com.ioannapergamali.mysmartroute.view.ui.util.labelForVehicle
 import com.ioannapergamali.mysmartroute.viewmodel.FavoritesViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.TransportDeclarationViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.ReservationViewModel
@@ -47,9 +46,7 @@ private fun HeaderRow() {
         Spacer(modifier = Modifier.width(40.dp))
         Text(stringResource(R.string.driver), modifier = Modifier.weight(1f))
         Text(stringResource(R.string.vehicle_name), modifier = Modifier.weight(1f))
-        Text(stringResource(R.string.vehicle_type), modifier = Modifier.weight(1f))
         Text(stringResource(R.string.cost), modifier = Modifier.weight(1f))
-        Text(stringResource(R.string.seats_label), modifier = Modifier.weight(1f))
         Text(stringResource(R.string.date), modifier = Modifier.weight(1f))
         Text(stringResource(R.string.time), modifier = Modifier.weight(1f))
     }
@@ -65,9 +62,7 @@ fun AvailableTransportsScreen(
     startId: String?,
     endId: String?,
     maxCost: Double?,
-    date: Long?,
-    seats: Int?,
-    vehicleType: VehicleType?
+    date: Long?
 ) {
     val context = LocalContext.current
     val declarationViewModel: TransportDeclarationViewModel = viewModel()
@@ -107,10 +102,11 @@ fun AvailableTransportsScreen(
     val sortedDecls = declarations.filter { decl ->
         // Η δήλωση πρέπει να έχει κόστος μικρότερο ή ίσο με αυτό που όρισε ο χρήστης
         if (maxCost != null && decl.cost > maxCost) return@filter false
+        val reserved = reservationCounts[decl.id] ?: 0
+        val availableSeats = max(0, decl.seats - reserved)
+        if (availableSeats <= 0) return@filter false
         if (decl.date < today) return@filter false
         if (date != null && date >= today && decl.date != date) return@filter false
-        if (seats != null && decl.seats < seats) return@filter false
-        if (vehicleType != null && runCatching { VehicleType.valueOf(decl.vehicleType) }.getOrNull() != vehicleType) return@filter false
         if (!decl.matchesFavorites(preferred, nonPreferred)) return@filter false
         if (!decl.isUpcoming()) return@filter false
         true
@@ -180,9 +176,7 @@ fun AvailableTransportsScreen(
                                 }
                                 Text(driver, modifier = Modifier.weight(1f))
                                 Text(vehicleName, modifier = Modifier.weight(1f))
-                                Text(type?.let { labelForVehicle(it) } ?: "", modifier = Modifier.weight(1f))
                                 Text(decl.cost.toString(), modifier = Modifier.weight(1f))
-                                Text(availableSeats.toString(), modifier = Modifier.weight(1f))
                                 Text(dateText, modifier = Modifier.weight(1f))
                                 Text(timeText, modifier = Modifier.weight(1f))
                             }
