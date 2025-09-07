@@ -1,3 +1,5 @@
+// Κλάση μενού με επιλογές.
+// Class for menu with options.
 package com.ioannapergamali.mysmartroute.data.local
 
 import androidx.room.Embedded

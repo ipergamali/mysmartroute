@@ -1,3 +1,5 @@
+// DAO πρόσβασης για ειδοποίηση.
+// DAO for notification access.
 package com.ioannapergamali.mysmartroute.data.local
 
 import androidx.room.Dao

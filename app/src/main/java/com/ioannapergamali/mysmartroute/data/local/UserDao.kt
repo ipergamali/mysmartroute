@@ -1,3 +1,5 @@
+// DAO πρόσβασης για χρήστη.
+// DAO for user access.
 package com.ioannapergamali.mysmartroute.data.local
 
 import androidx.room.Dao

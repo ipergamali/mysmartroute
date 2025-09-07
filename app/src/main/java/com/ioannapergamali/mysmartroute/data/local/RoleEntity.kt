@@ -1,3 +1,5 @@
+// Οντότητα Room για ρόλο.
+// Room entity for role.
 package com.ioannapergamali.mysmartroute.data.local
 
 import androidx.room.Entity
