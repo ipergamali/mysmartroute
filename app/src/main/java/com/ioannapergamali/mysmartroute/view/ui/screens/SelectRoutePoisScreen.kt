@@ -2,7 +2,6 @@ package com.ioannapergamali.mysmartroute.view.ui.screens
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Save
@@ -18,8 +17,6 @@ import androidx.navigation.NavController
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.model.LatLng
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
@@ -33,15 +30,16 @@ import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.utils.offsetPois
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
+import com.ioannapergamali.mysmartroute.viewmodel.FavoriteRoutePoisViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SelectRoutePoisScreen(navController: NavController, openDrawer: () -> Unit) {
     val context = LocalContext.current
     val routeViewModel: RouteViewModel = viewModel()
+    val favoriteViewModel: FavoriteRoutePoisViewModel = viewModel()
     val routes by routeViewModel.routes.collectAsState()
     val scope = rememberCoroutineScope()
 
@@ -56,22 +54,6 @@ fun SelectRoutePoisScreen(navController: NavController, openDrawer: () -> Unit) 
     val apiKey = MapsUtils.getApiKey(context)
     val isKeyMissing = apiKey.isBlank()
 
-    suspend fun saveEditedRouteIfChanged(): Boolean? {
-        if (selectedPoiIds.toList() == originalPoiIds.toList()) return null
-        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return false
-        val username = FirebaseFirestore.getInstance()
-            .collection("users")
-            .document(uid)
-            .get()
-            .await()
-            .getString("username") ?: uid
-        val baseName = selectedRoute?.name ?: "route"
-        return routeViewModel.addRoute(
-            context,
-            selectedPoiIds.toList(),
-            "${baseName}_edited_by_$username"
-        ) != null
-    }
 
     LaunchedEffect(Unit) { routeViewModel.loadRoutes(context, includeAll = true) }
 
@@ -174,23 +156,32 @@ fun SelectRoutePoisScreen(navController: NavController, openDrawer: () -> Unit) 
 
                 Spacer(Modifier.height(16.dp))
 
-                IconButton(onClick = {
-                    scope.launch {
-                        val saved = saveEditedRouteIfChanged()
-                        if (saved == true) {
-                            Toast.makeText(
-                                context,
-                                context.getString(R.string.route_saved),
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    }
-                }) {
-                    Icon(
-                        imageVector = Icons.Filled.Save,
-                        contentDescription = stringResource(R.string.save)
-                    )
-                }
+                  IconButton(onClick = {
+                      scope.launch {
+                          val route = selectedRoute ?: return@launch
+                          favoriteViewModel.saveFavorites(
+                              context,
+                              route.id,
+                              selectedPoiIds.toList()
+                          ) { success ->
+                              val msg = if (success) {
+                                  R.string.favorite_pois_saved
+                              } else {
+                                  R.string.favorite_pois_save_failed
+                              }
+                              Toast.makeText(
+                                  context,
+                                  context.getString(msg),
+                                  Toast.LENGTH_SHORT
+                              ).show()
+                          }
+                      }
+                  }) {
+                      Icon(
+                          imageVector = Icons.Filled.Save,
+                          contentDescription = stringResource(R.string.save)
+                      )
+                  }
             }
         }
     }
