@@ -6,9 +6,11 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
+
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.data.local.UserEntity
 import com.ioannapergamali.mysmartroute.data.local.UserPoiEntity
+
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
@@ -54,6 +56,7 @@ class FavoriteRoutePoisViewModel : ViewModel() {
             val remoteResult = runCatching { batch.commit().await() }.isSuccess
 
             val db = MySmartRouteDatabase.getInstance(context)
+
             val userPoiDao = db.userPoiDao()
             val userDao = db.userDao()
             val poiDao = db.poIDao()
@@ -64,12 +67,17 @@ class FavoriteRoutePoisViewModel : ViewModel() {
             // Εισαγωγή κάθε POI και σύνδεσή του με τον χρήστη
             poiIds.forEach { poiId ->
                 poiDao.insert(PoIEntity(id = poiId))
+
+            poiIds.forEach { poiId ->
+
                 val entity = UserPoiEntity(
                     id = "$uid-$poiId",
                     userId = uid,
                     poiId = poiId
                 )
+
                 userPoiDao.insert(entity)
+
             }
             onComplete(remoteResult)
         }
