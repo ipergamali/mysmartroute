@@ -601,6 +601,8 @@ fun DeclareRouteScreen(navController: NavController, openDrawer: () -> Unit) {
                 },
                 enabled = routePois.size >= 2 && routeName.isNotBlank()
             ) {
+                Icon(Icons.Default.Save, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
                 Text(stringResource(R.string.save_route))
             }
 
