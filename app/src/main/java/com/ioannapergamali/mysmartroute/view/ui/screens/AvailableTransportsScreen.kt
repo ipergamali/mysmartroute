@@ -49,6 +49,7 @@ private fun HeaderRow() {
         Text(stringResource(R.string.cost), modifier = Modifier.weight(1f))
         Text(stringResource(R.string.date), modifier = Modifier.weight(1f))
         Text(stringResource(R.string.time), modifier = Modifier.weight(1f))
+        Text(stringResource(R.string.seats_label), modifier = Modifier.weight(1f))
     }
     Divider()
 }
@@ -179,6 +180,7 @@ fun AvailableTransportsScreen(
                                 Text(decl.cost.toString(), modifier = Modifier.weight(1f))
                                 Text(dateText, modifier = Modifier.weight(1f))
                                 Text(timeText, modifier = Modifier.weight(1f))
+                                Text(availableSeats.toString(), modifier = Modifier.weight(1f))
                             }
                             Spacer(Modifier.height(4.dp))
                             Button(
