@@ -201,7 +201,7 @@
     <string name="add_poi_option">Προσθήκη POI</string>
     <string name="select_date">Επιλογή ημερομηνίας</string>
     <string name="select_time">Επιλογή ώρας</string>
-    <string name="select_pois_screen_title">Επιλογή POI διαδρομής</string>
+    <string name="select_pois_screen_title">Αποθήκευση ενδιαφερόντων POI</string>
     <string name="choose_pois">Επιλογή σημείων ενδιαφέροντος</string>
     <string name="confirm_poi_selection">Επιβεβαίωση επιλογής</string>
     <string name="route_saved">Η διαδρομή αποθηκεύτηκε</string>
