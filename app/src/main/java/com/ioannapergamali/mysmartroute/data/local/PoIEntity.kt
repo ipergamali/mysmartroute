@@ -1,3 +1,5 @@
+// Οντότητα Room για σημείο ενδιαφέροντος.
+// Room entity for po i.
 package com.ioannapergamali.mysmartroute.data.local
 
 import androidx.room.ColumnInfo

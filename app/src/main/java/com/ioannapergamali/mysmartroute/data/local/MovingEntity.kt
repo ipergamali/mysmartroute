@@ -1,3 +1,5 @@
+// Οντότητα Room για μετακίνηση.
+// Room entity for moving.
 package com.ioannapergamali.mysmartroute.data.local
 
 import androidx.room.Entity

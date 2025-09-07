@@ -1,3 +1,5 @@
+// Κλάση προσαρμοσμένο θέμα.
+// Class for custom theme.
 package com.ioannapergamali.mysmartroute.data
 
 import androidx.compose.ui.graphics.Color

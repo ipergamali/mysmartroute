@@ -1,3 +1,5 @@
+// DAO πρόσβασης για μενού.
+// DAO for menu access.
 package com.ioannapergamali.mysmartroute.data.local
 
 import androidx.room.Dao
