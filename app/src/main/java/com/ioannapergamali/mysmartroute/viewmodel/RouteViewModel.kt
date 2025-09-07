@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import android.util.Log
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.RouteEntity
 import com.ioannapergamali.mysmartroute.data.local.RoutePointEntity
@@ -238,13 +239,31 @@ class RouteViewModel : ViewModel() {
         val points = poiIds.mapIndexed { index, p -> RoutePointEntity(id, index, p) }
 
         runCatching {
-            firestore.collection("routes").document(id).set(entity.toFirestoreMap(points)).await()
+            firestore.collection("routes")
+                .document(id)
+                .set(entity.toFirestoreMap(points))
+                .await()
+        }.onFailure { e ->
+            Log.e("RouteViewModel", "Αποτυχία αποθήκευσης στο Firestore", e)
         }
 
         routeDao.insert(entity)
         points.forEach { pointDao.insert(it) }
 
         return id
+    }
+
+    /**
+     * Συγχρονίζει τα σημεία μιας διαδρομής από τη Room στη συλλογή `route_points` του Firestore.
+     */
+    suspend fun syncRoutePoints(context: Context, routeId: String) {
+        val db = MySmartRouteDatabase.getInstance(context)
+        val points = db.routePointDao().getPointsForRoute(routeId).first()
+        FirebaseFirestore.getInstance()
+            .collection("route_points")
+            .document(routeId)
+            .set(points)
+            .await()
     }
 
     /**
