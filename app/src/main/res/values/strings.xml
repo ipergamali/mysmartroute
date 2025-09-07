@@ -160,6 +160,7 @@
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="announce">Announce</string>
+    <string name="register">Register</string>
     <string name="duration_format">Duration: %1$d min</string>
     <string name="app_language">App Language</string>
     <string name="poi_name">PoI Name</string>

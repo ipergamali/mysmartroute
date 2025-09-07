@@ -19,7 +19,6 @@ object MiuiUtils {
     /**
      * Ασφαλής κλήση μεθόδου στον πάροχο MIUI Service Delivery.
      * Safely calls a method on the MIUI Service Delivery provider.
-     * Ασφαλής κλήση μεθόδου στον πάροχο MIUI Service Delivery.
 
      * @param context Έγκυρο [Context].
      * @param methodName Η μέθοδος που θα καλεστεί στον πάροχο.
