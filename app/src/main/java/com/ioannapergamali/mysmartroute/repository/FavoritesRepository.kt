@@ -1,62 +1,51 @@
 package com.ioannapergamali.mysmartroute.repository
 
-
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.DocumentReference
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
-import com.ioannapergamali.mysmartroute.data.local.PoIEntity
-import kotlinx.coroutines.tasks.await
+import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
+import com.ioannapergamali.mysmartroute.data.local.UserPoiEntity
+import com.ioannapergamali.mysmartroute.data.local.insertUserPoiSafely
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 
 /**
- * Repository για αποθήκευση αγαπημένων σημείων ενδιαφέροντος στο Firestore.
-
- * Τα αγαπημένα αποθηκεύονται στη διαδρομή `users/{uid}/Favorites/data/pois`.
+ * Repository για αποθήκευση αγαπημένων σημείων ενδιαφέροντος στην τοπική βάση (Room).
+ * Τα αγαπημένα συνδέουν έναν χρήστη με ένα `PoI` μέσω της οντότητας `UserPoiEntity`.
  */
-class FavoritesRepository {
-    private val firestore = Firebase.firestore
+class FavoritesRepository(private val db: MySmartRouteDatabase) {
+    private val userPoiDao = db.userPoiDao()
+    private val userDao = db.userDao()
+    private val poiDao = db.poIDao()
 
     private fun userId() = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
-    private fun userFavorites(uid: String) = firestore
-        .collection("users")
-        .document(uid)
-        .collection("Favorites")
-        .document("data")
-        .collection("pois")
-
     /**
-     * Αποθηκεύει ή ενημερώνει ένα αγαπημένο POI.
+     * Αποθηκεύει ένα POI ως αγαπημένο για τον τρέχοντα χρήστη.
      */
     suspend fun saveFavorite(poiId: String) {
         val uid = userId()
         if (uid.isBlank()) return
-        val poiRef = firestore.collection("pois").document(poiId)
-        userFavorites(uid).document(poiId).set(mapOf("poiRef" to poiRef)).await()
+        val entity = UserPoiEntity(
+            id = "$uid-$poiId",
+            userId = uid,
+            poiId = poiId
+        )
+        insertUserPoiSafely(userPoiDao, userDao, poiDao, entity)
     }
 
     /**
-     * Overload που δέχεται οντότητα POI.
-     */
-    suspend fun saveFavorite(poi: PoIEntity) = saveFavorite(poi.id)
-
-    /**
-     * Αφαιρεί ένα POI από τα αγαπημένα.
+     * Αφαιρεί ένα POI από τα αγαπημένα του τρέχοντος χρήστη.
      */
     suspend fun removeFavorite(poiId: String) {
         val uid = userId()
         if (uid.isBlank()) return
-        userFavorites(uid).document(poiId).delete().await()
+        userPoiDao.delete(uid, poiId)
     }
 
     /**
-     * Επιστρέφει τις αναφορές όλων των αγαπημένων POIs.
+     * Επιστρέφει τα αναγνωριστικά των αγαπημένων POIs του τρέχοντος χρήστη.
      */
-    suspend fun getFavoriteRefs(): List<DocumentReference> {
+    fun getFavoriteIds(): Flow<List<String>> {
         val uid = userId()
-        if (uid.isBlank()) return emptyList()
-        val snap = userFavorites(uid).get().await()
-        return snap.documents.mapNotNull { it.getDocumentReference("poiRef") }
+        return if (uid.isBlank()) flowOf(emptyList()) else userPoiDao.getPoiIds(uid)
     }
 }
-
