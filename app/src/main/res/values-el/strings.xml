@@ -139,6 +139,7 @@
     <string name="view_vehicles">Προβολή διαθέσιμων οχημάτων</string>
     <string name="vehicles_empty">Δεν βρέθηκαν οχήματα</string>
     <string name="view_pois">Προβολή σημείων ενδιαφέροντος</string>
+    <string name="no_pois">Δεν υπάρχουν διαθέσιμα σημεία ενδιαφέροντος</string>
     <string name="view_users">Προβολή χρηστών</string>
     <string name="no_users">Δεν βρέθηκαν χρήστες</string>
     <string name="total_cost_label">Συνολικό κόστος: %1$.2f€</string>

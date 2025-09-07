@@ -35,7 +35,7 @@
           },
           {
             "titleKey": "select_pois_screen_title",
-            "route": "selectRoutePois"
+            "route": "viewPois"
           },
           {
             "titleKey": "view_transports",
