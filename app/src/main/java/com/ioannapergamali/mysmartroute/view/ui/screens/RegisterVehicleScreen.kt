@@ -354,7 +354,7 @@ fun RegisterVehicleScreen(navController: NavController, openDrawer: () -> Unit) 
                 val colorParam = if (usingCustomColor) customColorName else color.name
                 viewModel.registerVehicle(context, name, description, type, seat, colorParam, plate)
             }) {
-                Text("Register")
+                Text(stringResource(R.string.register_vehicle))
             }
         }
     }

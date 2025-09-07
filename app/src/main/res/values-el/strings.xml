@@ -105,6 +105,12 @@
     <string name="vehicle_name">Όνομα οχήματος</string>
     <string name="license_plate">Πινακίδα</string>
     <string name="seats_label">Θέσεις</string>
+    <string name="user_not_logged_in">Ο χρήστης δεν έχει συνδεθεί</string>
+    <string name="name_required">Απαιτείται όνομα</string>
+    <string name="description_required">Απαιτείται περιγραφή</string>
+    <string name="license_plate_required">Απαιτείται πινακίδα</string>
+    <string name="seats_must_be_greater_than_zero">Οι θέσεις πρέπει να είναι μεγαλύτερες από 0</string>
+    <string name="color_required">Απαιτείται χρώμα</string>
     <string name="vehicle_type">Τύπος οχήματος</string>
     <string name="announce_availability">Δήλωση διαθεσιμότητας για μεταφορά</string>
     <string name="find_passengers">Εύρεση επιβατών</string>

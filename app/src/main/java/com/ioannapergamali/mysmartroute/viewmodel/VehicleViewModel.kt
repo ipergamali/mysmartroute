@@ -15,6 +15,7 @@ import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.utils.VehiclePlacesUtils
 import com.ioannapergamali.mysmartroute.model.classes.vehicles.RemoteVehicle
 import com.ioannapergamali.mysmartroute.utils.toVehicleEntity
+import com.ioannapergamali.mysmartroute.R
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -57,32 +58,44 @@ class VehicleViewModel : ViewModel() {
 
             val userId = auth.currentUser?.uid
             if (userId == null) {
-                _registerState.value = RegisterState.Error("User not logged in")
+                _registerState.value = RegisterState.Error(
+                    context.getString(R.string.user_not_logged_in)
+                )
                 return@launch
             }
 
             if (name.isBlank()) {
-                _registerState.value = RegisterState.Error("Name required")
+                _registerState.value = RegisterState.Error(
+                    context.getString(R.string.name_required)
+                )
                 return@launch
             }
 
             if (description.isBlank()) {
-                _registerState.value = RegisterState.Error("Description required")
+                _registerState.value = RegisterState.Error(
+                    context.getString(R.string.description_required)
+                )
                 return@launch
             }
 
             if (plate.isBlank()) {
-                _registerState.value = RegisterState.Error("License plate required")
+                _registerState.value = RegisterState.Error(
+                    context.getString(R.string.license_plate_required)
+                )
                 return@launch
             }
 
             if (seat <= 0) {
-                _registerState.value = RegisterState.Error("Seats must be greater than 0")
+                _registerState.value = RegisterState.Error(
+                    context.getString(R.string.seats_must_be_greater_than_zero)
+                )
                 return@launch
             }
 
             if (color.isBlank()) {
-                _registerState.value = RegisterState.Error("Color required")
+                _registerState.value = RegisterState.Error(
+                    context.getString(R.string.color_required)
+                )
                 return@launch
             }
 
