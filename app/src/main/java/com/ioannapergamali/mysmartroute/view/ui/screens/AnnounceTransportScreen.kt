@@ -8,6 +8,8 @@ import androidx.compose.material.icons.filled.DirectionsBike
 import androidx.compose.material.icons.filled.DirectionsBus
 import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.TwoWheeler
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -383,6 +385,8 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
             }
 
             Button(onClick = { showDatePicker = true }) {
+                Icon(Icons.Default.DateRange, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
                 Text(selectedDateText)
             }
 
@@ -402,6 +406,8 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
             Spacer(Modifier.height(16.dp))
 
             Button(onClick = { showTimePicker = true }) {
+                Icon(Icons.Default.AccessTime, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
                 Text(selectedTimeText)
             }
 
