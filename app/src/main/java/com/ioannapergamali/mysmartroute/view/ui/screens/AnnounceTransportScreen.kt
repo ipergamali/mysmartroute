@@ -38,6 +38,7 @@ import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.vector.ImageVector
+import android.widget.Toast
 import com.ioannapergamali.mysmartroute.data.local.RouteEntity
 import com.ioannapergamali.mysmartroute.data.local.VehicleEntity
 import com.google.android.libraries.places.api.model.Place
@@ -460,19 +461,28 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     val startTime = (timePickerState.hour * 60 + timePickerState.minute) * 60_000L
                     val driverId = selectedDriverId ?: ""
                     if (routeId != null && vehicle != null) {
-                        declarationViewModel.declareTransport(
-                            context,
-                            routeId,
-                            driverId,
-                            selectedVehicleId,
-                            vehicle,
-                            selectedVehicleSeats,
-                            cost,
-                            duration,
-                            date,
-                            startTime
-                        )
-                        navController.popBackStack()
+                        scope.launch {
+                            val success = declarationViewModel.declareTransport(
+                                context,
+                                routeId,
+                                driverId,
+                                selectedVehicleId,
+                                vehicle,
+                                selectedVehicleSeats,
+                                cost,
+                                duration,
+                                date,
+                                startTime
+                            )
+                            Toast.makeText(
+                                context,
+                                if (success) R.string.declare_success else R.string.declare_failure,
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            if (success) {
+                                navController.popBackStack()
+                            }
+                        }
                     }
                 },
                 enabled = selectedRouteId != null && selectedVehicle != null && !calculating

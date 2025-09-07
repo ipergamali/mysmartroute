@@ -68,7 +68,7 @@ class TransportDeclarationViewModel : ViewModel() {
      * Καταχωρεί νέα δήλωση μεταφοράς τοπικά και απομακρυσμένα.
      * Registers a new transport declaration locally and remotely.
      */
-    fun declareTransport(
+    suspend fun declareTransport(
         context: Context,
         routeId: String,
         driverId: String,
@@ -79,24 +79,24 @@ class TransportDeclarationViewModel : ViewModel() {
         durationMinutes: Int,
         date: Long,
         startTime: Long = 0L
-    ) {
-        viewModelScope.launch {
-            val dao = MySmartRouteDatabase.getInstance(context).transportDeclarationDao()
-            val id = UUID.randomUUID().toString()
-            val entity = TransportDeclarationEntity(id, routeId, driverId, vehicleId, vehicleType.name, cost, durationMinutes, seats, date, startTime)
-            dao.insert(entity)
-            try {
-                FirebaseFirestore.getInstance()
-                    .collection("transport_declarations")
-                    .document(id)
-                    .set(entity.toFirestoreMap())
-                    .await()
-                Log.d(TAG, "Declaration $id stored remotely")
-            } catch (e: Exception) {
-                Log.w(TAG, "Remote store failed", e)
-                // Σε περίπτωση αποτυχίας, θα αποσταλεί αργότερα μέσω συγχρονισμού
-                // In case of failure, it will be sent later during sync
-            }
+    ): Boolean = withContext(Dispatchers.IO) {
+        val dao = MySmartRouteDatabase.getInstance(context).transportDeclarationDao()
+        val id = UUID.randomUUID().toString()
+        val entity = TransportDeclarationEntity(id, routeId, driverId, vehicleId, vehicleType.name, cost, durationMinutes, seats, date, startTime)
+        dao.insert(entity)
+        try {
+            FirebaseFirestore.getInstance()
+                .collection("transport_declarations")
+                .document(id)
+                .set(entity.toFirestoreMap())
+                .await()
+            Log.d(TAG, "Declaration $id stored remotely")
+            true
+        } catch (e: Exception) {
+            Log.w(TAG, "Remote store failed", e)
+            // Σε περίπτωση αποτυχίας, θα αποσταλεί αργότερα μέσω συγχρονισμού
+            // In case of failure, it will be sent later during sync
+            false
         }
     }
 
