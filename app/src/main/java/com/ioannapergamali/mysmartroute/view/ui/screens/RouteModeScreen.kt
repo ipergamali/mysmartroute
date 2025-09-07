@@ -10,7 +10,6 @@ import androidx.compose.material3.*
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.rememberDatePickerState
-import androidx.compose.material3.menuAnchor
 import androidx.annotation.StringRes
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.*
@@ -44,7 +43,6 @@ import com.ioannapergamali.mysmartroute.viewmodel.TransferRequestViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.utils.offsetPois
-import com.ioannapergamali.mysmartroute.view.ui.util.labelForVehicle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -87,8 +85,6 @@ fun RouteModeScreen(
     val originalPoiIds = remember { mutableStateListOf<String>() }
     var startIndex by rememberSaveable { mutableStateOf<Int?>(null) }
     var endIndex by rememberSaveable { mutableStateOf<Int?>(null) }
-    var vehicleTypeExpanded by remember { mutableStateOf(false) }
-    var selectedVehicleType by rememberSaveable { mutableStateOf<VehicleType?>(null) }
     var message by remember { mutableStateOf("") }
     val datePickerState = rememberDatePickerState(System.currentTimeMillis())
     var showDatePicker by remember { mutableStateOf(false) }
@@ -105,7 +101,6 @@ fun RouteModeScreen(
     var calculating by remember { mutableStateOf(false) }
     var pendingPoi by remember { mutableStateOf<Triple<String, Double, Double>?>(null) }
     var maxCostText by rememberSaveable { mutableStateOf("") }
-    var seatsText by rememberSaveable { mutableStateOf("") }
 
     suspend fun saveEditedRouteIfChanged(): String {
         val routeId = selectedRouteId ?: return ""
@@ -436,35 +431,6 @@ fun RouteModeScreen(
                 Spacer(Modifier.height(16.dp))
             }
 
-            ExposedDropdownMenuBox(expanded = vehicleTypeExpanded, onExpandedChange = { vehicleTypeExpanded = !vehicleTypeExpanded }) {
-                OutlinedTextField(
-                    value = selectedVehicleType?.let { labelForVehicle(it) } ?: "",
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text(stringResource(R.string.vehicle_type)) },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = vehicleTypeExpanded) },
-                    modifier = Modifier.menuAnchor().fillMaxWidth()
-                )
-                DropdownMenu(expanded = vehicleTypeExpanded, onDismissRequest = { vehicleTypeExpanded = false }) {
-                    VehicleType.values().forEach { type ->
-                        DropdownMenuItem(text = { Text(labelForVehicle(type)) }, onClick = {
-                            selectedVehicleType = type
-                            vehicleTypeExpanded = false
-                        })
-                    }
-                }
-            }
-
-            Spacer(Modifier.height(16.dp))
-
-            OutlinedTextField(
-                value = seatsText,
-                onValueChange = { seatsText = it },
-                label = { Text(stringResource(R.string.seats_label)) },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth()
-            )
-
             Spacer(Modifier.height(16.dp))
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -479,7 +445,6 @@ fun RouteModeScreen(
                         val fromId = routePois[fromIdx].id
                         val toId = routePois[toIdx].id
                         val cost = maxCostText.toDoubleOrNull() ?: Double.MAX_VALUE
-                        val seats = seatsText.toIntOrNull() ?: 1
                         val routeId = selectedRouteId ?: return@Button
                         val date = datePickerState.selectedDateMillis ?: 0L
 
@@ -490,9 +455,7 @@ fun RouteModeScreen(
                                 "&startId=" + fromId +
                                 "&endId=" + toId +
                                 "&maxCost=" + cost +
-                                "&date=" + date +
-                                "&seats=" + seats +
-                                "&vehicleType=" + (selectedVehicleType?.name ?: "")
+                                "&date=" + date
                         )
                     },
                     enabled = selectedRouteId != null && startIndex != null && endIndex != null,
@@ -513,7 +476,6 @@ fun RouteModeScreen(
                             val fromId = routePois[fromIdx].id
                             val toId = routePois[toIdx].id
                             val cost = maxCostText.toDoubleOrNull() ?: Double.MAX_VALUE
-                            val seats = seatsText.toIntOrNull() ?: 1
                             val date = datePickerState.selectedDateMillis ?: 0L
                             val routeId = saveEditedRouteAsNewRoute()
 
