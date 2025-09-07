@@ -57,7 +57,7 @@ import com.ioannapergamali.mysmartroute.data.local.TripRatingDao
         TripRatingEntity::class,
         NotificationEntity::class
     ],
-    version = 59
+    version = 60
 )
 @TypeConverters(Converters::class)
 abstract class MySmartRouteDatabase : RoomDatabase() {
@@ -742,6 +742,30 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_59_60 = object : Migration(59, 60) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `trip_ratings_new` (" +
+                        "`movingId` TEXT NOT NULL, " +
+                        "`userId` TEXT NOT NULL, " +
+                        "`rating` INTEGER NOT NULL, " +
+                        "`comment` TEXT NOT NULL, " +
+                        "PRIMARY KEY(`movingId`), " +
+                        "FOREIGN KEY(`movingId`) REFERENCES `movings`(`id`) ON DELETE CASCADE, " +
+                        "FOREIGN KEY(`userId`) REFERENCES `users`(`id`) ON DELETE CASCADE" +
+                    ")"
+                )
+                database.execSQL(
+                    "INSERT INTO `trip_ratings_new` (`movingId`, `userId`, `rating`, `comment`) " +
+                        "SELECT `movingId`, '' AS `userId`, `rating`, `comment` FROM `trip_ratings`"
+                )
+                database.execSQL("DROP TABLE `trip_ratings`")
+                database.execSQL("ALTER TABLE `trip_ratings_new` RENAME TO `trip_ratings`")
+                database.execSQL("CREATE INDEX IF NOT EXISTS `index_trip_ratings_movingId` ON `trip_ratings` (`movingId`)")
+                database.execSQL("CREATE INDEX IF NOT EXISTS `index_trip_ratings_userId` ON `trip_ratings` (`userId`)")
+            }
+        }
+
         private fun prepopulate(db: SupportSQLiteDatabase) {
             Log.d(TAG, "Prepopulating database")
             db.execSQL(
@@ -880,7 +904,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_53_54,
                     MIGRATION_55_56,
                     MIGRATION_56_57,
-                    MIGRATION_57_58
+                    MIGRATION_57_58,
+                    MIGRATION_59_60
                 )
                     .fallbackToDestructiveMigration()
                     .addCallback(object : RoomDatabase.Callback() {
