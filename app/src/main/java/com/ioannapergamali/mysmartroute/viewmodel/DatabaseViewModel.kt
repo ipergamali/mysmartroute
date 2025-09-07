@@ -282,8 +282,29 @@ class DatabaseViewModel : ViewModel() {
             val userPois = firestore.collection("user_pois").get().await()
                 .documents.mapNotNull { it.toUserPoiEntity() }
 
-            Log.d(TAG, "Firebase data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} types:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size} routes:${routes.size} movings:${movings.size} declarations:${declarations.size} availabilities:${availabilities.size} favorites:${favorites.size} userPois:${userPois.size}")
-            _firebaseData.value = DatabaseData(users, vehicles, pois, poiTypes, settings, roles, menus, menuOptions, emptyList(), routes, routePoints, movings, declarations, availabilities, favorites, userPois)
+            Log.d(
+                TAG,
+                "Firebase data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} types:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size} routes:${routes.size} movings:${movings.size} declarations:${declarations.size} availabilities:${availabilities.size} favorites:${favorites.size} userPois:${userPois.size}"
+            )
+            _firebaseData.value = DatabaseData(
+                users,
+                vehicles,
+                pois,
+                poiTypes,
+                settings,
+                roles,
+                menus,
+                menuOptions,
+                emptyList(),
+                routes,
+                routePoints,
+                movings,
+                declarations,
+                availabilities,
+                favorites,
+                emptyList(),
+                userPois
+            )
             } catch (e: FirebaseFirestoreException) {
                 Log.e(TAG, "Firestore permission error", e)
                 _syncState.value = SyncState.Error("Ανεπαρκή δικαιώματα στο Firestore")
