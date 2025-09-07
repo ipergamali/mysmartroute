@@ -117,7 +117,7 @@ private fun RoleMenu(
         )
         val descKey = when (role) {
             UserRole.PASSENGER -> "role_passenger_desc"
-            UserRole.DRIVER -> "role_driver_desc"
+            UserRole.DRIVER -> null
             UserRole.ADMIN -> null
             else -> null
         }

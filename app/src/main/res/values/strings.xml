@@ -197,7 +197,6 @@
     <string name="legend_saved_route">Αποθηκευμένη διαδρομή</string>
     <!-- Role descriptions -->
     <string name="role_passenger_desc">You can view routes and make bookings.</string>
-    <string name="role_driver_desc">You can announce transports and manage vehicles.</string>
     <string name="role_admin_desc">You have access to management functions and defining points of interest.</string>
     <string name="poi_outside_heraklion">Please select a point within Heraklion</string>
     <string name="search_address">Search address</string>
