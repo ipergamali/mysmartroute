@@ -13,6 +13,8 @@ import com.google.firebase.Timestamp
 import com.ioannapergamali.mysmartroute.data.local.MovingEntity
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.RouteDao
+import com.ioannapergamali.mysmartroute.data.local.UserDao
+import com.ioannapergamali.mysmartroute.data.local.VehicleDao
 import kotlinx.coroutines.Dispatchers
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.utils.toMovingEntity
@@ -95,10 +97,7 @@ class VehicleRequestViewModel(
 
             val enrichedLocal = mutableListOf<MovingEntity>()
             for (m in _requests.value) {
-                m.routeName = routeDao.findById(m.routeId)?.name ?: ""
-                m.driverName = userDao.getUser(m.driverId)?.name ?: m.driverName
-                m.createdByName = userDao.getUser(m.userId)?.name ?: m.createdByName
-                m.vehicleName = vehicleDao.getVehicle(m.vehicleId)?.name ?: ""
+                enrichMoving(m, routeDao, userDao, vehicleDao)
                 enrichedLocal.add(m)
             }
             _requests.value = enrichedLocal
@@ -119,10 +118,7 @@ class VehicleRequestViewModel(
                 val list = snap.documents.mapNotNull { it.toMovingEntity() }
                 val enriched = mutableListOf<MovingEntity>()
                 for (m in list) {
-                    m.routeName = routeDao.findById(m.routeId)?.name ?: m.routeName
-                    m.driverName = userDao.getUser(m.driverId)?.name ?: m.driverName
-                    m.createdByName = userDao.getUser(m.userId)?.name ?: m.createdByName
-                    m.vehicleName = vehicleDao.getVehicle(m.vehicleId)?.name ?: m.vehicleName
+                    enrichMoving(m, routeDao, userDao, vehicleDao)
                     enriched.add(m)
                 }
                 if (enriched.isNotEmpty()) {
@@ -161,6 +157,34 @@ class VehicleRequestViewModel(
                 showAcceptedNotifications(context)
                 showRejectedNotifications(context)
             }
+        }
+    }
+
+    private suspend fun enrichMoving(
+        m: MovingEntity,
+        routeDao: RouteDao,
+        userDao: UserDao,
+        vehicleDao: VehicleDao
+    ) {
+        if (m.routeName.isBlank() && m.routeId.isNotBlank()) {
+            m.routeName = routeDao.findById(m.routeId)?.name ?: runCatching {
+                db.collection("routes").document(m.routeId).get().await().getString("name")
+            }.getOrNull().orEmpty()
+        }
+        if (m.driverName.isBlank() && m.driverId.isNotBlank()) {
+            m.driverName = userDao.getUser(m.driverId)?.name ?: runCatching {
+                db.collection("users").document(m.driverId).get().await().getString("name")
+            }.getOrNull().orEmpty()
+        }
+        if (m.createdByName.isBlank() && m.userId.isNotBlank()) {
+            m.createdByName = userDao.getUser(m.userId)?.name ?: runCatching {
+                db.collection("users").document(m.userId).get().await().getString("name")
+            }.getOrNull().orEmpty()
+        }
+        if (m.vehicleName.isBlank() && m.vehicleId.isNotBlank()) {
+            m.vehicleName = vehicleDao.getVehicle(m.vehicleId)?.name ?: runCatching {
+                db.collection("vehicles").document(m.vehicleId).get().await().getString("name")
+            }.getOrNull().orEmpty()
         }
     }
 
