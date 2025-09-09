@@ -1,14 +1,10 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
 import android.text.format.DateFormat
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -84,49 +80,33 @@ fun PassengerMovingsScreen(navController: NavController, openDrawer: () -> Unit)
 
 @Composable
 private fun MovingCategory(title: String, list: List<MovingEntity>) {
-    val context = LocalContext.current
     if (list.isNotEmpty()) {
         Text(title, style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(8.dp))
-        Column(modifier = Modifier.horizontalScroll(rememberScrollState())) {
-            Row {
-                TableCell(stringResource(R.string.route))
-                TableCell(stringResource(R.string.driver))
-                TableCell(stringResource(R.string.vehicle_name))
-                TableCell(stringResource(R.string.passenger))
-                TableCell(stringResource(R.string.date))
-                TableCell(stringResource(R.string.cost))
-                TableCell(stringResource(R.string.duration))
-            }
-            list.forEach { m ->
-                val dateText = if (m.date > 0L) {
-                    DateFormat.getDateFormat(context).format(Date(m.date))
-                } else ""
-                val routeText = m.routeName.ifBlank { m.routeId }
-                val driverText = m.driverName.ifBlank { m.driverId }
-                val vehicleText = m.vehicleName.ifBlank { m.vehicleId }
-                val passengerText = m.createdByName.ifBlank { m.userId }
-                Row {
-                    TableCell(routeText)
-                    TableCell(driverText)
-                    TableCell(vehicleText)
-                    TableCell(passengerText)
-                    TableCell(dateText)
-                    TableCell(String.format(Locale.getDefault(), "%.2f€", m.cost))
-                    TableCell(m.durationMinutes.toString())
-                }
-            }
+        list.forEach { m ->
+            MovingItem(m)
         }
         Spacer(modifier = Modifier.height(16.dp))
     }
 }
 
 @Composable
-private fun TableCell(text: String) {
-    Text(
-        text,
-        modifier = Modifier
-            .width(120.dp)
-            .padding(4.dp),
-    )
+private fun MovingItem(m: MovingEntity) {
+    val context = LocalContext.current
+    val dateText = if (m.date > 0L) {
+        DateFormat.getDateFormat(context).format(Date(m.date))
+    } else ""
+    val routeText = m.routeName.ifBlank { m.routeId }
+    val driverText = m.driverName.ifBlank { m.driverId }
+    val vehicleText = m.vehicleName.ifBlank { m.vehicleId }
+    val passengerText = m.createdByName.ifBlank { m.userId }
+    Column(modifier = Modifier.padding(vertical = 4.dp)) {
+        Text("${stringResource(R.string.route)}: $routeText")
+        Text("${stringResource(R.string.driver)}: $driverText")
+        Text("${stringResource(R.string.vehicle_name)}: $vehicleText")
+        Text("${stringResource(R.string.passenger)}: $passengerText")
+        Text("${stringResource(R.string.date)}: $dateText")
+        Text("${stringResource(R.string.cost)}: ${String.format(Locale.getDefault(), "%.2f€", m.cost)}")
+        Text("${stringResource(R.string.duration)}: ${m.durationMinutes}")
+    }
 }
