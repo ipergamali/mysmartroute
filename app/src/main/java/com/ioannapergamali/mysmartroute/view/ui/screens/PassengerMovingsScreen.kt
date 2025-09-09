@@ -1,10 +1,13 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
-import android.text.format.DateFormat
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.weight
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -26,8 +29,6 @@ import com.ioannapergamali.mysmartroute.data.local.movingStatus
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
-import java.util.Date
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -83,30 +84,52 @@ private fun MovingCategory(title: String, list: List<MovingEntity>) {
     if (list.isNotEmpty()) {
         Text(title, style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(8.dp))
-        list.forEach { m ->
-            MovingItem(m)
-        }
+        MovingTable(list)
         Spacer(modifier = Modifier.height(16.dp))
     }
 }
 
 @Composable
-private fun MovingItem(m: MovingEntity) {
-    val context = LocalContext.current
-    val dateText = if (m.date > 0L) {
-        DateFormat.getDateFormat(context).format(Date(m.date))
-    } else ""
-    val routeText = m.routeName.ifBlank { m.routeId }
-    val driverText = m.driverName.ifBlank { m.driverId }
-    val vehicleText = m.vehicleName.ifBlank { m.vehicleId }
-    val passengerText = m.createdByName.ifBlank { m.userId }
-    Column(modifier = Modifier.padding(vertical = 4.dp)) {
-        Text("${stringResource(R.string.route)}: $routeText")
-        Text("${stringResource(R.string.driver)}: $driverText")
-        Text("${stringResource(R.string.vehicle_name)}: $vehicleText")
-        Text("${stringResource(R.string.passenger)}: $passengerText")
-        Text("${stringResource(R.string.date)}: $dateText")
-        Text("${stringResource(R.string.cost)}: ${String.format(Locale.getDefault(), "%.2f€", m.cost)}")
-        Text("${stringResource(R.string.duration)}: ${m.durationMinutes}")
+private fun MovingTable(list: List<MovingEntity>) {
+    Column {
+        Row(Modifier.fillMaxWidth()) {
+            TableHeaderCell(stringResource(R.string.route))
+            TableHeaderCell(stringResource(R.string.driver))
+            TableHeaderCell(stringResource(R.string.vehicle_name))
+            TableHeaderCell(stringResource(R.string.passenger))
+        }
+        list.forEach { m ->
+            val routeText = m.routeName.ifBlank { m.routeId }
+            val driverText = m.driverName.ifBlank { m.driverId }
+            val vehicleText = m.vehicleName.ifBlank { m.vehicleId }
+            val passengerText = m.createdByName.ifBlank { m.userId }
+            Row(Modifier.fillMaxWidth()) {
+                TableCell(routeText)
+                TableCell(driverText)
+                TableCell(vehicleText)
+                TableCell(passengerText)
+            }
+        }
     }
+}
+
+@Composable
+private fun RowScope.TableHeaderCell(text: String) {
+    Text(
+        text,
+        modifier = Modifier
+            .weight(1f)
+            .padding(4.dp),
+        style = MaterialTheme.typography.titleSmall
+    )
+}
+
+@Composable
+private fun RowScope.TableCell(text: String) {
+    Text(
+        text,
+        modifier = Modifier
+            .weight(1f)
+            .padding(4.dp)
+    )
 }
