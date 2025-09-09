@@ -102,11 +102,15 @@ private fun MovingCategory(title: String, list: List<MovingEntity>) {
                 val dateText = if (m.date > 0L) {
                     DateFormat.getDateFormat(context).format(Date(m.date))
                 } else ""
+                val routeText = m.routeName.ifBlank { m.routeId }
+                val driverText = m.driverName.ifBlank { m.driverId }
+                val vehicleText = m.vehicleName.ifBlank { m.vehicleId }
+                val passengerText = m.createdByName.ifBlank { m.userId }
                 Row {
-                    TableCell(m.routeName)
-                    TableCell(m.driverName)
-                    TableCell(m.vehicleName)
-                    TableCell(m.createdByName)
+                    TableCell(routeText)
+                    TableCell(driverText)
+                    TableCell(vehicleText)
+                    TableCell(passengerText)
                     TableCell(dateText)
                     TableCell(String.format(Locale.getDefault(), "%.2f€", m.cost))
                     TableCell(m.durationMinutes.toString())
