@@ -116,10 +116,15 @@ class VehicleRequestViewModel(
                 enrichMoving(m, routeDao, userDao, vehicleDao)
                 enriched.add(m)
             }
+
             _requests.value = enriched
 
             if (remote.isNotEmpty()) {
                 remote.forEach { dao.insert(it) }
+
+            _requests.value = enrichedLocal
+
+r
             }
 
             passengerRequests.clear()
