@@ -156,32 +156,37 @@ fun SelectRoutePoisScreen(navController: NavController, openDrawer: () -> Unit) 
 
                 Spacer(Modifier.height(16.dp))
 
-                  IconButton(onClick = {
-                      scope.launch {
-                          val route = selectedRoute ?: return@launch
-                          favoriteViewModel.saveFavorites(
-                              context,
-                              route.id,
-                              selectedPoiIds.toList()
-                          ) { success ->
-                              val msg = if (success) {
-                                  R.string.favorite_pois_saved
-                              } else {
-                                  R.string.favorite_pois_save_failed
-                              }
-                              Toast.makeText(
-                                  context,
-                                  context.getString(msg),
-                                  Toast.LENGTH_SHORT
-                              ).show()
-                          }
-                      }
-                  }) {
-                      Icon(
-                          imageVector = Icons.Filled.Save,
-                          contentDescription = stringResource(R.string.save)
-                      )
-                  }
+                Button(
+                    onClick = {
+                        scope.launch {
+                            val route = selectedRoute ?: return@launch
+                            favoriteViewModel.saveFavorites(
+                                context,
+                                route.id,
+                                selectedPoiIds.toList()
+                            ) { success ->
+                                val msg = if (success) {
+                                    R.string.favorite_pois_saved
+                                } else {
+                                    R.string.favorite_pois_save_failed
+                                }
+                                Toast.makeText(
+                                    context,
+                                    context.getString(msg),
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
+                    },
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Save,
+                        contentDescription = stringResource(R.string.save)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(R.string.save))
+                }
             }
         }
     }
