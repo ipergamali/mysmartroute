@@ -95,7 +95,11 @@ private fun MovingCategory(title: String, list: List<MovingEntity>) {
 @Composable
 private fun MovingTable(list: List<MovingEntity>) {
     val scrollState = rememberScrollState()
-    Column(modifier = Modifier.horizontalScroll(scrollState)) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(scrollState)
+    ) {
         Row(Modifier.fillMaxWidth()) {
             TableHeaderCell(stringResource(R.string.route))
             TableHeaderCell(stringResource(R.string.driver))

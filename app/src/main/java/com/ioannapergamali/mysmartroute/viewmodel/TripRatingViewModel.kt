@@ -32,15 +32,18 @@ class TripRatingViewModel : ViewModel() {
             try {
                 val movings = db.movingDao().getAll().first()
                 movings.forEach { moving ->
-                    repository.getTripRating(moving.id, moving.userId)?.let { remote ->
-                        db.tripRatingDao().upsert(
-                            TripRatingEntity(
-                                moving.id,
-                                remote.userId,
-                                remote.rating,
-                                remote.comment ?: ""
+                    val local = db.tripRatingDao().get(moving.id, moving.userId)
+                    if (local == null) {
+                        repository.getTripRating(moving.id, moving.userId)?.let { remote ->
+                            db.tripRatingDao().upsert(
+                                TripRatingEntity(
+                                    moving.id,
+                                    remote.userId,
+                                    remote.rating,
+                                    remote.comment ?: ""
+                                )
                             )
-                        )
+                        }
                     }
                 }
             } catch (_: Exception) {
