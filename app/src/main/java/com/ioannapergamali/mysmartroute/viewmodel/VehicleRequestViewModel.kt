@@ -159,17 +159,24 @@ class VehicleRequestViewModel(
     /**
      * Φορτώνει τις μετακινήσεις του τρέχοντος χρήστη από το Firestore.
      */
-    fun loadPassengerMovings() {
-        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        val userRef = db.collection("users").document(uid)
+    fun loadPassengerMovings(context: Context) {
+        viewModelScope.launch {
+            val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+            val localMovings =
+                MySmartRouteDatabase.getInstance(context).movingDao().getMovingsForUser(uid).first()
+            val userRef = db.collection("users").document(uid)
 
-        db.collection("movings")
-            .whereEqualTo("userId", userRef)
-            .addSnapshotListener { snapshot, e ->
-                if (e != null) return@addSnapshotListener
-                _requests.value =
-                    snapshot?.documents?.mapNotNull { it.toMovingEntity() } ?: emptyList()
-            }
+            db.collection("movings")
+                .whereEqualTo("userId", userRef)
+                .addSnapshotListener { snapshot, e ->
+                    if (e != null) {
+                        _requests.value = localMovings
+                        return@addSnapshotListener
+                    }
+                    val remote = snapshot?.documents?.mapNotNull { it.toMovingEntity() }.orEmpty()
+                    _requests.value = if (remote.isNotEmpty()) remote else localMovings
+                }
+        }
     }
 
     private suspend fun enrichMoving(
