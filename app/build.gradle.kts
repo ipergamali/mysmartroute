@@ -131,6 +131,9 @@ dependencies {
     // JSON parsing
     implementation("com.google.code.gson:gson:2.13.1")
 
+    // WorkManager για background συγχρονισμό
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
+
     // Crash reporting με ACRA
     implementation("ch.acra:acra-mail:5.12.0")
 
