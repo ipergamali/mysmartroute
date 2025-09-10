@@ -273,5 +273,7 @@
     <string name="favorite_pois_save_failed">Αποτυχία αποθήκευσης σημείων</string>
     <string name="declare_success">Η δήλωση στάλθηκε επιτυχώς</string>
     <string name="declare_failure">Αποτυχία αποστολής δήλωσης</string>
+    <string name="rating_saved_success">Η βαθμολογία αποθηκεύτηκε</string>
+    <string name="rating_save_failed">Αποτυχία αποθήκευσης βαθμολογίας</string>
 
 </resources>

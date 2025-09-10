@@ -299,4 +299,6 @@
     <string name="favorite_pois_save_failed">Unable to save points</string>
     <string name="declare_success">Transport declared successfully</string>
     <string name="declare_failure">Failed to declare transport</string>
+    <string name="rating_saved_success">Rating saved</string>
+    <string name="rating_save_failed">Unable to save rating</string>
 </resources>
