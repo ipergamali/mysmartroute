@@ -41,7 +41,7 @@ fun PassengerMovingsScreen(navController: NavController, openDrawer: () -> Unit)
     val movings by viewModel.movings.collectAsState()
 
     LaunchedEffect(Unit) {
-        viewModel.loadRequests(context)
+        viewModel.loadRequests(context, allUsers = true)
     }
 
     val now = System.currentTimeMillis()

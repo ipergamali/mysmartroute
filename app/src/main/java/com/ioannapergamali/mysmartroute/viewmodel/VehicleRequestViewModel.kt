@@ -19,7 +19,6 @@ import kotlinx.coroutines.Dispatchers
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.utils.toMovingEntity
 import com.ioannapergamali.mysmartroute.utils.toTransportDeclarationEntity
-import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import com.ioannapergamali.mysmartroute.utils.NotificationUtils
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.data.local.SeatReservationEntity
@@ -103,16 +102,14 @@ class VehicleRequestViewModel(
             _requests.value = enrichedLocal
 
 
-            val snapshot = if (NetworkUtils.isInternetAvailable(context)) {
-                runCatching {
-                    if (allUsers) {
-                        db.collection("movings").get().await()
-                    } else if (userId != null) {
-                        val userRef = db.collection("users").document(userId)
-                        db.collection("movings").whereEqualTo("userId", userRef).get().await()
-                    } else null
-                }.getOrNull()
-            } else null
+            val snapshot = runCatching {
+                if (allUsers) {
+                    db.collection("movings").get().await()
+                } else if (userId != null) {
+                    val userRef = db.collection("users").document(userId)
+                    db.collection("movings").whereEqualTo("userId", userRef).get().await()
+                } else null
+            }.getOrNull()
 
             snapshot?.let { snap ->
                 val list = snap.documents.mapNotNull { it.toMovingEntity() }
