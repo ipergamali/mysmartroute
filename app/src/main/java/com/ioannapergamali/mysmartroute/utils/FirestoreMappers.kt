@@ -265,7 +265,8 @@ fun MovingEntity.toFirestoreMap(): Map<String, Any> {
     val map = mutableMapOf<String, Any>(
         "id" to id,
         "routeId" to FirebaseFirestore.getInstance().collection("routes").document(routeId),
-        "userId" to FirebaseFirestore.getInstance().collection("users").document(userId),
+        // Αποθηκεύουμε το userId ως απλή συμβολοσειρά για ευκολότερα ερωτήματα
+        "userId" to userId,
         "date" to date,
         "cost" to cost,
         "durationMinutes" to durationMinutes,
