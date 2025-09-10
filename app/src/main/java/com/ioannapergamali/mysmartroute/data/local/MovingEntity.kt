@@ -5,8 +5,21 @@ package com.ioannapergamali.mysmartroute.data.local
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.Ignore
+import androidx.room.ForeignKey
+import androidx.room.Index
 
-@Entity(tableName = "movings")
+@Entity(
+    tableName = "movings",
+    foreignKeys = [
+        ForeignKey(
+            entity = UserEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["userId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ],
+    indices = [Index(value = ["userId"])]
+)
 data class MovingEntity(
     @PrimaryKey val id: String = "",
     val routeId: String = "",
