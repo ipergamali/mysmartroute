@@ -88,19 +88,11 @@ class VehicleRequestViewModel(
             val vehicleDao = dbInstance.vehicleDao()
             val userId = FirebaseAuth.getInstance().currentUser?.uid
 
-            _requests.value = if (allUsers) {
+            val local = if (allUsers) {
                 dao.getAll().first()
             } else {
                 userId?.let { dao.getMovingsForUser(it).first() } ?: emptyList()
             }
-
-            val enrichedLocal = mutableListOf<MovingEntity>()
-            for (m in _requests.value) {
-                enrichMoving(m, routeDao, userDao, vehicleDao)
-                enrichedLocal.add(m)
-            }
-            _requests.value = enrichedLocal
-
 
             val snapshot = runCatching {
                 if (allUsers) {
@@ -111,17 +103,28 @@ class VehicleRequestViewModel(
                 } else null
             }.getOrNull()
 
-            snapshot?.let { snap ->
-                val list = snap.documents.mapNotNull { it.toMovingEntity() }
-                val enriched = mutableListOf<MovingEntity>()
-                for (m in list) {
-                    enrichMoving(m, routeDao, userDao, vehicleDao)
-                    enriched.add(m)
-                }
-                if (enriched.isNotEmpty()) {
-                    _requests.value = enriched
-                    enriched.forEach { dao.insert(it) }
-                }
+            val remote = snapshot?.documents?.mapNotNull { it.toMovingEntity() }.orEmpty()
+
+            val target = when {
+                remote.isNotEmpty() -> remote
+                local.isNotEmpty() -> local
+                else -> _requests.value
+            }
+
+            val enriched = mutableListOf<MovingEntity>()
+            for (m in target) {
+                enrichMoving(m, routeDao, userDao, vehicleDao)
+                enriched.add(m)
+            }
+
+            _requests.value = enriched
+
+            if (remote.isNotEmpty()) {
+                remote.forEach { dao.insert(it) }
+
+            _requests.value = enrichedLocal
+
+r
             }
 
             passengerRequests.clear()
