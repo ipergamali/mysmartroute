@@ -61,7 +61,7 @@ fun ViewTransportsScreen(navController: NavController, openDrawer: () -> Unit) {
             )
         }
     ) { padding ->
-        ScreenContainer(Modifier.padding(padding)) {
+        ScreenContainer(modifier = Modifier.padding(padding), scrollable = false) {
             if (favoriteRoutes.isEmpty()) {
                 Text(stringResource(R.string.no_interesting_routes))
             } else {
