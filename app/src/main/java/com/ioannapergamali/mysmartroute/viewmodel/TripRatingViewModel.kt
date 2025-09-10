@@ -7,7 +7,6 @@ import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.data.local.MovingEntity
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.TripRatingEntity
-import com.ioannapergamali.mysmartroute.model.classes.transports.TripRating
 import com.ioannapergamali.mysmartroute.model.classes.transports.TripWithRating
 import com.ioannapergamali.mysmartroute.repository.TripRatingRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,9 +37,9 @@ class TripRatingViewModel : ViewModel() {
                             db.tripRatingDao().upsert(
                                 TripRatingEntity(
                                     moving.id,
-                                    remote.userId,
-                                    remote.rating,
-                                    remote.comment ?: ""
+                                    remote.tripRating.userId,
+                                    remote.tripRating.rating,
+                                    remote.tripRating.comment ?: ""
                                 )
                             )
                         }
@@ -75,7 +74,10 @@ class TripRatingViewModel : ViewModel() {
                     TripRatingEntity(moving.id, moving.userId, rating, comment)
                 )
                 val success = repository.saveTripRating(
-                    TripRating(moving.id, moving.userId, rating, comment)
+                    moving.id,
+                    moving.userId,
+                    rating,
+                    comment,
                 )
                 _message.value = if (success) {
                     context.getString(R.string.rating_saved_success)
