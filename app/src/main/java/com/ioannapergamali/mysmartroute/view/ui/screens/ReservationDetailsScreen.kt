@@ -72,17 +72,18 @@ fun ReservationDetailsScreen(
                     .get()
                     .await()
                     .toUserEntity()
+
                     ?.also { db.userDao().insert(it) }
                     ?: localPassenger
-            } else {
-                localPassenger
-            }
-            passengerName = passenger?.let { user ->
-                listOf(user.name, user.surname)
-                    .filter { it.isNotBlank() }
-                    .joinToString(" ")
-                    .ifBlank { user.username.takeIf { it.isNotBlank() } ?: res.userId }
-            } ?: res.userId
+     
+                    ?.also { db.userDao().insert(it) })
+                ?.let { user ->
+                    listOf(user.name, user.surname)
+                        .filter { it.isNotBlank() }
+                        .joinToString(" ")
+                        .ifBlank { user.username.takeIf { it.isNotBlank() } ?: res.userId }
+                } ?: res.userId
+
         }
     }
 
