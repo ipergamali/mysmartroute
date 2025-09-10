@@ -22,11 +22,10 @@ enum class MovingStatus {
  * και τη χρονική στιγμή της μετακίνησης.
  */
 fun MovingEntity.movingStatus(now: Long = System.currentTimeMillis()): MovingStatus {
-    val s = status.lowercase()
-    return when {
-        s == "completed" -> MovingStatus.COMPLETED
-        s == "accepted" -> MovingStatus.ACTIVE
-        s != "accepted" && date > now -> MovingStatus.PENDING
+    return when (status.lowercase()) {
+        "completed" -> MovingStatus.COMPLETED
+        "accepted" -> MovingStatus.ACTIVE
+        "open" -> if (date > now) MovingStatus.PENDING else MovingStatus.UNSUCCESSFUL
         else -> MovingStatus.UNSUCCESSFUL
     }
 }
