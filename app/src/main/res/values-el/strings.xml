@@ -217,6 +217,7 @@
     <string name="delete_selected">Διαγραφή επιλεγμένων</string>
     <string name="delete_reservation">Διαγραφή</string>
     <string name="clear_selection">Καθαρισμός επιλογής</string>
+    <string name="passenger">Επιβάτης</string>
     <string name="no_reservations">Δεν βρέθηκαν κρατήσεις</string>
     <string name="no_declarations">Δεν βρέθηκαν δηλώσεις</string>
     <string name="max_cost">Μέγιστο κόστος</string>
