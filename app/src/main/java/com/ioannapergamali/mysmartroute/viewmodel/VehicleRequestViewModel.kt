@@ -121,10 +121,6 @@ class VehicleRequestViewModel(
 
             if (remote.isNotEmpty()) {
                 remote.forEach { dao.insert(it) }
-
-            _requests.value = enrichedLocal
-
-r
             }
 
             passengerRequests.clear()
