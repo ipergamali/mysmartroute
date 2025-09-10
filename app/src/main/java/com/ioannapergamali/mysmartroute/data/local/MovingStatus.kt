@@ -21,11 +21,14 @@ enum class MovingStatus {
  * Υπολογίζει την [MovingStatus] μιας [MovingEntity] με βάση την κατάσταση αποδοχής
  * και τη χρονική στιγμή της μετακίνησης.
  */
-fun MovingEntity.movingStatus(now: Long = System.currentTimeMillis()): MovingStatus = when {
-    status == "completed" -> MovingStatus.COMPLETED
-    status == "accepted" -> MovingStatus.ACTIVE
-    status != "accepted" && date > now -> MovingStatus.PENDING
-    else -> MovingStatus.UNSUCCESSFUL
+fun MovingEntity.movingStatus(now: Long = System.currentTimeMillis()): MovingStatus {
+    val s = status.lowercase()
+    return when {
+        s == "completed" -> MovingStatus.COMPLETED
+        s == "accepted" -> MovingStatus.ACTIVE
+        s != "accepted" && date > now -> MovingStatus.PENDING
+        else -> MovingStatus.UNSUCCESSFUL
+    }
 }
 
 /**
