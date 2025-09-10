@@ -26,6 +26,7 @@ import com.ioannapergamali.mysmartroute.data.local.SeatReservationEntity
 import com.ioannapergamali.mysmartroute.data.local.FavoriteEntity
 import com.ioannapergamali.mysmartroute.data.local.TransferRequestEntity
 import com.ioannapergamali.mysmartroute.data.local.NotificationEntity
+import com.ioannapergamali.mysmartroute.data.local.TripRatingEntity
 import com.ioannapergamali.mysmartroute.model.enumerations.RequestStatus
 
 
@@ -545,4 +546,31 @@ fun DocumentSnapshot.toNotificationEntity(): NotificationEntity? {
     } ?: return null
     val msg = getString("message") ?: ""
     return NotificationEntity(idVal, userId, msg)
+}
+
+fun TripRatingEntity.toFirestoreMap(): Map<String, Any> = mapOf(
+    "movingId" to FirebaseFirestore.getInstance().collection("movings").document(movingId),
+    "userId" to FirebaseFirestore.getInstance().collection("users").document(userId),
+    "rating" to rating,
+    "comment" to comment
+)
+
+fun DocumentSnapshot.toTripRatingEntity(): TripRatingEntity? {
+    val movingId = when (val m = get("movingId")) {
+        is DocumentReference -> m.id
+        is String -> m
+        else -> getString("movingId")
+    } ?: return null
+    val userId = when (val u = get("userId")) {
+        is DocumentReference -> u.id
+        is String -> u
+        else -> getString("userId")
+    } ?: return null
+    val ratingVal = when (val r = get("rating")) {
+        is Long -> r.toInt()
+        is Double -> r.toInt()
+        else -> (getLong("rating") ?: 0L).toInt()
+    }
+    val commentVal = getString("comment") ?: ""
+    return TripRatingEntity(movingId, userId, ratingVal, commentVal)
 }

@@ -111,6 +111,46 @@ fun FirebaseDatabaseScreen(navController: NavController, openDrawer: () -> Unit)
                     Text("${opt.id} (${opt.menuId}) -> ${opt.titleResKey} -> ${opt.route}")
                 }
                 item { Spacer(modifier = Modifier.padding(8.dp)) }
+                item { Text("Availabilities", style = MaterialTheme.typography.titleMedium) }
+                items(data!!.availabilities) { a ->
+                    Text("${a.userId} -> ${a.date}")
+                }
+                item { Spacer(modifier = Modifier.padding(8.dp)) }
+                item { Text("Seat Reservations", style = MaterialTheme.typography.titleMedium) }
+                items(data!!.seatReservations) { r ->
+                    Text("${r.id} route:${r.routeId} user:${r.userId}")
+                }
+                item { Spacer(modifier = Modifier.padding(8.dp)) }
+                item { Text("Transfer Requests", style = MaterialTheme.typography.titleMedium) }
+                items(data!!.transferRequests) { tr ->
+                    Text("${tr.requestNumber} route:${tr.routeId} status:${tr.status}")
+                }
+                item { Spacer(modifier = Modifier.padding(8.dp)) }
+                item { Text("Trip Ratings", style = MaterialTheme.typography.titleMedium) }
+                items(data!!.tripRatings) { t ->
+                    Text("${t.movingId} user:${t.userId} rating:${t.rating}")
+                }
+                item { Spacer(modifier = Modifier.padding(8.dp)) }
+                item { Text("Favorites", style = MaterialTheme.typography.titleMedium) }
+                items(data!!.favorites) { f ->
+                    Text("${f.id} user:${f.userId}")
+                }
+                item { Spacer(modifier = Modifier.padding(8.dp)) }
+                item { Text("Favorite Routes", style = MaterialTheme.typography.titleMedium) }
+                items(data!!.favoriteRoutes) { fr ->
+                    Text("${fr.userId} -> ${fr.routeId}")
+                }
+                item { Spacer(modifier = Modifier.padding(8.dp)) }
+                item { Text("User PoIs", style = MaterialTheme.typography.titleMedium) }
+                items(data!!.userPois) { up ->
+                    Text("${up.userId} -> ${up.poiId}")
+                }
+                item { Spacer(modifier = Modifier.padding(8.dp)) }
+                item { Text("Notifications", style = MaterialTheme.typography.titleMedium) }
+                items(data!!.notifications) { n ->
+                    Text("${n.userId} -> ${n.message}")
+                }
+                item { Spacer(modifier = Modifier.padding(8.dp)) }
                 item { Text("Authentication table δεν είναι διαθέσιμη από το client", color = MaterialTheme.colorScheme.error) }
                 }
             }
