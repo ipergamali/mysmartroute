@@ -9,6 +9,7 @@ val mapsApiKey: String = gradleLocalProperties(rootDir, providers)
         id("com.android.application")
         id("org.jetbrains.kotlin.android")
         id("kotlin-kapt")
+        id("kotlin-parcelize")
         id("com.google.gms.google-services")
         id("org.jetbrains.kotlin.plugin.compose")
     }
