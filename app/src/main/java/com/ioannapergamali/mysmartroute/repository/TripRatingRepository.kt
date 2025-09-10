@@ -21,4 +21,20 @@ class TripRatingRepository {
             false
         }
     }
+
+
+    /**
+     * Επιστρέφει τη βαθμολογία που έχει δώσει ο χρήστης για συγκεκριμένη μετακίνηση.
+     */
+    suspend fun getTripRating(movingId: String, userId: String): TripRating? {
+        val docId = "${movingId}_${userId}"
+        return try {
+            db.collection("trip_ratings").document(docId).get().await()
+                .toObject(TripRating::class.java)
+        } catch (e: Exception) {
+            Log.e("TripRatingRepo", "Αποτυχία ανάκτησης", e)
+            null
+        }
+    }
+
 }
