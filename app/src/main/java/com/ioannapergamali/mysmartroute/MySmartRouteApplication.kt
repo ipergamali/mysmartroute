@@ -9,6 +9,7 @@ import com.ioannapergamali.mysmartroute.utils.ShortcutUtils
 import com.ioannapergamali.mysmartroute.utils.populatePoiTypes
 import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.DatabaseViewModel
+import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.runBlocking
 import org.acra.config.mailSender
 import org.acra.data.StringFormat
@@ -19,6 +20,7 @@ import org.acra.ktx.initAcra
  * Κεντρική κλάση `Application` που αρχικοποιεί υπηρεσίες και ρυθμίσεις κατά την εκκίνηση.
  * Main `Application` class that initializes services and settings on startup.
  */
+@HiltAndroidApp
 class MySmartRouteApplication : Application() {
 
     override fun onCreate() {

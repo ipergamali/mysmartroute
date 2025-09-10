@@ -10,6 +10,7 @@ import androidx.core.content.ContextCompat
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import dagger.hilt.android.AndroidEntryPoint
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
@@ -44,6 +45,7 @@ import android.view.WindowManager
  * Κύρια δραστηριότητα που ρυθμίζει θέματα διεπαφής και πλοήγησης.
  * Main activity configuring UI themes and navigation.
  */
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val settingsViewModel: SettingsViewModel by viewModels()
     private val requestViewModel: VehicleRequestViewModel by viewModels()
