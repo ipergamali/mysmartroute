@@ -350,8 +350,12 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                         "`vehicleId` TEXT NOT NULL, " +
                         "`cost` REAL NOT NULL, " +
                         "`durationMinutes` INTEGER NOT NULL, " +
-                        "PRIMARY KEY(`id`)" +
+                        "PRIMARY KEY(`id`), " +
+                        "FOREIGN KEY(`userId`) REFERENCES `users`(`id`) ON DELETE CASCADE" +
                         ")"
+                )
+                database.execSQL(
+                    "CREATE INDEX IF NOT EXISTS `index_movings_userId` ON `movings` (`userId`)"
                 )
             }
         }
