@@ -331,7 +331,7 @@ fun DocumentSnapshot.toMovingEntity(): MovingEntity? {
         is String -> d
         else -> getString("driverId")
     } ?: ""
-    val status = getString("status") ?: "open"
+    val status = getString("status")?.lowercase() ?: "open"
     val requestNumber = (getLong("requestNumber") ?: 0L).toInt()
     val driverName = getString("driverName") ?: ""
     val routeName = getString("routeName") ?: ""
