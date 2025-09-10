@@ -11,6 +11,7 @@ val mapsApiKey: String = gradleLocalProperties(rootDir, providers)
         id("kotlin-kapt")
         id("com.google.gms.google-services")
         id("org.jetbrains.kotlin.plugin.compose")
+        id("com.google.dagger.hilt.android")
     }
 
 android {
@@ -97,6 +98,11 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
     implementation("io.coil-kt:coil-compose:2.7.0")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.9.3")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.3")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.9.3")
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+    implementation("com.google.dagger:hilt-android:2.51.1")
+    kapt("com.google.dagger:hilt-compiler:2.51.1")
 
     // DataStore για αποθήκευση ρυθμίσεων
     implementation("androidx.datastore:datastore-preferences:1.1.7")

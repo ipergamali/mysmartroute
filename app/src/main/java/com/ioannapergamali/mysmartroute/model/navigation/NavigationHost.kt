@@ -46,6 +46,7 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.ViewUsersScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.ViewTransportRequestsScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.ViewRequestsScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.PassengerMovingsScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.MovingScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.WalkingScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.WalkingRoutesScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.BookSeatScreen
@@ -288,6 +289,10 @@ fun NavigationHost(
 
         composable("viewMovings") {
             PassengerMovingsScreen(navController = navController, openDrawer = openDrawer)
+        }
+
+        composable("movings") {
+            MovingScreen()
         }
 
         composable("walking") {
