@@ -161,19 +161,26 @@ class VehicleRequestViewModel(
     fun loadPassengerMovings(context: Context) {
         viewModelScope.launch {
             val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+            val dao = MySmartRouteDatabase.getInstance(context).movingDao()
             val localMovings =
-                MySmartRouteDatabase.getInstance(context).movingDao().getMovingsForUser(uid).first()
+                dao.getAll().first().filter { it.userId == uid || it.driverId == uid }
 
-            db.collection("movings")
-                .whereEqualTo("userId", uid)
-                .addSnapshotListener { snapshot, e ->
-                    if (e != null) {
-                        _requests.value = localMovings
-                        return@addSnapshotListener
-                    }
-                    val remote = snapshot?.documents?.mapNotNull { it.toMovingEntity() }.orEmpty()
-                    _requests.value = if (remote.isNotEmpty()) remote else localMovings
-                }
+            val passengerSnapshot = runCatching {
+                db.collection("movings").whereEqualTo("userId", uid).get().await()
+            }.getOrNull()
+            val driverSnapshot = runCatching {
+                db.collection("movings").whereEqualTo("driverId", uid).get().await()
+            }.getOrNull()
+
+            val remote =
+                (passengerSnapshot?.documents.orEmpty() + driverSnapshot?.documents.orEmpty())
+                    .mapNotNull { it.toMovingEntity() }
+
+            _requests.value = if (remote.isNotEmpty()) remote else localMovings
+
+            if (remote.isNotEmpty()) {
+                remote.forEach { dao.insert(it) }
+            }
         }
     }
 
