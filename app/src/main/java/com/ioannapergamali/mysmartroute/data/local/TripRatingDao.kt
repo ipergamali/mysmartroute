@@ -14,6 +14,9 @@ interface TripRatingDao {
     @Query("SELECT * FROM trip_ratings")
     fun getAll(): Flow<List<TripRatingEntity>>
 
+    @Query("SELECT * FROM trip_ratings WHERE movingId = :movingId AND userId = :userId LIMIT 1")
+    suspend fun get(movingId: String, userId: String): TripRatingEntity?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(rating: TripRatingEntity)
 
