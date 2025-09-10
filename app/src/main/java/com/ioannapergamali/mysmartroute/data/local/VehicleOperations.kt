@@ -5,8 +5,8 @@ package com.ioannapergamali.mysmartroute.data.local
 import androidx.room.Transaction
 
 /**
- * Εισάγει όχημα μόνο αν υπάρχει ήδη ο αντίστοιχος χρήστης.
- * Δεν δημιουργεί πλέον placeholder εγγραφή χρήστη.
+ * Εισάγει ένα όχημα δημιουργώντας αν χρειάζεται μια ελάχιστη εγγραφή χρήστη
+ * ώστε να ικανοποιείται ο περιορισμός του ξένου κλειδιού.
  */
 @Transaction
 suspend fun insertVehicleSafely(
@@ -14,7 +14,10 @@ suspend fun insertVehicleSafely(
     userDao: UserDao,
     vehicle: VehicleEntity
 ) {
-    if (userDao.getUser(vehicle.userId) != null) {
-        vehicleDao.insert(vehicle)
+    val existingUser = userDao.getUser(vehicle.userId)
+    if (existingUser == null) {
+        // Δημιουργούμε placeholder χρήστη με μόνο το id.
+        userDao.insert(UserEntity(id = vehicle.userId))
     }
+    vehicleDao.insert(vehicle)
 }
