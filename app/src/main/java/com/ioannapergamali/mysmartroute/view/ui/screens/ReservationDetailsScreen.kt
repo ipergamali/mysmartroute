@@ -62,13 +62,20 @@ fun ReservationDetailsScreen(
                         ?.also { db.userDao().insert(it) }
                 user?.let { "${it.name} ${it.surname}" } ?: driverId
             }.orEmpty()
-            passengerName = (db.userDao().getUser(res.userId)
-                ?: FirebaseFirestore.getInstance()
+            val localPassenger = db.userDao().getUser(res.userId)
+            val passenger = if (localPassenger == null ||
+                (localPassenger.name.isBlank() && localPassenger.surname.isBlank())
+            ) {
+                FirebaseFirestore.getInstance()
                     .collection("users")
                     .document(res.userId)
                     .get()
                     .await()
                     .toUserEntity()
+
+                    ?.also { db.userDao().insert(it) }
+                    ?: localPassenger
+     
                     ?.also { db.userDao().insert(it) })
                 ?.let { user ->
                     listOf(user.name, user.surname)
@@ -76,6 +83,7 @@ fun ReservationDetailsScreen(
                         .joinToString(" ")
                         .ifBlank { user.username.takeIf { it.isNotBlank() } ?: res.userId }
                 } ?: res.userId
+
         }
     }
 
