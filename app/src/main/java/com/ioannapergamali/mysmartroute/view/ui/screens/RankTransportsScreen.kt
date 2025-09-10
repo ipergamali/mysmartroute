@@ -25,8 +25,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -98,8 +98,15 @@ private fun TripRatingItem(
     trip: TripWithRating,
     onSave: (Int, String) -> Unit
 ) {
-    var rating by remember(trip.rating) { mutableStateOf(trip.rating) }
-    var comment by remember(trip.comment) { mutableStateOf(trip.comment) }
+
+    var rating by rememberSaveable(trip.moving.id) { mutableStateOf(trip.rating) }
+    var comment by rememberSaveable(trip.moving.id) { mutableStateOf(trip.comment) }
+    LaunchedEffect(trip.rating, trip.comment) {
+        rating = trip.rating
+        comment = trip.comment
+    }
+
+
     val context = LocalContext.current
     val dateText = if (trip.moving.date > 0L) {
         DateFormat.getDateFormat(context).format(Date(trip.moving.date))
