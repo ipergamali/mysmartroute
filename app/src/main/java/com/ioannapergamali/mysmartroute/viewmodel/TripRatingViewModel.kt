@@ -8,7 +8,9 @@ import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.data.local.MovingEntity
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.TripRatingEntity
+import com.ioannapergamali.mysmartroute.model.classes.transports.TripRating
 import com.ioannapergamali.mysmartroute.model.classes.transports.TripWithRating
+import com.ioannapergamali.mysmartroute.repository.TripRatingRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -17,6 +19,7 @@ import kotlinx.coroutines.tasks.await
 
 class TripRatingViewModel : ViewModel() {
     private val firestore = FirebaseFirestore.getInstance()
+    private val repository = TripRatingRepository()
 
     private val _trips = MutableStateFlow<List<TripWithRating>>(emptyList())
     val trips: StateFlow<List<TripWithRating>> = _trips
@@ -59,21 +62,21 @@ class TripRatingViewModel : ViewModel() {
         }
     }
 
-    fun updateRating(context: Context, moving: MovingEntity, rating: Int, comment: String) {
+    fun saveTripRating(context: Context, moving: MovingEntity, rating: Int, comment: String) {
         viewModelScope.launch {
             val db = MySmartRouteDatabase.getInstance(context)
             try {
                 db.tripRatingDao().upsert(
                     TripRatingEntity(moving.id, moving.userId, rating, comment)
                 )
-                val data = hashMapOf(
-                    "movingId" to moving.id,
-                    "userId" to moving.userId,
-                    "rating" to rating,
-                    "comment" to comment
+                val success = repository.saveTripRating(
+                    TripRating(moving.id, moving.userId, rating, comment)
                 )
-                firestore.collection("trip_ratings").document(moving.id).set(data).await()
-                _message.value = context.getString(R.string.rating_saved_success)
+                _message.value = if (success) {
+                    context.getString(R.string.rating_saved_success)
+                } else {
+                    context.getString(R.string.rating_save_failed)
+                }
             } catch (_: Exception) {
                 _message.value = context.getString(R.string.rating_save_failed)
             }
