@@ -83,7 +83,7 @@ fun RankTransportsScreen(navController: NavController, openDrawer: () -> Unit) {
                 ) {
                     items(trips, key = { it.moving.id }) { trip ->
                         TripRatingItem(trip) { rating, comment ->
-                            viewModel.updateRating(context, trip.moving, rating, comment)
+                            viewModel.saveTripRating(context, trip.moving, rating, comment)
                         }
                         Divider()
                     }
