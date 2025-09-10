@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class TripRatingViewModel : ViewModel() {
+
     private val repository = TripRatingRepository()
 
     private val _trips = MutableStateFlow<List<TripWithRating>>(emptyList())

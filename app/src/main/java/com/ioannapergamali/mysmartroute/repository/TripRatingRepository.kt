@@ -22,6 +22,7 @@ class TripRatingRepository {
         }
     }
 
+
     /**
      * Επιστρέφει τη βαθμολογία που έχει δώσει ο χρήστης για συγκεκριμένη μετακίνηση.
      */
@@ -35,4 +36,5 @@ class TripRatingRepository {
             null
         }
     }
+
 }
