@@ -35,10 +35,18 @@ import com.ioannapergamali.mysmartroute.data.local.RoutePointEntity
 import com.ioannapergamali.mysmartroute.data.local.MovingEntity
 import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationEntity
 import com.ioannapergamali.mysmartroute.data.local.AvailabilityEntity
+import com.ioannapergamali.mysmartroute.data.local.SeatReservationEntity
+import com.ioannapergamali.mysmartroute.data.local.TransferRequestEntity
+import com.ioannapergamali.mysmartroute.data.local.TripRatingEntity
+import com.ioannapergamali.mysmartroute.data.local.NotificationEntity
 import com.ioannapergamali.mysmartroute.utils.toRouteWithPoints
 import com.ioannapergamali.mysmartroute.utils.toMovingEntity
 import com.ioannapergamali.mysmartroute.utils.toTransportDeclarationEntity
 import com.ioannapergamali.mysmartroute.utils.toAvailabilityEntity
+import com.ioannapergamali.mysmartroute.utils.toSeatReservationEntity
+import com.ioannapergamali.mysmartroute.utils.toTransferRequestEntity
+import com.ioannapergamali.mysmartroute.utils.toTripRatingEntity
+import com.ioannapergamali.mysmartroute.utils.toNotificationEntity
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -116,7 +124,11 @@ class DatabaseViewModel : ViewModel() {
                 db.availabilityDao().getAll(),
                 db.favoriteDao().getAll(),
                 db.favoriteRouteDao().getAll(),
-                db.userPoiDao().getAll()
+                db.userPoiDao().getAll(),
+                db.seatReservationDao().getAll(),
+                db.transferRequestDao().getAll(),
+                db.tripRatingDao().getAll(),
+                db.notificationDao().getAll()
             ) { values ->
                 val users = values[0] as List<UserEntity>
                 val vehicles = values[1] as List<VehicleEntity>
@@ -135,6 +147,10 @@ class DatabaseViewModel : ViewModel() {
                 val favorites = values[14] as List<FavoriteEntity>
                 val favoriteRoutes = values[15] as List<FavoriteRouteEntity>
                 val userPois = values[16] as List<UserPoiEntity>
+                val seatReservations = values[17] as List<SeatReservationEntity>
+                val transferRequests = values[18] as List<TransferRequestEntity>
+                val tripRatings = values[19] as List<TripRatingEntity>
+                val notifications = values[20] as List<NotificationEntity>
 
                 DatabaseData(
                     users,
@@ -153,7 +169,11 @@ class DatabaseViewModel : ViewModel() {
                     availabilities,
                     favorites,
                     favoriteRoutes,
-                    userPois
+                    userPois,
+                    seatReservations,
+                    transferRequests,
+                    tripRatings,
+                    notifications
                 )
             }.collect { data ->
                 Log.d(
@@ -163,7 +183,8 @@ class DatabaseViewModel : ViewModel() {
                     "menus:${data.menus.size} options:${data.menuOptions.size} routes:${data.routes.size} " +
                     "points:${data.routePoints.size} movings:${data.movings.size} declarations:${data.declarations.size}" +
                     " availabilities:${data.availabilities.size} favorites:${data.favorites.size} favRoutes:${data.favoriteRoutes.size} " +
-                    "userPois:${data.userPois.size}"
+                    "userPois:${data.userPois.size} seatRes:${data.seatReservations.size} transferReq:${data.transferRequests.size} " +
+                    "tripRatings:${data.tripRatings.size} notifications:${data.notifications.size}"
                 )
                 _localData.value = data
             }
@@ -276,12 +297,23 @@ class DatabaseViewModel : ViewModel() {
                 .get()
                 .await()
                 .documents.mapNotNull { it.toFavoriteEntity() }
+            val seatReservations = firestore.collection("seat_reservations").get().await()
+                .documents.mapNotNull { it.toSeatReservationEntity() }
+
+            val transferRequests = firestore.collection("transfer_requests").get().await()
+                .documents.mapNotNull { it.toTransferRequestEntity() }
+
+            val tripRatings = firestore.collection("trip_ratings").get().await()
+                .documents.mapNotNull { it.toTripRatingEntity() }
+
+            val notifications = firestore.collection("notifications").get().await()
+                .documents.mapNotNull { it.toNotificationEntity() }
 
             val userPois = emptyList<UserPoiEntity>()
 
             Log.d(
                 TAG,
-                "Firebase data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} types:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size} routes:${routes.size} movings:${movings.size} declarations:${declarations.size} availabilities:${availabilities.size} favorites:${favorites.size}"
+                "Firebase data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} types:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size} routes:${routes.size} movings:${movings.size} declarations:${declarations.size} availabilities:${availabilities.size} favorites:${favorites.size} seatRes:${seatReservations.size} transferReq:${transferRequests.size} tripRatings:${tripRatings.size}"
             )
             _firebaseData.value = DatabaseData(
                 users,
@@ -300,7 +332,11 @@ class DatabaseViewModel : ViewModel() {
                 availabilities,
                 favorites,
                 emptyList(),
-                userPois
+                userPois,
+                seatReservations,
+                transferRequests,
+                tripRatings,
+                notifications
             )
             } catch (e: FirebaseFirestoreException) {
                 Log.e(TAG, "Firestore permission error", e)
@@ -447,11 +483,20 @@ class DatabaseViewModel : ViewModel() {
                         .await()
                         .documents.mapNotNull { it.toFavoriteEntity() }
 
+                    val seatReservations = firestore.collection("seat_reservations").get().await()
+                        .documents.mapNotNull { it.toSeatReservationEntity() }
+
+                    val transferRequests = firestore.collection("transfer_requests").get().await()
+                        .documents.mapNotNull { it.toTransferRequestEntity() }
+
+                    val tripRatings = firestore.collection("trip_ratings").get().await()
+                        .documents.mapNotNull { it.toTripRatingEntity() }
+
                     val userPois = emptyList<UserPoiEntity>()
 
                     Log.d(
                         TAG,
-                        "Remote data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} poiTypes:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size} routes:${routes.size} movings:${movings.size} declarations:${declarations.size} availabilities:${availabilities.size} favorites:${favorites.size}"
+                        "Remote data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} poiTypes:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size} routes:${routes.size} movings:${movings.size} declarations:${declarations.size} availabilities:${availabilities.size} favorites:${favorites.size} seatRes:${seatReservations.size} transferReq:${transferRequests.size} tripRatings:${tripRatings.size}"
                     )
                     users.forEach { db.userDao().insert(it) }
                     vehicles.forEach { insertVehicleSafely(db.vehicleDao(), db.userDao(), it) }
@@ -467,6 +512,9 @@ class DatabaseViewModel : ViewModel() {
                     declarations.forEach { db.transportDeclarationDao().insert(it) }
                     availabilities.forEach { db.availabilityDao().insert(it) }
                     favorites.forEach { insertFavoriteSafely(db.favoriteDao(), db.userDao(), it) }
+                    seatReservations.forEach { db.seatReservationDao().insert(it) }
+                    transferRequests.forEach { db.transferRequestDao().insert(it) }
+                    tripRatings.forEach { db.tripRatingDao().upsert(it) }
                     Log.d(TAG, "Inserted remote data to local DB")
                     prefs.edit().putLong("last_sync", remoteTs).apply()
                     _lastSyncTime.value = remoteTs
@@ -505,9 +553,21 @@ class DatabaseViewModel : ViewModel() {
                     val userPois = db.userPoiDao().getAll().first()
                     Log.d(TAG, "Fetched ${userPois.size} local user pois")
 
+                    val seatReservations = db.seatReservationDao().getAll().first()
+                    Log.d(TAG, "Fetched ${seatReservations.size} local seat reservations")
+
+                    val transferRequests = db.transferRequestDao().getAll().first()
+                    Log.d(TAG, "Fetched ${transferRequests.size} local transfer requests")
+
+                    val tripRatings = db.tripRatingDao().getAll().first()
+                    Log.d(TAG, "Fetched ${tripRatings.size} local trip ratings")
+
+                    val notifications = db.notificationDao().getAll().first()
+                    Log.d(TAG, "Fetched ${notifications.size} local notifications")
+
                     Log.d(
                         TAG,
-                        "Local data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} poiTypes:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size} routes:${routes.size} points:${routePoints.size} movings:${movings.size} declarations:${declarations.size} availabilities:${availabilities.size} favorites:${favorites.size} userPois:${userPois.size}"
+                        "Local data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} poiTypes:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size} routes:${routes.size} points:${routePoints.size} movings:${movings.size} declarations:${declarations.size} availabilities:${availabilities.size} favorites:${favorites.size} userPois:${userPois.size} seatRes:${seatReservations.size} transferReq:${transferRequests.size} tripRatings:${tripRatings.size} notifications:${notifications.size}"
                     )
 
                     // Αποφεύγουμε την δημιουργία κενών εγγράφων στο Firestore
@@ -581,6 +641,30 @@ class DatabaseViewModel : ViewModel() {
                             .set(fav.toFirestoreMap()).await()
                     }
 
+                    seatReservations.forEach {
+                        firestore.collection("seat_reservations")
+                            .document(it.id)
+                            .set(it.toFirestoreMap()).await()
+                    }
+
+                    transferRequests.forEach {
+                        firestore.collection("transfer_requests")
+                            .document(it.requestNumber.toString())
+                            .set(it.toFirestoreMap()).await()
+                    }
+
+                    tripRatings.forEach {
+                        firestore.collection("trip_ratings")
+                            .document("${'$'}{it.movingId}_${'$'}{it.userId}")
+                            .set(it.toFirestoreMap()).await()
+                    }
+
+                    notifications.forEach {
+                        firestore.collection("notifications")
+                            .document(it.id)
+                            .set(it.toFirestoreMap()).await()
+                    }
+
                     Log.d(TAG, "Uploaded local data to Firebase")
 
                     val newTs = System.currentTimeMillis()
@@ -620,7 +704,11 @@ data class DatabaseData(
     val availabilities: List<AvailabilityEntity>,
     val favorites: List<FavoriteEntity>,
     val favoriteRoutes: List<FavoriteRouteEntity>,
-    val userPois: List<UserPoiEntity>
+    val userPois: List<UserPoiEntity>,
+    val seatReservations: List<SeatReservationEntity>,
+    val transferRequests: List<TransferRequestEntity>,
+    val tripRatings: List<TripRatingEntity>,
+    val notifications: List<NotificationEntity>
 )
 
 sealed class SyncState {

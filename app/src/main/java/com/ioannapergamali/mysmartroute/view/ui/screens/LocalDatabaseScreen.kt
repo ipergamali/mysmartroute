@@ -173,6 +173,78 @@ fun LocalDatabaseScreen(navController: NavController, openDrawer: () -> Unit) {
                         Text("${lang.id} -> ${lang.language}")
                     }
                 }
+                item { Spacer(modifier = Modifier.padding(8.dp)) }
+                item { Text("Availabilities", style = MaterialTheme.typography.titleMedium) }
+                if (data!!.availabilities.isEmpty()) {
+                    item { Text("Ο πίνακας είναι άδειος") }
+                } else {
+                    items(data!!.availabilities) { a ->
+                        Text("${a.userId} -> ${a.date}")
+                    }
+                }
+                item { Spacer(modifier = Modifier.padding(8.dp)) }
+                item { Text("Seat Reservations", style = MaterialTheme.typography.titleMedium) }
+                if (data!!.seatReservations.isEmpty()) {
+                    item { Text("Ο πίνακας είναι άδειος") }
+                } else {
+                    items(data!!.seatReservations) { r ->
+                        Text("${r.id} route:${r.routeId} user:${r.userId}")
+                    }
+                }
+                item { Spacer(modifier = Modifier.padding(8.dp)) }
+                item { Text("Transfer Requests", style = MaterialTheme.typography.titleMedium) }
+                if (data!!.transferRequests.isEmpty()) {
+                    item { Text("Ο πίνακας είναι άδειος") }
+                } else {
+                    items(data!!.transferRequests) { tr ->
+                        Text("${tr.requestNumber} route:${tr.routeId} status:${tr.status}")
+                    }
+                }
+                item { Spacer(modifier = Modifier.padding(8.dp)) }
+                item { Text("Trip Ratings", style = MaterialTheme.typography.titleMedium) }
+                if (data!!.tripRatings.isEmpty()) {
+                    item { Text("Ο πίνακας είναι άδειος") }
+                } else {
+                    items(data!!.tripRatings) { t ->
+                        Text("${t.movingId} user:${t.userId} rating:${t.rating}")
+                    }
+                }
+                item { Spacer(modifier = Modifier.padding(8.dp)) }
+                item { Text("Favorites", style = MaterialTheme.typography.titleMedium) }
+                if (data!!.favorites.isEmpty()) {
+                    item { Text("Ο πίνακας είναι άδειος") }
+                } else {
+                    items(data!!.favorites) { f ->
+                        Text("${f.id} user:${f.userId}")
+                    }
+                }
+                item { Spacer(modifier = Modifier.padding(8.dp)) }
+                item { Text("Favorite Routes", style = MaterialTheme.typography.titleMedium) }
+                if (data!!.favoriteRoutes.isEmpty()) {
+                    item { Text("Ο πίνακας είναι άδειος") }
+                } else {
+                    items(data!!.favoriteRoutes) { fr ->
+                        Text("${fr.userId} -> ${fr.routeId}")
+                    }
+                }
+                item { Spacer(modifier = Modifier.padding(8.dp)) }
+                item { Text("User PoIs", style = MaterialTheme.typography.titleMedium) }
+                if (data!!.userPois.isEmpty()) {
+                    item { Text("Ο πίνακας είναι άδειος") }
+                } else {
+                    items(data!!.userPois) { up ->
+                        Text("${up.userId} -> ${up.poiId}")
+                    }
+                }
+                item { Spacer(modifier = Modifier.padding(8.dp)) }
+                item { Text("Notifications", style = MaterialTheme.typography.titleMedium) }
+                if (data!!.notifications.isEmpty()) {
+                    item { Text("Ο πίνακας είναι άδειος") }
+                } else {
+                    items(data!!.notifications) { n ->
+                        Text("${n.userId} -> ${n.message}")
+                    }
+                }
                 }
             }
         }
