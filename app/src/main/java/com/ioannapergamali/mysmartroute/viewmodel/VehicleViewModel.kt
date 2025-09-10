@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.VehicleEntity
 import com.ioannapergamali.mysmartroute.data.local.insertVehicleSafely
@@ -16,6 +15,7 @@ import com.ioannapergamali.mysmartroute.utils.VehiclePlacesUtils
 import com.ioannapergamali.mysmartroute.model.classes.vehicles.RemoteVehicle
 import com.ioannapergamali.mysmartroute.utils.toVehicleEntity
 import com.ioannapergamali.mysmartroute.R
+import com.ioannapergamali.mysmartroute.repository.VehicleRepository
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -101,28 +101,33 @@ class VehicleViewModel : ViewModel() {
 
             val vehicleId = UUID.randomUUID().toString()
             val entity = VehicleEntity(vehicleId, name, description, userId, type.name, seat, color, plate)
-            val vehicleData = entity.toFirestoreMap()
 
             val dbLocal = MySmartRouteDatabase.getInstance(context)
             val vehicleDao = dbLocal.vehicleDao()
             val userDao = dbLocal.userDao()
+            val repository = VehicleRepository(vehicleDao, userDao, db)
 
             if (NetworkUtils.isInternetAvailable(context)) {
-                db.collection("vehicles")
-                    .document(vehicleId)
-                    .set(vehicleData)
-                    .addOnSuccessListener {
-                        viewModelScope.launch { insertVehicleSafely(vehicleDao, userDao, entity) }
-                        _registerState.value = RegisterState.Success
-                    }
-                    .addOnFailureListener { e ->
-                        _registerState.value = RegisterState.Error(e.localizedMessage ?: "Failed")
-                    }
+                try {
+                    repository.addVehicle(entity)
+                    _registerState.value = RegisterState.Success
+                } catch (e: Exception) {
+                    _registerState.value = RegisterState.Error(e.localizedMessage ?: "Failed")
+                }
             } else {
                 insertVehicleSafely(vehicleDao, userDao, entity)
                 _registerState.value = RegisterState.Success
             }
         }
+    }
+
+    /**
+     * Ξεκινά ακρόαση αλλαγών στο Firestore και ενημερώνει τη Room.
+     */
+    fun syncVehicles(context: Context) {
+        val dbLocal = MySmartRouteDatabase.getInstance(context)
+        val repository = VehicleRepository(dbLocal.vehicleDao(), dbLocal.userDao(), db)
+        repository.syncVehicles()
     }
 
     /**
