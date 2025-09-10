@@ -65,7 +65,7 @@ dependencies {
     // Firebase (BoM για αυτόματες εκδόσεις όλων των modules)
     implementation(platform("com.google.firebase:firebase-bom:34.2.0"))
     implementation("com.google.firebase:firebase-auth-ktx")
-    // Χρήση της νεότερης έκδοσης Firestore ώστε το userId να αποθηκεύεται ως String
+    // Χρήση της νεότερης έκδοσης Firestore ώστε το userId να αποθηκεύεται ως αναφορά
     implementation("com.google.firebase:firebase-firestore-ktx:25.1.4")
     implementation("com.google.firebase:firebase-storage-ktx")
 

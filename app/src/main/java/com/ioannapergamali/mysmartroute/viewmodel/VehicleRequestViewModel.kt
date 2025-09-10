@@ -98,7 +98,10 @@ class VehicleRequestViewModel(
                 if (allUsers) {
                     db.collection("movings").get().await()
                 } else if (userId != null) {
-                    db.collection("movings").whereEqualTo("userId", userId).get().await()
+                    db.collection("movings").whereEqualTo(
+                        "userId",
+                        db.collection("users").document(userId)
+                    ).get().await()
                 } else null
             }.getOrNull()
 
@@ -166,10 +169,16 @@ class VehicleRequestViewModel(
                 dao.getAll().first().filter { it.userId == uid || it.driverId == uid }
 
             val passengerSnapshot = runCatching {
-                db.collection("movings").whereEqualTo("userId", uid).get().await()
+                db.collection("movings").whereEqualTo(
+                    "userId",
+                    db.collection("users").document(uid)
+                ).get().await()
             }.getOrNull()
             val driverSnapshot = runCatching {
-                db.collection("movings").whereEqualTo("driverId", uid).get().await()
+                db.collection("movings").whereEqualTo(
+                    "driverId",
+                    db.collection("users").document(uid)
+                ).get().await()
             }.getOrNull()
 
             val remote =
@@ -234,7 +243,7 @@ class VehicleRequestViewModel(
             try {
                 val data = mapOf(
                     "id" to id,
-                    "userId" to userId,
+                    "userId" to FirebaseFirestore.getInstance().collection("users").document(userId),
                     "date" to dateTime,
                     "vehicleId" to WALKING_ID,
                     "status" to "open"
