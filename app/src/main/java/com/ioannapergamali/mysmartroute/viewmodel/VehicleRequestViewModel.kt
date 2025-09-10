@@ -98,8 +98,7 @@ class VehicleRequestViewModel(
                 if (allUsers) {
                     db.collection("movings").get().await()
                 } else if (userId != null) {
-                    val userRef = db.collection("users").document(userId)
-                    db.collection("movings").whereEqualTo("userId", userRef).get().await()
+                    db.collection("movings").whereEqualTo("userId", userId).get().await()
                 } else null
             }.getOrNull()
 
@@ -164,10 +163,9 @@ class VehicleRequestViewModel(
             val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
             val localMovings =
                 MySmartRouteDatabase.getInstance(context).movingDao().getMovingsForUser(uid).first()
-            val userRef = db.collection("users").document(uid)
 
             db.collection("movings")
-                .whereEqualTo("userId", userRef)
+                .whereEqualTo("userId", uid)
                 .addSnapshotListener { snapshot, e ->
                     if (e != null) {
                         _requests.value = localMovings

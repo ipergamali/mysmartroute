@@ -71,7 +71,7 @@ suspend fun promotePassengerToDriver(
         .forEach { batch.delete(it.reference) }
 
     firestore.collection("movings")
-        .whereEqualTo("userId", userRef)
+        .whereEqualTo("userId", passengerId)
         .get().await()
         .forEach { batch.delete(it.reference) }
 

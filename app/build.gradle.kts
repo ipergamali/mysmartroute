@@ -64,7 +64,8 @@ dependencies {
     // Firebase (BoM για αυτόματες εκδόσεις όλων των modules)
     implementation(platform("com.google.firebase:firebase-bom:34.2.0"))
     implementation("com.google.firebase:firebase-auth-ktx")
-    implementation("com.google.firebase:firebase-firestore-ktx")
+    // Χρήση της νεότερης έκδοσης Firestore ώστε το userId να αποθηκεύεται ως String
+    implementation("com.google.firebase:firebase-firestore-ktx:25.1.4")
     implementation("com.google.firebase:firebase-storage-ktx")
 
     // Το Dynamic Links δεν καλύπτεται από το BoM, δηλώνουμε ρητά την έκδοση
