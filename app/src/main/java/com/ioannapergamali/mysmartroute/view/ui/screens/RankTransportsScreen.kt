@@ -45,6 +45,7 @@ import androidx.compose.material.icons.outlined.Star
 import android.text.format.DateFormat
 import java.util.Date
 import androidx.compose.ui.graphics.Color
+import android.widget.Toast
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,8 +53,15 @@ fun RankTransportsScreen(navController: NavController, openDrawer: () -> Unit) {
     val context = LocalContext.current
     val viewModel: TripRatingViewModel = viewModel()
     val trips by viewModel.trips.collectAsState()
+    val message by viewModel.message.collectAsState()
 
     LaunchedEffect(Unit) { viewModel.loadTrips(context) }
+    LaunchedEffect(message) {
+        message?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            viewModel.clearMessage()
+        }
+    }
 
     Scaffold(
         topBar = {
