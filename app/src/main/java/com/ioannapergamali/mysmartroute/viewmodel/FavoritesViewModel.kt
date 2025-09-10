@@ -31,6 +31,37 @@ class FavoritesViewModel : ViewModel() {
     private fun userId() = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
     /**
+     * Φορτώνει τα αγαπημένα οχήματα από το Firestore και τα συγχρονίζει με την τοπική βάση.
+     * Loads favorite vehicles from Firestore and syncs them with the local database.
+     */
+    fun loadFavorites(context: Context) {
+        viewModelScope.launch {
+            val uid = userId()
+            if (uid.isBlank()) return@launch
+            val db = MySmartRouteDatabase.getInstance(context)
+            val dao = db.favoriteDao()
+            val snap = runCatching { userVehicles(uid).get().await() }.getOrNull()
+            if (snap != null) {
+                dao.deleteAllForUser(uid)
+                snap.documents.mapNotNull { doc ->
+                    val type = doc.getString("vehicleType")
+                    val preferred = doc.getBoolean("preferred") ?: true
+                    if (type != null) {
+                        com.ioannapergamali.mysmartroute.data.local.FavoriteEntity(
+                            doc.id,
+                            uid,
+                            type,
+                            preferred
+                        )
+                    } else null
+                }.forEach { fav ->
+                    insertFavoriteSafely(dao, db.userDao(), fav)
+                }
+            }
+        }
+    }
+
+    /**
      * Ροή με τα οχήματα που προτιμά ο χρήστης.
      * Flow emitting vehicles preferred by the user.
      */

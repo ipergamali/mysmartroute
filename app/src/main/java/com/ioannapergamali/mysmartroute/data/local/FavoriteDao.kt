@@ -25,4 +25,7 @@ interface FavoriteDao {
     @Query("DELETE FROM favorites WHERE userId = :userId AND vehicleType = :vehicleType")
     suspend fun delete(userId: String, vehicleType: String)
 
+    @Query("DELETE FROM favorites WHERE userId = :userId")
+    suspend fun deleteAllForUser(userId: String)
+
 }
