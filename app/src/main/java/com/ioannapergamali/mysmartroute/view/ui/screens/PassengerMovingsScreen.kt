@@ -20,7 +20,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -36,12 +35,11 @@ import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PassengerMovingsScreen(navController: NavController, openDrawer: () -> Unit) {
-    val context = LocalContext.current
     val viewModel: VehicleRequestViewModel = viewModel()
     val movings by viewModel.movings.collectAsState()
 
     LaunchedEffect(Unit) {
-        viewModel.loadRequests(context, allUsers = true)
+        viewModel.loadPassengerMovings()
     }
 
     val now = System.currentTimeMillis()

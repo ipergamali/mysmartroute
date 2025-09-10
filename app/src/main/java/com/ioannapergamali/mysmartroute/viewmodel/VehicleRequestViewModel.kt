@@ -156,6 +156,22 @@ class VehicleRequestViewModel(
         }
     }
 
+    /**
+     * Φορτώνει τις μετακινήσεις του τρέχοντος χρήστη από το Firestore.
+     */
+    fun loadPassengerMovings() {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val userRef = db.collection("users").document(uid)
+
+        db.collection("movings")
+            .whereEqualTo("userId", userRef)
+            .addSnapshotListener { snapshot, e ->
+                if (e != null) return@addSnapshotListener
+                _requests.value =
+                    snapshot?.documents?.mapNotNull { it.toMovingEntity() } ?: emptyList()
+            }
+    }
+
     private suspend fun enrichMoving(
         m: MovingEntity,
         routeDao: RouteDao,
