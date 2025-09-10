@@ -19,7 +19,6 @@ import kotlinx.coroutines.Dispatchers
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.utils.toMovingEntity
 import com.ioannapergamali.mysmartroute.utils.toTransportDeclarationEntity
-import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import com.ioannapergamali.mysmartroute.utils.NotificationUtils
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.data.local.SeatReservationEntity
@@ -89,42 +88,38 @@ class VehicleRequestViewModel(
             val vehicleDao = dbInstance.vehicleDao()
             val userId = FirebaseAuth.getInstance().currentUser?.uid
 
-            _requests.value = if (allUsers) {
+            val local = if (allUsers) {
                 dao.getAll().first()
             } else {
                 userId?.let { dao.getMovingsForUser(it).first() } ?: emptyList()
             }
 
-            val enrichedLocal = mutableListOf<MovingEntity>()
-            for (m in _requests.value) {
-                enrichMoving(m, routeDao, userDao, vehicleDao)
-                enrichedLocal.add(m)
+            val snapshot = runCatching {
+                if (allUsers) {
+                    db.collection("movings").get().await()
+                } else if (userId != null) {
+                    val userRef = db.collection("users").document(userId)
+                    db.collection("movings").whereEqualTo("userId", userRef).get().await()
+                } else null
+            }.getOrNull()
+
+            val remote = snapshot?.documents?.mapNotNull { it.toMovingEntity() }.orEmpty()
+
+            val target = when {
+                remote.isNotEmpty() -> remote
+                local.isNotEmpty() -> local
+                else -> _requests.value
             }
-            _requests.value = enrichedLocal
 
+            val enriched = mutableListOf<MovingEntity>()
+            for (m in target) {
+                enrichMoving(m, routeDao, userDao, vehicleDao)
+                enriched.add(m)
+            }
+            _requests.value = enriched
 
-            val snapshot = if (NetworkUtils.isInternetAvailable(context)) {
-                runCatching {
-                    if (allUsers) {
-                        db.collection("movings").get().await()
-                    } else if (userId != null) {
-                        val userRef = db.collection("users").document(userId)
-                        db.collection("movings").whereEqualTo("userId", userRef).get().await()
-                    } else null
-                }.getOrNull()
-            } else null
-
-            snapshot?.let { snap ->
-                val list = snap.documents.mapNotNull { it.toMovingEntity() }
-                val enriched = mutableListOf<MovingEntity>()
-                for (m in list) {
-                    enrichMoving(m, routeDao, userDao, vehicleDao)
-                    enriched.add(m)
-                }
-                if (enriched.isNotEmpty()) {
-                    _requests.value = enriched
-                    enriched.forEach { dao.insert(it) }
-                }
+            if (remote.isNotEmpty()) {
+                remote.forEach { dao.insert(it) }
             }
 
             passengerRequests.clear()
