@@ -28,7 +28,7 @@ import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.data.local.MovingEntity
 import com.ioannapergamali.mysmartroute.data.local.MovingStatus
-import com.ioannapergamali.mysmartroute.data.local.movingStatus
+import com.ioannapergamali.mysmartroute.data.local.categorizeMovings
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
@@ -44,8 +44,7 @@ fun PassengerMovingsScreen(navController: NavController, openDrawer: () -> Unit)
         viewModel.loadPassengerMovings(context)
     }
 
-    val now = System.currentTimeMillis()
-    val grouped = movings.groupBy { it.movingStatus(now) }
+    val grouped = categorizeMovings(movings)
 
     Scaffold(
         topBar = {
