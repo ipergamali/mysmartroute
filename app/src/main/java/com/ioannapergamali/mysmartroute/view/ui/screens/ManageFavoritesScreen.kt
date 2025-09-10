@@ -29,6 +29,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.FavoritesViewModel
 fun ManageFavoritesScreen(navController: NavController, openDrawer: () -> Unit) {
     val context = LocalContext.current
     val viewModel: FavoritesViewModel = viewModel()
+    LaunchedEffect(Unit) { viewModel.loadFavorites(context) }
     val preferred by viewModel.preferredFlow(context).collectAsState(initial = emptySet())
     val nonPreferred by viewModel.nonPreferredFlow(context).collectAsState(initial = emptySet())
 
