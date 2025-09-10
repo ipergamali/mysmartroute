@@ -24,7 +24,6 @@ import com.ioannapergamali.mysmartroute.data.local.SeatReservationEntity
  * Converts Firestore documents to local Room entities and vice versa.
  */
 import com.ioannapergamali.mysmartroute.data.local.FavoriteEntity
-import com.ioannapergamali.mysmartroute.data.local.UserPoiEntity
 import com.ioannapergamali.mysmartroute.data.local.TransferRequestEntity
 import com.ioannapergamali.mysmartroute.data.local.NotificationEntity
 import com.ioannapergamali.mysmartroute.model.enumerations.RequestStatus
@@ -486,27 +485,6 @@ fun DocumentSnapshot.toFavoriteEntity(): FavoriteEntity? {
     val type = getString("vehicleType") ?: return null
     val preferred = getBoolean("preferred") ?: false
     return FavoriteEntity(favId, userId, type, preferred)
-}
-
-fun UserPoiEntity.toFirestoreMap(): Map<String, Any> = mapOf(
-    "id" to id,
-    "userId" to FirebaseFirestore.getInstance().collection("users").document(userId),
-    "poiId" to FirebaseFirestore.getInstance().collection("pois").document(poiId)
-)
-
-fun DocumentSnapshot.toUserPoiEntity(): UserPoiEntity? {
-    val upId = getString("id") ?: id
-    val userId = when (val u = get("userId")) {
-        is DocumentReference -> u.id
-        is String -> u
-        else -> getString("userId")
-    } ?: return null
-    val poiId = when (val p = get("poiId")) {
-        is DocumentReference -> p.id
-        is String -> p
-        else -> getString("poiId")
-    } ?: return null
-    return UserPoiEntity(upId, userId, poiId)
 }
 
 fun TransferRequestEntity.toFirestoreMap(): Map<String, Any> {

@@ -30,8 +30,6 @@ import com.ioannapergamali.mysmartroute.data.local.insertFavoriteSafely
 import com.ioannapergamali.mysmartroute.utils.toFavoriteEntity
 import com.ioannapergamali.mysmartroute.data.local.FavoriteRouteEntity
 import com.ioannapergamali.mysmartroute.data.local.UserPoiEntity
-import com.ioannapergamali.mysmartroute.data.local.insertUserPoiSafely
-import com.ioannapergamali.mysmartroute.utils.toUserPoiEntity
 import com.ioannapergamali.mysmartroute.data.local.RouteEntity
 import com.ioannapergamali.mysmartroute.data.local.RoutePointEntity
 import com.ioannapergamali.mysmartroute.data.local.MovingEntity
@@ -279,12 +277,11 @@ class DatabaseViewModel : ViewModel() {
                 .await()
                 .documents.mapNotNull { it.toFavoriteEntity() }
 
-            val userPois = firestore.collection("user_pois").get().await()
-                .documents.mapNotNull { it.toUserPoiEntity() }
+            val userPois = emptyList<UserPoiEntity>()
 
             Log.d(
                 TAG,
-                "Firebase data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} types:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size} routes:${routes.size} movings:${movings.size} declarations:${declarations.size} availabilities:${availabilities.size} favorites:${favorites.size} userPois:${userPois.size}"
+                "Firebase data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} types:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size} routes:${routes.size} movings:${movings.size} declarations:${declarations.size} availabilities:${availabilities.size} favorites:${favorites.size}"
             )
             _firebaseData.value = DatabaseData(
                 users,
@@ -450,12 +447,11 @@ class DatabaseViewModel : ViewModel() {
                         .await()
                         .documents.mapNotNull { it.toFavoriteEntity() }
 
-                    val userPois = firestore.collection("user_pois").get().await()
-                        .documents.mapNotNull { it.toUserPoiEntity() }
+                    val userPois = emptyList<UserPoiEntity>()
 
                     Log.d(
                         TAG,
-                        "Remote data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} poiTypes:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size} routes:${routes.size} movings:${movings.size} declarations:${declarations.size} availabilities:${availabilities.size} favorites:${favorites.size} userPois:${userPois.size}"
+                        "Remote data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} poiTypes:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size} routes:${routes.size} movings:${movings.size} declarations:${declarations.size} availabilities:${availabilities.size} favorites:${favorites.size}"
                     )
                     users.forEach { db.userDao().insert(it) }
                     vehicles.forEach { insertVehicleSafely(db.vehicleDao(), db.userDao(), it) }
@@ -471,7 +467,6 @@ class DatabaseViewModel : ViewModel() {
                     declarations.forEach { db.transportDeclarationDao().insert(it) }
                     availabilities.forEach { db.availabilityDao().insert(it) }
                     favorites.forEach { insertFavoriteSafely(db.favoriteDao(), db.userDao(), it) }
-                    userPois.forEach { insertUserPoiSafely(db.userPoiDao(), db.userDao(), db.poIDao(), it) }
                     Log.d(TAG, "Inserted remote data to local DB")
                     prefs.edit().putLong("last_sync", remoteTs).apply()
                     _lastSyncTime.value = remoteTs
@@ -584,11 +579,6 @@ class DatabaseViewModel : ViewModel() {
                         userVehicles(fav.userId)
                             .document(fav.id)
                             .set(fav.toFirestoreMap()).await()
-                    }
-                    userPois.forEach { up ->
-                        firestore.collection("user_pois")
-                            .document(up.id)
-                            .set(up.toFirestoreMap()).await()
                     }
 
                     Log.d(TAG, "Uploaded local data to Firebase")
