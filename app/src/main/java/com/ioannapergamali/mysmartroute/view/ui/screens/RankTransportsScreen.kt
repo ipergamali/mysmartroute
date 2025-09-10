@@ -98,12 +98,15 @@ private fun TripRatingItem(
     trip: TripWithRating,
     onSave: (Int, String) -> Unit
 ) {
+
     var rating by rememberSaveable(trip.moving.id) { mutableStateOf(trip.rating) }
     var comment by rememberSaveable(trip.moving.id) { mutableStateOf(trip.comment) }
     LaunchedEffect(trip.rating, trip.comment) {
         rating = trip.rating
         comment = trip.comment
     }
+
+
     val context = LocalContext.current
     val dateText = if (trip.moving.date > 0L) {
         DateFormat.getDateFormat(context).format(Date(trip.moving.date))

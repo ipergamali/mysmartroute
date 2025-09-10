@@ -1,8 +1,9 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
 import android.net.Uri
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -61,7 +62,14 @@ fun ReservationDetailsScreen(
                         ?.also { db.userDao().insert(it) }
                 user?.let { "${it.name} ${it.surname}" } ?: driverId
             }.orEmpty()
-            passengerName = db.userDao().getUser(res.userId)
+            passengerName = (db.userDao().getUser(res.userId)
+                ?: FirebaseFirestore.getInstance()
+                    .collection("users")
+                    .document(res.userId)
+                    .get()
+                    .await()
+                    .toUserEntity()
+                    ?.also { db.userDao().insert(it) })
                 ?.let { "${it.name} ${it.surname}" } ?: res.userId
         }
     }
@@ -77,14 +85,22 @@ fun ReservationDetailsScreen(
     ) { paddingValues ->
         reservation?.let { res ->
             val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-            Column(Modifier.padding(paddingValues).padding(16.dp)) {
-                Text("${stringResource(R.string.date)}: ${formatter.format(Date(res.date))}")
-                Text("${stringResource(R.string.route)}: $routeName")
-                Text("${stringResource(R.string.start_point)}: $startPoiName")
-                Text("${stringResource(R.string.destination)}: $endPoiName")
-                Text("${stringResource(R.string.driver)}: $driverName")
-                cost?.let { Text("${stringResource(R.string.cost)}: $it") }
-                Text("${stringResource(R.string.passenger)}: $passengerName")
+            Card(
+                modifier = Modifier
+                    .padding(paddingValues)
+                    .padding(16.dp)
+                    .fillMaxWidth(),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            ) {
+                Column(Modifier.padding(16.dp)) {
+                    Text("${stringResource(R.string.date)}: ${formatter.format(Date(res.date))}")
+                    Text("${stringResource(R.string.route)}: $routeName")
+                    Text("${stringResource(R.string.start_point)}: $startPoiName")
+                    Text("${stringResource(R.string.destination)}: $endPoiName")
+                    Text("${stringResource(R.string.driver)}: $driverName")
+                    cost?.let { Text("${stringResource(R.string.cost)}: $it") }
+                    Text("${stringResource(R.string.passenger)}: $passengerName")
+                }
             }
         } ?: Text(
             text = stringResource(R.string.no_reservation_found),
