@@ -84,12 +84,14 @@ fun PassengerMovingsScreen(navController: NavController, openDrawer: () -> Unit)
 
 @Composable
 private fun MovingCategory(title: String, list: List<MovingEntity>) {
-    if (list.isNotEmpty()) {
-        Text(title, style = MaterialTheme.typography.titleMedium)
+    Text(title, style = MaterialTheme.typography.titleMedium)
+    Spacer(modifier = Modifier.height(8.dp))
+    MovingTable(list)
+    if (list.isEmpty()) {
         Spacer(modifier = Modifier.height(8.dp))
-        MovingTable(list)
-        Spacer(modifier = Modifier.height(16.dp))
+        Text(stringResource(R.string.no_movings))
     }
+    Spacer(modifier = Modifier.height(16.dp))
 }
 
 @Composable
