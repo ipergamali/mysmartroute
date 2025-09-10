@@ -81,7 +81,7 @@ fun RankTransportsScreen(navController: NavController, openDrawer: () -> Unit) {
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(16.dp)
                 ) {
-                    items(trips) { trip ->
+                    items(trips, key = { it.moving.id }) { trip ->
                         TripRatingItem(trip) { rating, comment ->
                             viewModel.updateRating(context, trip.moving, rating, comment)
                         }
@@ -98,8 +98,8 @@ private fun TripRatingItem(
     trip: TripWithRating,
     onSave: (Int, String) -> Unit
 ) {
-    var rating by remember { mutableStateOf(trip.rating) }
-    var comment by remember { mutableStateOf(trip.comment) }
+    var rating by remember(trip.rating) { mutableStateOf(trip.rating) }
+    var comment by remember(trip.comment) { mutableStateOf(trip.comment) }
     val context = LocalContext.current
     val dateText = if (trip.moving.date > 0L) {
         DateFormat.getDateFormat(context).format(Date(trip.moving.date))
