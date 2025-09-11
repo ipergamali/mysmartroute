@@ -247,6 +247,7 @@ class RouteViewModel : ViewModel() {
         val id = UUID.randomUUID().toString()
         val entity = RouteEntity(id, userId, name, poiIds.first(), poiIds.last())
         val points = poiIds.mapIndexed { index, p -> RoutePointEntity(id, index, p) }
+
         val busIds = if (busPoiIds.isNotEmpty()) {
             busPoiIds
         } else {
@@ -255,6 +256,7 @@ class RouteViewModel : ViewModel() {
             }
         }
         val busStations = busIds.mapIndexed { index, p -> RouteBusStationEntity(id, index, p) }
+
 
         runCatching {
             val routeRef = firestore.collection("routes").document(id)
@@ -320,6 +322,7 @@ class RouteViewModel : ViewModel() {
             endPoiId = poiIds.last()
         )
         val points = poiIds.mapIndexed { index, p -> RoutePointEntity(routeId, index, p) }
+
         val busIds = if (busPoiIds.isNotEmpty()) {
             busPoiIds
         } else {
@@ -328,6 +331,7 @@ class RouteViewModel : ViewModel() {
             }
         }
         val busStations = busIds.mapIndexed { index, p -> RouteBusStationEntity(routeId, index, p) }
+
 
         if (NetworkUtils.isInternetAvailable(context)) {
             val routeRef = firestore.collection("routes").document(routeId)

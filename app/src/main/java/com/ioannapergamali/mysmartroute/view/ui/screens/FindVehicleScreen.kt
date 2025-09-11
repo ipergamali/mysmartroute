@@ -1,12 +1,16 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -17,6 +21,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 import androidx.lifecycle.*
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -77,6 +85,11 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     var calculating by remember { mutableStateOf(false) }
     var pendingPoi by remember { mutableStateOf<Triple<String, Double, Double>?>(null) }
+
+    var datePickerVisible by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState()
+    var selectedDateMillis by rememberSaveable { mutableStateOf<Long?>(null) }
+    val dateFormatter = remember { DateTimeFormatter.ofPattern("dd/MM/yyyy").withZone(ZoneId.systemDefault()) }
 
     val cameraPositionState = rememberCameraPositionState()
     val coroutineScope = rememberCoroutineScope()
@@ -393,6 +406,48 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
             }
 
             OutlinedTextField(
+                value = selectedDateMillis?.let { dateFormatter.format(Instant.ofEpochMilli(it)) } ?: "",
+                onValueChange = {},
+                readOnly = true,
+                label = { Text(stringResource(R.string.date)) },
+                leadingIcon = { Icon(Icons.Default.CalendarToday, contentDescription = null) },
+                trailingIcon = {
+                    IconButton(onClick = { datePickerVisible = true }) {
+                        Icon(Icons.Default.CalendarToday, contentDescription = stringResource(R.string.date))
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.small,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                )
+            )
+
+            if (datePickerVisible) {
+                DatePickerDialog(
+                    onDismissRequest = { datePickerVisible = false },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            selectedDateMillis = datePickerState.selectedDateMillis
+                            datePickerVisible = false
+                        }) {
+                            Text(stringResource(android.R.string.ok))
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { datePickerVisible = false }) {
+                            Text(stringResource(android.R.string.cancel))
+                        }
+                    }
+                ) {
+                    DatePicker(state = datePickerState)
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            OutlinedTextField(
                 value = maxCostText,
                 onValueChange = { maxCostText = it },
                 label = { Text(stringResource(R.string.cost)) },
@@ -415,7 +470,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                         val toId = routePois[toIdx].id
                         val cost = maxCostText.toDoubleOrNull()
                         val routeId = selectedRouteId ?: return@Button
-                        val date = System.currentTimeMillis()
+                        val date = selectedDateMillis ?: return@Button
 
                         navController.navigate(
                             "availableTransports?routeId=" +
@@ -423,10 +478,10 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                                 "&startId=" + fromId +
                                 "&endId=" + toId +
                                 "&maxCost=" + (cost?.toString() ?: "") +
-                                "&date="
+                                "&date=" + date
                         )
                     },
-                    enabled = selectedRouteId != null && startIndex != null && endIndex != null,
+                    enabled = selectedRouteId != null && startIndex != null && endIndex != null && selectedDateMillis != null,
                 ) {
                     Icon(Icons.Default.Search, contentDescription = null)
                     Spacer(Modifier.width(8.dp))
@@ -444,7 +499,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                             val fromId = routePois[fromIdx].id
                             val toId = routePois[toIdx].id
                             val cost = maxCostText.toDoubleOrNull()
-                            val date = System.currentTimeMillis()
+                            val date = selectedDateMillis ?: return@launch
                             val routeId = saveEditedRouteAsNewRoute()
 
                             requestViewModel.requestTransport(context, routeId, fromId, toId, cost, date)
@@ -452,7 +507,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                             message = context.getString(R.string.request_sent)
                         }
                     },
-                    enabled = selectedRouteId != null && startIndex != null && endIndex != null,
+                    enabled = selectedRouteId != null && startIndex != null && endIndex != null && selectedDateMillis != null,
                 ) {
                     Icon(Icons.Default.Save, contentDescription = null)
                     Spacer(Modifier.width(8.dp))
