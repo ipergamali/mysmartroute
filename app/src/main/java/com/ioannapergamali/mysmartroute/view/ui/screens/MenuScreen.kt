@@ -57,11 +57,7 @@ fun MenuScreen(navController: NavController, openDrawer: () -> Unit) {
                 showMenu = true,
                 onMenuClick = openDrawer,
                 onLogout = {
-                    viewModel.signOut()
                     Toast.makeText(context, "Logged out", Toast.LENGTH_SHORT).show()
-                    navController.navigate("home") {
-                        popUpTo("menu") { inclusive = true }
-                    }
                 }
             )
         }

@@ -18,6 +18,7 @@ import com.ioannapergamali.mysmartroute.data.local.UserEntity
 import com.ioannapergamali.mysmartroute.data.local.MenuEntity
 import com.ioannapergamali.mysmartroute.data.local.MenuOptionEntity
 import com.ioannapergamali.mysmartroute.data.local.MenuWithOptions
+import com.ioannapergamali.mysmartroute.repository.VehicleRepository
 import com.ioannapergamali.mysmartroute.data.local.insertMenuSafely
 import com.ioannapergamali.mysmartroute.data.local.RoleEntity
 import com.ioannapergamali.mysmartroute.model.classes.users.Admin
@@ -560,7 +561,11 @@ class AuthenticationViewModel : ViewModel() {
      * Αποσυνδέει τον χρήστη και καθαρίζει τις τοπικές καταστάσεις.
      * Signs the user out and clears local states.
      */
-    fun signOut() {
+    fun signOut(context: Context) {
+        VehicleRepository(
+            MySmartRouteDatabase.getInstance(context.applicationContext),
+            FirebaseFirestore.getInstance()
+        ).stopSync()
         auth.signOut()
         _currentUserRole.value = null
         _currentMenus.value = emptyList()

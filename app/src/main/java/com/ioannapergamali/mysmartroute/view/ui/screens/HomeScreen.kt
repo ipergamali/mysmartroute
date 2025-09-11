@@ -84,7 +84,7 @@ fun HomeScreen(
                         onLogin = { viewModel.login(context, email, password) },
                         onNavigateToSignUp = onNavigateToSignUp,
                         onForgotPassword = { navController.navigate("resetPassword") },
-                        onLogout = { viewModel.signOut() },
+                        onLogout = { viewModel.signOut(context) },
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -107,7 +107,7 @@ fun HomeScreen(
                         onLogin = { viewModel.login(context, email, password) },
                         onNavigateToSignUp = onNavigateToSignUp,
                         onForgotPassword = { navController.navigate("resetPassword") },
-                        onLogout = { viewModel.signOut() }
+                        onLogout = { viewModel.signOut(context) }
                     )
                 }
             }

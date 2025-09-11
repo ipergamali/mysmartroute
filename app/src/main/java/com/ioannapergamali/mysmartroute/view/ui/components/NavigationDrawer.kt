@@ -35,6 +35,8 @@ import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.launch
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.R
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 
 @Composable
 fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
@@ -43,6 +45,8 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
         drawerContentColor = MaterialTheme.colorScheme.onSurface,
         drawerTonalElevation = 4.dp
     ) {
+        val context = LocalContext.current
+        val authViewModel: AuthenticationViewModel = viewModel()
         val userState = remember { mutableStateOf(FirebaseAuth.getInstance().currentUser) }
         val username = remember { mutableStateOf<String?>(null) }
         val role = remember { mutableStateOf<String?>(null) }
@@ -158,7 +162,7 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
                 label = { Text(stringResource(R.string.logout)) },
                 selected = false,
                 onClick = {
-                    FirebaseAuth.getInstance().signOut()
+                    authViewModel.signOut(context)
                     navController.navigate("home") {
                         popUpTo("home") { inclusive = true }
                     }

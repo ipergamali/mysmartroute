@@ -61,9 +61,13 @@ class VehicleRepository @Inject constructor(
     /** Ροή με όλα τα οχήματα. Αν η Room είναι κενή, τα φέρνει από το Firestore. */
     val vehicles: Flow<List<VehicleEntity>> = vehicleDao.getVehicles().onStart {
         val local = vehicleDao.getVehicles().first()
-        if (local.isEmpty()) {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+        if (local.isEmpty() && uid != null) {
             Log.d(TAG, "Τοπικά οχήματα κενά, ανάκτηση από Firestore")
-            val remote = firestore.collection("vehicles").get().await()
+            val remote = firestore.collection("vehicles")
+                .whereEqualTo("userId", uid)
+                .get()
+                .await()
                 .documents.mapNotNull { it.toVehicleEntity() }
             remote.forEach { insertVehicleSafely(db, it) }
             Log.d(TAG, "Εισαγωγή ${remote.size} οχημάτων από Firestore ολοκληρώθηκε")
@@ -81,7 +85,9 @@ class VehicleRepository @Inject constructor(
      */
     fun startSync(scope: CoroutineScope) {
         if (registration != null) return
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
         registration = firestore.collection("vehicles")
+            .whereEqualTo("userId", uid)
             .addSnapshotListener { snapshot, e ->
                 if (e != null || snapshot == null) {
                     Log.e(TAG, "Σφάλμα συγχρονισμού", e)

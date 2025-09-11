@@ -55,12 +55,7 @@ fun TopBar(
     showLanguageToggle: Boolean = true,
     showNotifications: Boolean = true,
     onMenuClick: () -> Unit = {},
-    onLogout: () -> Unit = {
-        FirebaseAuth.getInstance().signOut()
-        navController.navigate("home") {
-            popUpTo("home") { inclusive = true }
-        }
-    }
+    onLogout: (() -> Unit)? = null
 ) {
     // Γραμμή εφαρμογής με δυνατότητες πλοήγησης, γλώσσας και ειδοποιήσεων
     // App bar providing navigation, language toggle, and notifications
@@ -84,6 +79,14 @@ fun TopBar(
 
     val userId = FirebaseAuth.getInstance().currentUser?.uid
     val isLoggedIn = userId != null
+
+    val logoutAction = {
+        authViewModel.signOut(context)
+        onLogout?.invoke()
+        navController.navigate("home") {
+            popUpTo("home") { inclusive = true }
+        }
+    }
 
     Box(modifier = Modifier.statusBarsPadding()) {
         TopAppBar(
@@ -175,7 +178,7 @@ fun TopBar(
                 }
             }
             if (showLogout) {
-                IconButton(onClick = onLogout) {
+                IconButton(onClick = logoutAction) {
                     Icon(
                         Icons.Filled.Logout,
                         contentDescription = "logout",
