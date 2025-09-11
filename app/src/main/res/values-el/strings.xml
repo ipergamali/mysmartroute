@@ -188,6 +188,8 @@
     <string name="stops_header">Στάσεις</string>
     <string name="poi_outside_heraklion">Επιλέξτε σημείο εντός Ηρακλείου</string>
     <string name="search_address">Αναζήτηση διεύθυνσης</string>
+    <string name="no_duplicate_pois">Δεν βρέθηκαν διπλά σημεία ενδιαφέροντος</string>
+    <string name="keep">Κράτησε</string>
     <string name="fill_all_fields">Συμπλήρωσε όλα τα πεδία</string>
     <string name="seat_booked">Η θέση κλείστηκε!</string>
     <string name="seat_unavailable">Δεν υπάρχουν διαθέσιμες θέσεις.</string>
