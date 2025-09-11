@@ -34,7 +34,7 @@ class TransferRequestViewModel : ViewModel() {
         context: Context,
         routeId: String,
         date: Long,
-        cost: Double,
+        cost: Double?,
     ) {
         val passengerId = auth.currentUser?.uid ?: return
         val entity = TransferRequestEntity(

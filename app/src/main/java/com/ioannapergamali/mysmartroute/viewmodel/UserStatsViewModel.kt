@@ -50,7 +50,7 @@ class UserStatsViewModel(application: Application) : AndroidViewModel(applicatio
             _userSummaries.value = users.map { user ->
                 val userMovings = movingsByUser[user.id]?.filter { it.status == "completed" } ?: emptyList()
                 userMovings.forEach { it.routeName = routeMap[it.routeId]?.name ?: "" }
-                val totalCost = userMovings.sumOf { it.cost }
+                val totalCost = userMovings.sumOf { it.cost ?: 0.0 }
                 val passengerRatings = userMovings.mapNotNull { ratingMap[it.id]?.rating }
                 val passengerAvg = if (passengerRatings.isNotEmpty()) passengerRatings.average() else 0.0
                 val userVehicles = vehiclesByUser[user.id] ?: emptyList()

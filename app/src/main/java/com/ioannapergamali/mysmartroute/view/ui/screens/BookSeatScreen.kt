@@ -579,14 +579,14 @@ fun BookSeatScreen(
                                 routeId,
                                 startId,
                                 endId,
-                                Double.MAX_VALUE,
+                                null,
                                 dateMillis
                             )
                             transferRequestViewModel.submitRequest(
                                 context,
                                 routeId,
                                 dateMillis,
-                                Double.MAX_VALUE
+                                null
                             )
                             message = context.getString(R.string.request_sent)
                         }

@@ -444,7 +444,7 @@ fun RouteModeScreen(
                         }
                         val fromId = routePois[fromIdx].id
                         val toId = routePois[toIdx].id
-                        val cost = maxCostText.toDoubleOrNull() ?: Double.MAX_VALUE
+                        val cost = maxCostText.toDoubleOrNull()
                         val routeId = selectedRouteId ?: return@Button
                         val date = datePickerState.selectedDateMillis ?: 0L
 
@@ -453,7 +453,7 @@ fun RouteModeScreen(
                                 routeId +
                                 "&startId=" + fromId +
                                 "&endId=" + toId +
-                                "&maxCost=" + cost +
+                                "&maxCost=" + (cost?.toString() ?: "") +
                                 "&date=" + date
                         )
                     },
@@ -474,7 +474,7 @@ fun RouteModeScreen(
                             }
                             val fromId = routePois[fromIdx].id
                             val toId = routePois[toIdx].id
-                            val cost = maxCostText.toDoubleOrNull() ?: Double.MAX_VALUE
+                            val cost = maxCostText.toDoubleOrNull()
                             val date = datePickerState.selectedDateMillis ?: 0L
                             val routeId = saveEditedRouteAsNewRoute()
 

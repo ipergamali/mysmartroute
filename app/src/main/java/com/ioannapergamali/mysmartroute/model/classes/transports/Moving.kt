@@ -9,5 +9,5 @@ data class Moving(
     val id: String,
     val route: Route,
     val date: Int,
-    val cost: Double
+    val cost: Double?
 )

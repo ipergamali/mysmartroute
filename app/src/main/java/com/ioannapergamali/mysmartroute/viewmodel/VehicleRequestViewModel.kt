@@ -377,7 +377,7 @@ class VehicleRequestViewModel(
         routeId: String,
         fromPoiId: String,
         toPoiId: String,
-        maxCost: Double,
+        maxCost: Double?,
         date: Long,
         targetUserId: String? = null
     ) {

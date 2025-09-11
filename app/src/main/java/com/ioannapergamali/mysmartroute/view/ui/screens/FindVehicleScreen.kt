@@ -413,7 +413,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                         }
                         val fromId = routePois[fromIdx].id
                         val toId = routePois[toIdx].id
-                        val cost = maxCostText.toDoubleOrNull() ?: Double.MAX_VALUE
+                        val cost = maxCostText.toDoubleOrNull()
                         val routeId = selectedRouteId ?: return@Button
                         val date = System.currentTimeMillis()
 
@@ -422,7 +422,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                                 routeId +
                                 "&startId=" + fromId +
                                 "&endId=" + toId +
-                                "&maxCost=" + cost +
+                                "&maxCost=" + (cost?.toString() ?: "") +
                                 "&date="
                         )
                     },
@@ -443,7 +443,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                             }
                             val fromId = routePois[fromIdx].id
                             val toId = routePois[toIdx].id
-                            val cost = maxCostText.toDoubleOrNull() ?: Double.MAX_VALUE
+                            val cost = maxCostText.toDoubleOrNull()
                             val date = System.currentTimeMillis()
                             val routeId = saveEditedRouteAsNewRoute()
 
