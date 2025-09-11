@@ -1,14 +1,15 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
 import android.util.Log
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -105,27 +106,30 @@ private fun MovingCategory(title: String, list: List<MovingEntity>) {
 
 @Composable
 private fun MovingTable(list: List<MovingEntity>) {
-    Column(
-        modifier = Modifier.fillMaxWidth()
+    val scrollState = rememberScrollState()
+    Row(
+        modifier = Modifier.horizontalScroll(scrollState)
     ) {
-        Row(Modifier.fillMaxWidth()) {
-            TableHeaderCell(stringResource(R.string.route))
-            TableHeaderCell(stringResource(R.string.driver))
-            TableHeaderCell(stringResource(R.string.vehicle_name))
-            TableHeaderCell(stringResource(R.string.passenger))
-        }
-        Divider()
-        list.forEach { m ->
-
-            Log.d(TAG, "Γραμμή για μετακίνηση ${m.id} με status ${m.status}")
-
-            Row(Modifier.fillMaxWidth()) {
-                TableCell(m.routeName.ifBlank { "-" })
-                TableCell(m.driverName.ifBlank { "-" })
-                TableCell(m.vehicleName.ifBlank { "-" })
-                TableCell(m.createdByName.ifBlank { "-" })
+        Column {
+            Row {
+                TableHeaderCell(stringResource(R.string.route))
+                TableHeaderCell(stringResource(R.string.driver))
+                TableHeaderCell(stringResource(R.string.vehicle_name))
+                TableHeaderCell(stringResource(R.string.passenger))
             }
             Divider()
+            list.forEach { m ->
+
+                Log.d(TAG, "Γραμμή για μετακίνηση ${m.id} με status ${m.status}")
+
+                Row {
+                    TableCell(m.routeName.ifBlank { "-" })
+                    TableCell(m.driverName.ifBlank { "-" })
+                    TableCell(m.vehicleName.ifBlank { "-" })
+                    TableCell(m.createdByName.ifBlank { "-" })
+                }
+                Divider()
+            }
         }
     }
 }
