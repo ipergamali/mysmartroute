@@ -141,10 +141,14 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         }
     }
 
-    LaunchedEffect(routes, vehicles, selectedVehicle, selectedRouteId, selectedDriverId) {
-        val driverFiltered = selectedDriverId?.let { id ->
-            routes.filter { it.userId == id }
-        } ?: routes
+    LaunchedEffect(routes, vehicles, selectedVehicle, selectedRouteId, selectedDriverId, role) {
+        val driverFiltered = if (role == UserRole.ADMIN) {
+            routes
+        } else {
+            selectedDriverId?.let { id ->
+                routes.filter { it.userId == id }
+            } ?: routes
+        }
         displayRoutes = if (selectedVehicle == VehicleType.BIGBUS) {
             driverFiltered.filter { route ->
                 val pois = routeViewModel.getRoutePois(context, route.id)
@@ -158,7 +162,6 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         selectedDriverId?.let { id -> list = list.filter { it.userId == id } }
 
         filteredVehicles = list
-
 
         if (selectedRouteId != null && selectedVehicle != null) {
             refreshRoute()
