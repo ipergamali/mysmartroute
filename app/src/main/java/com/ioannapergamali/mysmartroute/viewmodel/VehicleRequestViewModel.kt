@@ -35,6 +35,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.util.Date
 import java.util.UUID
+import com.google.android.gms.maps.model.LatLng
+import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
+import com.ioannapergamali.mysmartroute.utils.MapsUtils
 
 data class PassengerRequest(
     val passengerId: String,
@@ -396,6 +399,22 @@ class VehicleRequestViewModel(
             }
             val id = UUID.randomUUID().toString()
             val requestNumber = getNextRequestNumber(context)
+
+            val routePoints = dbInstance.routePointDao().getPointsForRoute(routeId).first()
+            val poiDao = dbInstance.poIDao()
+            val pois = routePoints.mapNotNull { poiDao.findById(it.poiId) }
+            val fromIdx = pois.indexOfFirst { it.id == fromPoiId }
+            val toIdx = pois.indexOfFirst { it.id == toPoiId }
+            val segmentPois = if (fromIdx != -1 && toIdx != -1 && fromIdx < toIdx) {
+                pois.subList(fromIdx, toIdx + 1)
+            } else emptyList()
+            val durationMinutes = if (segmentPois.size >= 2) {
+                val origin = LatLng(segmentPois.first().lat, segmentPois.first().lng)
+                val destination = LatLng(segmentPois.last().lat, segmentPois.last().lng)
+                val waypoints = segmentPois.drop(1).dropLast(1).map { LatLng(it.lat, it.lng) }
+                val apiKey = MapsUtils.getApiKey(context)
+                MapsUtils.fetchDuration(origin, destination, apiKey, VehicleType.CAR, waypoints)
+            } else 0
             val entity = MovingEntity(
                 id = id,
                 routeId = routeId,
@@ -403,7 +422,7 @@ class VehicleRequestViewModel(
                 date = date,
                 vehicleId = "",
                 cost = maxCost,
-                durationMinutes = 0,
+                durationMinutes = durationMinutes,
                 startPoiId = fromPoiId,
                 endPoiId = toPoiId,
                 createdById = creatorId,
