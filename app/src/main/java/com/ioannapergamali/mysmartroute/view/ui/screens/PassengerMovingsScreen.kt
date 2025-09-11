@@ -32,6 +32,8 @@ import com.ioannapergamali.mysmartroute.data.local.categorizeMovings
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
+import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -42,11 +44,14 @@ private const val TAG = "PassengerMovingsScreen"
 @Composable
 fun PassengerMovingsScreen(navController: NavController, openDrawer: () -> Unit) {
     val viewModel: VehicleRequestViewModel = viewModel()
+    val authViewModel: AuthenticationViewModel = viewModel()
+    val role by authViewModel.currentUserRole.collectAsState()
     val movings by viewModel.movings.collectAsState()
     val context = LocalContext.current
 
-    LaunchedEffect(Unit) {
-        viewModel.loadPassengerMovings(context)
+    LaunchedEffect(role) {
+        val isAdmin = role == UserRole.ADMIN
+        viewModel.loadPassengerMovings(context, allUsers = isAdmin)
     }
 
 
