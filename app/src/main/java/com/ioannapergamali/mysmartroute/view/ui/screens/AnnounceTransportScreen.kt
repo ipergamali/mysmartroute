@@ -58,6 +58,7 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberTimePickerState
@@ -116,7 +117,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     }
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = todayMillis,
-        selectableDates = object : DatePickerState.SelectableDates {
+        selectableDates = object : SelectableDates {
             override fun isSelectableDate(utcTimeMillis: Long): Boolean =
                 utcTimeMillis >= todayMillis
         }
