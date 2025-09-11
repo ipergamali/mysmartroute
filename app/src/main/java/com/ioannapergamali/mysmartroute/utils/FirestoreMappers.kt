@@ -369,7 +369,8 @@ fun TransportDeclarationEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     // Χρησιμοποιούμε αναφορές εγγράφων για οδηγό και διαδρομή
     "routeId" to FirebaseFirestore.getInstance().collection("routes").document(routeId),
     "driverId" to FirebaseFirestore.getInstance().collection("users").document(driverId),
-    "vehicleId" to vehicleId,
+    // Αποθηκεύουμε το όχημα ως αναφορά στο έγγραφο του οχήματος
+    "vehicleId" to FirebaseFirestore.getInstance().collection("vehicles").document(vehicleId),
     "vehicleType" to vehicleType,
     "cost" to cost,
     "durationMinutes" to durationMinutes,
