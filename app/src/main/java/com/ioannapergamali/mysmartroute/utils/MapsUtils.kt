@@ -46,6 +46,15 @@ object MapsUtils {
         val status: String
     )
 
+    /**
+     * Απλή αναπαράσταση μιας στάσης λεωφορείου με όνομα και συντεταγμένες.
+     * Simple representation of a bus stop with a name and coordinates.
+     */
+    data class TransitStop(
+        val name: String,
+        val location: LatLng
+    )
+
     private fun decodePolyline(encoded: String): List<LatLng> {
         val poly = mutableListOf<LatLng>()
         var index = 0
@@ -232,6 +241,53 @@ object MapsUtils {
         } catch (e: IOException) {
             Log.e(TAG, "Directions request failed", e)
             return@withContext DirectionsData(0, emptyList(), "EXCEPTION")
+        }
+    }
+
+    /**
+     * Επιστρέφει όλες τις στάσεις λεωφορείου που περιλαμβάνονται σε μία διαδρομή μετακίνησης.
+     * Returns all bus stops included in a transit route.
+     */
+    suspend fun fetchTransitStops(
+        origin: LatLng,
+        destination: LatLng,
+        apiKey: String,
+        waypoints: List<LatLng> = emptyList()
+    ): List<TransitStop> = withContext(Dispatchers.IO) {
+        val request = Request.Builder().url(
+            buildDirectionsUrl(origin, destination, apiKey, VehicleType.BIGBUS, waypoints)
+        ).build()
+        try {
+            client.newCall(request).execute().use { response ->
+                val body = response.body?.string() ?: return@withContext emptyList()
+                if (!response.isSuccessful) return@withContext emptyList()
+                val json = JSONObject(body)
+                val routes = json.optJSONArray("routes") ?: return@withContext emptyList()
+                if (routes.length() == 0) return@withContext emptyList()
+                val legs = routes.getJSONObject(0).optJSONArray("legs") ?: return@withContext emptyList()
+                val stops = mutableListOf<TransitStop>()
+                for (i in 0 until legs.length()) {
+                    val steps = legs.getJSONObject(i).optJSONArray("steps") ?: continue
+                    for (j in 0 until steps.length()) {
+                        val step = steps.getJSONObject(j)
+                        val transit = step.optJSONObject("transit_details") ?: continue
+                        listOf("departure_stop", "arrival_stop").forEach { key ->
+                            val obj = transit.optJSONObject(key)
+                            val loc = obj?.optJSONObject("location")
+                            if (obj != null && loc != null) {
+                                val name = obj.optString("name")
+                                val lat = loc.optDouble("lat")
+                                val lng = loc.optDouble("lng")
+                                stops.add(TransitStop(name, LatLng(lat, lng)))
+                            }
+                        }
+                    }
+                }
+                stops
+            }
+        } catch (e: IOException) {
+            Log.e(TAG, "Transit stops request failed", e)
+            emptyList()
         }
     }
 
