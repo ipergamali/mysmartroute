@@ -38,7 +38,7 @@ class UserStatsViewModel(application: Application) : AndroidViewModel(applicatio
             val users = db.userDao().getAllUsers().first()
             val movings = db.movingDao().getAll().first()
             val ratings = db.tripRatingDao().getAll().first()
-            val vehicles = db.vehicleDao().getAllVehicles().first()
+            val vehicles = db.vehicleDao().getVehicles().first()
             val routes = db.routeDao().getAll().first()
 
             val ratingMap = ratings.associateBy { it.movingId }

@@ -17,7 +17,7 @@ interface VehicleDao {
     fun getVehiclesForUser(userId: String): Flow<List<VehicleEntity>>
 
     @Query("SELECT * FROM vehicles")
-    fun getAllVehicles(): Flow<List<VehicleEntity>>
+    fun getVehicles(): Flow<List<VehicleEntity>>
 
     @Query("SELECT * FROM vehicles WHERE id = :id LIMIT 1")
     suspend fun getVehicle(id: String): VehicleEntity?

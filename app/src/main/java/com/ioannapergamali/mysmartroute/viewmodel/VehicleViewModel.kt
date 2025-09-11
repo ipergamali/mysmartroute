@@ -176,7 +176,7 @@ class VehicleViewModel : ViewModel() {
             if (vehicleId.isBlank()) return@launch
             if (_vehicles.value.any { it.id == vehicleId }) return@launch
 
-            val dbLocal = MySmartRouteDatabase.getInstance(context)
+            val dbLocal = MySmartRouteDatabase.getInstance(context.applicationContext)
             val vehicleDao = dbLocal.vehicleDao()
 
             val local = vehicleDao.getVehicle(vehicleId)
@@ -204,7 +204,7 @@ class VehicleViewModel : ViewModel() {
     private fun getRepository(context: Context): VehicleRepository {
         val existing = repository
         if (existing != null) return existing
-        val dbLocal = MySmartRouteDatabase.getInstance(context)
+        val dbLocal = MySmartRouteDatabase.getInstance(context.applicationContext)
         return VehicleRepository(dbLocal, db).also { repo ->
             repository = repo
             repo.startSync(viewModelScope)
