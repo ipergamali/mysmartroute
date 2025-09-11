@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.TwoWheeler
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -141,6 +142,9 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     }
     var pois by remember { mutableStateOf<List<PoIEntity>>(emptyList()) }
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
+    var startIndex by remember { mutableStateOf<Int?>(null) }
+    var endIndex by remember { mutableStateOf<Int?>(null) }
+    var message by remember { mutableStateOf("") }
     val cameraPositionState = rememberCameraPositionState()
     val apiKey = MapsUtils.getApiKey(context)
     val isKeyMissing = apiKey.isBlank()
@@ -151,15 +155,18 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         if (rId != null && vehicle != null) {
             scope.launch {
                 calculating = true
-                val poisList = if ((vehicle == VehicleType.BIGBUS || vehicle == VehicleType.SMALLBUS) && routeHasBusStations) {
-                    routeViewModel.getRouteBusStations(context, rId)
-                } else {
-                    routeViewModel.getRoutePois(context, rId)
-                }
+                val poisList = routeViewModel.getRoutePois(context, rId)
                 pois = poisList
-                val (dur, path) = routeViewModel.getRouteDirections(context, rId, vehicle)
-                duration = dur
-                pathPoints = if (path.isNotEmpty()) path else poisList.map { LatLng(it.lat, it.lng) }
+                val fromIdx = startIndex ?: 0
+                val toIdx = endIndex ?: poisList.lastIndex
+                val origin = LatLng(poisList[fromIdx].lat, poisList[fromIdx].lng)
+                val destination = LatLng(poisList[toIdx].lat, poisList[toIdx].lng)
+                val waypoints = if (toIdx - fromIdx > 1) {
+                    poisList.subList(fromIdx + 1, toIdx).map { LatLng(it.lat, it.lng) }
+                } else emptyList()
+                val data = MapsUtils.fetchDurationAndPath(origin, destination, apiKey, vehicle, waypoints)
+                duration = data.duration
+                pathPoints = if (data.points.isNotEmpty()) data.points else poisList.map { LatLng(it.lat, it.lng) }
                 pathPoints.firstOrNull()?.let { first ->
                     cameraPositionState.move(CameraUpdateFactory.newLatLngZoom(first, 13f))
                 }
@@ -310,6 +317,9 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                             selectedVehicleName = ""
                             selectedVehicleDescription = ""
                             selectedVehicleSeats = 0
+                            startIndex = null
+                            endIndex = null
+                            message = ""
                             scope.launch {
                                 routeHasBusStations = routeViewModel.hasBusStations(context, route.id)
                             }
@@ -401,7 +411,10 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     }
                     Divider()
                     pois.forEachIndexed { index, poi ->
-                        Row(modifier = Modifier.fillMaxWidth()) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
                             Text(
                                 "${index + 1}. ${poi.name}",
                                 modifier = Modifier.weight(1f)
@@ -410,11 +423,83 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                 poi.type.name,
                                 modifier = Modifier.weight(1f)
                             )
+                            IconButton(onClick = {
+                                if (endIndex == null || index < endIndex!!) {
+                                    startIndex = index
+                                    refreshRoute()
+                                } else {
+                                    message = context.getString(R.string.invalid_stop_order)
+                                }
+                            }) {
+                                Text("\uD83C\uDD95")
+                            }
+                            IconButton(onClick = {
+                                if (startIndex == null || index > startIndex!!) {
+                                    endIndex = index
+                                    refreshRoute()
+                                } else {
+                                    message = context.getString(R.string.invalid_stop_order)
+                                }
+                            }) {
+                                Text("\uD83D\uDD1A")
+                            }
                         }
                     }
                 }
 
                 Spacer(Modifier.height(16.dp))
+
+                OutlinedTextField(
+                    value = startIndex?.let { "${it + 1}. ${pois[it].name}" } ?: "",
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text(stringResource(R.string.boarding_stop)) },
+                    leadingIcon = { Text("\uD83C\uDD95") },
+                    trailingIcon = {
+                        IconButton(onClick = {
+                            startIndex = null
+                            refreshRoute()
+                        }) {
+                            Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.clear_selection))
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.small,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                    )
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                OutlinedTextField(
+                    value = endIndex?.let { "${it + 1}. ${pois[it].name}" } ?: "",
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text(stringResource(R.string.dropoff_stop)) },
+                    leadingIcon = { Text("\uD83D\uDD1A") },
+                    trailingIcon = {
+                        IconButton(onClick = {
+                            endIndex = null
+                            refreshRoute()
+                        }) {
+                            Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.clear_selection))
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.small,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                    )
+                )
+
+                Spacer(Modifier.height(16.dp))
+                if (message.isNotBlank()) {
+                    Text(message)
+                    Spacer(Modifier.height(16.dp))
+                }
             }
 
             Button(onClick = { showDatePicker = true }) {
@@ -543,7 +628,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         }
                     }
                 },
-                enabled = selectedRouteId != null && selectedVehicle != null && !calculating
+                enabled = selectedRouteId != null && selectedVehicle != null && startIndex != null && endIndex != null && !calculating
             ) {
                 Text(stringResource(R.string.announce))
             }
