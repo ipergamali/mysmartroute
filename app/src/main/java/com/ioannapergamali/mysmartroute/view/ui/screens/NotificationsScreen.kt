@@ -1,5 +1,7 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -99,6 +101,10 @@ fun NotificationsScreen(navController: NavController, openDrawer: () -> Unit) {
     }
 
     val messages = systemNotifications.map { it.message } + requestMessages
+    val requestScreen = when (role) {
+        UserRole.DRIVER -> "viewTransportRequests"
+        else -> "viewRequests"
+    }
 
     Scaffold(
         topBar = {
@@ -116,7 +122,12 @@ fun NotificationsScreen(navController: NavController, openDrawer: () -> Unit) {
             } else {
                 LazyColumn {
                     items(messages) { msg ->
-                        Text(msg)
+                        Text(
+                            msg,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { navController.navigate(requestScreen) }
+                        )
                         Divider()
                     }
                 }
