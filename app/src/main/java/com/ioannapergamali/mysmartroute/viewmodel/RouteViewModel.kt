@@ -9,6 +9,7 @@ import android.util.Log
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.RouteEntity
 import com.ioannapergamali.mysmartroute.data.local.RoutePointEntity
+import com.ioannapergamali.mysmartroute.data.local.RouteBusStationEntity
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.model.Walk
 import com.ioannapergamali.mysmartroute.repository.AdminWalkRepository
@@ -227,28 +228,47 @@ class RouteViewModel : ViewModel() {
      * Προσθέτει νέα διαδρομή με τα δοθέντα σημεία και όνομα.
      * Adds a new route with the provided points and name.
      */
-    suspend fun addRoute(context: Context, poiIds: List<String>, name: String): String? {
+    suspend fun addRoute(
+        context: Context,
+        poiIds: List<String>,
+        name: String,
+        busPoiIds: List<String> = emptyList()
+    ): String? {
         if (poiIds.size < 2 || name.isBlank()) return null
         val db = MySmartRouteDatabase.getInstance(context)
         val routeDao = db.routeDao()
         val pointDao = db.routePointDao()
+        val busDao = db.routeBusStationDao()
 
         val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return null
         val id = UUID.randomUUID().toString()
         val entity = RouteEntity(id, userId, name, poiIds.first(), poiIds.last())
         val points = poiIds.mapIndexed { index, p -> RoutePointEntity(id, index, p) }
+        val busStations = busPoiIds.mapIndexed { index, p -> RouteBusStationEntity(id, index, p) }
 
         runCatching {
-            firestore.collection("routes")
-                .document(id)
-                .set(entity.toFirestoreMap(points))
-                .await()
+            val routeRef = firestore.collection("routes").document(id)
+            routeRef.set(entity.toFirestoreMap(points)).await()
+            if (busStations.isNotEmpty()) {
+                val busCol = routeRef.collection("bus_stations")
+                busStations.forEach { station ->
+                    busCol.document(station.position.toString())
+                        .set(
+                            mapOf(
+                                "poi" to firestore.collection("pois").document(station.poiId),
+                                "position" to station.position
+                            )
+                        )
+                        .await()
+                }
+            }
         }.onFailure { e ->
             Log.e("RouteViewModel", "Αποτυχία αποθήκευσης στο Firestore", e)
         }
 
         routeDao.insert(entity)
         points.forEach { pointDao.insert(it) }
+        busStations.forEach { busDao.insert(it) }
 
         return id
     }
@@ -274,12 +294,14 @@ class RouteViewModel : ViewModel() {
         context: Context,
         routeId: String,
         poiIds: List<String>,
-        newName: String? = null
+        newName: String? = null,
+        busPoiIds: List<String> = emptyList()
     ) {
         if (routeId.isBlank() || poiIds.size < 2) return
         val db = MySmartRouteDatabase.getInstance(context)
         val routeDao = db.routeDao()
         val pointDao = db.routePointDao()
+        val busDao = db.routeBusStationDao()
 
         val existing = routeDao.findById(routeId) ?: return
         val updated = existing.copy(
@@ -288,14 +310,31 @@ class RouteViewModel : ViewModel() {
             endPoiId = poiIds.last()
         )
         val points = poiIds.mapIndexed { index, p -> RoutePointEntity(routeId, index, p) }
+        val busStations = busPoiIds.mapIndexed { index, p -> RouteBusStationEntity(routeId, index, p) }
 
         if (NetworkUtils.isInternetAvailable(context)) {
-            firestore.collection("routes").document(routeId).set(updated.toFirestoreMap(points)).await()
+            val routeRef = firestore.collection("routes").document(routeId)
+            routeRef.set(updated.toFirestoreMap(points)).await()
+            val busCol = routeRef.collection("bus_stations")
+            val existingBus = busCol.get().await()
+            existingBus.documents.forEach { it.reference.delete().await() }
+            busStations.forEach { station ->
+                busCol.document(station.position.toString())
+                    .set(
+                        mapOf(
+                            "poi" to firestore.collection("pois").document(station.poiId),
+                            "position" to station.position
+                        )
+                    )
+                    .await()
+            }
         }
 
         routeDao.insert(updated)
         pointDao.deletePointsForRoute(routeId)
         points.forEach { pointDao.insert(it) }
+        busDao.deleteStationsForRoute(routeId)
+        busStations.forEach { busDao.insert(it) }
     }
 
     /**
