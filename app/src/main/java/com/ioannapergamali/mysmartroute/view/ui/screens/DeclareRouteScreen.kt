@@ -82,12 +82,15 @@ import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.model.classes.poi.PoiAddress
 import com.google.android.libraries.places.api.model.Place
+import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
+import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import kotlinx.coroutines.launch
 import com.ioannapergamali.mysmartroute.view.ui.util.observeBubble
 import com.ioannapergamali.mysmartroute.view.ui.util.LocalKeyboardBubbleState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.tasks.await
 import java.util.UUID
 import kotlin.math.abs
 
@@ -607,6 +610,14 @@ fun DeclareRouteScreen(navController: NavController, openDrawer: () -> Unit) {
                                             lng = stop.location.longitude
                                         )
                                         dao.insert(newPoi)
+                                        try {
+                                            FirebaseFirestore.getInstance()
+                                                .collection("pois")
+                                                .document(newPoi.id)
+                                                .set(newPoi.toFirestoreMap())
+                                                .await()
+                                        } catch (_: Exception) {
+                                        }
                                         newPoi
                                     }
                                     routeViewModel.addPoiToCurrentRoute(poi)
