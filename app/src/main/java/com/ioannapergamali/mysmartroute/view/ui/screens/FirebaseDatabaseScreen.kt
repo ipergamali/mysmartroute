@@ -1,10 +1,13 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -48,7 +51,9 @@ fun FirebaseDatabaseScreen(navController: NavController, openDrawer: () -> Unit)
             }
         } else {
             ScreenContainer(modifier = Modifier.padding(padding), scrollable = false) {
-                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                val scrollState = rememberScrollState()
+                Box(modifier = Modifier.horizontalScroll(scrollState)) {
+                    LazyColumn(modifier = Modifier.fillMaxWidth()) {
                 item { Text("Users", style = MaterialTheme.typography.titleMedium) }
                 items(data!!.users) { user ->
                     Text("ID: ${user.id}, ${user.name} ${user.surname}, ${user.username}")
@@ -56,7 +61,10 @@ fun FirebaseDatabaseScreen(navController: NavController, openDrawer: () -> Unit)
                 item { Spacer(modifier = Modifier.padding(8.dp)) }
                 item { Text("Vehicles", style = MaterialTheme.typography.titleMedium) }
                 items(data!!.vehicles) { vehicle ->
-                    Text("${vehicle.description}, τύπος ${vehicle.type}, θέσεις ${vehicle.seat}")
+                    Text(
+                        "${vehicle.description}, τύπος ${vehicle.type}, θέσεις ${vehicle.seat}, user:${vehicle.userId}",
+                        softWrap = false
+                    )
                 }
                 item { Spacer(modifier = Modifier.padding(8.dp)) }
                 item { Text("Poi Types", style = MaterialTheme.typography.titleMedium) }
