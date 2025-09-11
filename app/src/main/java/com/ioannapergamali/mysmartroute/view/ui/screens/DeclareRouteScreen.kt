@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DirectionsBus
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -560,6 +561,30 @@ fun DeclareRouteScreen(navController: NavController, openDrawer: () -> Unit) {
                         }
                     }
                 }) { Icon(Icons.Default.Directions, contentDescription = null) }
+                IconButton(onClick = {
+                    val ids = routePois.map { it.id }
+                    if (ids.size >= 2) {
+                        calculating = true
+                        scope.launch {
+                            val start = LatLng(routePois.first().lat, routePois.first().lng)
+                            val end = LatLng(routePois.last().lat, routePois.last().lng)
+                            val waypoints = routePois.drop(1).dropLast(1).map { LatLng(it.lat, it.lng) }
+                            val data = MapsUtils.fetchDurationAndPath(
+                                start,
+                                end,
+                                apiKey,
+                                VehicleType.BIGBUS,
+                                waypoints
+                            )
+                            if (data.status == "OK") {
+                                pathPoints.clear()
+                                pathPoints.addAll(data.points)
+                                routeSaved = false
+                            }
+                            calculating = false
+                        }
+                    }
+                }) { Icon(Icons.Default.DirectionsBus, contentDescription = stringResource(R.string.bus_only)) }
             }
 
             Spacer(Modifier.height(8.dp))
