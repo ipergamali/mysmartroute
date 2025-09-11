@@ -813,6 +813,12 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_62_63 = object : Migration(62, 63) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                // Καμία αλλαγή στο schema αλλά απαιτείται migration για να διατηρηθούν τα δεδομένα
+            }
+        }
+
         private fun prepopulate(db: SupportSQLiteDatabase) {
             Log.d(TAG, "Prepopulating database")
             db.execSQL(
@@ -954,9 +960,9 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_57_58,
                     MIGRATION_59_60,
                     MIGRATION_60_61,
-                    MIGRATION_61_62
+                    MIGRATION_61_62,
+                    MIGRATION_62_63
                 )
-                    .fallbackToDestructiveMigration()
                     .addCallback(object : RoomDatabase.Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {
                             prepopulate(db)
