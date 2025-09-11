@@ -228,6 +228,28 @@ class RouteViewModel : ViewModel() {
     }
 
     /**
+     * Επιστρέφει μόνο τις στάσεις λεωφορείου μιας διαδρομής.
+     * Returns only the bus stations of a route.
+     */
+    suspend fun getRouteBusStations(context: Context, routeId: String): List<PoIEntity> {
+        val db = MySmartRouteDatabase.getInstance(context)
+        val busDao = db.routeBusStationDao()
+        val poiDao = db.poIDao()
+        val stations = busDao.getStationsForRoute(routeId).first()
+        return stations.mapNotNull { poiDao.findById(it.poiId) }
+    }
+
+    /**
+     * Ελέγχει αν μια διαδρομή περιέχει καθόλου στάσεις λεωφορείου.
+     * Checks whether a route contains any bus stations.
+     */
+    suspend fun hasBusStations(context: Context, routeId: String): Boolean {
+        val db = MySmartRouteDatabase.getInstance(context)
+        val busDao = db.routeBusStationDao()
+        return busDao.getStationsForRoute(routeId).first().isNotEmpty()
+    }
+
+    /**
      * Προσθέτει νέα διαδρομή με τα δοθέντα σημεία και όνομα.
      * Adds a new route with the provided points and name.
      */

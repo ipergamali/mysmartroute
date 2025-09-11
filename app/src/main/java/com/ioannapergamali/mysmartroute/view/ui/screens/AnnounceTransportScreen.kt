@@ -18,7 +18,6 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.Alignment
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.compose.foundation.clickable
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
@@ -41,7 +40,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import android.widget.Toast
 import com.ioannapergamali.mysmartroute.data.local.RouteEntity
 import com.ioannapergamali.mysmartroute.data.local.VehicleEntity
-import com.google.android.libraries.places.api.model.Place
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.view.ui.util.observeBubble
 import com.ioannapergamali.mysmartroute.view.ui.util.LocalKeyboardBubbleState
@@ -94,6 +92,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     val vehicles by vehicleViewModel.vehicles.collectAsState()
     val drivers by userViewModel.drivers.collectAsState()
     var filteredVehicles by remember { mutableStateOf<List<VehicleEntity>>(emptyList()) }
+    var routeHasBusStations by remember { mutableStateOf(false) }
 
     var displayRoutes by remember { mutableStateOf<List<RouteEntity>>(emptyList()) }
 
@@ -152,7 +151,11 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         if (rId != null && vehicle != null) {
             scope.launch {
                 calculating = true
-                val poisList = routeViewModel.getRoutePois(context, rId)
+                val poisList = if ((vehicle == VehicleType.BIGBUS || vehicle == VehicleType.SMALLBUS) && routeHasBusStations) {
+                    routeViewModel.getRouteBusStations(context, rId)
+                } else {
+                    routeViewModel.getRoutePois(context, rId)
+                }
                 pois = poisList
                 val (dur, path) = routeViewModel.getRouteDirections(context, rId, vehicle)
                 duration = dur
@@ -165,7 +168,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         }
     }
 
-    LaunchedEffect(routes, vehicles, selectedVehicle, selectedRouteId, selectedDriverId, role) {
+    LaunchedEffect(routes, selectedVehicle, selectedRouteId, selectedDriverId, role) {
         val driverFiltered = if (role == UserRole.ADMIN) {
             routes
         } else {
@@ -173,22 +176,20 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 routes.filter { it.userId == id }
             } ?: routes
         }
-        displayRoutes = if (selectedVehicle == VehicleType.BIGBUS) {
-            driverFiltered.filter { route ->
-                val pois = routeViewModel.getRoutePois(context, route.id)
-                pois.isNotEmpty() && pois.all { it.type == Place.Type.BUS_STATION }
-            }
-        } else {
-            driverFiltered
-        }
-
-        var list = vehicles
-        selectedDriverId?.let { id -> list = list.filter { it.userId == id } }
-
-        filteredVehicles = list
+        displayRoutes = driverFiltered
 
         if (selectedRouteId != null && selectedVehicle != null) {
             refreshRoute()
+        }
+    }
+
+    LaunchedEffect(vehicles, selectedDriverId, routeHasBusStations) {
+        var list = vehicles
+        selectedDriverId?.let { id -> list = list.filter { it.userId == id } }
+        filteredVehicles = if (routeHasBusStations) {
+            list.filter { it.type == VehicleType.BIGBUS.name || it.type == VehicleType.SMALLBUS.name }
+        } else {
+            list
         }
     }
 
@@ -268,8 +269,11 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                 expandedDriver = false
                                 selectedRouteId = null
                                 selectedVehicle = null
+                                selectedVehicleId = ""
                                 selectedVehicleName = ""
                                 selectedVehicleDescription = ""
+                                selectedVehicleSeats = 0
+                                routeHasBusStations = false
                                 vehicleViewModel.loadRegisteredVehicles(context, userId = driver.id)
                             })
                         }
@@ -301,7 +305,14 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         DropdownMenuItem(text = { Text(route.name) }, onClick = {
                             selectedRouteId = route.id
                             expandedRoute = false
-                            refreshRoute()
+                            selectedVehicle = null
+                            selectedVehicleId = ""
+                            selectedVehicleName = ""
+                            selectedVehicleDescription = ""
+                            selectedVehicleSeats = 0
+                            scope.launch {
+                                routeHasBusStations = routeViewModel.hasBusStations(context, route.id)
+                            }
                         })
                     }
                 }
