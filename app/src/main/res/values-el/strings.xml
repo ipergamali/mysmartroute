@@ -74,7 +74,7 @@
     <string name="exit">Έξοδος</string>
     <string name="credits">Ευχαριστίες</string>
     <string name="support_email">Email: smartroute@info.gr</string>
-    <string name="support_address">Address: Πάροδος Κρήτης 8, Γάζι, ΤΚ 71414</string>
+    <string name="support_address">Διεύθυνση: Πάροδος Κρήτης 8, Γάζι, ΤΚ 71414</string>
     <!-- Ονομασίες ρόλων -->
     <string name="role_passenger">Επιβάτης</string>
     <string name="role_driver">Οδηγός</string>

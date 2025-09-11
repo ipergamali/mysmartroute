@@ -53,6 +53,9 @@ import com.ioannapergamali.mysmartroute.utils.offsetPois
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.rememberDatePickerState
@@ -107,15 +110,35 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     var costText by remember { mutableStateOf("") }
     var duration by remember { mutableStateOf(0) }
     var calculating by remember { mutableStateOf(false) }
-    val datePickerState = rememberDatePickerState()
+    val now = LocalDateTime.now()
+    val todayMillis = remember {
+        LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+    }
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = todayMillis,
+        selectableDates = object : SelectableDates {
+            override fun isSelectableDate(utcTimeMillis: Long): Boolean =
+                utcTimeMillis >= todayMillis
+        }
+    )
     var showDatePicker by remember { mutableStateOf(false) }
     val dateFormatter = remember { DateTimeFormatter.ofPattern("dd/MM/yyyy") }
     val selectedDateText = datePickerState.selectedDateMillis?.let { millis ->
         Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter)
     } ?: stringResource(R.string.select_date)
-    val timePickerState = rememberTimePickerState()
+    val timePickerState = rememberTimePickerState(
+        initialHour = now.hour,
+        initialMinute = now.minute
+    )
     var showTimePicker by remember { mutableStateOf(false) }
     val selectedTimeText = String.format("%02d:%02d", timePickerState.hour, timePickerState.minute)
+    LaunchedEffect(datePickerState.selectedDateMillis) {
+        if (datePickerState.selectedDateMillis == todayMillis) {
+            val currentTime = LocalTime.now()
+            timePickerState.hour = currentTime.hour
+            timePickerState.minute = currentTime.minute
+        }
+    }
     var pois by remember { mutableStateOf<List<PoIEntity>>(emptyList()) }
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     val cameraPositionState = rememberCameraPositionState()
@@ -413,7 +436,22 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 AlertDialog(
                     onDismissRequest = { showTimePicker = false },
                     confirmButton = {
-                        TextButton(onClick = { showTimePicker = false }) {
+                        TextButton(onClick = {
+                            val selectedDateMillis = datePickerState.selectedDateMillis ?: todayMillis
+                            val selectedDate = Instant.ofEpochMilli(selectedDateMillis)
+                                .atZone(ZoneId.systemDefault()).toLocalDate()
+                            val selectedTime = LocalTime.of(timePickerState.hour, timePickerState.minute)
+                            val chosenDateTime = LocalDateTime.of(selectedDate, selectedTime)
+                            if (chosenDateTime.isBefore(LocalDateTime.now())) {
+                                Toast.makeText(
+                                    context,
+                                    R.string.invalid_datetime,
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            } else {
+                                showTimePicker = false
+                            }
+                        }) {
                             Text(stringResource(android.R.string.ok))
                         }
                     },
@@ -455,9 +493,20 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     val vehicle = selectedVehicle
                     val cost = costText.toDoubleOrNull() ?: 0.0
                     val date = datePickerState.selectedDateMillis ?: 0L
-                    val startTime = (timePickerState.hour * 60 + timePickerState.minute) * 60_000L
+                    val selectedDate = Instant.ofEpochMilli(date).atZone(ZoneId.systemDefault()).toLocalDate()
+                    val selectedTime = LocalTime.of(timePickerState.hour, timePickerState.minute)
+                    val chosenDateTime = LocalDateTime.of(selectedDate, selectedTime)
                     val driverId = selectedDriverId ?: ""
                     if (routeId != null && vehicle != null) {
+                        if (chosenDateTime.isBefore(LocalDateTime.now())) {
+                            Toast.makeText(
+                                context,
+                                R.string.invalid_datetime,
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            return@Button
+                        }
+                        val startTime = (timePickerState.hour * 60 + timePickerState.minute) * 60_000L
                         scope.launch {
                             val success = declarationViewModel.declareTransport(
                                 context,

@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.style.TextAlign
 import com.ioannapergamali.mysmartroute.BuildConfig
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
@@ -36,26 +37,48 @@ fun AboutScreen(navController: NavController, openDrawer: () -> Unit) {
             ) {
                 LogoImage(
                     drawableRes = LogoAssets.COMPANY,
-                    contentDescription = "Company logo"
+                    contentDescription = "Λογότυπο εταιρείας"
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
                     text = stringResource(R.string.credits),
-                    style = MaterialTheme.typography.titleLarge
+                    style = MaterialTheme.typography.titleLarge,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Text("Developer: Ιωάννα Περγάμαλη")
-                Text("Version: ${BuildConfig.VERSION_NAME}")
+                Text(
+                    text = "Προγραμματίστρια: Ιωάννα Περγάμαλη",
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Text(
+                    text = "Έκδοση: ${BuildConfig.VERSION_NAME}",
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Text("Company: JOPE")
-                Text("Address: Πάροδος Κρήτης 8, Γάζι, ΤΚ 71414")
-                Text("Repository: https://github.com/ipergamali/mysmartroute.git")
+                Text(
+                    text = "Εταιρεία: JOPE",
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Text(
+                    text = "Διεύθυνση: Πάροδος Κρήτης 8, Γάζι, ΤΚ 71414",
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Text(
+                    text = "Αποθετήριο: https://github.com/ipergamali/mysmartroute.git",
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         }
     }
