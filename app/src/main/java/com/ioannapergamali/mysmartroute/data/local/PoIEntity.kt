@@ -10,6 +10,7 @@ import androidx.room.PrimaryKey
 import androidx.room.Embedded
 import com.ioannapergamali.mysmartroute.model.classes.poi.PoiAddress
 import com.google.android.libraries.places.api.model.Place
+import com.ioannapergamali.mysmartroute.model.interfaces.PoI
 
 @Entity(
     tableName = "pois",
@@ -27,10 +28,10 @@ import com.google.android.libraries.places.api.model.Place
     ]
 )
 data class PoIEntity(
-    @PrimaryKey val id: String = "",
-    val name: String = "",
-    @Embedded val address: PoiAddress = PoiAddress(),
-    @ColumnInfo(name = "typeId") val type: Place.Type = Place.Type.ESTABLISHMENT,
+    @PrimaryKey override val id: String = "",
+    override val name: String = "",
+    @Embedded override val address: PoiAddress = PoiAddress(),
+    @ColumnInfo(name = "typeId") override val type: Place.Type = Place.Type.ESTABLISHMENT,
     val lat: Double = 0.0,
     val lng: Double = 0.0
-)
+) : PoI
