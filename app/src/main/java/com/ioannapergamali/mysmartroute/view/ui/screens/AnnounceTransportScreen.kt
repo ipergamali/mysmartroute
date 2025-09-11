@@ -58,6 +58,10 @@ import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberTimePickerState
+import com.ioannapergamali.mysmartroute.model.classes.routes.RouteSegment
+import com.ioannapergamali.mysmartroute.model.classes.routes.ComplexRoute
+import com.ioannapergamali.mysmartroute.model.classes.routes.DriverInfo
+import com.ioannapergamali.mysmartroute.model.classes.routes.declareDriverAvailability
 
 private fun iconForVehicle(type: VehicleType): ImageVector = when (type) {
     VehicleType.CAR, VehicleType.TAXI -> Icons.Default.DirectionsCar
@@ -456,13 +460,41 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     val cost = costText.toDoubleOrNull() ?: 0.0
                     val date = datePickerState.selectedDateMillis ?: 0L
                     val startTime = (timePickerState.hour * 60 + timePickerState.minute) * 60_000L
-                    val driverId = selectedDriverId ?: ""
+                    val driverId = selectedDriverId
                     if (routeId != null && vehicle != null) {
+                        if (vehicle == VehicleType.BIGBUS || vehicle == VehicleType.SMALLBUS) {
+                            val startPoi = pois.firstOrNull()
+                            val endPoi = pois.lastOrNull()
+                            if (startPoi != null && endPoi != null && driverId != null) {
+                                val segment = RouteSegment.Bus(
+                                    startPoi,
+                                    endPoi,
+                                    DriverInfo(
+                                        driverId = driverId,
+                                        driverName = selectedDriverName,
+                                        busId = selectedVehicleId,
+                                        busType = vehicle
+                                    )
+                                )
+                                val availability = declareDriverAvailability(
+                                    setOf(driverId),
+                                    ComplexRoute(listOf(segment))
+                                )
+                                if (availability.any { !it.isAvailable }) {
+                                    Toast.makeText(
+                                        context,
+                                        R.string.declare_failure,
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                    return@Button
+                                }
+                            }
+                        }
                         scope.launch {
                             val success = declarationViewModel.declareTransport(
                                 context,
                                 routeId,
-                                driverId,
+                                driverId ?: "",
                                 selectedVehicleId,
                                 vehicle,
                                 selectedVehicleSeats,
