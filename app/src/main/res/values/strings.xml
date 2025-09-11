@@ -210,6 +210,7 @@
     <string name="add_poi_option">Add POI</string>
     <string name="select_date">Select date</string>
     <string name="select_time">Select time</string>
+    <string name="invalid_datetime">Η ημερομηνία ή ώρα πρέπει να είναι μεταγενέστερη από το τώρα</string>
     <string name="select_vehicle">Select vehicle</string>
     <string name="select_pois_screen_title">Save interesting points of interest</string>
     <string name="choose_pois">Choose points of interest</string>
