@@ -127,7 +127,7 @@
     <string name="edit_privileges">Αλλαγή δικαιωμάτων χρήστη</string>
     <string name="define_poi">Ορισμός σημείου ενδιαφέροντος</string>
     <string name="define_duration">Ορισμός διάρκειας μετακίνησης με τα πόδια</string>
-    <string name="view_unassigned">Προβολή μη εκχωρημένων διαδρομών</string>
+    <string name="view_unassigned">Προβολή μη εκχωρημένων διαδρομών για περπάτημα</string>
     <string name="no_unassigned_routes">Δεν υπάρχουν διαδρομές χωρίς διάρκεια περπατήματος</string>
     <string name="review_poi">Έλεγχος ονομάτων σημείων ενδιαφέροντος</string>
     <string name="rank_drivers">Προβολή 10 καλύτερων και χειρότερων οδηγών</string>

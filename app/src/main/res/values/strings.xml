@@ -125,7 +125,7 @@
     <string name="edit_privileges">Promote or Demote User</string>
     <string name="define_poi">Define Point of Interest</string>
     <string name="define_duration">Define Duration of Travel by Foot</string>
-    <string name="view_unassigned">View List of Unassigned Routes</string>
+    <string name="view_unassigned">View Unassigned Routes for Walking</string>
     <string name="no_unassigned_routes">No routes without walking duration</string>
     <string name="review_poi">Review Point of Interest Names</string>
     <string name="rank_drivers">Show 10 Best and Worst Drivers</string>
