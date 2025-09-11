@@ -8,6 +8,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.RouteEntity
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.SeatReservationEntity
+import com.ioannapergamali.mysmartroute.data.local.MovingEntity
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.Dispatchers
@@ -57,16 +58,22 @@ class BookingViewModel : ViewModel() {
         startTime: Long,
         startPoiId: String,
         endPoiId: String,
-        declarationId: String = ""
+        declarationId: String = "",
+        driverId: String = "",
+        vehicleId: String = "",
+        cost: Double = 0.0,
+        durationMinutes: Int = 0
     ): Result<Unit> = withContext(Dispatchers.IO) {
         val userId = auth.currentUser?.uid
             ?: return@withContext Result.failure(Exception("Απαιτείται σύνδεση"))
 
-        val dao = MySmartRouteDatabase.getInstance(context).seatReservationDao()
+        val dbInstance = MySmartRouteDatabase.getInstance(context)
+        val resDao = dbInstance.seatReservationDao()
+        val movingDao = dbInstance.movingDao()
 
         // Έλεγχος για ήδη υπάρχουσα κράτηση
         // Check for an existing reservation
-        val existing = dao.findUserReservation(userId, routeId, date, startTime)
+        val existing = resDao.findUserReservation(userId, routeId, date, startTime)
         if (existing != null) {
             return@withContext Result.failure(Exception("Η θέση έχει ήδη κρατηθεί"))
         }
@@ -83,10 +90,28 @@ class BookingViewModel : ViewModel() {
         )
 
         return@withContext try {
-            dao.insert(reservation)
+            resDao.insert(reservation)
             db.collection("seat_reservations")
                 .document(reservation.id)
                 .set(reservation.toFirestoreMap())
+                .await()
+            val moving = MovingEntity(
+                id = UUID.randomUUID().toString(),
+                routeId = routeId,
+                userId = userId,
+                date = date,
+                vehicleId = vehicleId,
+                cost = cost,
+                durationMinutes = durationMinutes,
+                startPoiId = startPoiId,
+                endPoiId = endPoiId,
+                driverId = driverId,
+                status = "pending"
+            )
+            movingDao.insert(moving)
+            db.collection("movings")
+                .document(moving.id)
+                .set(moving.toFirestoreMap())
                 .await()
             Result.success(Unit)
         } catch (e: Exception) {
