@@ -487,17 +487,27 @@ class VehicleRequestViewModel(
                 }
 
                 val status = if (accept) "accepted" else "rejected"
-                val updated = current.copy(status = status, driverId = if (accept) current.driverId else "")
+                val updated = if (accept) {
+                    current.copy(
+                        status = status,
+                        driverId = current.driverId,
+                        durationMinutes = declaration?.durationMinutes ?: current.durationMinutes
+                    )
+                } else {
+                    current.copy(status = status, driverId = "")
+                }
                 list[index] = updated
                 _requests.value = list
                 dao.insert(updated)
                 try {
-                    db.collection("movings").document(requestId).update(
-                        mapOf(
-                            "status" to status,
-                            "driverId" to updated.driverId
-                        )
-                    ).await()
+                    val updateMap = mutableMapOf<String, Any>(
+                        "status" to status,
+                        "driverId" to updated.driverId
+                    )
+                    if (accept && declaration != null) {
+                        updateMap["durationMinutes"] = declaration.durationMinutes
+                    }
+                    db.collection("movings").document(requestId).update(updateMap).await()
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to respond to offer", e)
                 }
