@@ -74,12 +74,21 @@ fun ReviewPoiScreen(navController: NavController, openDrawer: () -> Unit) {
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
                                     Text(text = "${stringResource(R.string.poi_name)}: ${poi.name}")
-                                    IconButton(onClick = {
-                                        selectedGroup = group
-                                        keepPoi = poi
-                                        editedName = poi.name
-                                    }) {
-                                        Icon(Icons.Filled.Edit, contentDescription = stringResource(R.string.edit))
+                                    Row {
+                                        TextButton(onClick = {
+                                            group.filter { it.id != poi.id }.forEach { other ->
+                                                viewModel.mergePois(poi.id, other.id)
+                                            }
+                                        }) {
+                                            Text(stringResource(R.string.keep))
+                                        }
+                                        IconButton(onClick = {
+                                            selectedGroup = group
+                                            keepPoi = poi
+                                            editedName = poi.name
+                                        }) {
+                                            Icon(Icons.Filled.Edit, contentDescription = stringResource(R.string.edit))
+                                        }
                                     }
                                 }
                             }
