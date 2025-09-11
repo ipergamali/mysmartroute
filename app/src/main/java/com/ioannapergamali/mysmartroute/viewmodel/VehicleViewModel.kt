@@ -113,8 +113,6 @@ class VehicleViewModel : ViewModel() {
 
             val repo = getRepository(context)
             val dbLocal = MySmartRouteDatabase.getInstance(context)
-            val vehicleDao = dbLocal.vehicleDao()
-            val userDao = dbLocal.userDao()
 
             if (NetworkUtils.isInternetAvailable(context)) {
                 try {
@@ -126,7 +124,7 @@ class VehicleViewModel : ViewModel() {
                     _registerState.value = RegisterState.Error(e.localizedMessage ?: "Failed")
                 }
             } else {
-                insertVehicleSafely(vehicleDao, userDao, entity)
+                insertVehicleSafely(dbLocal, entity)
                 Log.d(TAG, "Αποθήκευση οχήματος ${entity.id} μόνο τοπικά λόγω έλλειψης δικτύου")
                 _registerState.value = RegisterState.Success
             }
@@ -176,7 +174,6 @@ class VehicleViewModel : ViewModel() {
 
             val dbLocal = MySmartRouteDatabase.getInstance(context)
             val vehicleDao = dbLocal.vehicleDao()
-            val userDao = dbLocal.userDao()
 
             val local = vehicleDao.getVehicle(vehicleId)
             if (local != null) {
@@ -188,7 +185,7 @@ class VehicleViewModel : ViewModel() {
                 val doc = db.collection("vehicles").document(vehicleId).get().await()
                 val entity = doc.toVehicleEntity()
                 if (entity != null) {
-                    insertVehicleSafely(vehicleDao, userDao, entity)
+                    insertVehicleSafely(dbLocal, entity)
                     _vehicles.value = _vehicles.value + entity
                 }
             }
@@ -199,7 +196,7 @@ class VehicleViewModel : ViewModel() {
         val existing = repository
         if (existing != null) return existing
         val dbLocal = MySmartRouteDatabase.getInstance(context)
-        return VehicleRepository(dbLocal.vehicleDao(), dbLocal.userDao(), db).also { repo ->
+        return VehicleRepository(dbLocal, db).also { repo ->
             repository = repo
             repo.startSync(viewModelScope)
         }
