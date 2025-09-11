@@ -20,6 +20,7 @@ import com.ioannapergamali.mysmartroute.repository.VehicleRepository
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Job
@@ -123,6 +124,8 @@ class VehicleViewModel : ViewModel() {
             val repo = getRepository(context)
             try {
                 repo.addVehicle(entity)
+                val vehicles = repo.vehiclesForUser(userId).first()
+                Log.d(TAG, "Βρέθηκαν ${vehicles.size} οχήματα")
                 Log.d(TAG, "Το όχημα ${entity.id} αποθηκεύτηκε επιτυχώς")
                 _registerState.value = RegisterState.Success
             } catch (e: Exception) {
@@ -191,6 +194,11 @@ class VehicleViewModel : ViewModel() {
                 }
             }
         }
+    }
+
+    override fun onCleared() {
+        repository?.stopSync()
+        super.onCleared()
     }
 
     private fun getRepository(context: Context): VehicleRepository {

@@ -35,7 +35,7 @@ class VehicleRepository @Inject constructor(
     private val vehicleDao = db.vehicleDao()
 
     /**
-     * Αποθηκεύει όχημα στο Firestore και τοπικά στη Room.
+     * Αποθηκεύει όχημα στη Room και στη συνέχεια στο Firestore.
      */
     suspend fun addVehicle(vehicle: VehicleEntity) = withContext(Dispatchers.IO) {
         val uid = FirebaseAuth.getInstance().currentUser?.uid
@@ -43,6 +43,10 @@ class VehicleRepository @Inject constructor(
         val entity = vehicle.copy(userId = vehicle.userId.ifBlank { uid })
 
         Log.d(TAG, "Καταχώρηση οχήματος ${entity.id}")
+
+        insertVehicleSafely(db, entity)
+        Log.d(TAG, "Το όχημα ${entity.id} αποθηκεύτηκε τοπικά")
+
         try {
             firestore.collection("vehicles")
                 .document(entity.id)
@@ -51,9 +55,6 @@ class VehicleRepository @Inject constructor(
             Log.d(TAG, "Αποθήκευση οχήματος ${entity.id} στο Firestore επιτυχής")
         } catch (e: Exception) {
             Log.e(TAG, "Αποτυχία αποθήκευσης οχήματος ${entity.id} στο Firestore", e)
-        } finally {
-            insertVehicleSafely(db, entity)
-            Log.d(TAG, "Το όχημα ${entity.id} αποθηκεύτηκε τοπικά")
         }
     }
 
