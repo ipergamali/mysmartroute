@@ -10,6 +10,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -26,6 +28,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
@@ -53,11 +57,15 @@ fun ReviewPoiScreen(navController: NavController, openDrawer: () -> Unit) {
             } else {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
                     items(duplicateGroups) { group ->
-                        Column(modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp)) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp)
+                        ) {
                             val coord = group.first()
-                            Text(text = "(${coord.lat}, ${coord.lng})")
+                            Text(text = stringResource(R.string.coordinates_label))
+                            Text(text = "${stringResource(R.string.lat)}: ${coord.lat}")
+                            Text(text = "${stringResource(R.string.lng)}: ${coord.lng}")
                             group.forEach { poi ->
                                 Row(
                                     modifier = Modifier
@@ -65,13 +73,13 @@ fun ReviewPoiScreen(navController: NavController, openDrawer: () -> Unit) {
                                         .padding(vertical = 4.dp),
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    Text(text = poi.name)
-                                    TextButton(onClick = {
+                                    Text(text = "${stringResource(R.string.poi_name)}: ${poi.name}")
+                                    IconButton(onClick = {
                                         selectedGroup = group
                                         keepPoi = poi
                                         editedName = poi.name
                                     }) {
-                                        Text(text = stringResource(R.string.keep))
+                                        Icon(Icons.Filled.Edit, contentDescription = stringResource(R.string.edit))
                                     }
                                 }
                             }

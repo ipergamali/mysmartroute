@@ -189,6 +189,10 @@
     <string name="poi_outside_heraklion">Επιλέξτε σημείο εντός Ηρακλείου</string>
     <string name="search_address">Αναζήτηση διεύθυνσης</string>
     <string name="no_duplicate_pois">Δεν βρέθηκαν διπλά σημεία ενδιαφέροντος</string>
+    <string name="coordinates_label">Συντεταγμένες</string>
+    <string name="lat">Πλάτος</string>
+    <string name="lng">Μήκος</string>
+    <string name="edit">Επεξεργασία</string>
     <string name="keep">Κράτησε</string>
     <string name="fill_all_fields">Συμπλήρωσε όλα τα πεδία</string>
     <string name="seat_booked">Η θέση κλείστηκε!</string>

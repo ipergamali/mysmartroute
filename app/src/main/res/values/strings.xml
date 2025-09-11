@@ -303,5 +303,9 @@
     <string name="rating_saved_success">Rating saved</string>
     <string name="rating_save_failed">Unable to save rating</string>
     <string name="no_duplicate_pois">No duplicate points found</string>
+    <string name="coordinates_label">Coordinates</string>
+    <string name="lat">Latitude</string>
+    <string name="lng">Longitude</string>
+    <string name="edit">Edit</string>
     <string name="keep">Keep</string>
 </resources>
