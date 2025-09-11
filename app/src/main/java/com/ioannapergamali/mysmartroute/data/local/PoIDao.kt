@@ -18,8 +18,8 @@ interface PoIDao {
     @Query("SELECT * FROM pois")
     fun getAll(): kotlinx.coroutines.flow.Flow<List<PoIEntity>>
 
-    @Query("SELECT * FROM pois WHERE lat = :lat AND lng = :lng LIMIT 1")
-    suspend fun findByLocation(lat: Double, lng: Double): PoIEntity?
+    @Query("SELECT * FROM pois WHERE lat = :lat AND lng = :lng")
+    suspend fun findByLocation(lat: Double, lng: Double): List<PoIEntity>
 
     @Query("SELECT * FROM pois WHERE name = :name LIMIT 1")
     suspend fun findByName(name: String): PoIEntity?

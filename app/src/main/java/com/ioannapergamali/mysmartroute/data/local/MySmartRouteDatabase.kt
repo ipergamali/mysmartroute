@@ -65,7 +65,7 @@ import com.ioannapergamali.mysmartroute.data.local.TripRatingDao
         NotificationEntity::class,
         UserPoiEntity::class
     ],
-    version = 63
+    version = 64
 )
 @TypeConverters(Converters::class)
 abstract class MySmartRouteDatabase : RoomDatabase() {
@@ -819,6 +819,13 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_63_64 = object : Migration(63, 64) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("DROP INDEX IF EXISTS `index_pois_lat_lng`")
+                database.execSQL("CREATE INDEX IF NOT EXISTS `index_pois_lat_lng` ON `pois` (`lat`, `lng`)")
+            }
+        }
+
         private fun prepopulate(db: SupportSQLiteDatabase) {
             Log.d(TAG, "Prepopulating database")
             db.execSQL(
@@ -961,7 +968,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_59_60,
                     MIGRATION_60_61,
                     MIGRATION_61_62,
-                    MIGRATION_62_63
+                    MIGRATION_62_63,
+                    MIGRATION_63_64
                 )
                     .addCallback(object : RoomDatabase.Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {

@@ -22,7 +22,7 @@ import com.google.android.libraries.places.api.model.Place
         )
     ],
     indices = [
-        Index(value = ["lat", "lng"], unique = true),
+        Index(value = ["lat", "lng"]),
         Index("typeId")
     ]
 )
