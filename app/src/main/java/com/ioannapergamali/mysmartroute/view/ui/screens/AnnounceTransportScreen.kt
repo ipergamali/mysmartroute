@@ -437,20 +437,6 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
 
             Spacer(Modifier.height(16.dp))
 
-            Button(
-                onClick = {
-                    selectedVehicle = VehicleType.BIGBUS
-                    refreshRoute()
-                },
-                enabled = selectedRouteId != null && !calculating
-            ) {
-                Icon(Icons.Default.DirectionsBus, contentDescription = null)
-                Spacer(Modifier.width(8.dp))
-                Text(stringResource(R.string.bus_only))
-            }
-
-            Spacer(Modifier.height(16.dp))
-
             Text(stringResource(R.string.duration_format, duration))
 
             if (calculating) {
