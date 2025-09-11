@@ -96,10 +96,11 @@ object MapsUtils {
         val originParam = "${origin.latitude},${origin.longitude}"
         val destParam = "${destination.latitude},${destination.longitude}"
         val modeParam = vehicleToMode(vehicleType)
+        val transitParam = if (modeParam == "transit") "&transit_mode=bus" else ""
         val waypointParam = if (waypoints.isNotEmpty()) {
             "&waypoints=" + waypoints.joinToString("|") { "${it.latitude},${it.longitude}" }
         } else ""
-        return "https://maps.googleapis.com/maps/api/directions/json?origin=$originParam&destination=$destParam&mode=$modeParam$waypointParam&key=$apiKey"
+        return "https://maps.googleapis.com/maps/api/directions/json?origin=$originParam&destination=$destParam&mode=$modeParam$transitParam$waypointParam&key=$apiKey"
     }
 
     private fun buildWalkingDirectionsUrl(
