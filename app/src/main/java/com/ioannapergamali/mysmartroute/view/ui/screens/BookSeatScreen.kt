@@ -551,14 +551,6 @@ fun BookSeatScreen(
                         val dateMillis = datePickerState.selectedDateMillis ?: return@Button
                         val startId = startIndex?.let { pois[it].id } ?: return@Button
                         val endId = endIndex?.let { pois[it].id } ?: return@Button
-                        requestViewModel.requestTransport(
-                            context,
-                            r.id,
-                            startId,
-                            endId,
-                            Double.MAX_VALUE,
-                            dateMillis
-                        )
                         navController.navigate(
                             "availableTransports?routeId=" +
                                     r.id +

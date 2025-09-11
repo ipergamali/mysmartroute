@@ -448,7 +448,6 @@ fun RouteModeScreen(
                         val routeId = selectedRouteId ?: return@Button
                         val date = datePickerState.selectedDateMillis ?: 0L
 
-                        requestViewModel.requestTransport(context, routeId, fromId, toId, cost, date)
                         navController.navigate(
                             "availableTransports?routeId=" +
                                 routeId +
