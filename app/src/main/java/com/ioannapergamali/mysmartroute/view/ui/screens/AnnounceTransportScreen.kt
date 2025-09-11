@@ -154,21 +154,11 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
             driverFiltered
         }
 
-        val isBusRoute = selectedRouteId?.let { id ->
-            val poisSel = routeViewModel.getRoutePois(context, id)
-            poisSel.isNotEmpty() && poisSel.all { it.type == Place.Type.BUS_STATION }
-        } ?: false
-
         var list = vehicles
         selectedDriverId?.let { id -> list = list.filter { it.userId == id } }
-        filteredVehicles = if (isBusRoute) {
-            list.filter {
-                val type = VehicleType.valueOf(it.type)
-                type == VehicleType.BIGBUS || type == VehicleType.SMALLBUS
-            }
-        } else {
-            list
-        }
+
+        filteredVehicles = list
+
 
         if (selectedRouteId != null && selectedVehicle != null) {
             refreshRoute()
