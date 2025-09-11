@@ -85,7 +85,9 @@ fun NotificationsScreen(navController: NavController, openDrawer: () -> Unit) {
             }
         }
 
-        UserRole.PASSENGER -> requests.filter { it.status == "pending" }.map { req ->
+        UserRole.PASSENGER -> requests.filter {
+            it.status == "pending" && it.driverId.isNotBlank()
+        }.map { req ->
             stringResource(
                 R.string.driver_offer_notification,
                 req.driverName,

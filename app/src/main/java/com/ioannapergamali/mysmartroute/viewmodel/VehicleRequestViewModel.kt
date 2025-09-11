@@ -171,7 +171,7 @@ class VehicleRequestViewModel(
                         (it.driverId == userId && it.status == "accepted")
                 }
             } else {
-                _requests.value.filter { it.status == "pending" }
+                _requests.value.filter { it.status == "pending" && it.driverId.isNotBlank() }
             }
             _hasUnreadNotifications.value = notifications.any { it.id !in readNotificationIds }
 
@@ -338,7 +338,7 @@ class VehicleRequestViewModel(
                     (it.driverId == userId && it.status == "accepted")
             }
         } else {
-            _requests.value.filter { it.status == "pending" }
+            _requests.value.filter { it.status == "pending" && it.driverId.isNotBlank() }
         }
         readNotificationIds.addAll(notifications.map { it.id })
         _hasUnreadNotifications.value = false
@@ -623,7 +623,9 @@ class VehicleRequestViewModel(
     }
 
     private suspend fun showPendingNotifications(context: Context) {
-        _requests.value.filter { it.status == "pending" && it.id !in notifiedRequests }.forEach { req ->
+        _requests.value.filter {
+            it.status == "pending" && it.driverId.isNotBlank() && it.id !in notifiedRequests
+        }.forEach { req ->
             val driverName = if (req.driverName.isNotBlank()) {
                 req.driverName
             } else {
