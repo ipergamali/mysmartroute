@@ -162,7 +162,10 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         var list = vehicles
         selectedDriverId?.let { id -> list = list.filter { it.userId == id } }
         filteredVehicles = if (isBusRoute) {
-            list.filter { VehicleType.valueOf(it.type) == VehicleType.BIGBUS }
+            list.filter {
+                val type = VehicleType.valueOf(it.type)
+                type == VehicleType.BIGBUS || type == VehicleType.SMALLBUS
+            }
         } else {
             list
         }
