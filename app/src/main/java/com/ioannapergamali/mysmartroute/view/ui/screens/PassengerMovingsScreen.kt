@@ -32,6 +32,10 @@ import com.ioannapergamali.mysmartroute.data.local.categorizeMovings
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 private const val TAG = "PassengerMovingsScreen"
 @OptIn(ExperimentalMaterial3Api::class)
@@ -116,6 +120,10 @@ private fun MovingTable(list: List<MovingEntity>) {
                 TableHeaderCell(stringResource(R.string.driver))
                 TableHeaderCell(stringResource(R.string.vehicle_name))
                 TableHeaderCell(stringResource(R.string.passenger))
+                TableHeaderCell(stringResource(R.string.date))
+                TableHeaderCell(stringResource(R.string.time))
+                TableHeaderCell(stringResource(R.string.cost))
+                TableHeaderCell(stringResource(R.string.duration))
             }
             Divider()
             list.forEach { m ->
@@ -127,11 +135,37 @@ private fun MovingTable(list: List<MovingEntity>) {
                     TableCell(m.driverName.ifBlank { "-" })
                     TableCell(m.vehicleName.ifBlank { "-" })
                     TableCell(m.createdByName.ifBlank { "-" })
+                    TableCell(formatDate(m.date))
+                    TableCell(formatTime(m.date))
+                    TableCell(formatCost(m.cost))
+                    TableCell(formatDuration(m.durationMinutes))
                 }
                 Divider()
             }
         }
     }
+}
+
+private fun formatDate(epochMillis: Long): String =
+    Instant.ofEpochMilli(epochMillis)
+        .atZone(ZoneId.systemDefault())
+        .toLocalDate()
+        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+
+private fun formatTime(epochMillis: Long): String =
+    Instant.ofEpochMilli(epochMillis)
+        .atZone(ZoneId.systemDefault())
+        .toLocalTime()
+        .format(DateTimeFormatter.ofPattern("HH:mm"))
+
+private fun formatCost(cost: Double): String =
+    String.format(Locale.getDefault(), "%.2f€", cost)
+
+private fun formatDuration(minutes: Int): String {
+    val hours = minutes / 60
+    val mins = minutes % 60
+    return if (hours > 0) String.format(Locale.getDefault(), "%d:%02d", hours, mins)
+    else String.format(Locale.getDefault(), "0:%02d", mins)
 }
 
 @Composable

@@ -10,6 +10,7 @@ import com.ioannapergamali.mysmartroute.data.local.categorizeMovings
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 /**
  * Εμφανίζει τις μετακινήσεις κατηγοριοποιημένες ανάλογα με την
@@ -27,7 +28,13 @@ fun MovingListScreen(movings: List<MovingEntity>) {
                 )
             }
             items(list) { moving ->
-                Text("Μετακίνηση ${moving.id} – ${formatDate(moving.date)}")
+                Text(
+                    "Μετακίνηση ${moving.id} – " +
+                        "Ημερομηνία: ${formatDate(moving.date)} – " +
+                        "Ώρα: ${formatTime(moving.date)} – " +
+                        "Κόστος: ${formatCost(moving.cost)} – " +
+                        "Διάρκεια: ${formatDuration(moving.durationMinutes)}"
+                )
             }
         }
     }
@@ -36,4 +43,21 @@ fun MovingListScreen(movings: List<MovingEntity>) {
 private fun formatDate(epochMillis: Long): String =
     Instant.ofEpochMilli(epochMillis)
         .atZone(ZoneId.systemDefault())
-        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+        .toLocalDate()
+        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+
+private fun formatTime(epochMillis: Long): String =
+    Instant.ofEpochMilli(epochMillis)
+        .atZone(ZoneId.systemDefault())
+        .toLocalTime()
+        .format(DateTimeFormatter.ofPattern("HH:mm"))
+
+private fun formatCost(cost: Double): String =
+    String.format(Locale.getDefault(), "%.2f€", cost)
+
+private fun formatDuration(minutes: Int): String {
+    val hours = minutes / 60
+    val mins = minutes % 60
+    return if (hours > 0) String.format(Locale.getDefault(), "%d:%02d", hours, mins)
+    else String.format(Locale.getDefault(), "0:%02d", mins)
+}
