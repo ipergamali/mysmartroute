@@ -163,5 +163,6 @@ fun FirebaseDatabaseScreen(navController: NavController, openDrawer: () -> Unit)
                 }
             }
         }
+        }
     }
 }
