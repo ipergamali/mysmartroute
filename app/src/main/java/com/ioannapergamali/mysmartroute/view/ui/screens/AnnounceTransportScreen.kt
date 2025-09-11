@@ -116,7 +116,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     }
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = todayMillis,
-        selectableDates = object : DatePickerState.SelectableDates {
+        selectableDates = object : SelectableDates {
             override fun isSelectableDate(utcTimeMillis: Long): Boolean =
                 utcTimeMillis >= todayMillis
         }
