@@ -1,6 +1,7 @@
 package com.ioannapergamali.mysmartroute.repository
 
 import android.util.Log
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.ioannapergamali.mysmartroute.data.local.VehicleDao
@@ -34,19 +35,23 @@ class VehicleRepository @Inject constructor(
      * Αποθηκεύει όχημα στο Firestore και τοπικά στη Room.
      */
     suspend fun addVehicle(vehicle: VehicleEntity) {
-        Log.d(TAG, "Καταχώρηση οχήματος ${vehicle.id}")
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+            ?: throw IllegalStateException("User not logged in")
+        val entity = vehicle.copy(userId = vehicle.userId.ifBlank { uid })
+
+        Log.d(TAG, "Καταχώρηση οχήματος ${entity.id}")
         try {
             firestore.collection("vehicles")
-                .document(vehicle.id)
-                .set(vehicle.toFirestoreMap())
+                .document(entity.id)
+                .set(entity.toFirestoreMap())
                 .await()
-            Log.d(TAG, "Αποθήκευση οχήματος ${vehicle.id} στο Firestore επιτυχής")
+            Log.d(TAG, "Αποθήκευση οχήματος ${entity.id} στο Firestore επιτυχής")
         } catch (e: Exception) {
-            Log.e(TAG, "Αποτυχία αποθήκευσης οχήματος ${vehicle.id} στο Firestore", e)
+            Log.e(TAG, "Αποτυχία αποθήκευσης οχήματος ${entity.id} στο Firestore", e)
             throw e
         }
-        insertVehicleSafely(vehicleDao, userDao, vehicle)
-        Log.d(TAG, "Το όχημα ${vehicle.id} αποθηκεύτηκε τοπικά")
+        insertVehicleSafely(vehicleDao, userDao, entity)
+        Log.d(TAG, "Το όχημα ${entity.id} αποθηκεύτηκε τοπικά")
     }
 
     /** Ροή με όλα τα οχήματα από τη Room. */
