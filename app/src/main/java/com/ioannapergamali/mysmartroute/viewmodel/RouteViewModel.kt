@@ -20,6 +20,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
+import com.google.android.libraries.places.api.model.Place
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -246,7 +247,14 @@ class RouteViewModel : ViewModel() {
         val id = UUID.randomUUID().toString()
         val entity = RouteEntity(id, userId, name, poiIds.first(), poiIds.last())
         val points = poiIds.mapIndexed { index, p -> RoutePointEntity(id, index, p) }
-        val busStations = busPoiIds.mapIndexed { index, p -> RouteBusStationEntity(id, index, p) }
+        val busIds = if (busPoiIds.isNotEmpty()) {
+            busPoiIds
+        } else {
+            poiIds.filter { pid ->
+                db.poIDao().findById(pid)?.type == Place.Type.BUS_STATION
+            }
+        }
+        val busStations = busIds.mapIndexed { index, p -> RouteBusStationEntity(id, index, p) }
 
         runCatching {
             val routeRef = firestore.collection("routes").document(id)
@@ -312,7 +320,14 @@ class RouteViewModel : ViewModel() {
             endPoiId = poiIds.last()
         )
         val points = poiIds.mapIndexed { index, p -> RoutePointEntity(routeId, index, p) }
-        val busStations = busPoiIds.mapIndexed { index, p -> RouteBusStationEntity(routeId, index, p) }
+        val busIds = if (busPoiIds.isNotEmpty()) {
+            busPoiIds
+        } else {
+            poiIds.filter { pid ->
+                db.poIDao().findById(pid)?.type == Place.Type.BUS_STATION
+            }
+        }
+        val busStations = busIds.mapIndexed { index, p -> RouteBusStationEntity(routeId, index, p) }
 
         if (NetworkUtils.isInternetAvailable(context)) {
             val routeRef = firestore.collection("routes").document(routeId)
