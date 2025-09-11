@@ -1,6 +1,5 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,14 +8,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -30,8 +26,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
@@ -48,10 +42,6 @@ fun ReviewPoiScreen(navController: NavController, openDrawer: () -> Unit) {
     val viewModel: AdminPoiViewModel = viewModel(factory = AdminPoiViewModel.Factory(context))
     val duplicateGroups by viewModel.duplicatePois.collectAsState()
 
-    var selectedGroup by remember { mutableStateOf<List<PoIEntity>?>(null) }
-    var keepPoi by remember { mutableStateOf<PoIEntity?>(null) }
-    var editedName by remember { mutableStateOf("") }
-
     Scaffold(topBar = { TopBar(title = stringResource(R.string.review_poi), navController = navController, showMenu = true, onMenuClick = openDrawer) }) { padding ->
         ScreenContainer(modifier = Modifier.padding(padding), scrollable = false) {
             if (duplicateGroups.isEmpty()) {
@@ -59,6 +49,9 @@ fun ReviewPoiScreen(navController: NavController, openDrawer: () -> Unit) {
             } else {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
                     items(duplicateGroups) { group ->
+                        var selected by remember { mutableStateOf<PoIEntity?>(null) }
+                        var edited by remember { mutableStateOf("") }
+
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -68,65 +61,53 @@ fun ReviewPoiScreen(navController: NavController, openDrawer: () -> Unit) {
                             Text(text = stringResource(R.string.coordinates_label))
                             Text(text = "${stringResource(R.string.lat)}: ${coord.lat}")
                             Text(text = "${stringResource(R.string.lng)}: ${coord.lng}")
+
                             group.forEach { poi ->
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .horizontalScroll(rememberScrollState())
                                         .padding(vertical = 4.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween
+                                    horizontalArrangement = Arrangement.Start
                                 ) {
-                                    Text(text = "${stringResource(R.string.poi_name)}: ${poi.name}")
-                                    Row {
-                                        TextButton(onClick = {
-                                            group.filter { it.id != poi.id }.forEach { other ->
-                                                viewModel.mergePois(poi.id, other.id)
-                                            }
-                                        }) {
-                                            Text(stringResource(R.string.keep))
+                                    RadioButton(
+                                        selected = selected?.id == poi.id,
+                                        onClick = {
+                                            selected = poi
+                                            edited = poi.name
                                         }
-                                        IconButton(onClick = {
-                                            selectedGroup = group
-                                            keepPoi = poi
-                                            editedName = poi.name
-                                        }) {
-                                            Icon(Icons.Filled.Edit, contentDescription = stringResource(R.string.edit))
-                                        }
+                                    )
+                                    if (selected?.id == poi.id) {
+                                        TextField(
+                                            value = edited,
+                                            onValueChange = { edited = it },
+                                            modifier = Modifier.fillMaxWidth()
+                                        )
+                                    } else {
+                                        Text(text = poi.name)
                                     }
                                 }
+                            }
+
+                            Button(
+                                onClick = {
+                                    selected?.let { keep ->
+                                        val updated = keep.copy(name = edited)
+                                        viewModel.updatePoi(updated)
+                                        group.filter { it.id != updated.id }.forEach { other ->
+                                            viewModel.mergePois(updated.id, other.id)
+                                        }
+                                    }
+                                    selected = null
+                                },
+                                enabled = selected != null,
+                                modifier = Modifier.padding(top = 8.dp)
+                            ) {
+                                Text(stringResource(R.string.keep))
                             }
                         }
                     }
                 }
             }
         }
-    }
-
-    if (keepPoi != null && selectedGroup != null) {
-        AlertDialog(
-            onDismissRequest = {
-                keepPoi = null
-                selectedGroup = null
-            },
-            title = { Text(stringResource(R.string.poi_name)) },
-            text = { TextField(value = editedName, onValueChange = { editedName = it }) },
-            confirmButton = {
-                TextButton(onClick = {
-                    val updatedPoi = keepPoi!!.copy(name = editedName)
-                    viewModel.updatePoi(updatedPoi)
-                    selectedGroup!!.filter { it.id != updatedPoi.id }.forEach { other ->
-                        viewModel.mergePois(updatedPoi.id, other.id)
-                    }
-                    keepPoi = null
-                    selectedGroup = null
-                }) { Text(stringResource(R.string.ok)) }
-            },
-            dismissButton = {
-                TextButton(onClick = {
-                    keepPoi = null
-                    selectedGroup = null
-                }) { Text(stringResource(R.string.cancel)) }
-            }
-        )
     }
 }
