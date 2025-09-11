@@ -258,3 +258,5 @@ fun LocalDatabaseScreen(navController: NavController, openDrawer: () -> Unit) {
         }
     }
 }
+
+}
