@@ -11,12 +11,14 @@ import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.utils.toVehicleEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -64,12 +66,20 @@ class VehicleRepository @Inject constructor(
     suspend fun syncVehicles() = withContext(Dispatchers.IO) {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@withContext
         val userRef = firestore.collection("users").document(uid)
-        val snapshot = firestore.collection("vehicles")
-            .whereEqualTo("userId", userRef)
-            .get()
-            .await()
-        val vehicles = snapshot.documents.mapNotNull { it.toVehicleEntity() }
-        vehicles.forEach { insertVehicleSafely(db, it) }
+        try {
+            val snapshot = withTimeout(10_000) {
+                firestore.collection("vehicles")
+                    .whereEqualTo("userId", userRef)
+                    .get()
+                    .await()
+            }
+            val vehicles = snapshot.documents.mapNotNull { it.toVehicleEntity() }
+            vehicles.forEach { insertVehicleSafely(db, it) }
+        } catch (e: TimeoutCancellationException) {
+            Log.e(TAG, "Αποτυχία συγχρονισμού οχημάτων: Timeout", e)
+        } catch (e: Exception) {
+            Log.e(TAG, "Αποτυχία συγχρονισμού οχημάτων", e)
+        }
     }
 
     /** Ροή με όλα τα οχήματα. Αν η Room είναι κενή, τα φέρνει από το Firestore. */
