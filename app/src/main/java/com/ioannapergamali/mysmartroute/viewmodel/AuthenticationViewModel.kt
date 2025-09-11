@@ -47,6 +47,11 @@ class AuthenticationViewModel : ViewModel() {
     private val gson: Gson = Gson()
     private companion object { const val TAG = "AuthenticationViewModel" }
 
+    private val passwordRegex = Regex(
+        "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&(){}\\[\\]_:;\"'<>.,=+-]).{8,}$"
+    )
+    private fun isPasswordValid(password: String) = passwordRegex.matches(password)
+
     /**
      * Παράδειγμα μετατροπής JSON σε αντικείμενο [UserAddress].
      * Example conversion from JSON to a [UserAddress] object.
@@ -104,6 +109,13 @@ class AuthenticationViewModel : ViewModel() {
                 address.city.isBlank() || address.streetName.isBlank()
             ) {
                 _signUpState.value = SignUpState.Error("All fields are required")
+                return@launch
+            }
+
+            if (!isPasswordValid(password)) {
+                _signUpState.value = SignUpState.Error(
+                    "Ο κωδικός πρέπει να έχει κεφαλαίο, πεζό, αριθμό και ειδικό χαρακτήρα"
+                )
                 return@launch
             }
 
