@@ -51,10 +51,10 @@ class VehicleRepository @Inject constructor(
             Log.d(TAG, "Αποθήκευση οχήματος ${entity.id} στο Firestore επιτυχής")
         } catch (e: Exception) {
             Log.e(TAG, "Αποτυχία αποθήκευσης οχήματος ${entity.id} στο Firestore", e)
-            throw e
+        } finally {
+            insertVehicleSafely(vehicleDao, userDao, entity)
+            Log.d(TAG, "Το όχημα ${entity.id} αποθηκεύτηκε τοπικά")
         }
-        insertVehicleSafely(vehicleDao, userDao, entity)
-        Log.d(TAG, "Το όχημα ${entity.id} αποθηκεύτηκε τοπικά")
     }
 
     /** Ροή με όλα τα οχήματα. Αν η Room είναι κενή, τα φέρνει από το Firestore. */
