@@ -1,12 +1,9 @@
 package com.ioannapergamali.mysmartroute.model.classes.routes
 
 
-import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.model.interfaces.PoI
 
-import com.ioannapergamali.mysmartroute.model.interfaces.User
-import com.ioannapergamali.mysmartroute.model.interfaces.Vehicle
 
 /**
  * Αντιπροσώπευση τμημάτων διαδρομής.
@@ -30,17 +27,18 @@ sealed class RouteSegment {
 /**
  * Βασικές πληροφορίες οδηγού για τα τμήματα λεωφορείου.
 
- * Περιλαμβάνεται ο χρήστης με ρόλο οδηγού και το λεωφορείο που έχει δηλώσει.
+ * Περιλαμβάνεται το ID του οδηγού και τα στοιχεία του λεωφορείου.
  */
 data class DriverInfo(
-    val user: User,
-    val bus: Vehicle
+    val driverId: String,
+    val driverName: String,
+    val busId: String,
+    val busType: VehicleType
 ) {
     init {
-        require(user.getRole() == UserRole.DRIVER) { "Ο χρήστης πρέπει να έχει ρόλο οδηγού" }
         require(
-            bus.getType() == VehicleType.BIGBUS ||
-                bus.getType() == VehicleType.SMALLBUS
+            busType == VehicleType.BIGBUS ||
+                busType == VehicleType.SMALLBUS
         ) { "Το όχημα πρέπει να είναι λεωφορείο" }
     }
 }
@@ -60,7 +58,8 @@ fun isDriverAvailable(driverId: String, route: ComplexRoute): Boolean {
     return route.segments
         .filterIsInstance<RouteSegment.Bus>()
 
-        .any { it.driver.user.id == driverId }
+        .any { it.driver.driverId == driverId }
+
 }
 
 /**
@@ -80,7 +79,8 @@ fun declareDriverAvailability(
         .map { segment ->
             DriverAvailability(
                 segment,
-                availableDriverIds.contains(segment.driver.user.id)
+
+                availableDriverIds.contains(segment.driver.driverId)
             )
         }
 
