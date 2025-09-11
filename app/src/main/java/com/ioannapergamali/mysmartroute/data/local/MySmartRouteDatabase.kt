@@ -55,6 +55,7 @@ import com.ioannapergamali.mysmartroute.data.local.TripRatingDao
         MovingEntity::class,
         WalkingEntity::class,
         RoutePointEntity::class,
+        RouteBusStationEntity::class,
         TransportDeclarationEntity::class,
         AvailabilityEntity::class,
         SeatReservationEntity::class,
@@ -65,7 +66,7 @@ import com.ioannapergamali.mysmartroute.data.local.TripRatingDao
         NotificationEntity::class,
         UserPoiEntity::class
     ],
-    version = 64
+    version = 65
 )
 @TypeConverters(Converters::class)
 abstract class MySmartRouteDatabase : RoomDatabase() {
@@ -82,6 +83,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
     abstract fun movingDao(): MovingDao
     abstract fun walkingDao(): WalkingDao
     abstract fun routePointDao(): RoutePointDao
+    abstract fun routeBusStationDao(): RouteBusStationDao
     abstract fun transportDeclarationDao(): TransportDeclarationDao
     abstract fun availabilityDao(): AvailabilityDao
     abstract fun seatReservationDao(): SeatReservationDao
@@ -826,6 +828,12 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_64_65 = object : Migration(64, 65) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("CREATE TABLE IF NOT EXISTS `route_bus_station` (`routeId` TEXT NOT NULL, `position` INTEGER NOT NULL, `poiId` TEXT NOT NULL, PRIMARY KEY(`routeId`, `position`))")
+            }
+        }
+
         private fun prepopulate(db: SupportSQLiteDatabase) {
             Log.d(TAG, "Prepopulating database")
             db.execSQL(
@@ -969,7 +977,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_60_61,
                     MIGRATION_61_62,
                     MIGRATION_62_63,
-                    MIGRATION_63_64
+                    MIGRATION_63_64,
+                    MIGRATION_64_65
                 )
                     .addCallback(object : RoomDatabase.Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {
