@@ -58,6 +58,20 @@ class VehicleRepository @Inject constructor(
         }
     }
 
+    /**
+     * Συγχρονίζει τα οχήματα του τρέχοντος χρήστη από το Firestore στη Room μία φορά.
+     */
+    suspend fun syncVehicles() = withContext(Dispatchers.IO) {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@withContext
+        val userRef = firestore.collection("users").document(uid)
+        val snapshot = firestore.collection("vehicles")
+            .whereEqualTo("userId", userRef)
+            .get()
+            .await()
+        val vehicles = snapshot.documents.mapNotNull { it.toVehicleEntity() }
+        vehicles.forEach { insertVehicleSafely(db, it) }
+    }
+
     /** Ροή με όλα τα οχήματα. Αν η Room είναι κενή, τα φέρνει από το Firestore. */
     val vehicles: Flow<List<VehicleEntity>> = vehicleDao.getVehicles().onStart {
         val local = vehicleDao.getVehicles().first()
