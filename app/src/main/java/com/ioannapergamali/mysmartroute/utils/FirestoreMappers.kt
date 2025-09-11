@@ -1,6 +1,7 @@
 package com.ioannapergamali.mysmartroute.utils
 
 import android.util.Log
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.SettingsEntity
@@ -309,7 +310,11 @@ fun DocumentSnapshot.toMovingEntity(): MovingEntity? {
         is String -> v
         else -> getString("vehicleId")
     } ?: ""
-    val dateVal = getLong("date") ?: 0L
+    val dateVal = when (val d = get("date")) {
+        is Timestamp -> d.toDate().time
+        is Long -> d
+        else -> getLong("date") ?: 0L
+    }
     val costVal = getDouble("cost") ?: 0.0
     val durVal = (getLong("durationMinutes") ?: 0L).toInt()
     val startPoiId = when (val s = get("startPoiId")) {

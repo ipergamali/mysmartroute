@@ -2,6 +2,8 @@
 // Statuses for moving.
 package com.ioannapergamali.mysmartroute.data.local
 
+import android.util.Log
+
 /**
  * Περιγράφει την κατάσταση μιας μετακίνησης όπως εμφανίζεται στην εφαρμογή.
  *
@@ -17,17 +19,27 @@ enum class MovingStatus {
     COMPLETED
 }
 
+private const val TAG = "MovingStatus"
+
 /**
  * Υπολογίζει την [MovingStatus] μιας [MovingEntity] με βάση την κατάσταση αποδοχής
  * και τη χρονική στιγμή της μετακίνησης.
  */
 fun MovingEntity.movingStatus(now: Long = System.currentTimeMillis()): MovingStatus {
-    return when (status.lowercase()) {
+    val result = when (status.lowercase()) {
         "completed" -> MovingStatus.COMPLETED
         "accepted" -> MovingStatus.ACTIVE
-        "open" -> if (date > now) MovingStatus.PENDING else MovingStatus.UNSUCCESSFUL
+        // Τα statuses "open" και "pending" αντιμετωπίζονται το ίδιο:
+        // αν η ημερομηνία είναι μελλοντική θεωρούνται εκκρεμείς, αλλιώς ανεπιτυχείς.
+        "open", "pending" -> if (date > now) {
+            MovingStatus.PENDING
+        } else {
+            MovingStatus.UNSUCCESSFUL
+        }
         else -> MovingStatus.UNSUCCESSFUL
     }
+    Log.d(TAG, "Μετακίνηση $id με raw status '$status' ταξινομήθηκε ως $result")
+    return result
 }
 
 /**
@@ -36,5 +48,10 @@ fun MovingEntity.movingStatus(now: Long = System.currentTimeMillis()): MovingSta
 fun categorizeMovings(
     movings: List<MovingEntity>,
     now: Long = System.currentTimeMillis()
-): Map<MovingStatus, List<MovingEntity>> =
-    movings.groupBy { it.movingStatus(now) }
+): Map<MovingStatus, List<MovingEntity>> {
+    val grouped = movings.groupBy { it.movingStatus(now) }
+    grouped.forEach { (status, list) ->
+        Log.d(TAG, "Ομαδοποίηση $status -> ${list.size} εγγραφές")
+    }
+    return grouped
+}

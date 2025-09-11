@@ -1,5 +1,6 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
@@ -15,17 +16,21 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
+private const val TAG = "MovingScreen"
+
 /**
  * Οθόνη που εμφανίζει τις μετακινήσεις ομαδοποιημένες ανά κατάσταση.
  */
 @Composable
 fun MovingScreen(viewModel: MovingViewModel = hiltViewModel()) {
     val movings by viewModel.state.collectAsState()
+    Log.d(TAG, "Σύνολο μετακινήσεων: ${movings.size}")
     val grouped = categorizeMovings(movings)
 
     LazyColumn {
         MovingStatus.values().forEach { status ->
             val list = grouped[status].orEmpty()
+            Log.d(TAG, "Κατηγορία $status περιέχει ${list.size} εγγραφές")
             item {
                 Text(
                     text = titleFor(status),
@@ -36,6 +41,7 @@ fun MovingScreen(viewModel: MovingViewModel = hiltViewModel()) {
                 item { Text("Δεν βρέθηκαν μετακινήσεις") }
             } else {
                 items(list) { moving ->
+                    Log.d(TAG, "Εμφάνιση μετακίνησης ${moving.id} με ημερομηνία ${formatDate(moving.date)}")
                     Text("Μετακίνηση ${moving.id} – ${formatDate(moving.date)}")
                 }
             }
