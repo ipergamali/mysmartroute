@@ -33,6 +33,7 @@ import com.ioannapergamali.mysmartroute.data.local.FavoriteRouteEntity
 import com.ioannapergamali.mysmartroute.data.local.UserPoiEntity
 import com.ioannapergamali.mysmartroute.data.local.RouteEntity
 import com.ioannapergamali.mysmartroute.data.local.RoutePointEntity
+import com.ioannapergamali.mysmartroute.data.local.RouteBusStationEntity
 import com.ioannapergamali.mysmartroute.data.local.MovingEntity
 import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationEntity
 import com.ioannapergamali.mysmartroute.data.local.AvailabilityEntity
@@ -40,7 +41,7 @@ import com.ioannapergamali.mysmartroute.data.local.SeatReservationEntity
 import com.ioannapergamali.mysmartroute.data.local.TransferRequestEntity
 import com.ioannapergamali.mysmartroute.data.local.TripRatingEntity
 import com.ioannapergamali.mysmartroute.data.local.NotificationEntity
-import com.ioannapergamali.mysmartroute.utils.toRouteWithPoints
+import com.ioannapergamali.mysmartroute.utils.toRouteWithStations
 import com.ioannapergamali.mysmartroute.utils.toMovingEntity
 import com.ioannapergamali.mysmartroute.utils.toTransportDeclarationEntity
 import com.ioannapergamali.mysmartroute.utils.toAvailabilityEntity
@@ -280,10 +281,11 @@ class DatabaseViewModel : ViewModel() {
                     }
                 }
 
-            val routePairs = firestore.collection("routes").get().await()
-                .documents.mapNotNull { it.toRouteWithPoints() }
-            val routes = routePairs.map { it.first }
-            val routePoints = routePairs.flatMap { it.second }
+            val routeTriples = firestore.collection("routes").get().await()
+                .documents.mapNotNull { it.toRouteWithStations() }
+            val routes = routeTriples.map { it.first }
+            val routePoints = routeTriples.flatMap { it.second }
+            val busStations = routeTriples.flatMap { it.third }
 
             val movings = firestore.collection("movings").get().await()
                 .documents.mapNotNull { it.toMovingEntity() }
@@ -465,10 +467,11 @@ class DatabaseViewModel : ViewModel() {
                         }
                     }
 
-                    val routePairs = firestore.collection("routes").get().await()
-                        .documents.mapNotNull { it.toRouteWithPoints() }
-                    val routes = routePairs.map { it.first }
-                    val routePoints = routePairs.flatMap { it.second }
+                    val routeTriples = firestore.collection("routes").get().await()
+                        .documents.mapNotNull { it.toRouteWithStations() }
+                    val routes = routeTriples.map { it.first }
+                    val routePoints = routeTriples.flatMap { it.second }
+                    val busStations = routeTriples.flatMap { it.third }
 
                     val movings = firestore.collection("movings").get().await()
                         .documents.mapNotNull { it.toMovingEntity() }
@@ -509,6 +512,7 @@ class DatabaseViewModel : ViewModel() {
                     menuOptions.forEach { db.menuOptionDao().insert(it) }
                     routes.forEach { db.routeDao().insert(it) }
                     routePoints.forEach { db.routePointDao().insert(it) }
+                    busStations.forEach { db.routeBusStationDao().insert(it) }
                     movings.forEach { db.movingDao().insert(it) }
                     declarations.forEach { db.transportDeclarationDao().insert(it) }
                     availabilities.forEach { db.availabilityDao().insert(it) }

@@ -13,6 +13,7 @@ import com.ioannapergamali.mysmartroute.data.local.MenuEntity
 import com.ioannapergamali.mysmartroute.data.local.MenuOptionEntity
 import com.ioannapergamali.mysmartroute.data.local.RouteEntity
 import com.ioannapergamali.mysmartroute.data.local.RoutePointEntity
+import com.ioannapergamali.mysmartroute.data.local.RouteBusStationEntity
 import com.ioannapergamali.mysmartroute.data.local.PoiTypeEntity
 import com.google.firebase.firestore.DocumentReference
 import com.ioannapergamali.mysmartroute.data.local.MovingEntity
@@ -29,6 +30,7 @@ import com.ioannapergamali.mysmartroute.data.local.TransferRequestEntity
 import com.ioannapergamali.mysmartroute.data.local.NotificationEntity
 import com.ioannapergamali.mysmartroute.data.local.TripRatingEntity
 import com.ioannapergamali.mysmartroute.model.enumerations.RequestStatus
+import kotlinx.coroutines.tasks.await
 
 
 /** Βοηθητικά extensions για μετατροπή οντοτήτων σε δομές κατάλληλες για το Firestore. */
@@ -228,6 +230,35 @@ fun DocumentSnapshot.toRouteWithPoints(): Pair<RouteEntity, List<RoutePointEntit
         id?.let { RoutePointEntity(route.id, idx, it) }
     }
     return route to points
+}
+
+suspend fun DocumentSnapshot.toRouteWithStations(): Triple<RouteEntity, List<RoutePointEntity>, List<RouteBusStationEntity>>? {
+    val route = toRouteEntity() ?: return null
+    val rawPoints = get("points") as? List<*> ?: emptyList<Any>()
+    val points = rawPoints.mapIndexedNotNull { idx, p ->
+        val id = when (p) {
+            is DocumentReference -> p.id
+            is String -> p
+            else -> null
+        }
+        id?.let { RoutePointEntity(route.id, idx, it) }
+    }
+    val busSnapshot = runCatching { reference.collection("bus_stations").get().await() }.getOrNull()
+    val busStations = busSnapshot?.documents?.mapNotNull { doc ->
+        val poiRef = doc.get("poi")
+        val poiId = when (poiRef) {
+            is DocumentReference -> poiRef.id
+            is String -> poiRef
+            else -> null
+        }
+        val pos = (doc.getLong("position") ?: doc.id.toLongOrNull())?.toInt()
+        if (poiId != null && pos != null) {
+            RouteBusStationEntity(route.id, pos, poiId)
+        } else {
+            null
+        }
+    } ?: emptyList()
+    return Triple(route, points, busStations)
 }
 
 fun DocumentSnapshot.toPoIEntity(): PoIEntity? {

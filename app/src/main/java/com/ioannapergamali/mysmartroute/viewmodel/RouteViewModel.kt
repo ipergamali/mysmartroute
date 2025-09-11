@@ -15,11 +15,12 @@ import com.ioannapergamali.mysmartroute.model.Walk
 import com.ioannapergamali.mysmartroute.repository.AdminWalkRepository
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.utils.toRouteEntity
-import com.ioannapergamali.mysmartroute.utils.toRouteWithPoints
+import com.ioannapergamali.mysmartroute.utils.toRouteWithStations
 import com.google.android.gms.maps.model.LatLng
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
+import com.google.android.libraries.places.api.model.Place
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -100,6 +101,7 @@ class RouteViewModel : ViewModel() {
             val db = MySmartRouteDatabase.getInstance(context)
             val routeDao = db.routeDao()
             val pointDao = db.routePointDao()
+            val busDao = db.routeBusStationDao()
             val userId = FirebaseAuth.getInstance().currentUser?.uid
 
             val query = if (includeAll) {
@@ -110,11 +112,12 @@ class RouteViewModel : ViewModel() {
 
             val snapshot = runCatching { query.get().await() }.getOrNull()
             if (snapshot != null) {
-                val list = snapshot.documents.mapNotNull { it.toRouteWithPoints() }
+                val list = snapshot.documents.mapNotNull { it.toRouteWithStations() }
                 _routes.value = list.map { it.first }
-                list.forEach { (route, points) ->
+                list.forEach { (route, points, busStations) ->
                     routeDao.insert(route)
                     points.forEach { pointDao.insert(it) }
+                    busStations.forEach { busDao.insert(it) }
                 }
             } else {
                 _routes.value = if (includeAll) {
@@ -244,7 +247,16 @@ class RouteViewModel : ViewModel() {
         val id = UUID.randomUUID().toString()
         val entity = RouteEntity(id, userId, name, poiIds.first(), poiIds.last())
         val points = poiIds.mapIndexed { index, p -> RoutePointEntity(id, index, p) }
-        val busStations = busPoiIds.mapIndexed { index, p -> RouteBusStationEntity(id, index, p) }
+
+        val busIds = if (busPoiIds.isNotEmpty()) {
+            busPoiIds
+        } else {
+            poiIds.filter { pid ->
+                db.poIDao().findById(pid)?.type == Place.Type.BUS_STATION
+            }
+        }
+        val busStations = busIds.mapIndexed { index, p -> RouteBusStationEntity(id, index, p) }
+
 
         runCatching {
             val routeRef = firestore.collection("routes").document(id)
@@ -310,7 +322,16 @@ class RouteViewModel : ViewModel() {
             endPoiId = poiIds.last()
         )
         val points = poiIds.mapIndexed { index, p -> RoutePointEntity(routeId, index, p) }
-        val busStations = busPoiIds.mapIndexed { index, p -> RouteBusStationEntity(routeId, index, p) }
+
+        val busIds = if (busPoiIds.isNotEmpty()) {
+            busPoiIds
+        } else {
+            poiIds.filter { pid ->
+                db.poIDao().findById(pid)?.type == Place.Type.BUS_STATION
+            }
+        }
+        val busStations = busIds.mapIndexed { index, p -> RouteBusStationEntity(routeId, index, p) }
+
 
         if (NetworkUtils.isInternetAvailable(context)) {
             val routeRef = firestore.collection("routes").document(routeId)
