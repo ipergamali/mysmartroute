@@ -63,10 +63,11 @@ kotlin {
 }
 dependencies {
     // Firebase (BoM για αυτόματες εκδόσεις όλων των modules)
-    implementation(platform("com.google.firebase:firebase-bom:34.2.0"))
-    implementation("com.google.firebase:firebase-auth-ktx")
-    implementation("com.google.firebase:firebase-firestore-ktx")
-    implementation("com.google.firebase:firebase-storage-ktx")
+    implementation(platform("com.google.firebase:firebase-bom:34.0.0"))
+    implementation("com.google.firebase:firebase-auth:24.0.1")
+    implementation("com.google.firebase:firebase-firestore:26.0.0")
+    implementation("com.google.firebase:firebase-storage:22.0.0")
+
 
     // Το Dynamic Links δεν καλύπτεται από το BoM, δηλώνουμε ρητά την έκδοση
     implementation("com.google.firebase:firebase-dynamic-links:22.1.0")
