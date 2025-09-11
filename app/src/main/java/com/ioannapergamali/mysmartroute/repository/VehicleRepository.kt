@@ -59,8 +59,8 @@ class VehicleRepository @Inject constructor(
     }
 
     /** Ροή με όλα τα οχήματα. Αν η Room είναι κενή, τα φέρνει από το Firestore. */
-    val vehicles: Flow<List<VehicleEntity>> = vehicleDao.getAllVehicles().onStart {
-        val local = vehicleDao.getAllVehicles().first()
+    val vehicles: Flow<List<VehicleEntity>> = vehicleDao.getVehicles().onStart {
+        val local = vehicleDao.getVehicles().first()
         if (local.isEmpty()) {
             Log.d(TAG, "Τοπικά οχήματα κενά, ανάκτηση από Firestore")
             val remote = firestore.collection("vehicles").get().await()

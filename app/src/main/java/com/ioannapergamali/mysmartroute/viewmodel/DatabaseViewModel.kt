@@ -109,7 +109,7 @@ class DatabaseViewModel : ViewModel() {
             Log.d(TAG, "Loading local data")
             kotlinx.coroutines.flow.combine(
                 db.userDao().getAllUsers(),
-                db.vehicleDao().getAllVehicles(),
+                db.vehicleDao().getVehicles(),
                 db.poIDao().getAll(),
                 db.poiTypeDao().getAll(),
                 db.settingsDao().getAllSettings(),
@@ -522,7 +522,7 @@ class DatabaseViewModel : ViewModel() {
                     Log.d(TAG, "Local database is newer, uploading data")
                     val users = db.userDao().getAllUsers().first()
                     Log.d(TAG, "Fetched ${users.size} local users")
-                    val vehicles = db.vehicleDao().getAllVehicles().first()
+                    val vehicles = db.vehicleDao().getVehicles().first()
                     Log.d(TAG, "Fetched ${vehicles.size} local vehicles")
                     val pois = db.poIDao().getAll().first()
                     Log.d(TAG, "Fetched ${pois.size} local pois")
