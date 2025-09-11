@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Directions
-import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Place as PlaceIcon
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Refresh
@@ -79,12 +79,19 @@ import com.google.maps.android.compose.rememberMarkerState
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
+import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
+import com.ioannapergamali.mysmartroute.model.classes.poi.PoiAddress
+import com.google.android.libraries.places.api.model.Place
+import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
+import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import kotlinx.coroutines.launch
 import com.ioannapergamali.mysmartroute.view.ui.util.observeBubble
 import com.ioannapergamali.mysmartroute.view.ui.util.LocalKeyboardBubbleState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.tasks.await
+import java.util.UUID
 import kotlin.math.abs
 
 private const val TAG = "DeclareRoute"
@@ -485,7 +492,7 @@ fun DeclareRouteScreen(navController: NavController, openDrawer: () -> Unit) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                 IconButton(onClick = {
                     selectingPoint = true
-                }) { Icon(Icons.Default.Place, contentDescription = null) }
+                }) { Icon(Icons.Default.PlaceIcon, contentDescription = null) }
                 IconButton(
                     onClick = {
                         when {
@@ -566,8 +573,10 @@ fun DeclareRouteScreen(navController: NavController, openDrawer: () -> Unit) {
                     if (ids.size >= 2) {
                         calculating = true
                         scope.launch {
-                            val start = LatLng(routePois.first().lat, routePois.first().lng)
-                            val end = LatLng(routePois.last().lat, routePois.last().lng)
+                            val startPoi = routePois.first()
+                            val endPoi = routePois.last()
+                            val start = LatLng(startPoi.lat, startPoi.lng)
+                            val end = LatLng(endPoi.lat, endPoi.lng)
                             val waypoints = routePois.drop(1).dropLast(1).map { LatLng(it.lat, it.lng) }
                             val data = MapsUtils.fetchDurationAndPath(
                                 start,
@@ -580,6 +589,41 @@ fun DeclareRouteScreen(navController: NavController, openDrawer: () -> Unit) {
                                 pathPoints.clear()
                                 pathPoints.addAll(data.points)
                                 routeSaved = false
+
+                                // Λήψη στάσεων λεωφορείου και προσθήκη τους στη διαδρομή
+                                val stops = MapsUtils.fetchTransitStops(start, end, apiKey, waypoints)
+                                val db = MySmartRouteDatabase.getInstance(context)
+                                val dao = db.poIDao()
+                                routeViewModel.clearCurrentRoute()
+                                routeViewModel.addPoiToCurrentRoute(startPoi)
+                                stops.forEach { stop ->
+                                    val existing = dao.findByLocation(stop.location.latitude, stop.location.longitude).firstOrNull()
+                                    val poi = if (existing != null) {
+                                        existing
+                                    } else {
+                                        val newPoi = PoIEntity(
+                                            id = UUID.randomUUID().toString(),
+                                            name = stop.name,
+                                            address = PoiAddress(),
+                                            type = Place.Type.BUS_STATION,
+                                            lat = stop.location.latitude,
+                                            lng = stop.location.longitude
+                                        )
+                                        dao.insert(newPoi)
+                                        try {
+                                            FirebaseFirestore.getInstance()
+                                                .collection("pois")
+                                                .document(newPoi.id)
+                                                .set(newPoi.toFirestoreMap())
+                                                .await()
+                                        } catch (_: Exception) {
+                                        }
+                                        newPoi
+                                    }
+                                    routeViewModel.addPoiToCurrentRoute(poi)
+                                }
+                                routeViewModel.addPoiToCurrentRoute(endPoi)
+                                poiViewModel.loadPois(context)
                             }
                             calculating = false
                         }
