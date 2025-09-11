@@ -3,6 +3,8 @@ package com.ioannapergamali.mysmartroute.model.classes.routes
 
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
+import com.ioannapergamali.mysmartroute.model.interfaces.PoI
+
 import com.ioannapergamali.mysmartroute.model.interfaces.User
 import com.ioannapergamali.mysmartroute.model.interfaces.Vehicle
 
@@ -12,13 +14,15 @@ import com.ioannapergamali.mysmartroute.model.interfaces.Vehicle
  */
 sealed class RouteSegment {
     data class Walk(
-        val start: String,
-        val end: String
+
+        val start: PoI,
+        val end: PoI
     ) : RouteSegment()
 
     data class Bus(
-        val start: String,
-        val end: String,
+        val start: PoI,
+        val end: PoI,
+
         val driver: DriverInfo
     ) : RouteSegment()
 }
