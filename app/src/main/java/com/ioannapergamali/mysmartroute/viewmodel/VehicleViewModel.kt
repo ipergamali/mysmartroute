@@ -124,6 +124,9 @@ class VehicleViewModel : ViewModel() {
             val repo = getRepository(context)
             try {
                 repo.addVehicle(entity)
+                val dbLocal = MySmartRouteDatabase.getInstance(context.applicationContext)
+                val vehiclesLocal = dbLocal.vehicleDao().getVehiclesForUser(userId).first()
+                Log.d(TAG, "Τοπικά βρέθηκαν ${vehiclesLocal.size} οχήματα")
                 val vehicles = repo.vehiclesForUser(userId).first()
                 Log.d(TAG, "Βρέθηκαν ${vehicles.size} οχήματα")
                 Log.d(TAG, "Το όχημα ${entity.id} αποθηκεύτηκε επιτυχώς")
