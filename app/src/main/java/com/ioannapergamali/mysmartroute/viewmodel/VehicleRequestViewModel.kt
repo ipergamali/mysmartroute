@@ -186,35 +186,45 @@ class VehicleRequestViewModel(
     }
 
     /**
-     * Φορτώνει τις μετακινήσεις του τρέχοντος χρήστη από το Firestore.
+     * Φορτώνει τις μετακινήσεις του τρέχοντος χρήστη ή όλων των χρηστών.
+     * Loads movings for the current user or for all users when [allUsers] is true.
      */
-    fun loadPassengerMovings(context: Context) {
+    fun loadPassengerMovings(context: Context, allUsers: Boolean = false) {
         viewModelScope.launch {
-            val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+            val uid = FirebaseAuth.getInstance().currentUser?.uid
+                ?: return@launch
             val dbInstance = MySmartRouteDatabase.getInstance(context)
             val dao = dbInstance.movingDao()
             val routeDao = dbInstance.routeDao()
             val userDao = dbInstance.userDao()
             val vehicleDao = dbInstance.vehicleDao()
-            val localMovings =
+
+            val localMovings = if (allUsers) {
+                dao.getAll().first()
+            } else {
                 dao.getAll().first().filter { it.userId == uid || it.driverId == uid }
+            }
 
-            val passengerSnapshot = runCatching {
-                db.collection("movings").whereEqualTo(
-                    "userId",
-                    db.collection("users").document(uid)
-                ).get().await()
-            }.getOrNull()
-            val driverSnapshot = runCatching {
-                db.collection("movings").whereEqualTo(
-                    "driverId",
-                    db.collection("users").document(uid)
-                ).get().await()
-            }.getOrNull()
-
-            val remote =
+            val remote = if (allUsers) {
+                runCatching { db.collection("movings").get().await() }
+                    .getOrNull()?.documents.orEmpty()
+                    .mapNotNull { it.toMovingEntity() }
+            } else {
+                val passengerSnapshot = runCatching {
+                    db.collection("movings").whereEqualTo(
+                        "userId",
+                        db.collection("users").document(uid)
+                    ).get().await()
+                }.getOrNull()
+                val driverSnapshot = runCatching {
+                    db.collection("movings").whereEqualTo(
+                        "driverId",
+                        db.collection("users").document(uid)
+                    ).get().await()
+                }.getOrNull()
                 (passengerSnapshot?.documents.orEmpty() + driverSnapshot?.documents.orEmpty())
                     .mapNotNull { it.toMovingEntity() }
+            }
 
             val target = if (remote.isNotEmpty()) remote else localMovings
 
