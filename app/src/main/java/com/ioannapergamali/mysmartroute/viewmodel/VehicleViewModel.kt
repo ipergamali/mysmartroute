@@ -20,8 +20,8 @@ import com.ioannapergamali.mysmartroute.repository.VehicleRepository
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Job
 import java.util.UUID
 
 /**
@@ -31,13 +31,16 @@ import java.util.UUID
 class VehicleViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
+    private var repository: VehicleRepository? = null
 
     companion object {
         private const val TAG = "VehicleVM"
     }
 
+    private val _allVehicles = MutableStateFlow<List<VehicleEntity>>(emptyList())
     private val _vehicles = MutableStateFlow<List<VehicleEntity>>(emptyList())
     val vehicles: StateFlow<List<VehicleEntity>> = _vehicles
+    private var vehiclesJob: Job? = null
 
     private val _availableVehicles = MutableStateFlow<List<RemoteVehicle>>(emptyList())
     val availableVehicles: StateFlow<List<RemoteVehicle>> = _availableVehicles
@@ -108,14 +111,14 @@ class VehicleViewModel : ViewModel() {
             val vehicleId = UUID.randomUUID().toString()
             val entity = VehicleEntity(vehicleId, name, description, userId, type.name, seat, color, plate)
 
+            val repo = getRepository(context)
             val dbLocal = MySmartRouteDatabase.getInstance(context)
             val vehicleDao = dbLocal.vehicleDao()
             val userDao = dbLocal.userDao()
-            val repository = VehicleRepository(vehicleDao, userDao, db)
 
             if (NetworkUtils.isInternetAvailable(context)) {
                 try {
-                    repository.addVehicle(entity)
+                    repo.addVehicle(entity)
                     Log.d(TAG, "Το όχημα ${entity.id} αποθηκεύτηκε επιτυχώς")
                     _registerState.value = RegisterState.Success
                 } catch (e: Exception) {
@@ -131,15 +134,6 @@ class VehicleViewModel : ViewModel() {
     }
 
     /**
-     * Ξεκινά ακρόαση αλλαγών στο Firestore και ενημερώνει τη Room.
-     */
-    fun syncVehicles(context: Context) {
-        val dbLocal = MySmartRouteDatabase.getInstance(context)
-        val repository = VehicleRepository(dbLocal.vehicleDao(), dbLocal.userDao(), db)
-        repository.syncVehicles()
-    }
-
-    /**
      * Φορτώνει οχήματα που έχουν καταχωρηθεί, είτε όλα είτε για συγκεκριμένο χρήστη.
      * Loads registered vehicles, optionally for a specific user.
      */
@@ -148,36 +142,22 @@ class VehicleViewModel : ViewModel() {
         includeAll: Boolean = false,
         userId: String? = null
     ) {
-        viewModelScope.launch {
-            val dbLocal = MySmartRouteDatabase.getInstance(context)
-            val vehicleDao = dbLocal.vehicleDao()
-            val userDao = dbLocal.userDao()
-
-            val targetUser = userId ?: auth.currentUser?.uid
-
-            val remote = if (NetworkUtils.isInternetAvailable(context)) {
-                val query = when {
-                    includeAll -> db.collection("vehicles")
-                    targetUser != null ->
-                        db.collection("vehicles").whereEqualTo(
-                            "userId",
-                            db.collection("users").document(targetUser)
-                        )
-                    else -> null
+        getRepository(context)
+        val uid = userId ?: auth.currentUser?.uid
+        _vehicles.value = when {
+            includeAll -> _allVehicles.value
+            uid != null -> _allVehicles.value.filter { it.userId == uid }
+            else -> emptyList()
+        }
+        vehiclesJob?.cancel()
+        vehiclesJob = viewModelScope.launch {
+            _allVehicles.collect { list ->
+                _vehicles.value = when {
+                    includeAll -> list
+                    uid != null -> list.filter { it.userId == uid }
+                    else -> emptyList()
                 }
-                query?.get()?.await()?.documents?.mapNotNull { it.toVehicleEntity() }
-            } else null
-
-            val local = when {
-                includeAll -> vehicleDao.getAllVehicles().first()
-                targetUser != null -> vehicleDao.getVehiclesForUser(targetUser)
-                else -> emptyList()
             }
-
-            var list = (remote ?: emptyList()) + local
-            list = list.distinctBy { it.id }
-            _vehicles.value = list
-            list.forEach { insertVehicleSafely(vehicleDao, userDao, it) }
         }
     }
 
@@ -219,6 +199,17 @@ class VehicleViewModel : ViewModel() {
                     _vehicles.value = _vehicles.value + entity
                 }
             }
+        }
+    }
+
+    private fun getRepository(context: Context): VehicleRepository {
+        val existing = repository
+        if (existing != null) return existing
+        val dbLocal = MySmartRouteDatabase.getInstance(context)
+        return VehicleRepository(dbLocal.vehicleDao(), dbLocal.userDao(), db).also { repo ->
+            repository = repo
+            repo.startSync(viewModelScope)
+            viewModelScope.launch { repo.vehicles.collect { _allVehicles.value = it } }
         }
     }
 
