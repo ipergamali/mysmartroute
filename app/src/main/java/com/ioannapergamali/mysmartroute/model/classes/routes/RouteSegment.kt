@@ -1,7 +1,9 @@
 package com.ioannapergamali.mysmartroute.model.classes.routes
 
+
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.model.interfaces.PoI
+
 
 /**
  * Αντιπροσώπευση τμημάτων διαδρομής.
@@ -9,6 +11,7 @@ import com.ioannapergamali.mysmartroute.model.interfaces.PoI
  */
 sealed class RouteSegment {
     data class Walk(
+
         val start: PoI,
         val end: PoI
     ) : RouteSegment()
@@ -16,12 +19,14 @@ sealed class RouteSegment {
     data class Bus(
         val start: PoI,
         val end: PoI,
+
         val driver: DriverInfo
     ) : RouteSegment()
 }
 
 /**
  * Βασικές πληροφορίες οδηγού για τα τμήματα λεωφορείου.
+
  * Περιλαμβάνεται το ID του οδηγού και τα στοιχεία του λεωφορείου.
  */
 data class DriverInfo(
@@ -38,6 +43,7 @@ data class DriverInfo(
     }
 }
 
+
 /**
  * Διαδρομή αποτελούμενη από πολλαπλά τμήματα.
  */
@@ -51,7 +57,9 @@ data class ComplexRoute(
 fun isDriverAvailable(driverId: String, route: ComplexRoute): Boolean {
     return route.segments
         .filterIsInstance<RouteSegment.Bus>()
+
         .any { it.driver.driverId == driverId }
+
 }
 
 /**
@@ -71,7 +79,9 @@ fun declareDriverAvailability(
         .map { segment ->
             DriverAvailability(
                 segment,
+
                 availableDriverIds.contains(segment.driver.driverId)
             )
         }
+
 }
