@@ -499,7 +499,7 @@ class DatabaseViewModel : ViewModel() {
                         "Remote data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} poiTypes:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size} routes:${routes.size} movings:${movings.size} declarations:${declarations.size} availabilities:${availabilities.size} favorites:${favorites.size} seatRes:${seatReservations.size} transferReq:${transferRequests.size} tripRatings:${tripRatings.size}"
                     )
                     users.forEach { db.userDao().insert(it) }
-                    vehicles.forEach { insertVehicleSafely(db.vehicleDao(), db.userDao(), it) }
+                    vehicles.forEach { insertVehicleSafely(db, it) }
                     pois.forEach { db.poIDao().insert(it) }
                     db.poiTypeDao().insertAll(poiTypes)
                     settings.forEach { insertSettingsSafely(db.settingsDao(), db.userDao(), it) }

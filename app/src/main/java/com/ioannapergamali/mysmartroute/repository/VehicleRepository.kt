@@ -4,9 +4,8 @@ import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
-import com.ioannapergamali.mysmartroute.data.local.VehicleDao
+import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.VehicleEntity
-import com.ioannapergamali.mysmartroute.data.local.UserDao
 import com.ioannapergamali.mysmartroute.data.local.insertVehicleSafely
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.utils.toVehicleEntity
@@ -26,13 +25,14 @@ import javax.inject.Singleton
  */
 @Singleton
 class VehicleRepository @Inject constructor(
-    private val vehicleDao: VehicleDao,
-    private val userDao: UserDao,
+    private val db: MySmartRouteDatabase,
     private val firestore: FirebaseFirestore
 ) {
     companion object {
         private const val TAG = "VehicleRepo"
     }
+
+    private val vehicleDao = db.vehicleDao()
 
     /**
      * Αποθηκεύει όχημα στο Firestore και τοπικά στη Room.
@@ -52,7 +52,7 @@ class VehicleRepository @Inject constructor(
         } catch (e: Exception) {
             Log.e(TAG, "Αποτυχία αποθήκευσης οχήματος ${entity.id} στο Firestore", e)
         } finally {
-            insertVehicleSafely(vehicleDao, userDao, entity)
+            insertVehicleSafely(db, entity)
             Log.d(TAG, "Το όχημα ${entity.id} αποθηκεύτηκε τοπικά")
         }
     }
@@ -64,7 +64,7 @@ class VehicleRepository @Inject constructor(
             Log.d(TAG, "Τοπικά οχήματα κενά, ανάκτηση από Firestore")
             val remote = firestore.collection("vehicles").get().await()
                 .documents.mapNotNull { it.toVehicleEntity() }
-            remote.forEach { insertVehicleSafely(vehicleDao, userDao, it) }
+            remote.forEach { insertVehicleSafely(db, it) }
             Log.d(TAG, "Εισαγωγή ${remote.size} οχημάτων από Firestore ολοκληρώθηκε")
         }
     }
@@ -88,7 +88,7 @@ class VehicleRepository @Inject constructor(
                 }
                 val vehicles = snapshot.documents.mapNotNull { it.toVehicleEntity() }
                 scope.launch(Dispatchers.IO) {
-                    vehicles.forEach { insertVehicleSafely(vehicleDao, userDao, it) }
+                    vehicles.forEach { insertVehicleSafely(db, it) }
                     Log.d(TAG, "Εισαγωγή ${vehicles.size} οχημάτων στη Room ολοκληρώθηκε")
                 }
             }
