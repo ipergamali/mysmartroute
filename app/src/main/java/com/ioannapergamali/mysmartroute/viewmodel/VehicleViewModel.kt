@@ -10,8 +10,8 @@ import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.VehicleEntity
 import com.ioannapergamali.mysmartroute.data.local.insertVehicleSafely
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
-import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
+import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import com.ioannapergamali.mysmartroute.utils.VehiclePlacesUtils
 import com.ioannapergamali.mysmartroute.model.classes.vehicles.RemoteVehicle
 import com.ioannapergamali.mysmartroute.utils.toVehicleEntity
@@ -109,24 +109,25 @@ class VehicleViewModel : ViewModel() {
             }
 
             val vehicleId = UUID.randomUUID().toString()
-            val entity = VehicleEntity(vehicleId, name, description, userId, type.name, seat, color, plate)
+            val entity = VehicleEntity(
+                vehicleId,
+                name,
+                description,
+                userId,
+                type.name,
+                seat,
+                color,
+                plate
+            )
 
             val repo = getRepository(context)
-            val dbLocal = MySmartRouteDatabase.getInstance(context)
-
-            if (NetworkUtils.isInternetAvailable(context)) {
-                try {
-                    repo.addVehicle(entity)
-                    Log.d(TAG, "Το όχημα ${entity.id} αποθηκεύτηκε επιτυχώς")
-                    _registerState.value = RegisterState.Success
-                } catch (e: Exception) {
-                    Log.e(TAG, "Αποτυχία καταχώρησης οχήματος", e)
-                    _registerState.value = RegisterState.Error(e.localizedMessage ?: "Failed")
-                }
-            } else {
-                insertVehicleSafely(dbLocal, entity)
-                Log.d(TAG, "Αποθήκευση οχήματος ${entity.id} μόνο τοπικά λόγω έλλειψης δικτύου")
+            try {
+                repo.addVehicle(entity)
+                Log.d(TAG, "Το όχημα ${entity.id} αποθηκεύτηκε επιτυχώς")
                 _registerState.value = RegisterState.Success
+            } catch (e: Exception) {
+                Log.e(TAG, "Αποτυχία καταχώρησης οχήματος", e)
+                _registerState.value = RegisterState.Error(e.localizedMessage ?: "Failed")
             }
         }
     }
