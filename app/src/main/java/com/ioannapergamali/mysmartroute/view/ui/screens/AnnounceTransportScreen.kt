@@ -156,7 +156,9 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
 
         var list = vehicles
         selectedDriverId?.let { id -> list = list.filter { it.userId == id } }
+
         filteredVehicles = list
+
 
         if (selectedRouteId != null && selectedVehicle != null) {
             refreshRoute()
