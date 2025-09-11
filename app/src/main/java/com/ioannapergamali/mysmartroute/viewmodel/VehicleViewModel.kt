@@ -1,6 +1,7 @@
 package com.ioannapergamali.mysmartroute.viewmodel
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
@@ -31,6 +32,10 @@ class VehicleViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
+    companion object {
+        private const val TAG = "VehicleVM"
+    }
+
     private val _vehicles = MutableStateFlow<List<VehicleEntity>>(emptyList())
     val vehicles: StateFlow<List<VehicleEntity>> = _vehicles
 
@@ -54,6 +59,7 @@ class VehicleViewModel : ViewModel() {
         plate: String
     ) {
         viewModelScope.launch {
+            Log.d(TAG, "Έναρξη καταχώρησης οχήματος $name τύπος=$type")
             _registerState.value = RegisterState.Loading
 
             val userId = auth.currentUser?.uid
@@ -110,12 +116,15 @@ class VehicleViewModel : ViewModel() {
             if (NetworkUtils.isInternetAvailable(context)) {
                 try {
                     repository.addVehicle(entity)
+                    Log.d(TAG, "Το όχημα ${entity.id} αποθηκεύτηκε επιτυχώς")
                     _registerState.value = RegisterState.Success
                 } catch (e: Exception) {
+                    Log.e(TAG, "Αποτυχία καταχώρησης οχήματος", e)
                     _registerState.value = RegisterState.Error(e.localizedMessage ?: "Failed")
                 }
             } else {
                 insertVehicleSafely(vehicleDao, userDao, entity)
+                Log.d(TAG, "Αποθήκευση οχήματος ${entity.id} μόνο τοπικά λόγω έλλειψης δικτύου")
                 _registerState.value = RegisterState.Success
             }
         }
