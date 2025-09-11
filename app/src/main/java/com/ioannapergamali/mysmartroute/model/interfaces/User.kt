@@ -12,7 +12,6 @@ interface User {
     val address: UserAddress
     val phoneNum: String
     val username: String
-    val password: String
 
     fun getRole(): UserRole
 }

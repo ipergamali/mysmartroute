@@ -9,8 +9,7 @@ open class Driver(
     surname: String,
     address: UserAddress,
     phoneNum: String,
-    username: String,
-    password: String
-) : Passenger(id, name, email, surname, address, phoneNum, username, password) {
+    username: String
+) : Passenger(id, name, email, surname, address, phoneNum, username) {
     override fun getRole() = UserRole.DRIVER
 }

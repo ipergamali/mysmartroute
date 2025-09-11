@@ -51,7 +51,6 @@ fun UserEntity.toFirestoreMap(): Map<String, Any> = buildMap {
     } else {
         Log.d("FirestoreMappers", "photoUrl κενό - δεν προστέθηκε")
     }
-    put("password", password)
     put("role", role)
     put("roleId", roleId)
     put("city", city)
@@ -158,7 +157,6 @@ fun DocumentSnapshot.toUserEntity(): UserEntity? {
         email = email,
         phoneNum = phoneNum,
         photoUrl = photo,
-        password = getString("password") ?: "",
         role = getString("role") ?: "",
         roleId = when (val rawRole = get("roleId")) {
             is DocumentReference -> rawRole.id
