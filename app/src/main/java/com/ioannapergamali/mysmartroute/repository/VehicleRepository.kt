@@ -2,6 +2,7 @@ package com.ioannapergamali.mysmartroute.repository
 
 import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import com.ioannapergamali.mysmartroute.data.local.VehicleDao
 import com.ioannapergamali.mysmartroute.data.local.VehicleEntity
 import com.ioannapergamali.mysmartroute.data.local.UserDao
@@ -48,32 +49,33 @@ class VehicleRepository @Inject constructor(
         Log.d(TAG, "Το όχημα ${vehicle.id} αποθηκεύτηκε τοπικά")
     }
 
+    /** Ροή με όλα τα οχήματα από τη Room. */
+    val vehicles: Flow<List<VehicleEntity>> = vehicleDao.getAllVehicles()
+
+    private var registration: ListenerRegistration? = null
+
     /**
-     * Συγχρονίζει τοπική βάση με αλλαγές από το Firestore.
+     * Εκκινεί συγχρονισμό Firestore → Room.
      */
-    fun syncVehicles() {
-        firestore.collection("vehicles")
+    fun startSync(scope: CoroutineScope) {
+        if (registration != null) return
+        registration = firestore.collection("vehicles")
             .addSnapshotListener { snapshot, e ->
-                if (e != null) {
+                if (e != null || snapshot == null) {
                     Log.e(TAG, "Σφάλμα συγχρονισμού", e)
                     return@addSnapshotListener
                 }
-                if (snapshot == null) {
-                    Log.w(TAG, "Κενό snapshot για vehicles")
-                    return@addSnapshotListener
-                }
-                Log.d(TAG, "Λήψη ${snapshot.documents.size} οχημάτων από Firestore")
                 val vehicles = snapshot.documents.mapNotNull { it.toVehicleEntity() }
-                CoroutineScope(Dispatchers.IO).launch {
+                scope.launch(Dispatchers.IO) {
                     vehicles.forEach { insertVehicleSafely(vehicleDao, userDao, it) }
                     Log.d(TAG, "Εισαγωγή ${vehicles.size} οχημάτων στη Room ολοκληρώθηκε")
                 }
             }
     }
 
-    /**
-     * Ροή με όλα τα οχήματα από τη Room.
-     */
-    fun getVehicles(): Flow<List<VehicleEntity>> = vehicleDao.getAllVehicles()
+    fun stopSync() {
+        registration?.remove()
+        registration = null
+    }
 }
 
