@@ -101,6 +101,7 @@ fun AvailableTransportsScreen(
 
     val today = remember { LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli() }
     val sortedDecls = declarations.filter { decl ->
+        if (routeId != null && decl.routeId != routeId) return@filter false
         // Η δήλωση πρέπει να έχει κόστος μικρότερο ή ίσο με αυτό που όρισε ο χρήστης
         if (maxCost != null && decl.cost > maxCost) return@filter false
         val reserved = reservationCounts[decl.id] ?: 0
