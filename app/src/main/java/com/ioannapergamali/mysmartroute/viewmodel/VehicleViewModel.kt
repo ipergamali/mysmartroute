@@ -20,6 +20,7 @@ import com.ioannapergamali.mysmartroute.repository.VehicleRepository
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Job
 import java.util.UUID
@@ -60,7 +61,7 @@ class VehicleViewModel : ViewModel() {
         color: String,
         plate: String
     ) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             Log.d(TAG, "Έναρξη καταχώρησης οχήματος $name τύπος=$type")
             _registerState.value = RegisterState.Loading
 

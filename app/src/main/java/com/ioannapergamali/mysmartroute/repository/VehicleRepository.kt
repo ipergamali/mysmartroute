@@ -15,6 +15,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -34,7 +35,7 @@ class VehicleRepository @Inject constructor(
     /**
      * Αποθηκεύει όχημα στο Firestore και τοπικά στη Room.
      */
-    suspend fun addVehicle(vehicle: VehicleEntity) {
+    suspend fun addVehicle(vehicle: VehicleEntity) = withContext(Dispatchers.IO) {
         val uid = FirebaseAuth.getInstance().currentUser?.uid
             ?: throw IllegalStateException("User not logged in")
         val entity = vehicle.copy(userId = vehicle.userId.ifBlank { uid })
