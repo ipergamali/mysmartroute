@@ -193,7 +193,11 @@ fun AvailableTransportsScreen(
                                               startTime = decl.startTime,
                                               startPoiId = startId ?: "",
                                               endPoiId = endId ?: "",
-                                              declarationId = decl.id
+                                              declarationId = decl.id,
+                                              driverId = decl.driverId,
+                                              vehicleId = decl.vehicleId,
+                                              cost = decl.cost,
+                                              durationMinutes = decl.durationMinutes
                                           )
                                         message = result.fold(
                                             onSuccess = {
