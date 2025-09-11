@@ -23,6 +23,7 @@ import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.SeatReservationEntity
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.utils.toUserEntity
+import com.ioannapergamali.mysmartroute.data.local.insertUserSafely
 import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -63,7 +64,7 @@ fun ReservationDetailsScreen(
                         .get()
                         .await()
                         .toUserEntity()
-                        ?.also { db.userDao().insert(it) }
+                        ?.also { insertUserSafely(db.userDao(), it) }
                 user?.let { "${it.name} ${it.surname}" } ?: driverId
             }.orEmpty()
             val localPassenger = db.userDao().getUser(res.userId)
@@ -76,7 +77,7 @@ fun ReservationDetailsScreen(
                     .get()
                     .await()
                     .toUserEntity()
-                    ?.also { db.userDao().insert(it) }
+                    ?.also { insertUserSafely(db.userDao(), it) }
                     ?.let { user ->
                         listOf(user.name, user.surname)
                             .filter { it.isNotBlank() }

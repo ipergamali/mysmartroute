@@ -14,6 +14,7 @@ import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.data.local.PoiTypeEntity
 import com.ioannapergamali.mysmartroute.data.local.SettingsEntity
 import com.ioannapergamali.mysmartroute.data.local.insertSettingsSafely
+import com.ioannapergamali.mysmartroute.data.local.insertUserSafely
 import com.ioannapergamali.mysmartroute.data.local.insertVehicleSafely
 import com.ioannapergamali.mysmartroute.data.local.insertMenuSafely
 import com.ioannapergamali.mysmartroute.data.local.RoleEntity
@@ -498,7 +499,7 @@ class DatabaseViewModel : ViewModel() {
                         TAG,
                         "Remote data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} poiTypes:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size} routes:${routes.size} movings:${movings.size} declarations:${declarations.size} availabilities:${availabilities.size} favorites:${favorites.size} seatRes:${seatReservations.size} transferReq:${transferRequests.size} tripRatings:${tripRatings.size}"
                     )
-                    users.forEach { db.userDao().insert(it) }
+                    users.forEach { insertUserSafely(db.userDao(), it) }
                     vehicles.forEach { insertVehicleSafely(db, it) }
                     pois.forEach { db.poIDao().insert(it) }
                     db.poiTypeDao().insertAll(poiTypes)

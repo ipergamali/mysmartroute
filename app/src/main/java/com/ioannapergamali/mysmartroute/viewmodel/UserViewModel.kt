@@ -11,6 +11,7 @@ import com.ioannapergamali.mysmartroute.data.local.UserEntity
 import com.ioannapergamali.mysmartroute.data.local.NotificationEntity
 import com.ioannapergamali.mysmartroute.data.local.demoteDriverToPassenger
 import com.ioannapergamali.mysmartroute.data.local.promotePassengerToDriver
+import com.ioannapergamali.mysmartroute.data.local.insertUserSafely
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
@@ -156,7 +157,7 @@ class UserViewModel : ViewModel() {
                 UserRole.ADMIN -> "role_admin"
             }
             user.roleId = newRoleId
-            userDao.insert(user)
+            insertUserSafely(userDao, user)
             runCatching {
                 db.collection("users").document(userId)
                     .update("role", newRole.name, "roleId", newRoleId)
