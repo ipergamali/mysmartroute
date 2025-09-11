@@ -52,6 +52,10 @@ class VehicleRepository @Inject constructor(
     /** Ροή με όλα τα οχήματα από τη Room. */
     val vehicles: Flow<List<VehicleEntity>> = vehicleDao.getAllVehicles()
 
+    /** Ροή με οχήματα συγκεκριμένου οδηγού. */
+    fun vehiclesForUser(userId: String): Flow<List<VehicleEntity>> =
+        vehicleDao.getVehiclesForUser(userId)
+
     private var registration: ListenerRegistration? = null
 
     /**

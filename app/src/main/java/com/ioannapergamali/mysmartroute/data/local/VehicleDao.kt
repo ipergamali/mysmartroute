@@ -6,6 +6,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface VehicleDao {
@@ -13,10 +14,10 @@ interface VehicleDao {
     suspend fun insert(vehicle: VehicleEntity)
 
     @Query("SELECT * FROM vehicles WHERE userId = :userId")
-    suspend fun getVehiclesForUser(userId: String): List<VehicleEntity>
+    fun getVehiclesForUser(userId: String): Flow<List<VehicleEntity>>
 
     @Query("SELECT * FROM vehicles")
-    fun getAllVehicles(): kotlinx.coroutines.flow.Flow<List<VehicleEntity>>
+    fun getAllVehicles(): Flow<List<VehicleEntity>>
 
     @Query("SELECT * FROM vehicles WHERE id = :id LIMIT 1")
     suspend fun getVehicle(id: String): VehicleEntity?

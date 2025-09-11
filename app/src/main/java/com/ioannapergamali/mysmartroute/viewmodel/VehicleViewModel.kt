@@ -37,7 +37,6 @@ class VehicleViewModel : ViewModel() {
         private const val TAG = "VehicleVM"
     }
 
-    private val _allVehicles = MutableStateFlow<List<VehicleEntity>>(emptyList())
     private val _vehicles = MutableStateFlow<List<VehicleEntity>>(emptyList())
     val vehicles: StateFlow<List<VehicleEntity>> = _vehicles
     private var vehiclesJob: Job? = null
@@ -142,21 +141,14 @@ class VehicleViewModel : ViewModel() {
         includeAll: Boolean = false,
         userId: String? = null
     ) {
-        getRepository(context)
+        val repo = getRepository(context)
         val uid = userId ?: auth.currentUser?.uid
-        _vehicles.value = when {
-            includeAll -> _allVehicles.value
-            uid != null -> _allVehicles.value.filter { it.userId == uid }
-            else -> emptyList()
-        }
         vehiclesJob?.cancel()
         vehiclesJob = viewModelScope.launch {
-            _allVehicles.collect { list ->
-                _vehicles.value = when {
-                    includeAll -> list
-                    uid != null -> list.filter { it.userId == uid }
-                    else -> emptyList()
-                }
+            when {
+                includeAll -> repo.vehicles.collect { _vehicles.value = it }
+                uid != null -> repo.vehiclesForUser(uid).collect { _vehicles.value = it }
+                else -> _vehicles.value = emptyList()
             }
         }
     }
@@ -209,7 +201,6 @@ class VehicleViewModel : ViewModel() {
         return VehicleRepository(dbLocal.vehicleDao(), dbLocal.userDao(), db).also { repo ->
             repository = repo
             repo.startSync(viewModelScope)
-            viewModelScope.launch { repo.vehicles.collect { _allVehicles.value = it } }
         }
     }
 
