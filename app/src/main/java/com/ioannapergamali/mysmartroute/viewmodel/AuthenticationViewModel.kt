@@ -20,6 +20,7 @@ import com.ioannapergamali.mysmartroute.data.local.MenuOptionEntity
 import com.ioannapergamali.mysmartroute.data.local.MenuWithOptions
 import com.ioannapergamali.mysmartroute.repository.VehicleRepository
 import com.ioannapergamali.mysmartroute.data.local.insertMenuSafely
+import com.ioannapergamali.mysmartroute.data.local.insertUserSafely
 import com.ioannapergamali.mysmartroute.data.local.RoleEntity
 import com.ioannapergamali.mysmartroute.model.classes.users.Admin
 import com.ioannapergamali.mysmartroute.model.classes.users.Driver
@@ -186,7 +187,7 @@ class AuthenticationViewModel : ViewModel() {
                     }
 
                     batch.commit().await()
-                    userDao.insert(userEntity.copy(id = uid, roleId = roleId))
+                    insertUserSafely(userDao, userEntity.copy(id = uid, roleId = roleId))
                     _signUpState.value = SignUpState.Success
                     loadCurrentUserRole(context, loadMenus = true)
                 } catch (e: Exception) {
@@ -194,7 +195,7 @@ class AuthenticationViewModel : ViewModel() {
                 }
             } else {
                 val roleId = roleIds[role] ?: "role_passenger"
-                userDao.insert(userEntity.copy(roleId = roleId))
+                insertUserSafely(userDao, userEntity.copy(roleId = roleId))
                 _signUpState.value = SignUpState.Success
             }
         }
@@ -389,7 +390,7 @@ class AuthenticationViewModel : ViewModel() {
                 Log.i(TAG, "Role from Firestore: $roleName")
                 _currentUserRole.value = runCatching { UserRole.valueOf(roleName) }.getOrNull()
                 val current = userDao.getUser(uid) ?: UserEntity(id = uid)
-                userDao.insert(current.copy(role = roleName, roleId = roleId))
+                insertUserSafely(userDao, current.copy(role = roleName, roleId = roleId))
                 if (loadMenus) loadCurrentUserMenus(context)
                 return@launch
             }
@@ -501,7 +502,7 @@ class AuthenticationViewModel : ViewModel() {
                 }
                 val resolvedRoleId = remoteRoleId ?: fallbackRole?.let { roleIds[it] }
                     ?: return@launch
-                user?.let { dbLocal.userDao().insert(it.copy(roleId = resolvedRoleId)) }
+                user?.let { insertUserSafely(dbLocal.userDao(), it.copy(roleId = resolvedRoleId)) }
                 Log.i(TAG, "Fetched roleId from Firestore: $resolvedRoleId")
                 resolvedRoleId
             }
