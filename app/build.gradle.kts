@@ -107,10 +107,10 @@ dependencies {
     // DataStore για αποθήκευση ρυθμίσεων
     implementation("androidx.datastore:datastore-preferences:1.1.7")
 
-    // Room
-    implementation("androidx.room:room-runtime:2.8.0")
-    implementation("androidx.room:room-ktx:2.8.0")
-    kapt("androidx.room:room-compiler:2.8.0")
+    // Room (σταθερή έκδοση 2.6.1 με υποστήριξη Upsert)
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+    kapt("androidx.room:room-compiler:2.6.1")
 
     // Google Maps
     implementation("com.google.android.gms:play-services-maps:19.2.0")
@@ -141,7 +141,7 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     testImplementation("androidx.test:core:1.6.1")
     testImplementation("org.robolectric:robolectric:4.13")
-    testImplementation("androidx.room:room-testing:2.8.0")
+    testImplementation("androidx.room:room-testing:2.6.1")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 }

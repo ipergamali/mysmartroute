@@ -3,15 +3,19 @@
 package com.ioannapergamali.mysmartroute.data.local
 
 import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
+import androidx.room.Upsert
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface VehicleDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(vehicle: VehicleEntity)
+    /** Εισάγει ή ενημερώνει ένα όχημα. */
+    @Upsert
+    suspend fun upsert(vehicle: VehicleEntity)
+
+    /** Εισάγει ή ενημερώνει πολλαπλά οχήματα. */
+    @Upsert
+    suspend fun upsert(vehicles: List<VehicleEntity>)
 
     @Query("SELECT * FROM vehicles WHERE userId = :userId")
     fun getVehiclesForUser(userId: String): Flow<List<VehicleEntity>>
