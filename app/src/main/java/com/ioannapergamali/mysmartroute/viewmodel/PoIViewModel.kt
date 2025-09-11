@@ -38,14 +38,15 @@ class PoIViewModel : ViewModel() {
         viewModelScope.launch {
             val dao = MySmartRouteDatabase.getInstance(context).poIDao()
             _pois.value = dao.getAll().first()
-            db.collection("pois").get()
-                .addOnSuccessListener { snapshot ->
-                    val list = snapshot.documents.mapNotNull { doc ->
-                        doc.toPoIEntity()
-                    }
-                    _pois.value = list
-                    viewModelScope.launch { dao.insertAll(list) }
+            try {
+                val snapshot = db.collection("pois").get().await()
+                val list = snapshot.documents.mapNotNull { doc ->
+                    doc.toPoIEntity()
                 }
+                _pois.value = list
+                dao.insertAll(list)
+            } catch (_: Exception) {
+            }
         }
     }
 
