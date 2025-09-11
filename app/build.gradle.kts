@@ -63,10 +63,9 @@ kotlin {
 }
 dependencies {
     // Firebase (BoM για αυτόματες εκδόσεις όλων των modules)
-    implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
+    implementation(platform("com.google.firebase:firebase-bom:34.2.0"))
     implementation("com.google.firebase:firebase-auth-ktx")
-    // Χρήση της νεότερης έκδοσης Firestore ώστε το userId να αποθηκεύεται ως αναφορά
-    implementation("com.google.firebase:firebase-firestore-ktx:25.1.4")
+    implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.firebase:firebase-storage-ktx")
 
     // Το Dynamic Links δεν καλύπτεται από το BoM, δηλώνουμε ρητά την έκδοση
@@ -108,9 +107,9 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.1.7")
 
     // Room
-    implementation("androidx.room:room-runtime:2.7.1")
-    implementation("androidx.room:room-ktx:2.7.1")
-    kapt("androidx.room:room-compiler:2.7.1")
+    implementation("androidx.room:room-runtime:2.8.0")
+    implementation("androidx.room:room-ktx:2.8.0")
+    kapt("androidx.room:room-compiler:2.8.0")
 
     // Google Maps
     implementation("com.google.android.gms:play-services-maps:19.2.0")
@@ -141,7 +140,7 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     testImplementation("androidx.test:core:1.6.1")
     testImplementation("org.robolectric:robolectric:4.13")
-    testImplementation("androidx.room:room-testing:2.7.1")
+    testImplementation("androidx.room:room-testing:2.8.0")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 }

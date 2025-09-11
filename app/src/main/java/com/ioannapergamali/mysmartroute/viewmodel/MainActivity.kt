@@ -38,6 +38,10 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.launch
 import com.ioannapergamali.mysmartroute.model.interfaces.ThemeOption
 import android.view.WindowManager
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.ioannapergamali.mysmartroute.repository.VehicleRepository
+import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 
 
 
@@ -49,6 +53,10 @@ import android.view.WindowManager
 class MainActivity : ComponentActivity() {
     private val settingsViewModel: SettingsViewModel by viewModels()
     private val requestViewModel: VehicleRequestViewModel by viewModels()
+    private val vehicleRepository by lazy {
+        val db = MySmartRouteDatabase.getInstance(applicationContext)
+        VehicleRepository(db, FirebaseFirestore.getInstance())
+    }
     private val locationPermissions = arrayOf(
         Manifest.permission.ACCESS_COARSE_LOCATION,
         Manifest.permission.ACCESS_FINE_LOCATION
@@ -128,6 +136,16 @@ class MainActivity : ComponentActivity() {
                         requestId = requestId
                     )
                 }
+            }
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val user = FirebaseAuth.getInstance().currentUser
+        if (user != null) {
+            lifecycleScope.launch {
+                vehicleRepository.syncVehicles()
             }
         }
     }
