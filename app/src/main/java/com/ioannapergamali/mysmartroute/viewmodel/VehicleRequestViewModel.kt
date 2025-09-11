@@ -15,11 +15,13 @@ import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.RouteDao
 import com.ioannapergamali.mysmartroute.data.local.UserDao
 import com.ioannapergamali.mysmartroute.data.local.VehicleDao
+import com.ioannapergamali.mysmartroute.data.local.TransferRequestEntity
 import kotlinx.coroutines.Dispatchers
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.utils.toMovingEntity
 import com.ioannapergamali.mysmartroute.utils.toTransportDeclarationEntity
 import com.ioannapergamali.mysmartroute.utils.NotificationUtils
+import com.ioannapergamali.mysmartroute.utils.toTransferRequestEntity
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.data.local.SeatReservationEntity
 import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationEntity
@@ -83,44 +85,65 @@ class VehicleRequestViewModel(
     fun loadRequests(context: Context, allUsers: Boolean = false) {
         viewModelScope.launch {
             val dbInstance = MySmartRouteDatabase.getInstance(context)
-            val dao = dbInstance.movingDao()
+            val dao = dbInstance.transferRequestDao()
             val routeDao = dbInstance.routeDao()
             val userDao = dbInstance.userDao()
             val vehicleDao = dbInstance.vehicleDao()
             val userId = FirebaseAuth.getInstance().currentUser?.uid
 
-            val local = if (allUsers) {
+            val local: List<TransferRequestEntity> = if (allUsers) {
                 dao.getAll().first()
             } else {
-                userId?.let { dao.getMovingsForUser(it).first() } ?: emptyList()
+                userId?.let { dao.getRequestsForPassenger(it).first() } ?: emptyList()
             }
 
             val snapshot = runCatching {
                 if (allUsers) {
-                    db.collection("movings").get().await()
+                    db.collection("transfer_requests").get().await()
                 } else if (userId != null) {
-                    db.collection("movings").whereEqualTo(
-                        "userId",
+                    db.collection("transfer_requests").whereEqualTo(
+                        "passengerId",
                         db.collection("users").document(userId)
                     ).get().await()
                 } else null
             }.getOrNull()
 
-            val remote = snapshot?.documents?.mapNotNull { it.toMovingEntity() }.orEmpty()
+            val remote: List<TransferRequestEntity> =
+                snapshot?.documents?.mapNotNull { it.toTransferRequestEntity() }.orEmpty()
 
             val target = when {
                 remote.isNotEmpty() -> remote
                 local.isNotEmpty() -> local
-                else -> _requests.value
+                else -> emptyList()
             }
 
-            val enriched = mutableListOf<MovingEntity>()
-            for (m in target) {
-                enrichMoving(m, routeDao, userDao, vehicleDao)
-                enriched.add(m)
+            val movings = mutableListOf<MovingEntity>()
+            for (tr in target) {
+                val route = routeDao.findById(tr.routeId)
+                val routeDoc = if (route == null) {
+                    runCatching { db.collection("routes").document(tr.routeId).get().await() }.getOrNull()
+                } else null
+                val startPoiId = route?.startPoiId ?: routeDoc?.getString("startPoiId").orEmpty()
+                val endPoiId = route?.endPoiId ?: routeDoc?.getString("endPoiId").orEmpty()
+                val moving = MovingEntity(
+                    id = tr.firebaseId.ifBlank { "req_${tr.requestNumber}" },
+                    routeId = tr.routeId,
+                    userId = tr.passengerId,
+                    date = tr.date,
+                    vehicleId = "",
+                    cost = tr.cost,
+                    durationMinutes = 0,
+                    startPoiId = startPoiId,
+                    endPoiId = endPoiId,
+                    driverId = tr.driverId,
+                    status = tr.status.name.lowercase(),
+                    requestNumber = tr.requestNumber
+                )
+                enrichMoving(moving, routeDao, userDao, vehicleDao)
+                movings.add(moving)
             }
 
-            _requests.value = enriched
+            _requests.value = movings
 
             if (remote.isNotEmpty()) {
                 remote.forEach { dao.insert(it) }
