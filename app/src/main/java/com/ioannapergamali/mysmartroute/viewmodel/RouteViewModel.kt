@@ -362,11 +362,23 @@ class RouteViewModel : ViewModel() {
     ): Pair<Int, List<LatLng>> {
         val pois = getRoutePois(context, routeId)
         if (pois.size < 2) return 0 to emptyList()
-        val origin = LatLng(pois.first().lat, pois.first().lng)
-        val destination = LatLng(pois.last().lat, pois.last().lng)
-        val waypoints = pois.drop(1).dropLast(1).map { LatLng(it.lat, it.lng) }
+
         val apiKey = MapsUtils.getApiKey(context)
-        val data = MapsUtils.fetchDurationAndPath(origin, destination, apiKey, vehicleType, waypoints)
-        return data.duration to data.points
+        var totalDuration = 0
+        val allPoints = mutableListOf<LatLng>()
+
+        for (i in 0 until pois.lastIndex) {
+            val origin = LatLng(pois[i].lat, pois[i].lng)
+            val destination = LatLng(pois[i + 1].lat, pois[i + 1].lng)
+            val segment = MapsUtils.fetchDurationAndPath(origin, destination, apiKey, vehicleType)
+            totalDuration += segment.duration
+            if (allPoints.isEmpty()) {
+                allPoints.addAll(segment.points)
+            } else {
+                allPoints.addAll(segment.points.drop(1))
+            }
+        }
+
+        return totalDuration to allPoints
     }
 }
