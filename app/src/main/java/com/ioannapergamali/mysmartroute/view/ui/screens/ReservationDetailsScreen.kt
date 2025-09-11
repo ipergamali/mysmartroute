@@ -2,6 +2,9 @@ package com.ioannapergamali.mysmartroute.view.ui.screens
 
 import android.net.Uri
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ConfirmationNumber
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Scaffold
@@ -108,6 +111,15 @@ fun ReservationDetailsScreen(
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
                 Column(Modifier.padding(16.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Filled.ConfirmationNumber,
+                            contentDescription = null
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(stringResource(R.string.ticket))
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
                     Text("${stringResource(R.string.date)}: ${formatter.format(Date(res.date))}")
                     Text("${stringResource(R.string.route)}: $routeName")
                     Text("${stringResource(R.string.start_point)}: $startPoiName")
