@@ -13,6 +13,8 @@ import com.ioannapergamali.mysmartroute.utils.toVehicleEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
@@ -55,8 +57,17 @@ class VehicleRepository @Inject constructor(
         Log.d(TAG, "Το όχημα ${entity.id} αποθηκεύτηκε τοπικά")
     }
 
-    /** Ροή με όλα τα οχήματα από τη Room. */
-    val vehicles: Flow<List<VehicleEntity>> = vehicleDao.getAllVehicles()
+    /** Ροή με όλα τα οχήματα. Αν η Room είναι κενή, τα φέρνει από το Firestore. */
+    val vehicles: Flow<List<VehicleEntity>> = vehicleDao.getAllVehicles().onStart {
+        val local = vehicleDao.getAllVehicles().first()
+        if (local.isEmpty()) {
+            Log.d(TAG, "Τοπικά οχήματα κενά, ανάκτηση από Firestore")
+            val remote = firestore.collection("vehicles").get().await()
+                .documents.mapNotNull { it.toVehicleEntity() }
+            remote.forEach { insertVehicleSafely(vehicleDao, userDao, it) }
+            Log.d(TAG, "Εισαγωγή ${remote.size} οχημάτων από Firestore ολοκληρώθηκε")
+        }
+    }
 
     /** Ροή με οχήματα συγκεκριμένου οδηγού. */
     fun vehiclesForUser(userId: String): Flow<List<VehicleEntity>> =
