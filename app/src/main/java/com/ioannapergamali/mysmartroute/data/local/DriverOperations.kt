@@ -2,10 +2,13 @@
 // Helper operations for driver.
 package com.ioannapergamali.mysmartroute.data.local
 
+import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+
+private const val TAG = "DriverOps"
 
 /**
  * Καθαρίζει όλα τα δεδομένα ενός οδηγού από τη βάση Room και το Firebase Firestore.
@@ -15,6 +18,7 @@ suspend fun demoteDriverToPassenger(
     firestore: FirebaseFirestore = FirebaseFirestore.getInstance(),
     driverId: String,
 ) = withContext(Dispatchers.IO) {
+    Log.d(TAG, "Ξεκίνησε demoteDriverToPassenger για $driverId")
     // Τοπική βάση
     db.vehicleDao().deleteForUser(driverId)
     db.transportDeclarationDao().deleteForDriver(driverId)
