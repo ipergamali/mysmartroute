@@ -27,7 +27,7 @@ suspend fun insertVehicleSafely(
         } else {
             Log.d(TAG, "Ο χρήστης ${vehicle.userId} υπάρχει ήδη")
         }
-        vehicleDao.insert(vehicle)
-        Log.d(TAG, "Εισαγωγή οχήματος ${vehicle.id} για χρήστη ${vehicle.userId}")
+        vehicleDao.upsert(vehicle)
+        Log.d(TAG, "Εισαγωγή/ενημέρωση οχήματος ${vehicle.id} για χρήστη ${vehicle.userId}")
     }
 }
