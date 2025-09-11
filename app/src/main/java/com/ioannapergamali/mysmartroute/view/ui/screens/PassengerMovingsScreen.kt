@@ -1,5 +1,6 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -33,6 +34,7 @@ import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
 
+private const val TAG = "PassengerMovingsScreen"
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PassengerMovingsScreen(navController: NavController, openDrawer: () -> Unit) {
@@ -44,7 +46,12 @@ fun PassengerMovingsScreen(navController: NavController, openDrawer: () -> Unit)
         viewModel.loadPassengerMovings(context)
     }
 
-    val grouped = categorizeMovings(movings)
+    Log.d(TAG, "Φόρτωση ${'$'}{movings.size} μετακινήσεων επιβάτη")
+    val grouped = categorizeMovings(movings).also { map ->
+        map.forEach { (status, list) ->
+            Log.d(TAG, "Κατηγορία ${'$'}status έχει ${'$'}{list.size} εγγραφές")
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -83,6 +90,7 @@ fun PassengerMovingsScreen(navController: NavController, openDrawer: () -> Unit)
 
 @Composable
 private fun MovingCategory(title: String, list: List<MovingEntity>) {
+    Log.d(TAG, "Εμφάνιση κατηγορίας ${'$'}title με ${'$'}{list.size} εγγραφές")
     Text(title, style = MaterialTheme.typography.titleMedium)
     Spacer(modifier = Modifier.height(8.dp))
     MovingTable(list)
@@ -109,6 +117,7 @@ private fun MovingTable(list: List<MovingEntity>) {
         }
         Divider()
         list.forEach { m ->
+            Log.d(TAG, "Γραμμή για μετακίνηση ${'$'}{m.id} με status ${'$'}{m.status}")
             Row(Modifier.fillMaxWidth()) {
                 TableCell(m.routeName.ifBlank { "-" })
                 TableCell(m.driverName.ifBlank { "-" })
