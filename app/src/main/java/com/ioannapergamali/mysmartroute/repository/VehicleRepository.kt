@@ -64,8 +64,9 @@ class VehicleRepository @Inject constructor(
         val uid = FirebaseAuth.getInstance().currentUser?.uid
         if (local.isEmpty() && uid != null) {
             Log.d(TAG, "Τοπικά οχήματα κενά, ανάκτηση από Firestore")
+            val userRef = firestore.collection("users").document(uid)
             val remote = firestore.collection("vehicles")
-                .whereEqualTo("userId", uid)
+                .whereEqualTo("userId", userRef)
                 .get()
                 .await()
                 .documents.mapNotNull { it.toVehicleEntity() }
@@ -86,8 +87,9 @@ class VehicleRepository @Inject constructor(
     fun startSync(scope: CoroutineScope) {
         if (registration != null) return
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val userRef = firestore.collection("users").document(uid)
         registration = firestore.collection("vehicles")
-            .whereEqualTo("userId", uid)
+            .whereEqualTo("userId", userRef)
             .addSnapshotListener { snapshot, e ->
                 if (e != null || snapshot == null) {
                     Log.e(TAG, "Σφάλμα συγχρονισμού", e)
