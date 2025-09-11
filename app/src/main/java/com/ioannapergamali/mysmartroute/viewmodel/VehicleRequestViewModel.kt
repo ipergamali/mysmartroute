@@ -22,6 +22,7 @@ import com.ioannapergamali.mysmartroute.utils.toTransportDeclarationEntity
 import com.ioannapergamali.mysmartroute.utils.NotificationUtils
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.data.local.SeatReservationEntity
+import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationEntity
 import com.ioannapergamali.mysmartroute.viewmodel.MainActivity
 import com.ioannapergamali.mysmartroute.repository.WalkRepository
 
@@ -439,11 +440,12 @@ class VehicleRequestViewModel(
             val index = list.indexOfFirst { it.id == requestId }
             if (index != -1) {
                 val current = list[index]
+                var declaration: TransportDeclarationEntity? = null
 
                 if (accept) {
                     val resDao = MySmartRouteDatabase.getInstance(context).seatReservationDao()
 
-                    val declaration = try {
+                    declaration = try {
                         db.collection("transport_declarations")
                             .whereEqualTo(
                                 "routeId",
