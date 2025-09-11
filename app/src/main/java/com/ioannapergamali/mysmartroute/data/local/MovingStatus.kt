@@ -38,7 +38,9 @@ fun MovingEntity.movingStatus(now: Long = System.currentTimeMillis()): MovingSta
         }
         else -> MovingStatus.UNSUCCESSFUL
     }
+
     Log.d(TAG, "Μετακίνηση $id με raw status '$status' ταξινομήθηκε ως $result")
+
     return result
 }
 
@@ -51,7 +53,9 @@ fun categorizeMovings(
 ): Map<MovingStatus, List<MovingEntity>> {
     val grouped = movings.groupBy { it.movingStatus(now) }
     grouped.forEach { (status, list) ->
+
         Log.d(TAG, "Ομαδοποίηση $status -> ${list.size} εγγραφές")
+
     }
     return grouped
 }

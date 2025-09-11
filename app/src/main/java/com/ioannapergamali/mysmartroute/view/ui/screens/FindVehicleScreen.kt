@@ -417,7 +417,6 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                         val routeId = selectedRouteId ?: return@Button
                         val date = System.currentTimeMillis()
 
-                        requestViewModel.requestTransport(context, routeId, fromId, toId, cost, date)
                         navController.navigate(
                             "availableTransports?routeId=" +
                                 routeId +

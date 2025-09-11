@@ -46,10 +46,12 @@ fun PassengerMovingsScreen(navController: NavController, openDrawer: () -> Unit)
         viewModel.loadPassengerMovings(context)
     }
 
+
     Log.d(TAG, "Φόρτωση ${movings.size} μετακινήσεων επιβάτη")
     val grouped = categorizeMovings(movings).also { map ->
         map.forEach { (status, list) ->
             Log.d(TAG, "Κατηγορία $status έχει ${list.size} εγγραφές")
+
         }
     }
 
@@ -90,7 +92,9 @@ fun PassengerMovingsScreen(navController: NavController, openDrawer: () -> Unit)
 
 @Composable
 private fun MovingCategory(title: String, list: List<MovingEntity>) {
+
     Log.d(TAG, "Εμφάνιση κατηγορίας $title με ${list.size} εγγραφές")
+
     Text(title, style = MaterialTheme.typography.titleMedium)
     Spacer(modifier = Modifier.height(8.dp))
     MovingTable(list)
@@ -117,7 +121,9 @@ private fun MovingTable(list: List<MovingEntity>) {
         }
         Divider()
         list.forEach { m ->
+
             Log.d(TAG, "Γραμμή για μετακίνηση ${m.id} με status ${m.status}")
+
             Row(Modifier.fillMaxWidth()) {
                 TableCell(m.routeName.ifBlank { "-" })
                 TableCell(m.driverName.ifBlank { "-" })

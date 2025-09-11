@@ -22,6 +22,7 @@ import com.ioannapergamali.mysmartroute.utils.toTransportDeclarationEntity
 import com.ioannapergamali.mysmartroute.utils.NotificationUtils
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.data.local.SeatReservationEntity
+import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationEntity
 import com.ioannapergamali.mysmartroute.viewmodel.MainActivity
 import com.ioannapergamali.mysmartroute.repository.WalkRepository
 
@@ -439,11 +440,12 @@ class VehicleRequestViewModel(
             val index = list.indexOfFirst { it.id == requestId }
             if (index != -1) {
                 val current = list[index]
+                var declaration: TransportDeclarationEntity? = null
 
                 if (accept) {
                     val resDao = MySmartRouteDatabase.getInstance(context).seatReservationDao()
 
-                    val declaration = try {
+                    declaration = try {
                         db.collection("transport_declarations")
                             .whereEqualTo(
                                 "routeId",
@@ -487,17 +489,27 @@ class VehicleRequestViewModel(
                 }
 
                 val status = if (accept) "accepted" else "rejected"
-                val updated = current.copy(status = status, driverId = if (accept) current.driverId else "")
+                val updated = if (accept) {
+                    current.copy(
+                        status = status,
+                        driverId = current.driverId,
+                        durationMinutes = declaration?.durationMinutes ?: current.durationMinutes
+                    )
+                } else {
+                    current.copy(status = status, driverId = "")
+                }
                 list[index] = updated
                 _requests.value = list
                 dao.insert(updated)
                 try {
-                    db.collection("movings").document(requestId).update(
-                        mapOf(
-                            "status" to status,
-                            "driverId" to updated.driverId
-                        )
-                    ).await()
+                    val updateMap = mutableMapOf<String, Any>(
+                        "status" to status,
+                        "driverId" to updated.driverId
+                    )
+                    if (accept && declaration != null) {
+                        updateMap["durationMinutes"] = declaration.durationMinutes
+                    }
+                    db.collection("movings").document(requestId).update(updateMap).await()
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to respond to offer", e)
                 }
