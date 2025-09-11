@@ -63,7 +63,7 @@ kotlin {
 }
 dependencies {
     // Firebase (BoM για αυτόματες εκδόσεις όλων των modules)
-ρε    implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
+    implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
     implementation("com.google.firebase:firebase-auth-ktx")
     // Χρήση της νεότερης έκδοσης Firestore ώστε το userId να αποθηκεύεται ως αναφορά
     implementation("com.google.firebase:firebase-firestore-ktx:25.1.4")
