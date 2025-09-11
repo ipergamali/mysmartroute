@@ -63,7 +63,7 @@ fun ViewRequestsScreen(
     val columnWidth = 150.dp
     val sortOption = remember { mutableStateOf(SortOption.COST) }
     val sortedRequests = when (sortOption.value) {
-        SortOption.COST -> requests.sortedBy { it.cost }
+        SortOption.COST -> requests.sortedBy { it.cost ?: Double.MAX_VALUE }
         SortOption.DATE -> requests.sortedBy { it.date }
     }
 
@@ -155,7 +155,7 @@ fun ViewRequestsScreen(
                                 val timeStr = DateFormat.format("HH:mm", date).toString()
                                 "$dateStr $timeStr"
                             } else ""
-                            val costText = if (req.cost == Double.MAX_VALUE) "-" else req.cost.toString()
+                            val costText = req.cost?.toString() ?: "-"
                             val isExpired = req.date > 0L && System.currentTimeMillis() > req.date && req.status != "completed"
                             val statusText = if (isExpired) stringResource(R.string.request_unsuccessful) else req.status
                             Row(

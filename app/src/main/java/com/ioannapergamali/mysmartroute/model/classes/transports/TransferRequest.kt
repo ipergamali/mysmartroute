@@ -9,6 +9,6 @@ data class TransferRequest(
     val passengerId: String,
     val driverId: String,
     val date: Long,
-    val cost: Double,
+    val cost: Double?,
     val status: RequestStatus
 )

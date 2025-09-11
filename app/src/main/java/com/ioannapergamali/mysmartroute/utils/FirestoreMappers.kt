@@ -270,13 +270,13 @@ fun MovingEntity.toFirestoreMap(): Map<String, Any> {
         // Αποθηκεύουμε το userId ως αναφορά στο έγγραφο του χρήστη
         "userId" to FirebaseFirestore.getInstance().collection("users").document(userId),
         "date" to date,
-        "cost" to cost,
         "durationMinutes" to durationMinutes,
         "startPoiId" to FirebaseFirestore.getInstance().collection("pois").document(startPoiId),
         "endPoiId" to FirebaseFirestore.getInstance().collection("pois").document(endPoiId),
         "status" to status,
         "requestNumber" to requestNumber
     )
+    cost?.let { map["cost"] = it }
     if (vehicleId.isNotEmpty()) {
         map["vehicleId"] = FirebaseFirestore.getInstance().collection("vehicles").document(vehicleId)
     }
@@ -315,7 +315,7 @@ fun DocumentSnapshot.toMovingEntity(): MovingEntity? {
         is Long -> d
         else -> getLong("date") ?: 0L
     }
-    val costVal = getDouble("cost") ?: 0.0
+    val costVal = getDouble("cost")
     val durVal = (getLong("durationMinutes") ?: 0L).toInt()
     val startPoiId = when (val s = get("startPoiId")) {
         is DocumentReference -> s.id
@@ -501,9 +501,9 @@ fun TransferRequestEntity.toFirestoreMap(): Map<String, Any> {
         "routeId" to db.collection("routes").document(routeId),
         "passengerId" to db.collection("users").document(passengerId),
         "date" to date,
-        "cost" to cost,
         "status" to status.name
     )
+    cost?.let { map["cost"] = it }
 
     if (driverId.isNotBlank()) {
         map["driverId"] = db.collection("users").document(driverId)
@@ -531,7 +531,7 @@ fun DocumentSnapshot.toTransferRequestEntity(): TransferRequestEntity? {
         else -> getString("driverId")
     } ?: ""
     val dateVal = getLong("date") ?: 0L
-    val costVal = getDouble("cost") ?: 0.0
+    val costVal = getDouble("cost")
     val statusStr = getString("status") ?: RequestStatus.PENDING.name
     return TransferRequestEntity(number, routeId, passengerId, driverId, id, dateVal, costVal, enumValueOf(statusStr))
 }

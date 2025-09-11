@@ -61,7 +61,7 @@ class BookingViewModel : ViewModel() {
         declarationId: String = "",
         driverId: String = "",
         vehicleId: String = "",
-        cost: Double = 0.0,
+        cost: Double? = null,
         durationMinutes: Int = 0
     ): Result<Unit> = withContext(Dispatchers.IO) {
         val userId = auth.currentUser?.uid

@@ -52,8 +52,8 @@ private fun formatTime(epochMillis: Long): String =
         .toLocalTime()
         .format(DateTimeFormatter.ofPattern("HH:mm"))
 
-private fun formatCost(cost: Double): String =
-    String.format(Locale.getDefault(), "%.2f€", cost)
+private fun formatCost(cost: Double?): String =
+    cost?.let { String.format(Locale.getDefault(), "%.2f€", it) } ?: "-"
 
 private fun formatDuration(minutes: Int): String {
     val hours = minutes / 60

@@ -176,7 +176,7 @@ fun ViewTransportRequestsScreen(
                                 )
                                 Text(userName, modifier = Modifier.width(columnWidth))
                                 Text(routeName, modifier = Modifier.width(columnWidth))
-                                val costText = if (req.cost == Double.MAX_VALUE) "∞" else req.cost.toString()
+                                val costText = req.cost?.toString() ?: "∞"
                                 Text(costText, modifier = Modifier.width(columnWidth))
                                 Text(dateTimeText, modifier = Modifier.width(columnWidth))
                                 Text(req.requestNumber.toString(), modifier = Modifier.width(columnWidth))
