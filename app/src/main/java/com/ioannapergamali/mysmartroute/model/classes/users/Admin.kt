@@ -9,8 +9,7 @@ class Admin(
     surname: String,
     address: UserAddress,
     phoneNum: String,
-    username: String,
-    password: String
-) : Driver(id, name, email, surname, address, phoneNum, username, password) {
+    username: String
+) : Driver(id, name, email, surname, address, phoneNum, username) {
     override fun getRole() = UserRole.ADMIN
 }

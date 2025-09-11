@@ -22,9 +22,6 @@ import com.ioannapergamali.mysmartroute.repository.VehicleRepository
 import com.ioannapergamali.mysmartroute.data.local.insertMenuSafely
 import com.ioannapergamali.mysmartroute.data.local.insertUserSafely
 import com.ioannapergamali.mysmartroute.data.local.RoleEntity
-import com.ioannapergamali.mysmartroute.model.classes.users.Admin
-import com.ioannapergamali.mysmartroute.model.classes.users.Driver
-import com.ioannapergamali.mysmartroute.model.classes.users.Passenger
 import com.ioannapergamali.mysmartroute.model.classes.users.UserAddress
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
@@ -118,7 +115,6 @@ class AuthenticationViewModel : ViewModel() {
                 username = username,
                 email = email,
                 phoneNum = phoneNum,
-                password = password,
                 role = role.name,
                 roleId = "",
                 city = address.city,
@@ -128,12 +124,6 @@ class AuthenticationViewModel : ViewModel() {
             )
             val dbLocal = MySmartRouteDatabase.getInstance(context)
             val userDao = dbLocal.userDao()
-
-            val user = when (role) {
-                UserRole.DRIVER -> Driver(userIdLocal, name, email, surname, address, phoneNum, username, password)
-                UserRole.PASSENGER -> Passenger(userIdLocal, name, email, surname, address, phoneNum, username, password)
-                UserRole.ADMIN -> Admin(userIdLocal, name, email, surname, address, phoneNum, username, password)
-            }
 
             if (NetworkUtils.isInternetAvailable(context)) {
                 try {
@@ -155,7 +145,6 @@ class AuthenticationViewModel : ViewModel() {
                         "username" to username,
                         "email" to email,
                         "phoneNum" to phoneNum,
-                        "password" to password,
                         "role" to role.name,
                         "roleId" to roleId,
                         "city" to address.city,

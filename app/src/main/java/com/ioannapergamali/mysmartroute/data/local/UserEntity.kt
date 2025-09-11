@@ -14,7 +14,6 @@ data class UserEntity(
     var email: String = "",
     var phoneNum: String = "",
     var photoUrl: String? = null,
-    var password: String = "",
     var role: String = "",
     var roleId: String = "",
     var city: String = "",

@@ -10,8 +10,7 @@ open class Passenger(
     override val surname: String,
     override val address: UserAddress,
     override val phoneNum: String,
-    override val username: String,
-    override val password: String
+    override val username: String
 ) : User {
     override fun getRole() = UserRole.PASSENGER
 }
