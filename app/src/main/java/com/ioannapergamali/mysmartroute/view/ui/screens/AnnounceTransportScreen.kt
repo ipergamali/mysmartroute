@@ -128,11 +128,12 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         if (rId != null && vehicle != null) {
             scope.launch {
                 calculating = true
-                val (_, path) = routeViewModel.getRouteDirections(context, rId, vehicle)
-                pathPoints = path
-                pois = routeViewModel.getRoutePois(context, rId)
-                duration = routeViewModel.getRouteDuration(context, rId, vehicle)
-                path.firstOrNull()?.let { first ->
+                val poisList = routeViewModel.getRoutePois(context, rId)
+                pois = poisList
+                val (dur, path) = routeViewModel.getRouteDirections(context, rId, vehicle)
+                duration = dur
+                pathPoints = if (path.isNotEmpty()) path else poisList.map { LatLng(it.lat, it.lng) }
+                pathPoints.firstOrNull()?.let { first ->
                     cameraPositionState.move(CameraUpdateFactory.newLatLngZoom(first, 13f))
                 }
                 calculating = false
