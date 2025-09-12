@@ -554,7 +554,8 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                 startPoiId = startPoi.id,
                                 endPoiId = endPoi.id,
                                 vehicleId = selectedVehicleId,
-                                vehicleType = veh.name
+                                vehicleType = veh.name,
+                                seats = selectedVehicleSeats
                             )
                             details.add(detail)
                             detailDurations.add(segmentDuration)
@@ -600,10 +601,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                 IconButton(onClick = {
                                     details.removeAt(index)
                                     detailDurations.removeAt(index)
-                                    minSeats = details.minOfOrNull { dt ->
-                                        vehicles.firstOrNull { it.id == dt.vehicleId }?.seat
-                                            ?: Int.MAX_VALUE
-                                    } ?: Int.MAX_VALUE
+                                    minSeats = details.minOfOrNull { dt -> dt.seats } ?: Int.MAX_VALUE
                                 }) {
                                     Icon(
                                         Icons.Default.Delete,
@@ -774,7 +772,8 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                             startPoiId = pois[s].id,
                                             endPoiId = pois[e].id,
                                             vehicleId = selectedVehicleId,
-                                            vehicleType = veh.name
+                                            vehicleType = veh.name,
+                                            seats = selectedVehicleSeats
                                         )
                                     )
                                 } else emptyList()

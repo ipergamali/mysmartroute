@@ -15,16 +15,15 @@ data class TransportDeclarationEntity(
     val driverId: String = "",
     val cost: Double = 0.0,
     val durationMinutes: Int = 0,
-    /** Διαθέσιμες θέσεις στο όχημα */
-    val seats: Int = 0,
     /** Ημερομηνία πραγματοποίησης της διαδρομής */
     val date: Long = 0L,
     /** Ώρα έναρξης της διαδρομής σε millis από τα μεσάνυχτα */
     val startTime: Long = 0L
 ) {
-    /** Συμβατότητα με παλαιό κώδικα: τα πεδία οχήματος δεν αποθηκεύονται πλέον στον πίνακα. */
+    /** Συμβατότητα με παλαιό κώδικα: τα πεδία οχήματος και θέσεων δεν αποθηκεύονται πλέον στον πίνακα. */
     @Ignore var vehicleId: String = ""
     @Ignore var vehicleType: String = ""
+    @Ignore var seats: Int = 0
 
     constructor(
         id: String = "",
@@ -32,13 +31,14 @@ data class TransportDeclarationEntity(
         driverId: String = "",
         vehicleId: String = "",
         vehicleType: String = "",
+        seats: Int = 0,
         cost: Double = 0.0,
         durationMinutes: Int = 0,
-        seats: Int = 0,
         date: Long = 0L,
         startTime: Long = 0L
-    ) : this(id, routeId, driverId, cost, durationMinutes, seats, date, startTime) {
+    ) : this(id, routeId, driverId, cost, durationMinutes, date, startTime) {
         this.vehicleId = vehicleId
         this.vehicleType = vehicleType
+        this.seats = seats
     }
 }

@@ -401,7 +401,6 @@ fun TransportDeclarationEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     "driverId" to FirebaseFirestore.getInstance().collection("users").document(driverId),
     "cost" to cost,
     "durationMinutes" to durationMinutes,
-    "seats" to seats,
     "date" to date,
     "startTime" to startTime
 )
@@ -420,17 +419,17 @@ fun DocumentSnapshot.toTransportDeclarationEntity(): TransportDeclarationEntity?
     } ?: ""
     val costVal = getDouble("cost") ?: 0.0
     val durVal = (getLong("durationMinutes") ?: 0L).toInt()
-    val seatsVal = (getLong("seats") ?: 0L).toInt()
     val dateVal = getLong("date") ?: 0L
     val timeVal = getLong("startTime") ?: 0L
-    return TransportDeclarationEntity(declId, routeId, driverId, costVal, durVal, seatsVal, dateVal, timeVal)
+    return TransportDeclarationEntity(declId, routeId, driverId, costVal, durVal, dateVal, timeVal)
 }
 
 fun TransportDeclarationDetailEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     "startPoiId" to FirebaseFirestore.getInstance().collection("pois").document(startPoiId),
     "endPoiId" to FirebaseFirestore.getInstance().collection("pois").document(endPoiId),
     "vehicleId" to FirebaseFirestore.getInstance().collection("vehicles").document(vehicleId),
-    "vehicleType" to vehicleType
+    "vehicleType" to vehicleType,
+    "seats" to seats
 )
 
 fun DocumentSnapshot.toTransportDeclarationDetailEntity(declarationId: String): TransportDeclarationDetailEntity? {
@@ -450,7 +449,8 @@ fun DocumentSnapshot.toTransportDeclarationDetailEntity(declarationId: String): 
         else -> ""
     }
     val type = getString("vehicleType") ?: ""
-    return TransportDeclarationDetailEntity(id, declarationId, startPoi, endPoi, vehicle, type)
+    val seatsVal = (getLong("seats") ?: 0L).toInt()
+    return TransportDeclarationDetailEntity(id, declarationId, startPoi, endPoi, vehicle, type, seatsVal)
 }
 
 fun AvailabilityEntity.toFirestoreMap(): Map<String, Any> = mapOf(

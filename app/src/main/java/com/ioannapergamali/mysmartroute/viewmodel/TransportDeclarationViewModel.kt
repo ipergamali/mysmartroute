@@ -43,9 +43,21 @@ class TransportDeclarationViewModel : ViewModel() {
         viewModelScope.launch {
             val db = MySmartRouteDatabase.getInstance(context)
             val dao = db.transportDeclarationDao()
+            val detailDao = db.transportDeclarationDetailDao()
             val movingDao = db.movingDao()
             val flow = if (driverId == null) dao.getAll() else dao.getForDriver(driverId)
             flow.collect { list ->
+                withContext(Dispatchers.IO) {
+                    list.forEach { decl ->
+                        val details = detailDao.getForDeclaration(decl.id)
+                        if (details.isNotEmpty()) {
+                            val first = details.first()
+                            decl.vehicleId = first.vehicleId
+                            decl.vehicleType = first.vehicleType
+                            decl.seats = first.seats
+                        }
+                    }
+                }
                 _declarations.value = list
                 val pending = mutableListOf<TransportDeclarationEntity>()
                 val completed = mutableListOf<TransportDeclarationEntity>()
@@ -83,10 +95,12 @@ class TransportDeclarationViewModel : ViewModel() {
         val declDao = db.transportDeclarationDao()
         val detailDao = db.transportDeclarationDetailDao()
         val id = UUID.randomUUID().toString()
-        val entity = TransportDeclarationEntity(id, routeId, driverId, cost, durationMinutes, seats, date, startTime)
+        val entity = TransportDeclarationEntity(id, routeId, driverId, cost, durationMinutes, date, startTime)
+        entity.seats = seats
         if (details.isNotEmpty()) {
             entity.vehicleId = details.first().vehicleId
             entity.vehicleType = details.first().vehicleType
+            entity.seats = details.first().seats
         }
         declDao.insert(entity)
         val detailEntities = details.map {

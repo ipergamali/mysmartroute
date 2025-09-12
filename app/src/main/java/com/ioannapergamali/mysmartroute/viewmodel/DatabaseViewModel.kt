@@ -29,6 +29,7 @@ import com.ioannapergamali.mysmartroute.data.local.LanguageSettingEntity
 import com.ioannapergamali.mysmartroute.data.local.FavoriteEntity
 import com.ioannapergamali.mysmartroute.data.local.insertFavoriteSafely
 import com.ioannapergamali.mysmartroute.utils.toFavoriteEntity
+import com.ioannapergamali.mysmartroute.utils.toTransportDeclarationDetailEntity
 import com.ioannapergamali.mysmartroute.data.local.FavoriteRouteEntity
 import com.ioannapergamali.mysmartroute.data.local.UserPoiEntity
 import com.ioannapergamali.mysmartroute.data.local.RouteEntity
@@ -36,6 +37,7 @@ import com.ioannapergamali.mysmartroute.data.local.RoutePointEntity
 import com.ioannapergamali.mysmartroute.data.local.RouteBusStationEntity
 import com.ioannapergamali.mysmartroute.data.local.MovingEntity
 import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationEntity
+import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationDetailEntity
 import com.ioannapergamali.mysmartroute.data.local.AvailabilityEntity
 import com.ioannapergamali.mysmartroute.data.local.SeatReservationEntity
 import com.ioannapergamali.mysmartroute.data.local.TransferRequestEntity
@@ -290,8 +292,19 @@ class DatabaseViewModel : ViewModel() {
             val movings = firestore.collection("movings").get().await()
                 .documents.mapNotNull { it.toMovingEntity() }
 
-            val declarations = firestore.collection("transport_declarations").get().await()
-                .documents.mapNotNull { it.toTransportDeclarationEntity() }
+            val declSnap = firestore.collection("transport_declarations").get().await()
+            val declarations = mutableListOf<TransportDeclarationEntity>()
+            for (doc in declSnap.documents) {
+                val decl = doc.toTransportDeclarationEntity() ?: continue
+                val detailDoc = doc.reference.collection("details").get().await()
+                    .documents.firstOrNull()?.toTransportDeclarationDetailEntity(decl.id)
+                if (detailDoc != null) {
+                    decl.vehicleId = detailDoc.vehicleId
+                    decl.vehicleType = detailDoc.vehicleType
+                    decl.seats = detailDoc.seats
+                }
+                declarations += decl
+            }
 
             val availabilities = firestore.collection("availabilities").get().await()
                 .documents.mapNotNull { it.toAvailabilityEntity() }
@@ -476,8 +489,22 @@ class DatabaseViewModel : ViewModel() {
                     val movings = firestore.collection("movings").get().await()
                         .documents.mapNotNull { it.toMovingEntity() }
 
-                    val declarations = firestore.collection("transport_declarations").get().await()
-                        .documents.mapNotNull { it.toTransportDeclarationEntity() }
+                    val declSnap = firestore.collection("transport_declarations").get().await()
+                    val declarations = mutableListOf<TransportDeclarationEntity>()
+                    val declDetails = mutableListOf<TransportDeclarationDetailEntity>()
+                    for (doc in declSnap.documents) {
+                        val decl = doc.toTransportDeclarationEntity() ?: continue
+                        val details = doc.reference.collection("details").get().await()
+                            .documents.mapNotNull { it.toTransportDeclarationDetailEntity(decl.id) }
+                        if (details.isNotEmpty()) {
+                            val first = details.first()
+                            decl.vehicleId = first.vehicleId
+                            decl.vehicleType = first.vehicleType
+                            decl.seats = first.seats
+                            declDetails.addAll(details)
+                        }
+                        declarations += decl
+                    }
 
                     val availabilities = firestore.collection("availabilities").get().await()
                         .documents.mapNotNull { it.toAvailabilityEntity() }
@@ -515,6 +542,9 @@ class DatabaseViewModel : ViewModel() {
                     busStations.forEach { db.routeBusStationDao().insert(it) }
                     movings.forEach { db.movingDao().insert(it) }
                     declarations.forEach { db.transportDeclarationDao().insert(it) }
+                    if (declDetails.isNotEmpty()) {
+                        db.transportDeclarationDetailDao().insertAll(declDetails)
+                    }
                     availabilities.forEach { db.availabilityDao().insert(it) }
                     favorites.forEach { insertFavoriteSafely(db.favoriteDao(), db.userDao(), it) }
                     seatReservations.forEach { db.seatReservationDao().insert(it) }
@@ -549,6 +579,7 @@ class DatabaseViewModel : ViewModel() {
                     Log.d(TAG, "Fetched ${movings.size} local movings")
                     val declarations = db.transportDeclarationDao().getAll().first()
                     Log.d(TAG, "Fetched ${declarations.size} local declarations")
+                    val detailDao = db.transportDeclarationDetailDao()
 
                     val availabilities = db.availabilityDao().getAll().first()
                     Log.d(TAG, "Fetched ${availabilities.size} local availabilities")
@@ -629,10 +660,18 @@ class DatabaseViewModel : ViewModel() {
                             .set(it.toFirestoreMap()).await()
                     }
 
-                    declarations.forEach {
+                    declarations.forEach { decl ->
                         firestore.collection("transport_declarations")
-                            .document(it.id)
-                            .set(it.toFirestoreMap()).await()
+                            .document(decl.id)
+                            .set(decl.toFirestoreMap()).await()
+                        val details = detailDao.getForDeclaration(decl.id)
+                        details.forEach { detail ->
+                            firestore.collection("transport_declarations")
+                                .document(decl.id)
+                                .collection("details")
+                                .document(detail.id)
+                                .set(detail.toFirestoreMap()).await()
+                        }
                     }
 
                     availabilities.forEach {
