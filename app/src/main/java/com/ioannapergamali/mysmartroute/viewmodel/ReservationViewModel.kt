@@ -94,6 +94,43 @@ class ReservationViewModel : ViewModel() {
     }
 
     /**
+     * Επιστρέφει τον αριθμό κρατήσεων για συγκεκριμένο τμήμα διαδρομής.
+     * Returns reservation count for a specific segment.
+     */
+    suspend fun getReservationCountForSegment(
+        context: Context,
+        declarationId: String,
+        startPoiId: String,
+        endPoiId: String
+    ): Int {
+        if (declarationId.isBlank()) return 0
+
+        val dao = MySmartRouteDatabase.getInstance(context).seatReservationDao()
+
+        val localCount = withContext(Dispatchers.IO) {
+            dao.getReservationsForDeclaration(declarationId).first()
+                .count { it.startPoiId == startPoiId && it.endPoiId == endPoiId }
+        }
+
+        if (NetworkUtils.isInternetAvailable(context)) {
+            val declRef = db.collection("transport_declarations").document(declarationId)
+            val remote = db.collection("seat_reservations")
+                .whereEqualTo("declarationId", declRef)
+                .whereEqualTo("startPoiId", startPoiId)
+                .whereEqualTo("endPoiId", endPoiId)
+                .get()
+                .await()
+            val list = remote.documents.mapNotNull { it.toSeatReservationEntity() }
+            if (list.isNotEmpty()) {
+                withContext(Dispatchers.IO) { list.forEach { dao.insert(it) } }
+                return list.size
+            }
+        }
+
+        return localCount
+    }
+
+    /**
      * Ολοκληρώνει μια διαδρομή καταχωρώντας μετακινήσεις και ενημερώνοντας αιτήματα.
      * Completes a route by recording movings and updating requests.
      */

@@ -25,6 +25,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.ReservationViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.BookingViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.UserViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.utils.matchesFavorites
 import com.ioannapergamali.mysmartroute.utils.isUpcoming
 import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationDetailEntity
@@ -55,6 +56,22 @@ private fun HeaderRow() {
     Divider()
 }
 
+@Composable
+private fun DetailHeaderRow() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+    ) {
+        Text(stringResource(R.string.start_point), modifier = Modifier.weight(1f))
+        Text(stringResource(R.string.destination), modifier = Modifier.weight(1f))
+        Text(stringResource(R.string.vehicle_name), modifier = Modifier.weight(1f))
+        Text(stringResource(R.string.seats_label), modifier = Modifier.weight(1f))
+        Text(stringResource(R.string.reserve_seat), modifier = Modifier.weight(1f))
+    }
+    Divider()
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AvailableTransportsScreen(
@@ -73,26 +90,31 @@ fun AvailableTransportsScreen(
     val favoritesViewModel: FavoritesViewModel = viewModel()
     val reservationViewModel: ReservationViewModel = viewModel()
     val bookingViewModel: BookingViewModel = viewModel()
+    val poiViewModel: PoIViewModel = viewModel()
     val scope = rememberCoroutineScope()
 
     val declarations by declarationViewModel.pendingDeclarations.collectAsState()
     val drivers by userViewModel.drivers.collectAsState()
     val vehicles by vehicleViewModel.vehicles.collectAsState()
+    val pois by poiViewModel.pois.collectAsState()
     val preferred by favoritesViewModel.preferredFlow(context).collectAsState(initial = emptySet())
     val nonPreferred by favoritesViewModel.nonPreferredFlow(context).collectAsState(initial = emptySet())
 
     val reservationCounts = remember { mutableStateMapOf<String, Int>() }
     val detailsMap = remember { mutableStateMapOf<String, List<TransportDeclarationDetailEntity>>() }
+    val detailReservationCounts = remember { mutableStateMapOf<String, MutableMap<String, Int>>() }
     var message by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
         declarationViewModel.loadDeclarations(context)
         userViewModel.loadDrivers(context)
         vehicleViewModel.loadRegisteredVehicles(context, includeAll = true)
+        poiViewModel.loadPois(context)
     }
 
     val driverNames = drivers.associate { it.id to "${it.name} ${it.surname}" }
     val vehiclesMap = vehicles.associateBy { it.id }
+    val poiNames = pois.associate { it.id to it.name }
 
     LaunchedEffect(declarations) {
         declarations.forEach { decl ->
@@ -101,6 +123,17 @@ fun AvailableTransportsScreen(
             if (detailsMap[decl.id] == null) {
                 val details = declarationViewModel.fetchDetails(decl.id)
                 detailsMap[decl.id] = details
+                val counts = mutableMapOf<String, Int>()
+                details.forEach { detail ->
+                    val segCount = reservationViewModel.getReservationCountForSegment(
+                        context,
+                        decl.id,
+                        detail.startPoiId,
+                        detail.endPoiId
+                    )
+                    counts[detail.id] = segCount
+                }
+                detailReservationCounts[decl.id] = counts
             }
         }
     }
@@ -193,37 +226,62 @@ fun AvailableTransportsScreen(
                                 Text(timeText, modifier = Modifier.weight(1f))
                                 Text(availableSeats.toString(), modifier = Modifier.weight(1f))
                             }
-                            Spacer(Modifier.height(4.dp))
-                            Button(
-                                onClick = {
-                                    scope.launch {
-                                          val result = bookingViewModel.reserveSeat(
-                                              context = context,
-                                              routeId = decl.routeId,
-                                              date = decl.date,
-                                              startTime = decl.startTime,
-                                              startPoiId = startId ?: "",
-                                              endPoiId = endId ?: "",
-                                              declarationId = decl.id,
-                                              driverId = decl.driverId,
-                                              vehicleId = decl.vehicleId,
-                                              cost = decl.cost,
-                                              durationMinutes = decl.durationMinutes
-                                          )
-                                        message = result.fold(
-                                            onSuccess = {
-                                                reservationCounts[decl.id] = reserved + 1
-                                                context.getString(R.string.seat_booked)
-                                            },
-                                            onFailure = {
-                                                context.getString(R.string.seat_unavailable)
-                                            }
-                                        )
+                            val dets = detailsMap[decl.id] ?: emptyList()
+                            if (dets.isNotEmpty()) {
+                                Spacer(Modifier.height(8.dp))
+                                DetailHeaderRow()
+                                dets.forEach { detail ->
+                                    if (vehiclesMap[detail.vehicleId] == null) {
+                                        vehicleViewModel.loadVehicleById(context, detail.vehicleId)
                                     }
-                                },
-                                enabled = startId != null && endId != null && availableSeats > 0
-                            ) {
-                                Text(stringResource(R.string.reserve_seat))
+                                    val startName = poiNames[detail.startPoiId] ?: detail.startPoiId
+                                    val endName = poiNames[detail.endPoiId] ?: detail.endPoiId
+                                    val detailVehicleName = vehiclesMap[detail.vehicleId]?.name ?: ""
+                                    val reservedSeg = detailReservationCounts[decl.id]?.get(detail.id) ?: 0
+                                    val availableSeg = max(0, detail.seats - reservedSeg)
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 4.dp)
+                                    ) {
+                                        Text(startName, modifier = Modifier.weight(1f))
+                                        Text(endName, modifier = Modifier.weight(1f))
+                                        Text(detailVehicleName, modifier = Modifier.weight(1f))
+                                        Text(availableSeg.toString(), modifier = Modifier.weight(1f))
+                                        Button(
+                                            onClick = {
+                                                scope.launch {
+                                                    val result = bookingViewModel.reserveSeat(
+                                                        context = context,
+                                                        routeId = decl.routeId,
+                                                        date = decl.date,
+                                                        startTime = decl.startTime,
+                                                        startPoiId = detail.startPoiId,
+                                                        endPoiId = detail.endPoiId,
+                                                        declarationId = decl.id,
+                                                        driverId = decl.driverId,
+                                                        vehicleId = detail.vehicleId,
+                                                        cost = decl.cost,
+                                                        durationMinutes = decl.durationMinutes
+                                                    )
+                                                    message = result.fold(
+                                                        onSuccess = {
+                                                            val map = detailReservationCounts.getOrPut(decl.id) { mutableMapOf() }
+                                                            map[detail.id] = reservedSeg + 1
+                                                            reservationCounts[decl.id] = (reservationCounts[decl.id] ?: 0) + 1
+                                                            context.getString(R.string.seat_booked)
+                                                        },
+                                                        onFailure = { context.getString(R.string.seat_unavailable) }
+                                                    )
+                                                }
+                                            },
+                                            enabled = availableSeg > 0,
+                                            modifier = Modifier.weight(1f)
+                                        ) {
+                                            Text(stringResource(R.string.reserve_seat))
+                                        }
+                                    }
+                                }
                             }
                         }
                         Divider()
