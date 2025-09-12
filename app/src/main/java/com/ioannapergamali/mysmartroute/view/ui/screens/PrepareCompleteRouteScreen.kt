@@ -430,10 +430,10 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                 Button(onClick = {
                     val decl = selectedDeclaration
                     if (decl != null) {
-                        val updatedDecl = decl.copy(
-                            vehicleId = selectedVehicleId.ifBlank { decl.vehicleId },
-                            vehicleType = selectedVehicle?.name ?: decl.vehicleType
-                        )
+                        val updatedDecl = decl.copy().apply {
+                            vehicleId = selectedVehicleId.ifBlank { vehicleId }
+                            vehicleType = selectedVehicle?.name ?: vehicleType
+                        }
                         reservationViewModel.completeRoute(
                             context,
                             selectedRoute!!.id,
