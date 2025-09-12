@@ -140,11 +140,13 @@ private fun DeclarationItem(
         vehicleName = db.vehicleDao().getVehicle(declaration.vehicleId)?.name.orEmpty()
     }
 
-    val vehicleIcon = when (VehicleType.valueOf(declaration.vehicleType)) {
+    val type = runCatching { VehicleType.valueOf(declaration.vehicleType) }.getOrNull()
+    val vehicleIcon = when (type) {
         VehicleType.CAR, VehicleType.TAXI -> Icons.Filled.DirectionsCar
         VehicleType.BIGBUS, VehicleType.SMALLBUS -> Icons.Filled.DirectionsBus
         VehicleType.BICYCLE -> Icons.Filled.DirectionsBike
         VehicleType.MOTORBIKE -> Icons.Filled.TwoWheeler
+        else -> Icons.Filled.DirectionsCar
     }
 
     val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
