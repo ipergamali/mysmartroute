@@ -29,6 +29,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.BookingViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.UserViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.utils.matchesFavorites
 import com.ioannapergamali.mysmartroute.utils.isUpcoming
 import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationDetailEntity
@@ -52,7 +53,7 @@ private fun HeaderRow(scrollState: ScrollState) {
     ) {
         Spacer(modifier = Modifier.width(40.dp))
         Text(stringResource(R.string.driver), modifier = Modifier.width(ColumnWidth))
-        Text(stringResource(R.string.vehicle_name), modifier = Modifier.width(ColumnWidth))
+        Text(stringResource(R.string.route_name), modifier = Modifier.width(ColumnWidth))
         Text(stringResource(R.string.cost), modifier = Modifier.width(ColumnWidth))
         Text(stringResource(R.string.date), modifier = Modifier.width(ColumnWidth))
         Text(stringResource(R.string.time), modifier = Modifier.width(ColumnWidth))
@@ -96,6 +97,7 @@ fun AvailableTransportsScreen(
     val reservationViewModel: ReservationViewModel = viewModel()
     val bookingViewModel: BookingViewModel = viewModel()
     val poiViewModel: PoIViewModel = viewModel()
+    val routeViewModel: RouteViewModel = viewModel()
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
 
@@ -103,6 +105,7 @@ fun AvailableTransportsScreen(
     val drivers by userViewModel.drivers.collectAsState()
     val vehicles by vehicleViewModel.vehicles.collectAsState()
     val pois by poiViewModel.pois.collectAsState()
+    val routes by routeViewModel.routes.collectAsState()
     val preferred by favoritesViewModel.preferredFlow(context).collectAsState(initial = emptySet())
     val nonPreferred by favoritesViewModel.nonPreferredFlow(context).collectAsState(initial = emptySet())
 
@@ -116,11 +119,13 @@ fun AvailableTransportsScreen(
         userViewModel.loadDrivers(context)
         vehicleViewModel.loadRegisteredVehicles(context, includeAll = true)
         poiViewModel.loadPois(context)
+        routeViewModel.loadRoutes(context, includeAll = true)
     }
 
     val driverNames = drivers.associate { it.id to "${it.name} ${it.surname}" }
     val vehiclesMap = vehicles.associateBy { it.id }
     val poiNames = pois.associate { it.id to it.name }
+    val routeNames = routes.associate { it.id to it.name }
 
     LaunchedEffect(declarations) {
         declarations.forEach { decl ->
@@ -191,10 +196,7 @@ fun AvailableTransportsScreen(
                         val type = runCatching { VehicleType.valueOf(decl.vehicleType) }.getOrNull()
                         val preferredType = type != null && preferred.contains(type)
 
-                        if (vehiclesMap[decl.vehicleId] == null) {
-                            vehicleViewModel.loadVehicleById(context, decl.vehicleId)
-                        }
-                        val vehicleName = vehiclesMap[decl.vehicleId]?.name ?: ""
+                        val routeName = routeNames[decl.routeId] ?: ""
 
                         val dateText = Instant.ofEpochMilli(decl.date)
                             .atZone(ZoneId.systemDefault())
@@ -226,7 +228,7 @@ fun AvailableTransportsScreen(
                                     )
                                 }
                                 Text(driver, modifier = Modifier.width(ColumnWidth))
-                                Text(vehicleName, modifier = Modifier.width(ColumnWidth))
+                                Text(routeName, modifier = Modifier.width(ColumnWidth))
                                 Text(decl.cost.toString(), modifier = Modifier.width(ColumnWidth))
                                 Text(dateText, modifier = Modifier.width(ColumnWidth))
                                 Text(timeText, modifier = Modifier.width(ColumnWidth))
