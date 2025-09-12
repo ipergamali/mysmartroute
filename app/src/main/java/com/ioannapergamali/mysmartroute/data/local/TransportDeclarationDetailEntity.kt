@@ -24,5 +24,6 @@ data class TransportDeclarationDetailEntity(
     val startPoiId: String = "",
     val endPoiId: String = "",
     val vehicleId: String = "",
-    val vehicleType: String = ""
+    val vehicleType: String = "",
+    val seats: Int = 0
 )
