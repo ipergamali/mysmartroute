@@ -82,6 +82,31 @@ private fun formatAddress(address: PoiAddress): String = buildString {
     }
 }
 
+private fun arePoisSequential(
+    pois: List<PoIEntity>,
+    details: List<TransportDeclarationDetailEntity>
+): Boolean {
+    if (details.size != pois.size - 1) return false
+    val pairs = details.map { it.startPoiId to it.endPoiId }.toSet()
+    return pois.zipWithNext().all { (a, b) -> pairs.contains(a.id to b.id) }
+}
+
+private fun canSend(
+    routeSelected: Boolean,
+    pois: List<PoIEntity>,
+    details: List<TransportDeclarationDetailEntity>,
+    startIndex: Int?,
+    endIndex: Int?,
+    cost: String,
+    dateSelected: Boolean,
+    timeSelected: Boolean,
+    calculating: Boolean
+): Boolean {
+    if (!routeSelected || cost.isBlank() || !dateSelected || !timeSelected || calculating) return false
+    if (details.isNotEmpty()) return arePoisSequential(pois, details)
+    return startIndex == 0 && endIndex == pois.lastIndex
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit) {
@@ -656,6 +681,31 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 Spacer(Modifier.height(16.dp))
             }
 
+            val sendEnabled = remember(
+                selectedRouteId,
+                pois,
+                details,
+                startIndex,
+                endIndex,
+                costText,
+                datePickerState.selectedDateMillis,
+                timePickerState.hour,
+                timePickerState.minute,
+                calculating
+            ) {
+                canSend(
+                    routeSelected = selectedRouteId != null,
+                    pois = pois,
+                    details = details.toList(),
+                    startIndex = startIndex,
+                    endIndex = endIndex,
+                    cost = costText,
+                    dateSelected = datePickerState.selectedDateMillis != null,
+                    timeSelected = true,
+                    calculating = calculating
+                )
+            }
+
             Button(
                 onClick = {
                     val routeId = selectedRouteId
@@ -716,16 +766,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         }
                     }
                 },
-                enabled = selectedRouteId != null &&
-                        (
-                            details.any { d ->
-                                d.startPoiId == pois.firstOrNull()?.id &&
-                                        d.endPoiId == pois.lastOrNull()?.id
-                            } ||
-                                    (startIndex == 0 && endIndex == pois.lastIndex)
-                        ) &&
-                        costText.isNotBlank() &&
-                        !calculating
+                enabled = sendEnabled
             ) {
                 Text(stringResource(R.string.announce))
             }
