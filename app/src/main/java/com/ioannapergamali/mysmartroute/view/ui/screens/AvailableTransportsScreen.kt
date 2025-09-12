@@ -1,8 +1,11 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
+import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
@@ -37,37 +40,39 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.LocalDate
 
+private val ColumnWidth = 120.dp
+
 
 @Composable
-private fun HeaderRow() {
+private fun HeaderRow(scrollState: ScrollState) {
     Row(
         modifier = Modifier
-            .fillMaxWidth()
+            .horizontalScroll(scrollState)
             .padding(vertical = 8.dp)
     ) {
         Spacer(modifier = Modifier.width(40.dp))
-        Text(stringResource(R.string.driver), modifier = Modifier.weight(1f))
-        Text(stringResource(R.string.vehicle_name), modifier = Modifier.weight(1f))
-        Text(stringResource(R.string.cost), modifier = Modifier.weight(1f))
-        Text(stringResource(R.string.date), modifier = Modifier.weight(1f))
-        Text(stringResource(R.string.time), modifier = Modifier.weight(1f))
-        Text(stringResource(R.string.seats_label), modifier = Modifier.weight(1f))
+        Text(stringResource(R.string.driver), modifier = Modifier.width(ColumnWidth))
+        Text(stringResource(R.string.vehicle_name), modifier = Modifier.width(ColumnWidth))
+        Text(stringResource(R.string.cost), modifier = Modifier.width(ColumnWidth))
+        Text(stringResource(R.string.date), modifier = Modifier.width(ColumnWidth))
+        Text(stringResource(R.string.time), modifier = Modifier.width(ColumnWidth))
+        Text(stringResource(R.string.seats_label), modifier = Modifier.width(ColumnWidth))
     }
     Divider()
 }
 
 @Composable
-private fun DetailHeaderRow() {
+private fun DetailHeaderRow(scrollState: ScrollState) {
     Row(
         modifier = Modifier
-            .fillMaxWidth()
+            .horizontalScroll(scrollState)
             .padding(vertical = 4.dp)
     ) {
-        Text(stringResource(R.string.start_point), modifier = Modifier.weight(1f))
-        Text(stringResource(R.string.destination), modifier = Modifier.weight(1f))
-        Text(stringResource(R.string.vehicle_name), modifier = Modifier.weight(1f))
-        Text(stringResource(R.string.seats_label), modifier = Modifier.weight(1f))
-        Text(stringResource(R.string.reserve_seat), modifier = Modifier.weight(1f))
+        Text(stringResource(R.string.start_point), modifier = Modifier.width(ColumnWidth))
+        Text(stringResource(R.string.destination), modifier = Modifier.width(ColumnWidth))
+        Text(stringResource(R.string.vehicle_name), modifier = Modifier.width(ColumnWidth))
+        Text(stringResource(R.string.seats_label), modifier = Modifier.width(ColumnWidth))
+        Text(stringResource(R.string.reserve_seat), modifier = Modifier.width(ColumnWidth))
     }
     Divider()
 }
@@ -92,6 +97,7 @@ fun AvailableTransportsScreen(
     val bookingViewModel: BookingViewModel = viewModel()
     val poiViewModel: PoIViewModel = viewModel()
     val scope = rememberCoroutineScope()
+    val scrollState = rememberScrollState()
 
     val declarations by declarationViewModel.pendingDeclarations.collectAsState()
     val drivers by userViewModel.drivers.collectAsState()
@@ -179,7 +185,7 @@ fun AvailableTransportsScreen(
 
 
                 LazyColumn {
-                    item { HeaderRow() }
+                    item { HeaderRow(scrollState) }
                     items(sortedDecls) { decl ->
                         val driver = driverNames[decl.driverId] ?: ""
                         val type = runCatching { VehicleType.valueOf(decl.vehicleType) }.getOrNull()
@@ -204,7 +210,7 @@ fun AvailableTransportsScreen(
                                 .fillMaxWidth()
                                 .padding(vertical = 8.dp)
                         ) {
-                            Row(modifier = Modifier.fillMaxWidth()) {
+                            Row(modifier = Modifier.horizontalScroll(scrollState)) {
                                 if (preferredType) {
                                     Icon(
                                         imageVector = Icons.Default.Star,
@@ -219,17 +225,17 @@ fun AvailableTransportsScreen(
                                         modifier = Modifier.padding(end = 8.dp),
                                     )
                                 }
-                                Text(driver, modifier = Modifier.weight(1f))
-                                Text(vehicleName, modifier = Modifier.weight(1f))
-                                Text(decl.cost.toString(), modifier = Modifier.weight(1f))
-                                Text(dateText, modifier = Modifier.weight(1f))
-                                Text(timeText, modifier = Modifier.weight(1f))
-                                Text(availableSeats.toString(), modifier = Modifier.weight(1f))
+                                Text(driver, modifier = Modifier.width(ColumnWidth))
+                                Text(vehicleName, modifier = Modifier.width(ColumnWidth))
+                                Text(decl.cost.toString(), modifier = Modifier.width(ColumnWidth))
+                                Text(dateText, modifier = Modifier.width(ColumnWidth))
+                                Text(timeText, modifier = Modifier.width(ColumnWidth))
+                                Text(availableSeats.toString(), modifier = Modifier.width(ColumnWidth))
                             }
                             val dets = detailsMap[decl.id] ?: emptyList()
                             if (dets.isNotEmpty()) {
                                 Spacer(Modifier.height(8.dp))
-                                DetailHeaderRow()
+                                DetailHeaderRow(scrollState)
                                 dets.forEach { detail ->
                                     if (vehiclesMap[detail.vehicleId] == null) {
                                         vehicleViewModel.loadVehicleById(context, detail.vehicleId)
@@ -241,13 +247,13 @@ fun AvailableTransportsScreen(
                                     val availableSeg = max(0, detail.seats - reservedSeg)
                                     Row(
                                         modifier = Modifier
-                                            .fillMaxWidth()
+                                            .horizontalScroll(scrollState)
                                             .padding(vertical = 4.dp)
                                     ) {
-                                        Text(startName, modifier = Modifier.weight(1f))
-                                        Text(endName, modifier = Modifier.weight(1f))
-                                        Text(detailVehicleName, modifier = Modifier.weight(1f))
-                                        Text(availableSeg.toString(), modifier = Modifier.weight(1f))
+                                        Text(startName, modifier = Modifier.width(ColumnWidth))
+                                        Text(endName, modifier = Modifier.width(ColumnWidth))
+                                        Text(detailVehicleName, modifier = Modifier.width(ColumnWidth))
+                                        Text(availableSeg.toString(), modifier = Modifier.width(ColumnWidth))
                                         Button(
                                             onClick = {
                                                 scope.launch {
@@ -276,7 +282,7 @@ fun AvailableTransportsScreen(
                                                 }
                                             },
                                             enabled = availableSeg > 0,
-                                            modifier = Modifier.weight(1f)
+                                            modifier = Modifier.width(ColumnWidth)
                                         ) {
                                             Text(stringResource(R.string.reserve_seat))
                                         }
