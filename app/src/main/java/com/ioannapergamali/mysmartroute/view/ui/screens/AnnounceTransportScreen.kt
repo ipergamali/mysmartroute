@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.TwoWheeler
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Link
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -42,6 +43,7 @@ import android.widget.Toast
 import com.ioannapergamali.mysmartroute.data.local.RouteEntity
 import com.ioannapergamali.mysmartroute.data.local.VehicleEntity
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
+import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationDetailEntity
 import com.ioannapergamali.mysmartroute.view.ui.util.observeBubble
 import com.ioannapergamali.mysmartroute.view.ui.util.LocalKeyboardBubbleState
 import kotlinx.coroutines.launch
@@ -61,6 +63,7 @@ import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberTimePickerState
+import androidx.compose.material3.FilledIconButton
 
 private fun iconForVehicle(type: VehicleType): ImageVector = when (type) {
     VehicleType.CAR, VehicleType.TAXI -> Icons.Default.DirectionsCar
@@ -145,6 +148,8 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     var startIndex by remember { mutableStateOf<Int?>(null) }
     var endIndex by remember { mutableStateOf<Int?>(null) }
     var message by remember { mutableStateOf("") }
+    val details = remember { mutableStateListOf<TransportDeclarationDetailEntity>() }
+    var minSeats by remember { mutableStateOf(Int.MAX_VALUE) }
     val cameraPositionState = rememberCameraPositionState()
     val apiKey = MapsUtils.getApiKey(context)
     val isKeyMissing = apiKey.isBlank()
@@ -494,6 +499,48 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         unfocusedBorderColor = MaterialTheme.colorScheme.primary
                     )
                 )
+                Spacer(Modifier.height(8.dp))
+                FilledIconButton(onClick = {
+                    val s = startIndex
+                    val e = endIndex
+                    val veh = selectedVehicle
+                    if (s != null && e != null && veh != null) {
+                        val detail = TransportDeclarationDetailEntity(
+                            startPoiId = pois[s].id,
+                            endPoiId = pois[e].id,
+                            vehicleId = selectedVehicleId,
+                            vehicleType = veh.name
+                        )
+                        details.add(detail)
+                        minSeats = kotlin.math.min(minSeats, selectedVehicleSeats)
+                        startIndex = null
+                        endIndex = null
+                    } else {
+                        message = context.getString(R.string.invalid_stop_order)
+                    }
+                }) {
+                    Icon(Icons.Default.Link, contentDescription = stringResource(R.string.add))
+                }
+
+                if (details.isNotEmpty()) {
+                    Spacer(Modifier.height(16.dp))
+                    Text(stringResource(R.string.associations_header))
+                    Column(Modifier.fillMaxWidth()) {
+                        Row(Modifier.fillMaxWidth()) {
+                            Text(stringResource(R.string.boarding_stop), Modifier.weight(1f))
+                            Text(stringResource(R.string.dropoff_stop), Modifier.weight(1f))
+                            Text(stringResource(R.string.vehicle_name), Modifier.weight(1f))
+                        }
+                        Divider()
+                        details.forEach { d ->
+                            Row(Modifier.fillMaxWidth()) {
+                                Text(pois.firstOrNull { it.id == d.startPoiId }?.name ?: d.startPoiId, Modifier.weight(1f))
+                                Text(pois.firstOrNull { it.id == d.endPoiId }?.name ?: d.endPoiId, Modifier.weight(1f))
+                                Text(vehicles.firstOrNull { it.id == d.vehicleId }?.name ?: d.vehicleId, Modifier.weight(1f))
+                            }
+                        }
+                    }
+                }
 
                 Spacer(Modifier.height(16.dp))
                 if (message.isNotBlank()) {
@@ -587,14 +634,13 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
             Button(
                 onClick = {
                     val routeId = selectedRouteId
-                    val vehicle = selectedVehicle
                     val cost = costText.toDoubleOrNull() ?: 0.0
                     val date = datePickerState.selectedDateMillis ?: 0L
                     val selectedDate = Instant.ofEpochMilli(date).atZone(ZoneId.systemDefault()).toLocalDate()
                     val selectedTime = LocalTime.of(timePickerState.hour, timePickerState.minute)
                     val chosenDateTime = LocalDateTime.of(selectedDate, selectedTime)
                     val driverId = selectedDriverId ?: ""
-                    if (routeId != null && vehicle != null) {
+                    if (routeId != null) {
                         if (chosenDateTime.isBefore(LocalDateTime.now())) {
                             Toast.makeText(
                                 context,
@@ -609,13 +655,12 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                 context,
                                 routeId,
                                 driverId,
-                                selectedVehicleId,
-                                vehicle,
-                                selectedVehicleSeats,
+                                if (minSeats == Int.MAX_VALUE) 0 else minSeats,
                                 cost,
                                 duration,
                                 date,
-                                startTime
+                                startTime,
+                                details.toList()
                             )
                             Toast.makeText(
                                 context,
@@ -628,7 +673,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         }
                     }
                 },
-                enabled = selectedRouteId != null && selectedVehicle != null && startIndex != null && endIndex != null && !calculating
+                enabled = selectedRouteId != null && details.size == kotlin.math.max(0, pois.size - 1) && !calculating
             ) {
                 Text(stringResource(R.string.announce))
             }

@@ -212,6 +212,8 @@
     <string name="select_time">Select time</string>
     <string name="invalid_datetime">Η ημερομηνία ή ώρα πρέπει να είναι μεταγενέστερη από το τώρα</string>
     <string name="select_vehicle">Select vehicle</string>
+    <string name="add">Add</string>
+    <string name="associations_header">Associations</string>
     <string name="select_pois_screen_title">Save interesting points of interest</string>
     <string name="choose_pois">Choose points of interest</string>
     <string name="route_saved">Route saved</string>

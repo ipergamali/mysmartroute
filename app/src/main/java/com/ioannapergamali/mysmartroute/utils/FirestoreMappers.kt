@@ -18,6 +18,7 @@ import com.ioannapergamali.mysmartroute.data.local.PoiTypeEntity
 import com.google.firebase.firestore.DocumentReference
 import com.ioannapergamali.mysmartroute.data.local.MovingEntity
 import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationEntity
+import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationDetailEntity
 import com.ioannapergamali.mysmartroute.data.local.AvailabilityEntity
 import com.ioannapergamali.mysmartroute.data.local.SeatReservationEntity
 
@@ -398,9 +399,6 @@ fun TransportDeclarationEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     // Χρησιμοποιούμε αναφορές εγγράφων για οδηγό και διαδρομή
     "routeId" to FirebaseFirestore.getInstance().collection("routes").document(routeId),
     "driverId" to FirebaseFirestore.getInstance().collection("users").document(driverId),
-    // Αποθηκεύουμε το όχημα ως αναφορά στο έγγραφο του οχήματος
-    "vehicleId" to FirebaseFirestore.getInstance().collection("vehicles").document(vehicleId),
-    "vehicleType" to vehicleType,
     "cost" to cost,
     "durationMinutes" to durationMinutes,
     "seats" to seats,
@@ -420,18 +418,39 @@ fun DocumentSnapshot.toTransportDeclarationEntity(): TransportDeclarationEntity?
         is String -> d
         else -> getString("driverId")
     } ?: ""
-    val vehicleId = when (val v = get("vehicleId")) {
-        is DocumentReference -> v.id
-        is String -> v
-        else -> getString("vehicleId")
-    } ?: ""
-    val type = getString("vehicleType") ?: return null
     val costVal = getDouble("cost") ?: 0.0
     val durVal = (getLong("durationMinutes") ?: 0L).toInt()
     val seatsVal = (getLong("seats") ?: 0L).toInt()
     val dateVal = getLong("date") ?: 0L
     val timeVal = getLong("startTime") ?: 0L
-    return TransportDeclarationEntity(declId, routeId, driverId, vehicleId, type, costVal, durVal, seatsVal, dateVal, timeVal)
+    return TransportDeclarationEntity(declId, routeId, driverId, costVal, durVal, seatsVal, dateVal, timeVal)
+}
+
+fun TransportDeclarationDetailEntity.toFirestoreMap(): Map<String, Any> = mapOf(
+    "startPoiId" to FirebaseFirestore.getInstance().collection("pois").document(startPoiId),
+    "endPoiId" to FirebaseFirestore.getInstance().collection("pois").document(endPoiId),
+    "vehicleId" to FirebaseFirestore.getInstance().collection("vehicles").document(vehicleId),
+    "vehicleType" to vehicleType
+)
+
+fun DocumentSnapshot.toTransportDeclarationDetailEntity(declarationId: String): TransportDeclarationDetailEntity? {
+    val startPoi = when (val s = get("startPoiId")) {
+        is DocumentReference -> s.id
+        is String -> s
+        else -> return null
+    }
+    val endPoi = when (val e = get("endPoiId")) {
+        is DocumentReference -> e.id
+        is String -> e
+        else -> return null
+    }
+    val vehicle = when (val v = get("vehicleId")) {
+        is DocumentReference -> v.id
+        is String -> v
+        else -> ""
+    }
+    val type = getString("vehicleType") ?: ""
+    return TransportDeclarationDetailEntity(id, declarationId, startPoi, endPoi, vehicle, type)
 }
 
 fun AvailabilityEntity.toFirestoreMap(): Map<String, Any> = mapOf(

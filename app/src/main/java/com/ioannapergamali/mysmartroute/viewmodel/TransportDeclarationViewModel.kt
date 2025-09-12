@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationEntity
-import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
+import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationDetailEntity
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import kotlinx.coroutines.tasks.await
@@ -72,30 +72,50 @@ class TransportDeclarationViewModel : ViewModel() {
         context: Context,
         routeId: String,
         driverId: String,
-        vehicleId: String,
-        vehicleType: VehicleType,
         seats: Int,
         cost: Double,
         durationMinutes: Int,
         date: Long,
-        startTime: Long = 0L
+        startTime: Long = 0L,
+        details: List<TransportDeclarationDetailEntity>
     ): Boolean = withContext(Dispatchers.IO) {
-        val dao = MySmartRouteDatabase.getInstance(context).transportDeclarationDao()
+        val db = MySmartRouteDatabase.getInstance(context)
+        val declDao = db.transportDeclarationDao()
+        val detailDao = db.transportDeclarationDetailDao()
         val id = UUID.randomUUID().toString()
-        val entity = TransportDeclarationEntity(id, routeId, driverId, vehicleId, vehicleType.name, cost, durationMinutes, seats, date, startTime)
-        dao.insert(entity)
+        val entity = TransportDeclarationEntity(id, routeId, driverId, cost, durationMinutes, seats, date, startTime)
+        if (details.isNotEmpty()) {
+            entity.vehicleId = details.first().vehicleId
+            entity.vehicleType = details.first().vehicleType
+        }
+        declDao.insert(entity)
+        val detailEntities = details.map {
+            val detailId = if (it.id.isBlank()) UUID.randomUUID().toString() else it.id
+            it.copy(id = detailId, declarationId = id)
+        }
+        if (detailEntities.isNotEmpty()) {
+            detailDao.insertAll(detailEntities)
+        }
         try {
-            FirebaseFirestore.getInstance()
+            val firestore = FirebaseFirestore.getInstance()
+            firestore
                 .collection("transport_declarations")
                 .document(id)
                 .set(entity.toFirestoreMap())
                 .await()
+            for (detail in detailEntities) {
+                firestore
+                    .collection("transport_declarations")
+                    .document(id)
+                    .collection("details")
+                    .document(detail.id)
+                    .set(detail.toFirestoreMap())
+                    .await()
+            }
             Log.d(TAG, "Declaration $id stored remotely")
             true
         } catch (e: Exception) {
             Log.w(TAG, "Remote store failed", e)
-            // Σε περίπτωση αποτυχίας, θα αποσταλεί αργότερα μέσω συγχρονισμού
-            // In case of failure, it will be sent later during sync
             false
         }
     }
