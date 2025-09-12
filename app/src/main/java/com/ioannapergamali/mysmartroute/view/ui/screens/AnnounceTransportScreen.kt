@@ -45,6 +45,7 @@ import com.ioannapergamali.mysmartroute.data.local.RouteEntity
 import com.ioannapergamali.mysmartroute.data.local.VehicleEntity
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationDetailEntity
+import com.google.android.libraries.places.api.model.Place
 import com.ioannapergamali.mysmartroute.view.ui.util.observeBubble
 import com.ioannapergamali.mysmartroute.view.ui.util.LocalKeyboardBubbleState
 import kotlinx.coroutines.launch
@@ -80,6 +81,12 @@ private fun formatAddress(address: PoiAddress): String = buildString {
         if (isNotEmpty()) append(", ")
         append("${address.postalCode} ${address.city}".trim())
     }
+}
+
+private fun formatDuration(minutes: Int): String {
+    val hours = minutes / 60
+    val mins = minutes % 60
+    return if (hours > 0) "%d:%02d".format(hours, mins) else "%d".format(mins)
 }
 
 private fun arePoisSequential(
@@ -233,7 +240,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         var list = vehicles
         selectedDriverId?.let { id -> list = list.filter { it.userId == id } }
         filteredVehicles = if (routeHasBusStations) {
-            list.filter { it.type == VehicleType.BIGBUS.name || it.type == VehicleType.SMALLBUS.name }
+            list.filter { it.type == VehicleType.BIGBUS.name }
         } else {
             list
         }
@@ -539,16 +546,22 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     val e = endIndex
                     val veh = selectedVehicle
                     if (s != null && e != null && veh != null) {
-                        val detail = TransportDeclarationDetailEntity(
-                            startPoiId = pois[s].id,
-                            endPoiId = pois[e].id,
-                            vehicleId = selectedVehicleId,
-                            vehicleType = veh.name
-                        )
-                        details.add(detail)
-                        minSeats = kotlin.math.min(minSeats, selectedVehicleSeats)
-                        startIndex = null
-                        endIndex = null
+                        val startPoi = pois[s]
+                        val endPoi = pois[e]
+                        if (startPoi.type == Place.Type.BUS_STATION && endPoi.type == Place.Type.BUS_STATION && veh != VehicleType.BIGBUS) {
+                            message = context.getString(R.string.bigbus_required)
+                        } else {
+                            val detail = TransportDeclarationDetailEntity(
+                                startPoiId = startPoi.id,
+                                endPoiId = endPoi.id,
+                                vehicleId = selectedVehicleId,
+                                vehicleType = veh.name
+                            )
+                            details.add(detail)
+                            minSeats = kotlin.math.min(minSeats, selectedVehicleSeats)
+                            startIndex = null
+                            endIndex = null
+                        }
                     } else {
                         message = context.getString(R.string.invalid_stop_order)
                     }
@@ -677,7 +690,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
 
             Spacer(Modifier.height(16.dp))
 
-            Text(stringResource(R.string.duration_format, duration))
+            Text(stringResource(R.string.duration_format, formatDuration(duration)))
 
             if (calculating) {
                 Spacer(Modifier.height(8.dp))
@@ -741,10 +754,16 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                 val e = endIndex ?: pois.lastIndex
                                 val veh = selectedVehicle
                                 if (veh != null && s < pois.size && e < pois.size) {
+                                    val startPoi = pois[s]
+                                    val endPoi = pois[e]
+                                    if (startPoi.type == Place.Type.BUS_STATION && endPoi.type == Place.Type.BUS_STATION && veh != VehicleType.BIGBUS) {
+                                        Toast.makeText(context, R.string.bigbus_required, Toast.LENGTH_SHORT).show()
+                                        return@launch
+                                    }
                                     listOf(
                                         TransportDeclarationDetailEntity(
-                                            startPoiId = pois[s].id,
-                                            endPoiId = pois[e].id,
+                                            startPoiId = startPoi.id,
+                                            endPoiId = endPoi.id,
                                             vehicleId = selectedVehicleId,
                                             vehicleType = veh.name
                                         )

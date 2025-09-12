@@ -25,6 +25,12 @@ import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import kotlinx.coroutines.launch
 
+private fun formatDuration(minutes: Int): String {
+    val hours = minutes / 60
+    val mins = minutes % 60
+    return if (hours > 0) "%d:%02d".format(hours, mins) else "%d".format(mins)
+}
+
 @Composable
 fun DefineDurationScreen(navController: NavController, openDrawer: () -> Unit) {
     val context = LocalContext.current
@@ -104,7 +110,7 @@ fun DefineDurationScreen(navController: NavController, openDrawer: () -> Unit) {
 
                 durationMinutes?.let { mins ->
                     Spacer(Modifier.height(16.dp))
-                    Text(stringResource(R.string.duration_format, mins))
+                    Text(stringResource(R.string.duration_format, formatDuration(mins)))
                     Spacer(Modifier.height(8.dp))
                     Button(onClick = {
                         val rId = selectedRouteId ?: return@Button
