@@ -103,7 +103,15 @@ private fun canSend(
     calculating: Boolean
 ): Boolean {
     if (!routeSelected || cost.isBlank() || !dateSelected || !timeSelected || calculating) return false
-    if (details.isNotEmpty()) return arePoisSequential(pois, details)
+    if (details.isNotEmpty()) {
+        if (arePoisSequential(pois, details)) return true
+        val firstId = pois.firstOrNull()?.id
+        val lastId = pois.lastOrNull()?.id
+        if (firstId != null && lastId != null) {
+            return details.any { it.startPoiId == firstId && it.endPoiId == lastId }
+        }
+        return false
+    }
     return startIndex == 0 && endIndex == pois.lastIndex
 }
 
