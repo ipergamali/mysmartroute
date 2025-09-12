@@ -9,6 +9,7 @@ import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationEntity
 import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationDetailEntity
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
+import com.ioannapergamali.mysmartroute.utils.toTransportDeclarationDetailEntity
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -33,6 +34,26 @@ class TransportDeclarationViewModel : ViewModel() {
 
     companion object {
         private const val TAG = "TransportDeclVM"
+    }
+
+    private val detailCache = mutableMapOf<String, List<TransportDeclarationDetailEntity>>()
+
+    suspend fun fetchDetails(declarationId: String): List<TransportDeclarationDetailEntity> {
+        detailCache[declarationId]?.let { return it }
+        return try {
+            val snap = FirebaseFirestore.getInstance()
+                .collection("transport_declarations")
+                .document(declarationId)
+                .collection("details")
+                .get()
+                .await()
+            val list = snap.documents.mapNotNull { it.toTransportDeclarationDetailEntity(declarationId) }
+            detailCache[declarationId] = list
+            list
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to load details for $declarationId", e)
+            emptyList()
+        }
     }
 
     /**
