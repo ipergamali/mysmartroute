@@ -65,6 +65,7 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.material3.FilledIconButton
+import com.google.android.libraries.places.api.model.Place
 
 private fun iconForVehicle(type: VehicleType): ImageVector = when (type) {
     VehicleType.CAR, VehicleType.TAXI -> Icons.Default.DirectionsCar
@@ -146,7 +147,9 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     var selectedVehicleDescription by remember { mutableStateOf("") }
     var selectedVehicleSeats by remember { mutableStateOf(0) }
     var costText by remember { mutableStateOf("") }
-    var duration by remember { mutableStateOf(0) }
+    var segmentDuration by remember { mutableStateOf(0) }
+    val detailDurations = remember { mutableStateListOf<Int>() }
+    val duration by remember { derivedStateOf { detailDurations.sum() + segmentDuration } }
     var calculating by remember { mutableStateOf(false) }
     val now = LocalDateTime.now()
     val todayMillis = remember {
@@ -204,7 +207,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     poisList.subList(fromIdx + 1, toIdx).map { LatLng(it.lat, it.lng) }
                 } else emptyList()
                 val data = MapsUtils.fetchDurationAndPath(origin, destination, apiKey, vehicle, waypoints)
-                duration = data.duration
+                segmentDuration = data.duration
                 pathPoints = if (data.points.isNotEmpty()) data.points else poisList.map { LatLng(it.lat, it.lng) }
                 pathPoints.firstOrNull()?.let { first ->
                     cameraPositionState.move(CameraUpdateFactory.newLatLngZoom(first, 13f))
@@ -539,16 +542,27 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     val e = endIndex
                     val veh = selectedVehicle
                     if (s != null && e != null && veh != null) {
-                        val detail = TransportDeclarationDetailEntity(
-                            startPoiId = pois[s].id,
-                            endPoiId = pois[e].id,
-                            vehicleId = selectedVehicleId,
-                            vehicleType = veh.name
-                        )
-                        details.add(detail)
-                        minSeats = kotlin.math.min(minSeats, selectedVehicleSeats)
-                        startIndex = null
-                        endIndex = null
+                        val startPoi = pois[s]
+                        val endPoi = pois[e]
+                        if (startPoi.type == Place.Type.BUS_STATION &&
+                            endPoi.type == Place.Type.BUS_STATION &&
+                            veh != VehicleType.BIGBUS
+                        ) {
+                            message = context.getString(R.string.bigbus_required)
+                        } else {
+                            val detail = TransportDeclarationDetailEntity(
+                                startPoiId = startPoi.id,
+                                endPoiId = endPoi.id,
+                                vehicleId = selectedVehicleId,
+                                vehicleType = veh.name
+                            )
+                            details.add(detail)
+                            detailDurations.add(segmentDuration)
+                            minSeats = kotlin.math.min(minSeats, selectedVehicleSeats)
+                            startIndex = null
+                            endIndex = null
+                            segmentDuration = 0
+                        }
                     } else {
                         message = context.getString(R.string.invalid_stop_order)
                     }
@@ -566,7 +580,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                             Text(stringResource(R.string.vehicle_name), Modifier.weight(1f))
                         }
                         Divider()
-                        details.forEach { d ->
+                        details.forEachIndexed { index, d ->
                             Row(
                                 Modifier.fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically
@@ -584,7 +598,8 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                     Modifier.weight(1f)
                                 )
                                 IconButton(onClick = {
-                                    details.remove(d)
+                                    details.removeAt(index)
+                                    detailDurations.removeAt(index)
                                     minSeats = details.minOfOrNull { dt ->
                                         vehicles.firstOrNull { it.id == dt.vehicleId }?.seat
                                             ?: Int.MAX_VALUE
@@ -731,6 +746,19 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                 Toast.LENGTH_SHORT
                             ).show()
                             return@Button
+                        }
+                        if (details.isEmpty()) {
+                            val s = startIndex ?: 0
+                            val e = endIndex ?: pois.lastIndex
+                            val veh = selectedVehicle
+                            if (veh != null && s < pois.size && e < pois.size) {
+                                val startPoi = pois[s]
+                                val endPoi = pois[e]
+                                if (startPoi.type == Place.Type.BUS_STATION && endPoi.type == Place.Type.BUS_STATION && veh != VehicleType.BIGBUS) {
+                                    Toast.makeText(context, R.string.bigbus_required, Toast.LENGTH_SHORT).show()
+                                    return@Button
+                                }
+                            }
                         }
                         val startTime = (timePickerState.hour * 60 + timePickerState.minute) * 60_000L
                         scope.launch {
