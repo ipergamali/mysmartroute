@@ -27,6 +27,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.UserViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleViewModel
 import com.ioannapergamali.mysmartroute.utils.matchesFavorites
 import com.ioannapergamali.mysmartroute.utils.isUpcoming
+import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationDetailEntity
 import kotlinx.coroutines.launch
 import kotlin.math.max
 import java.time.Instant
@@ -81,6 +82,7 @@ fun AvailableTransportsScreen(
     val nonPreferred by favoritesViewModel.nonPreferredFlow(context).collectAsState(initial = emptySet())
 
     val reservationCounts = remember { mutableStateMapOf<String, Int>() }
+    val detailsMap = remember { mutableStateMapOf<String, List<TransportDeclarationDetailEntity>>() }
     var message by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
@@ -96,12 +98,20 @@ fun AvailableTransportsScreen(
         declarations.forEach { decl ->
             val count = reservationViewModel.getReservationCount(context, decl.id)
             reservationCounts[decl.id] = count
+            if (detailsMap[decl.id] == null) {
+                val details = declarationViewModel.fetchDetails(decl.id)
+                detailsMap[decl.id] = details
+            }
         }
     }
 
     val today = remember { LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli() }
     val sortedDecls = declarations.filter { decl ->
         if (routeId != null && decl.routeId != routeId) return@filter false
+        if (startId != null && endId != null) {
+            val dets = detailsMap[decl.id] ?: emptyList()
+            if (dets.none { it.startPoiId == startId && it.endPoiId == endId }) return@filter false
+        }
         // Η δήλωση πρέπει να έχει κόστος μικρότερο ή ίσο με αυτό που όρισε ο χρήστης
         if (maxCost != null && decl.cost > maxCost) return@filter false
         val reserved = reservationCounts[decl.id] ?: 0
