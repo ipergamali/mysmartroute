@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -533,10 +534,34 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         }
                         Divider()
                         details.forEach { d ->
-                            Row(Modifier.fillMaxWidth()) {
-                                Text(pois.firstOrNull { it.id == d.startPoiId }?.name ?: d.startPoiId, Modifier.weight(1f))
-                                Text(pois.firstOrNull { it.id == d.endPoiId }?.name ?: d.endPoiId, Modifier.weight(1f))
-                                Text(vehicles.firstOrNull { it.id == d.vehicleId }?.name ?: d.vehicleId, Modifier.weight(1f))
+                            Row(
+                                Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    pois.firstOrNull { it.id == d.startPoiId }?.name ?: d.startPoiId,
+                                    Modifier.weight(1f)
+                                )
+                                Text(
+                                    pois.firstOrNull { it.id == d.endPoiId }?.name ?: d.endPoiId,
+                                    Modifier.weight(1f)
+                                )
+                                Text(
+                                    vehicles.firstOrNull { it.id == d.vehicleId }?.name ?: d.vehicleId,
+                                    Modifier.weight(1f)
+                                )
+                                IconButton(onClick = {
+                                    details.remove(d)
+                                    minSeats = details.minOfOrNull { dt ->
+                                        vehicles.firstOrNull { it.id == dt.vehicleId }?.seat
+                                            ?: Int.MAX_VALUE
+                                    } ?: Int.MAX_VALUE
+                                }) {
+                                    Icon(
+                                        Icons.Default.Delete,
+                                        contentDescription = stringResource(R.string.delete)
+                                    )
+                                }
                             }
                         }
                     }
@@ -651,16 +676,34 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         }
                         val startTime = (timePickerState.hour * 60 + timePickerState.minute) * 60_000L
                         scope.launch {
+                            val detailList = if (details.isNotEmpty()) {
+                                details.toList()
+                            } else {
+                                val s = startIndex ?: 0
+                                val e = endIndex ?: pois.lastIndex
+                                val veh = selectedVehicle
+                                if (veh != null && s < pois.size && e < pois.size) {
+                                    listOf(
+                                        TransportDeclarationDetailEntity(
+                                            startPoiId = pois[s].id,
+                                            endPoiId = pois[e].id,
+                                            vehicleId = selectedVehicleId,
+                                            vehicleType = veh.name
+                                        )
+                                    )
+                                } else emptyList()
+                            }
+                            val minSeatsValue = if (details.isNotEmpty()) minSeats else selectedVehicleSeats
                             val success = declarationViewModel.declareTransport(
                                 context,
                                 routeId,
                                 driverId,
-                                if (minSeats == Int.MAX_VALUE) 0 else minSeats,
+                                if (minSeatsValue == Int.MAX_VALUE) 0 else minSeatsValue,
                                 cost,
                                 duration,
                                 date,
                                 startTime,
-                                details.toList()
+                                detailList
                             )
                             Toast.makeText(
                                 context,
@@ -673,7 +716,16 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         }
                     }
                 },
-                enabled = selectedRouteId != null && details.size == kotlin.math.max(0, pois.size - 1) && !calculating
+                enabled = selectedRouteId != null &&
+                        (
+                            details.any { d ->
+                                d.startPoiId == pois.firstOrNull()?.id &&
+                                        d.endPoiId == pois.lastOrNull()?.id
+                            } ||
+                                    (startIndex == 0 && endIndex == pois.lastIndex)
+                        ) &&
+                        costText.isNotBlank() &&
+                        !calculating
             ) {
                 Text(stringResource(R.string.announce))
             }
