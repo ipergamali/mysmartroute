@@ -26,6 +26,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.FavoritesViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.TransportDeclarationViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.ReservationViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.BookingViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.ReservationSegment
 import com.ioannapergamali.mysmartroute.viewmodel.UserViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
@@ -276,29 +277,34 @@ fun AvailableTransportsScreen(
                     Spacer(Modifier.height(8.dp))
                     Button(onClick = {
                         scope.launch {
-                            selectedDetails.values.forEach { (decl, detail) ->
-                                val reservedSeg = detailReservationCounts[decl.id]?.get(detail.id) ?: 0
-                                val result = bookingViewModel.reserveSeat(
-                                    context = context,
-                                    routeId = decl.routeId,
-                                    date = decl.date,
-                                    startTime = decl.startTime,
-                                    startPoiId = detail.startPoiId,
-                                    endPoiId = detail.endPoiId,
-                                    declarationId = decl.id,
-                                    driverId = decl.driverId,
-                                    vehicleId = detail.vehicleId,
-                                    cost = decl.cost,
-                                    durationMinutes = decl.durationMinutes
-                                )
-                                result.onSuccess {
-                                    val map = detailReservationCounts.getOrPut(decl.id) { mutableMapOf() }
-                                    map[detail.id] = reservedSeg + 1
-                                    reservationCounts[decl.id] = (reservationCounts[decl.id] ?: 0) + 1
-                                }
-                            }
-                            selectedDetails.clear()
-                            message = context.getString(R.string.seat_booked)
+                              val grouped = selectedDetails.values.groupBy { it.first.id }
+                              grouped.values.forEach { list ->
+                                  val decl = list.first().first
+                                  val segments = list.map { (_, detail) ->
+                                      ReservationSegment(detail.startPoiId, detail.endPoiId, detail.vehicleId)
+                                  }
+                                  val result = bookingViewModel.reserveSeat(
+                                      context = context,
+                                      routeId = decl.routeId,
+                                      date = decl.date,
+                                      startTime = decl.startTime,
+                                      segments = segments,
+                                      declarationId = decl.id,
+                                      driverId = decl.driverId,
+                                      cost = decl.cost,
+                                      durationMinutes = decl.durationMinutes
+                                  )
+                                  result.onSuccess {
+                                      val map = detailReservationCounts.getOrPut(decl.id) { mutableMapOf() }
+                                      list.forEach { (_, detail) ->
+                                          val reservedSeg = map[detail.id] ?: 0
+                                          map[detail.id] = reservedSeg + 1
+                                      }
+                                      reservationCounts[decl.id] = (reservationCounts[decl.id] ?: 0) + list.size
+                                  }
+                              }
+                              selectedDetails.clear()
+                              message = context.getString(R.string.seat_booked)
                         }
                     }, modifier = Modifier.fillMaxWidth()) {
                         Text(stringResource(R.string.reserve_seat))
