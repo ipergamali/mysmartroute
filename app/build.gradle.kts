@@ -10,7 +10,6 @@ val mapsApiKey: String = gradleLocalProperties(rootDir, providers)
         id("org.jetbrains.kotlin.android")
         id("com.google.devtools.ksp")
         id("com.google.gms.google-services")
-        id("org.jetbrains.kotlin.plugin.compose")
         id("com.google.dagger.hilt.android")
     }
 
@@ -41,8 +40,8 @@ android {
     }
 
     composeOptions {
-        // Τελευταία σταθερή έκδοση του compiler για Kotlin 2.2.10
-        kotlinCompilerExtensionVersion = "1.7.1"
+        // Τελευταία σταθερή έκδοση του compiler για Kotlin 1.9.24
+        kotlinCompilerExtensionVersion = "1.5.14"
     }
 
     dependenciesInfo {
@@ -100,8 +99,8 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.3")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.9.3")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
-    implementation("com.google.dagger:hilt-android:2.51.1")
-    ksp("com.google.dagger:hilt-compiler:2.51.1")
+    implementation("com.google.dagger:hilt-android:2.51")
+    ksp("com.google.dagger:hilt-compiler:2.51")
 
     // DataStore για αποθήκευση ρυθμίσεων
     implementation("androidx.datastore:datastore-preferences:1.1.7")
