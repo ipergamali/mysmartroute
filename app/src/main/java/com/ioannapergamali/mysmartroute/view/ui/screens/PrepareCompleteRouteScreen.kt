@@ -176,14 +176,20 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
             if (res.userId.isNotBlank() && userNames[res.userId] == null) {
                 userNames[res.userId] = userViewModel.getUserName(context, res.userId)
             }
-            val detail = db.seatReservationDetailDao().getForReservation(res.id).firstOrNull()
+            val detail = db
+                .seatReservationDetailDao()
+                .getForReservation(res.id)
+                .firstOrNull()
+                ?.firstOrNull()
             if (detail != null) {
                 reservationDetails[res.id] = detail
                 if (detail.startPoiId.isNotBlank() && poiNames[detail.startPoiId] == null) {
-                    poiNames[detail.startPoiId] = poiViewModel.getPoiName(context, detail.startPoiId)
+                    poiNames[detail.startPoiId] =
+                        poiViewModel.getPoiName(context, detail.startPoiId)
                 }
                 if (detail.endPoiId.isNotBlank() && poiNames[detail.endPoiId] == null) {
-                    poiNames[detail.endPoiId] = poiViewModel.getPoiName(context, detail.endPoiId)
+                    poiNames[detail.endPoiId] =
+                        poiViewModel.getPoiName(context, detail.endPoiId)
                 }
             }
         }

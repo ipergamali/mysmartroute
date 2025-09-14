@@ -53,7 +53,11 @@ fun ReservationDetailsScreen(
         reservation?.let { res ->
             val db = MySmartRouteDatabase.getInstance(context)
             routeName = db.routeDao().findById(res.routeId)?.name ?: res.routeId
-            val det = db.seatReservationDetailDao().getForReservation(res.id).firstOrNull()
+            val det = db
+                .seatReservationDetailDao()
+                .getForReservation(res.id)
+                .firstOrNull()
+                ?.firstOrNull()
             startPoiName = det?.startPoiId?.let { db.poIDao().findById(it)?.name ?: it } ?: ""
             endPoiName = det?.endPoiId?.let { db.poIDao().findById(it)?.name ?: it } ?: ""
             val decl = db.transportDeclarationDao().getById(res.declarationId)
