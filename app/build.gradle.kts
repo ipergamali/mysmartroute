@@ -35,15 +35,14 @@ android {
         compose = true
     }
 
-    buildToolsVersion = "34.0.0"
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
 
     composeOptions {
-        // Τελευταία σταθερή έκδοση του compiler για Kotlin 2.0.21
-        kotlinCompilerExtensionVersion = "1.6.11"
+        // Τελευταία σταθερή έκδοση του compiler για Kotlin 2.2.10
+        kotlinCompilerExtensionVersion = "1.7.1"
     }
 
     dependenciesInfo {
