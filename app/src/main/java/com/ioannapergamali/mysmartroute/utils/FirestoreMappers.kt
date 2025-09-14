@@ -436,6 +436,7 @@ fun TransportDeclarationDetailEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     "vehicleId" to FirebaseFirestore.getInstance().collection("vehicles").document(vehicleId),
     "vehicleType" to vehicleType,
     "seats" to seats,
+    "cost" to cost,
     "startTime" to startTime
 )
 
@@ -457,8 +458,9 @@ fun DocumentSnapshot.toTransportDeclarationDetailEntity(declarationId: String): 
     }
     val type = getString("vehicleType") ?: ""
     val seatsVal = (getLong("seats") ?: 0L).toInt()
+    val costVal = getDouble("cost") ?: 0.0
     val timeVal = getLong("startTime") ?: 0L
-    return TransportDeclarationDetailEntity(id, declarationId, startPoi, endPoi, vehicle, type, seatsVal, timeVal)
+    return TransportDeclarationDetailEntity(id, declarationId, startPoi, endPoi, vehicle, type, seatsVal, costVal, timeVal)
 }
 
 fun AvailabilityEntity.toFirestoreMap(): Map<String, Any> = mapOf(
