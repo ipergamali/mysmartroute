@@ -145,6 +145,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     var selectedVehicleSeats by remember { mutableStateOf(0) }
     var detailCostText by remember { mutableStateOf("") }
     var segmentDuration by remember { mutableStateOf(0) }
+    val details = remember { mutableStateListOf<TransportDeclarationDetailEntity>() }
     val detailDurations = remember { mutableStateListOf<Int>() }
     val duration by remember { derivedStateOf { detailDurations.sum() + segmentDuration } }
     val totalCost by remember {
@@ -188,7 +189,6 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     var startIndex by remember { mutableStateOf<Int?>(null) }
     var endIndex by remember { mutableStateOf<Int?>(null) }
     var message by remember { mutableStateOf("") }
-    val details = remember { mutableStateListOf<TransportDeclarationDetailEntity>() }
     var minSeats by remember { mutableStateOf(Int.MAX_VALUE) }
     val cameraPositionState = rememberCameraPositionState()
     val apiKey = MapsUtils.getApiKey(context)
