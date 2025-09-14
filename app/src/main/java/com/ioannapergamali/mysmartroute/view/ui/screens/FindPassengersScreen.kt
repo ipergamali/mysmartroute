@@ -194,6 +194,7 @@ fun FindPassengersScreen(
                             }
                         }
                     }
+
                     Spacer(modifier = Modifier.height(8.dp))
                     Button(
                         onClick = {
@@ -211,6 +212,7 @@ fun FindPassengersScreen(
                     ) {
                         Text(stringResource(R.string.notify_selected))
                     }
+
                 }
             }
         }
