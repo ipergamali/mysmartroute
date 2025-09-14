@@ -40,6 +40,7 @@ import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationEntity
 import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationDetailEntity
 import com.ioannapergamali.mysmartroute.data.local.AvailabilityEntity
 import com.ioannapergamali.mysmartroute.data.local.SeatReservationEntity
+import com.ioannapergamali.mysmartroute.data.local.SeatReservationDetailEntity
 import com.ioannapergamali.mysmartroute.data.local.TransferRequestEntity
 import com.ioannapergamali.mysmartroute.data.local.TripRatingEntity
 import com.ioannapergamali.mysmartroute.data.local.NotificationEntity
@@ -48,10 +49,13 @@ import com.ioannapergamali.mysmartroute.utils.toMovingEntity
 import com.ioannapergamali.mysmartroute.utils.toTransportDeclarationEntity
 import com.ioannapergamali.mysmartroute.utils.toAvailabilityEntity
 import com.ioannapergamali.mysmartroute.utils.toSeatReservationEntity
+import com.ioannapergamali.mysmartroute.utils.toSeatReservationDetailEntity
 import com.ioannapergamali.mysmartroute.utils.toTransferRequestEntity
 import com.ioannapergamali.mysmartroute.utils.toTripRatingEntity
 import com.ioannapergamali.mysmartroute.utils.toNotificationEntity
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
+import com.ioannapergamali.mysmartroute.data.local.MovingDetailEntity
+import com.ioannapergamali.mysmartroute.utils.toMovingDetailEntity
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -486,8 +490,16 @@ class DatabaseViewModel : ViewModel() {
                     val routePoints = routeTriples.flatMap { it.second }
                     val busStations = routeTriples.flatMap { it.third }
 
-                    val movings = firestore.collection("movings").get().await()
-                        .documents.mapNotNull { it.toMovingEntity() }
+                    val movingSnap = firestore.collection("movings").get().await()
+                    val movingDetails = mutableListOf<MovingDetailEntity>()
+                    val movings = movingSnap.documents.mapNotNull { doc ->
+                        val moving = doc.toMovingEntity()
+                        if (moving != null) {
+                            val dets = doc.reference.collection("details").get().await()
+                            movingDetails += dets.documents.mapNotNull { it.toMovingDetailEntity(moving.id) }
+                        }
+                        moving
+                    }
 
                     val declSnap = firestore.collection("transport_declarations").get().await()
                     val declarations = mutableListOf<TransportDeclarationEntity>()
@@ -514,8 +526,16 @@ class DatabaseViewModel : ViewModel() {
                         .await()
                         .documents.mapNotNull { it.toFavoriteEntity() }
 
-                    val seatReservations = firestore.collection("seat_reservations").get().await()
-                        .documents.mapNotNull { it.toSeatReservationEntity() }
+                    val seatResSnap = firestore.collection("seat_reservations").get().await()
+                    val seatResDetails = mutableListOf<SeatReservationDetailEntity>()
+                    val seatReservations = seatResSnap.documents.mapNotNull { doc ->
+                        val res = doc.toSeatReservationEntity()
+                        if (res != null) {
+                            val dets = doc.reference.collection("details").get().await()
+                            seatResDetails += dets.documents.mapNotNull { it.toSeatReservationDetailEntity(res.id) }
+                        }
+                        res
+                    }
 
                     val transferRequests = firestore.collection("transfer_requests").get().await()
                         .documents.mapNotNull { it.toTransferRequestEntity() }
@@ -541,6 +561,7 @@ class DatabaseViewModel : ViewModel() {
                     routePoints.forEach { db.routePointDao().insert(it) }
                     busStations.forEach { db.routeBusStationDao().insert(it) }
                     movings.forEach { db.movingDao().insert(it) }
+                    movingDetails.forEach { db.movingDetailDao().insert(it) }
                     declarations.forEach { db.transportDeclarationDao().insert(it) }
                     if (declDetails.isNotEmpty()) {
                         db.transportDeclarationDetailDao().insertAll(declDetails)
@@ -548,6 +569,7 @@ class DatabaseViewModel : ViewModel() {
                     availabilities.forEach { db.availabilityDao().insert(it) }
                     favorites.forEach { insertFavoriteSafely(db.favoriteDao(), db.userDao(), it) }
                     seatReservations.forEach { db.seatReservationDao().insert(it) }
+                    seatResDetails.forEach { db.seatReservationDetailDao().insert(it) }
                     transferRequests.forEach { db.transferRequestDao().insert(it) }
                     tripRatings.forEach { db.tripRatingDao().upsert(it) }
                     Log.d(TAG, "Inserted remote data to local DB")
@@ -580,6 +602,8 @@ class DatabaseViewModel : ViewModel() {
                     val declarations = db.transportDeclarationDao().getAll().first()
                     Log.d(TAG, "Fetched ${declarations.size} local declarations")
                     val detailDao = db.transportDeclarationDetailDao()
+                    val movingDetailDao = db.movingDetailDao()
+                    val seatResDetailDao = db.seatReservationDetailDao()
 
                     val availabilities = db.availabilityDao().getAll().first()
                     Log.d(TAG, "Fetched ${availabilities.size} local availabilities")
@@ -654,10 +678,14 @@ class DatabaseViewModel : ViewModel() {
                             .set(route.toFirestoreMap(points)).await()
                     }
 
-                    movings.forEach {
-                        firestore.collection("movings")
-                            .document(it.id)
-                            .set(it.toFirestoreMap()).await()
+                    movings.forEach { moving ->
+                        val ref = firestore.collection("movings").document(moving.id)
+                        ref.set(moving.toFirestoreMap()).await()
+                        movingDetailDao.getForMoving(moving.id).first().forEach { detail ->
+                            ref.collection("details")
+                                .document(detail.id)
+                                .set(detail.toFirestoreMap()).await()
+                        }
                     }
 
                     declarations.forEach { decl ->
@@ -685,10 +713,14 @@ class DatabaseViewModel : ViewModel() {
                             .set(fav.toFirestoreMap()).await()
                     }
 
-                    seatReservations.forEach {
-                        firestore.collection("seat_reservations")
-                            .document(it.id)
-                            .set(it.toFirestoreMap()).await()
+                    seatReservations.forEach { res ->
+                        val ref = firestore.collection("seat_reservations").document(res.id)
+                        ref.set(res.toFirestoreMap()).await()
+                        seatResDetailDao.getForReservation(res.id).first().forEach { detail ->
+                            ref.collection("details")
+                                .document(detail.id)
+                                .set(detail.toFirestoreMap()).await()
+                        }
                     }
 
                     transferRequests.forEach {

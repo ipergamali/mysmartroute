@@ -21,6 +21,8 @@ import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationEntity
 import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationDetailEntity
 import com.ioannapergamali.mysmartroute.data.local.AvailabilityEntity
 import com.ioannapergamali.mysmartroute.data.local.SeatReservationEntity
+import com.ioannapergamali.mysmartroute.data.local.SeatReservationDetailEntity
+import com.ioannapergamali.mysmartroute.data.local.MovingDetailEntity
 
 /**
  * Μετατρέπει έγγραφα Firestore σε τοπικές οντότητες Room και το αντίστροφο.
@@ -301,15 +303,10 @@ fun MovingEntity.toFirestoreMap(): Map<String, Any> {
         "userId" to FirebaseFirestore.getInstance().collection("users").document(userId),
         "date" to date,
         "durationMinutes" to durationMinutes,
-        "startPoiId" to FirebaseFirestore.getInstance().collection("pois").document(startPoiId),
-        "endPoiId" to FirebaseFirestore.getInstance().collection("pois").document(endPoiId),
         "status" to status,
         "requestNumber" to requestNumber
     )
     cost?.let { map["cost"] = it }
-    if (vehicleId.isNotEmpty()) {
-        map["vehicleId"] = FirebaseFirestore.getInstance().collection("vehicles").document(vehicleId)
-    }
     if (createdById.isNotEmpty()) {
         map["createdById"] = FirebaseFirestore.getInstance().collection("users").document(createdById)
         map["createdByName"] = createdByName
@@ -335,11 +332,6 @@ fun DocumentSnapshot.toMovingEntity(): MovingEntity? {
         is String -> u
         else -> getString("userId")
     } ?: ""
-    val vehicleId = when (val v = get("vehicleId")) {
-        is DocumentReference -> v.id
-        is String -> v
-        else -> getString("vehicleId")
-    } ?: ""
     val dateVal = when (val d = get("date")) {
         is Timestamp -> d.toDate().time
         is Long -> d
@@ -347,16 +339,6 @@ fun DocumentSnapshot.toMovingEntity(): MovingEntity? {
     }
     val costVal = getDouble("cost")
     val durVal = (getLong("durationMinutes") ?: 0L).toInt()
-    val startPoiId = when (val s = get("startPoiId")) {
-        is DocumentReference -> s.id
-        is String -> s
-        else -> getString("startPoiId")
-    } ?: ""
-    val endPoiId = when (val e = get("endPoiId")) {
-        is DocumentReference -> e.id
-        is String -> e
-        else -> getString("endPoiId")
-    } ?: ""
     val createdById = when (val c = get("createdById")) {
         is DocumentReference -> c.id
         is String -> c
@@ -378,11 +360,8 @@ fun DocumentSnapshot.toMovingEntity(): MovingEntity? {
         routeId,
         userId,
         dateVal,
-        vehicleId,
         costVal,
         durVal,
-        startPoiId,
-        endPoiId,
         createdById,
         createdByName,
         driverId,
@@ -480,9 +459,7 @@ fun SeatReservationEntity.toFirestoreMap(): Map<String, Any> {
         "routeId" to FirebaseFirestore.getInstance().collection("routes").document(routeId),
         "userId" to FirebaseFirestore.getInstance().collection("users").document(userId),
         "date" to date,
-        "startTime" to startTime,
-        "startPoiId" to FirebaseFirestore.getInstance().collection("pois").document(startPoiId),
-        "endPoiId" to FirebaseFirestore.getInstance().collection("pois").document(endPoiId)
+        "startTime" to startTime
     )
     if (declarationId.isNotBlank()) {
         map["declarationId"] = FirebaseFirestore.getInstance()
@@ -511,17 +488,55 @@ fun DocumentSnapshot.toSeatReservationEntity(): SeatReservationEntity? {
     } ?: return null
     val dateVal = getLong("date") ?: 0L
     val timeVal = getLong("startTime") ?: 0L
-    val startPoiId = when (val s = get("startPoiId")) {
+    return SeatReservationEntity(resId, declarationId, routeId, userId, dateVal, timeVal)
+}
+
+fun SeatReservationDetailEntity.toFirestoreMap(): Map<String, Any> = mapOf(
+    "id" to id,
+    "startPoiId" to FirebaseFirestore.getInstance().collection("pois").document(startPoiId),
+    "endPoiId" to FirebaseFirestore.getInstance().collection("pois").document(endPoiId)
+)
+
+fun DocumentSnapshot.toSeatReservationDetailEntity(reservationId: String): SeatReservationDetailEntity? {
+    val detId = getString("id") ?: id
+    val start = when (val s = get("startPoiId")) {
         is DocumentReference -> s.id
         is String -> s
-        else -> getString("startPoiId")
-    } ?: ""
-    val endPoiId = when (val e = get("endPoiId")) {
+        else -> return null
+    }
+    val end = when (val e = get("endPoiId")) {
         is DocumentReference -> e.id
         is String -> e
-        else -> getString("endPoiId")
-    } ?: ""
-    return SeatReservationEntity(resId, declarationId, routeId, userId, dateVal, timeVal, startPoiId, endPoiId)
+        else -> return null
+    }
+    return SeatReservationDetailEntity(detId, reservationId, start, end)
+}
+
+fun MovingDetailEntity.toFirestoreMap(): Map<String, Any> = mapOf(
+    "id" to id,
+    "startPoiId" to FirebaseFirestore.getInstance().collection("pois").document(startPoiId),
+    "endPoiId" to FirebaseFirestore.getInstance().collection("pois").document(endPoiId),
+    "vehicleId" to FirebaseFirestore.getInstance().collection("vehicles").document(vehicleId)
+)
+
+fun DocumentSnapshot.toMovingDetailEntity(movingId: String): MovingDetailEntity? {
+    val detId = getString("id") ?: id
+    val start = when (val s = get("startPoiId")) {
+        is DocumentReference -> s.id
+        is String -> s
+        else -> return null
+    }
+    val end = when (val e = get("endPoiId")) {
+        is DocumentReference -> e.id
+        is String -> e
+        else -> return null
+    }
+    val vehicle = when (val v = get("vehicleId")) {
+        is DocumentReference -> v.id
+        is String -> v
+        else -> ""
+    }
+    return MovingDetailEntity(detId, movingId, start, end, vehicle)
 }
 
 fun FavoriteEntity.toFirestoreMap(): Map<String, Any> = mapOf(

@@ -75,7 +75,9 @@ import com.ioannapergamali.mysmartroute.data.local.TripRatingDao
         NotificationEntity::class,
         UserPoiEntity::class
     ],
-    version = 68
+
+    version = 69
+
 )
 @TypeConverters(Converters::class)
 abstract class MySmartRouteDatabase : RoomDatabase() {
@@ -934,6 +936,49 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_68_69 = object : Migration(68, 69) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `seat_reservations_new` (" +
+                        "`id` TEXT NOT NULL, " +
+                        "`declarationId` TEXT NOT NULL, " +
+                        "`routeId` TEXT NOT NULL, " +
+                        "`userId` TEXT NOT NULL, " +
+                        "`date` INTEGER NOT NULL, " +
+                        "`startTime` INTEGER NOT NULL, " +
+                        "PRIMARY KEY(`id`)" +
+                    ")"
+                )
+                database.execSQL(
+                    "INSERT INTO `seat_reservations_new` (`id`, `declarationId`, `routeId`, `userId`, `date`, `startTime`) " +
+                        "SELECT `id`, `declarationId`, `routeId`, `userId`, `date`, `startTime` FROM `seat_reservations`"
+                )
+                database.execSQL("DROP TABLE `seat_reservations`")
+                database.execSQL("ALTER TABLE `seat_reservations_new` RENAME TO `seat_reservations`")
+
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `movings_new` (" +
+                        "`id` TEXT NOT NULL, " +
+                        "`routeId` TEXT NOT NULL, " +
+                        "`userId` TEXT NOT NULL, " +
+                        "`date` INTEGER NOT NULL, " +
+                        "`cost` REAL, " +
+                        "`durationMinutes` INTEGER NOT NULL, " +
+                        "`driverId` TEXT NOT NULL, " +
+                        "`status` TEXT NOT NULL, " +
+                        "`requestNumber` INTEGER NOT NULL, " +
+                        "PRIMARY KEY(`id`)" +
+                    ")"
+                )
+                database.execSQL(
+                    "INSERT INTO `movings_new` (`id`, `routeId`, `userId`, `date`, `cost`, `durationMinutes`, `driverId`, `status`, `requestNumber`) " +
+                        "SELECT `id`, `routeId`, `userId`, `date`, `cost`, `durationMinutes`, `driverId`, `status`, `requestNumber` FROM `movings`"
+                )
+                database.execSQL("DROP TABLE `movings`")
+                database.execSQL("ALTER TABLE `movings_new` RENAME TO `movings`")
+            }
+        }
+
         private fun prepopulate(db: SupportSQLiteDatabase) {
             Log.d(TAG, "Prepopulating database")
             db.execSQL(
@@ -1081,7 +1126,9 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_64_65,
                     MIGRATION_65_66,
                     MIGRATION_66_67,
-                    MIGRATION_67_68
+                    MIGRATION_67_68,
+                    MIGRATION_68_69
+
                 )
                     .addCallback(object : RoomDatabase.Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {
