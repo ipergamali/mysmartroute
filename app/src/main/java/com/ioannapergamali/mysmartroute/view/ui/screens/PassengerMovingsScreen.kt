@@ -78,10 +78,6 @@ fun PassengerMovingsScreen(navController: NavController, openDrawer: () -> Unit)
                 Text(stringResource(R.string.no_movings))
             } else {
                 MovingCategory(
-                    stringResource(R.string.active_movings),
-                    grouped[MovingStatus.ACTIVE].orEmpty()
-                )
-                MovingCategory(
                     stringResource(R.string.pending_movings),
                     grouped[MovingStatus.PENDING].orEmpty()
                 )

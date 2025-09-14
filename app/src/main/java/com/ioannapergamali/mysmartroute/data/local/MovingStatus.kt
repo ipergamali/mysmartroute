@@ -51,7 +51,9 @@ fun categorizeMovings(
     movings: List<MovingEntity>,
     now: Long = System.currentTimeMillis()
 ): Map<MovingStatus, List<MovingEntity>> {
-    val grouped = movings.groupBy { it.movingStatus(now) }
+    val grouped = movings
+        .groupBy { it.movingStatus(now) }
+        .filterKeys { it != MovingStatus.ACTIVE }
     grouped.forEach { (status, list) ->
 
         Log.d(TAG, "Ομαδοποίηση $status -> ${list.size} εγγραφές")
