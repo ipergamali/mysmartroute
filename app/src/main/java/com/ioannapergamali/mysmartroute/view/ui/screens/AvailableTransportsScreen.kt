@@ -30,6 +30,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.ReservationSegment
 import com.ioannapergamali.mysmartroute.viewmodel.UserViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.AppDateTimeViewModel
 import com.ioannapergamali.mysmartroute.utils.matchesFavorites
 import com.ioannapergamali.mysmartroute.utils.isUpcoming
 import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationDetailEntity
@@ -118,6 +119,7 @@ fun AvailableTransportsScreen(
     val bookingViewModel: BookingViewModel = viewModel()
     val poiViewModel: PoIViewModel = viewModel()
     val routeViewModel: RouteViewModel = viewModel()
+    val dateViewModel: AppDateTimeViewModel = viewModel()
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
 
@@ -148,6 +150,10 @@ fun AvailableTransportsScreen(
     val poiNames = pois.associate { it.id to it.name }
     val routeNames = routes.associate { it.id to it.name }
 
+    val appTime by dateViewModel.dateTime.collectAsState()
+    LaunchedEffect(Unit) { dateViewModel.load(context) }
+    val now = appTime ?: System.currentTimeMillis()
+
     LaunchedEffect(declarations) {
         declarations.forEach { decl ->
             val count = reservationViewModel.getReservationCount(context, decl.id)
@@ -170,7 +176,10 @@ fun AvailableTransportsScreen(
         }
     }
 
-    val today = remember { LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli() }
+    val today = remember(appTime) {
+        val currentDate = Instant.ofEpochMilli(now).atZone(ZoneId.systemDefault()).toLocalDate()
+        currentDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+    }
     val sortedDecls = declarations.filter { decl ->
         if (routeId != null && decl.routeId != routeId) return@filter false
         if (startId != null && endId != null) {
@@ -185,7 +194,7 @@ fun AvailableTransportsScreen(
         if (decl.date < today) return@filter false
         if (date != null && date >= today && decl.date != date) return@filter false
         if (!decl.matchesFavorites(preferred, nonPreferred)) return@filter false
-        if (!decl.isUpcoming()) return@filter false
+        if (!decl.isUpcoming(now)) return@filter false
         true
     }
         // ταξινόμηση βάσει κόστους ώστε οι φθηνότερες επιλογές να εμφανίζονται πρώτες

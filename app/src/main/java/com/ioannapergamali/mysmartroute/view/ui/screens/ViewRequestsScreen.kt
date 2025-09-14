@@ -37,6 +37,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.UserViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.TransferRequestViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.AppDateTimeViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.RequestStatus
 import android.text.format.DateFormat
 import java.util.Date
@@ -55,6 +56,7 @@ fun ViewRequestsScreen(
     val poiViewModel: PoIViewModel = viewModel()
     val userViewModel: UserViewModel = viewModel()
     val transferViewModel: TransferRequestViewModel = viewModel()
+    val dateViewModel: AppDateTimeViewModel = viewModel()
     val requests by viewModel.requests.collectAsState()
     val pois by poiViewModel.pois.collectAsState()
     val driverNames = remember { mutableStateMapOf<String, String>() }
@@ -90,6 +92,9 @@ fun ViewRequestsScreen(
     }
 
     val poiNames = pois.associate { it.id to it.name }
+    val appTime by dateViewModel.dateTime.collectAsState()
+    LaunchedEffect(Unit) { dateViewModel.load(context) }
+    val now = appTime ?: System.currentTimeMillis()
 
     Scaffold(
         topBar = {
@@ -156,7 +161,7 @@ fun ViewRequestsScreen(
                                 "$dateStr $timeStr"
                             } else ""
                             val costText = req.cost?.toString() ?: "-"
-                            val isExpired = req.date > 0L && System.currentTimeMillis() > req.date && req.status != "completed"
+                            val isExpired = req.date > 0L && now > req.date && req.status != "completed"
                             val statusText = if (isExpired) stringResource(R.string.request_unsuccessful) else req.status
                             Row(
                                 modifier = Modifier.padding(vertical = 8.dp),

@@ -25,6 +25,7 @@ import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.TransportDeclarationViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.UserViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.AppDateTimeViewModel
 import kotlinx.coroutines.flow.first
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -36,6 +37,7 @@ fun PrintScheduledScreen(navController: NavController, openDrawer: () -> Unit) {
     val declarationViewModel: TransportDeclarationViewModel = viewModel()
     val routeViewModel: RouteViewModel = viewModel()
     val userViewModel: UserViewModel = viewModel()
+    val dateViewModel: AppDateTimeViewModel = viewModel()
     val declarations by declarationViewModel.pendingDeclarations.collectAsState()
     val routes by routeViewModel.routes.collectAsState()
     val passengerNames = remember { mutableStateMapOf<String, List<String>>() }
@@ -49,7 +51,10 @@ fun PrintScheduledScreen(navController: NavController, openDrawer: () -> Unit) {
     }
 
     val routeNames = routes.associate { it.id to it.name }
-    val scheduled = declarations.filter { it.date >= System.currentTimeMillis() }
+    val appTime by dateViewModel.dateTime.collectAsState()
+    LaunchedEffect(Unit) { dateViewModel.load(context) }
+    val now = appTime ?: System.currentTimeMillis()
+    val scheduled = declarations.filter { it.date >= now }
 
     LaunchedEffect(scheduled) {
         val db = MySmartRouteDatabase.getInstance(context)

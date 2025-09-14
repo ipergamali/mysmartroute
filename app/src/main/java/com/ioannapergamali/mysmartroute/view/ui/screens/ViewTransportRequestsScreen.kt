@@ -33,6 +33,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.UserViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.TransferRequestViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.AppDateTimeViewModel
 import android.text.format.DateFormat
 import java.util.Date
 
@@ -48,6 +49,7 @@ fun ViewTransportRequestsScreen(
     val transferViewModel: TransferRequestViewModel = viewModel()
     val poiViewModel: PoIViewModel = viewModel()
     val userViewModel: UserViewModel = viewModel()
+    val dateViewModel: AppDateTimeViewModel = viewModel()
     val requests by viewModel.requests.collectAsState()
     val pois by poiViewModel.pois.collectAsState()
     val userNames = remember { mutableStateMapOf<String, String>() }
@@ -76,6 +78,9 @@ fun ViewTransportRequestsScreen(
     }
 
     val poiNames = pois.associate { it.id to it.name }
+    val appTime by dateViewModel.dateTime.collectAsState()
+    LaunchedEffect(Unit) { dateViewModel.load(context) }
+    val now = appTime ?: System.currentTimeMillis()
 
     Scaffold(
         topBar = {
@@ -180,7 +185,7 @@ fun ViewTransportRequestsScreen(
                                 Text(costText, modifier = Modifier.width(columnWidth))
                                 Text(dateTimeText, modifier = Modifier.width(columnWidth))
                                 Text(req.requestNumber.toString(), modifier = Modifier.width(columnWidth))
-                                val isExpired = req.date > 0L && System.currentTimeMillis() > req.date && req.status != "completed"
+                                val isExpired = req.date > 0L && now > req.date && req.status != "completed"
                                 if (req.status == "open" && !isExpired) {
                                     Button(
                                         onClick = {
