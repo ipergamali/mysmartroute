@@ -1,17 +1,11 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.material3.menuAnchor
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color as ComposeColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
@@ -19,7 +13,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import android.widget.Toast
-import android.app.TimePickerDialog
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.model.LatLng
@@ -38,9 +31,6 @@ import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.utils.offsetPois
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
-import com.ioannapergamali.mysmartroute.view.ui.util.iconForVehicle
-import com.ioannapergamali.mysmartroute.view.ui.util.labelForVehicle
-import com.ioannapergamali.mysmartroute.viewmodel.VehicleViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.ReservationViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.TransportDeclarationViewModel
@@ -53,7 +43,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import com.google.firebase.auth.FirebaseAuth
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> Unit) {
     val context = LocalContext.current
@@ -63,27 +53,16 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
     val userViewModel: UserViewModel = viewModel()
     val poiViewModel: PoIViewModel = viewModel()
     val authViewModel: AuthenticationViewModel = viewModel()
-    val vehicleViewModel: VehicleViewModel = viewModel()
     val routes by routeViewModel.routes.collectAsState()
     val reservations by reservationViewModel.reservations.collectAsState()
     val declarations by declarationViewModel.declarations.collectAsState()
     val role by authViewModel.currentUserRole.collectAsState()
     val drivers by userViewModel.drivers.collectAsState()
-    val allPois by poiViewModel.pois.collectAsState()
-    val vehicles by vehicleViewModel.vehicles.collectAsState()
     val userNames = remember { mutableStateMapOf<String, String>() }
     val poiNames = remember { mutableStateMapOf<String, String>() }
     var selectedRoute by remember { mutableStateOf<RouteEntity?>(null) }
     var selectedDate by remember { mutableStateOf<Long?>(null) }
     var selectedDeclaration by remember { mutableStateOf<TransportDeclarationEntity?>(null) }
-    var selectedTime by remember { mutableStateOf<Long?>(null) }
-    var selectedTimeText by remember { mutableStateOf("") }
-
-    var selectedVehicle by remember { mutableStateOf<VehicleType?>(null) }
-    var vehicleName by remember { mutableStateOf("") }
-    var selectedVehicleId by remember { mutableStateOf("") }
-    var selectedVehicleDescription by remember { mutableStateOf("") }
-    var expandedVehicle by remember { mutableStateOf(false) }
     var pois by remember { mutableStateOf<List<PoIEntity>>(emptyList()) }
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     var expandedDriver by remember { mutableStateOf(false) }
@@ -133,38 +112,29 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
         } ?: routes
     }
 
-    LaunchedEffect(selectedDriverId) {
-        selectedDriverId?.let { vehicleViewModel.loadRegisteredVehicles(context, userId = it) }
-    }
-
-    LaunchedEffect(selectedRoute, selectedDate, selectedTime, declarations) {
+    LaunchedEffect(selectedRoute, selectedDate, declarations) {
         selectedRoute?.let { route ->
             val (_, path) = routeViewModel.getRouteDirections(context, route.id, VehicleType.CAR)
             pathPoints = path
             pois = routeViewModel.getRoutePois(context, route.id)
 
-            val date = selectedDate ?: 0L
-            val time = selectedTime ?: 0L
-            val decl = declarations.find { it.routeId == route.id && it.date == date && it.startTime == time }
-            selectedDeclaration = decl
-            val declId = decl?.id ?: ""
-            reservationViewModel.loadReservations(context, route.id, date, time, declId)
+            val date = selectedDate ?: return@LaunchedEffect
+            val dbLocal = MySmartRouteDatabase.getInstance(context)
+            val count = dbLocal.movingDao().countPendingOrOpenForRoute(route.id, date)
+            if (count > 0) {
+                val decl = declarations.find { it.routeId == route.id && it.date == date }
+                selectedDeclaration = decl
+                val declId = decl?.id ?: ""
+                val startTime = decl?.startTime ?: 0L
+                reservationViewModel.loadReservations(context, route.id, date, startTime, declId)
+            } else {
+                selectedDeclaration = null
+                reservationViewModel.loadReservations(context, "", 0L, 0L, "")
+            }
 
             path.firstOrNull()?.let {
                 MapsInitializer.initialize(context)
                 cameraPositionState.move(CameraUpdateFactory.newLatLngZoom(it, 13f))
-            }
-        }
-    }
-
-    LaunchedEffect(selectedDeclaration, vehicles) {
-        val decl = selectedDeclaration
-        if (decl != null) {
-            selectedVehicle = runCatching { VehicleType.valueOf(decl.vehicleType) }.getOrNull()
-            selectedVehicleId = decl.vehicleId
-            vehicles.firstOrNull { it.id == decl.vehicleId }?.let { veh ->
-                vehicleName = veh.name
-                selectedVehicleDescription = veh.description
             }
         }
     }
@@ -227,7 +197,6 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                                     expandedDriver = false
                                     selectedRoute = null
                                     selectedDate = null
-                                    selectedTime = null
                                 }
                             )
                         }
@@ -261,7 +230,6 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                             selectedRoute = route
                             expanded = false
                             selectedDate = null
-                            selectedTime = null
 
                         })
                     }
@@ -284,7 +252,6 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                         confirmButton = {
                             TextButton(onClick = {
                                 selectedDate = datePickerState.selectedDateMillis
-                                selectedTime = null
 
                                 showDatePicker = false
                             }) {
@@ -293,99 +260,6 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                         }
                     ) {
                         DatePicker(state = datePickerState)
-                    }
-                }
-                Spacer(Modifier.height(16.dp))
-            }
-
-            if (selectedRoute != null && selectedDate != null) {
-                Text(stringResource(R.string.time))
-                Button(onClick = {
-                    TimePickerDialog(
-                        context,
-                        { _, hour, minute ->
-                            selectedTime = (hour * 60 + minute) * 60_000L
-                            selectedTimeText = String.format("%02d:%02d", hour, minute)
-                        },
-                        0,
-                        0,
-                        true
-                    ).show()
-                }) {
-                    Text(if (selectedTimeText.isNotEmpty()) selectedTimeText else stringResource(R.string.select_time))
-                }
-                Spacer(Modifier.height(16.dp))
-
-                Text(stringResource(R.string.vehicle_type))
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    VehicleType.values().forEach { type ->
-                        val isSelected = selectedVehicle == type
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier
-                                .clip(CircleShape)
-                                .clickable {
-                                    selectedVehicle = if (isSelected) null else type
-                                    vehicleName = ""
-                                    selectedVehicleId = ""
-                                    selectedVehicleDescription = ""
-                                }
-                                .background(
-                                    if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-                                      else ComposeColor.Transparent
-                                )
-                                .border(
-                                    2.dp,
-                                      if (isSelected) MaterialTheme.colorScheme.primary else ComposeColor.Transparent,
-                                    CircleShape
-                                )
-                                .padding(8.dp)
-                        ) {
-                            Icon(
-                                imageVector = iconForVehicle(type),
-                                contentDescription = labelForVehicle(type),
-                                tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                            )
-                            Text(labelForVehicle(type), style = MaterialTheme.typography.labelSmall)
-                        }
-                    }
-                }
-                Spacer(Modifier.height(16.dp))
-                ExposedDropdownMenuBox(expanded = expandedVehicle, onExpandedChange = { expandedVehicle = !expandedVehicle }) {
-                    OutlinedTextField(
-                        value = vehicleName,
-                        onValueChange = {},
-                        label = { Text(stringResource(R.string.vehicle_name)) },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedVehicle) },
-                        modifier = Modifier.menuAnchor().fillMaxWidth(),
-                        readOnly = true
-                    )
-                    ExposedDropdownMenu(expanded = expandedVehicle, onDismissRequest = { expandedVehicle = false }) {
-                        vehicles
-                            .filter {
-                                it.userId == selectedDriverId &&
-                                    (selectedVehicle == null || runCatching { VehicleType.valueOf(it.type) }.getOrNull() == selectedVehicle)
-                            }
-                            .forEach { vehicle ->
-                                DropdownMenuItem(text = { Text(vehicle.name) }, onClick = {
-                                    vehicleName = vehicle.name
-                                    selectedVehicle = runCatching { VehicleType.valueOf(vehicle.type) }.getOrNull()
-                                    selectedVehicleId = vehicle.id
-                                    selectedVehicleDescription = vehicle.description
-                                    expandedVehicle = false
-                                })
-                            }
-                    }
-                }
-                if (selectedVehicleDescription.isNotEmpty()) {
-                    Spacer(Modifier.height(8.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        selectedVehicle?.let { Icon(iconForVehicle(it), contentDescription = null) }
-                        Spacer(Modifier.width(8.dp))
-                        Text(selectedVehicleDescription)
                     }
                 }
                 Spacer(Modifier.height(16.dp))
@@ -438,25 +312,21 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                         }
                     }
                 }
-            } else if (selectedRoute != null && selectedDate != null) {
+            } else if (selectedRoute != null && selectedDate != null && selectedDeclaration != null) {
                 Text(stringResource(R.string.no_reservations))
             }
 
             Spacer(Modifier.height(16.dp))
-            if (selectedRoute != null && selectedDate != null) {
+            if (selectedRoute != null && selectedDate != null && selectedDeclaration != null) {
                 Button(onClick = {
                     val decl = selectedDeclaration
                     if (decl != null) {
-                        val updatedDecl = decl.copy().apply {
-                            vehicleId = selectedVehicleId.ifBlank { vehicleId }
-                            vehicleType = selectedVehicle?.name ?: vehicleType
-                        }
                         reservationViewModel.completeRoute(
                             context,
                             selectedRoute!!.id,
                             selectedDate!!,
-                            updatedDecl.startTime,
-                            updatedDecl
+                            decl.startTime,
+                            decl
                         ) { completed ->
                             val msg = if (completed) R.string.route_completed else R.string.route_already_completed
                             Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
