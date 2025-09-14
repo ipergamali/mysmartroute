@@ -19,8 +19,12 @@ class TicketActivity : AppCompatActivity() {
         setContentView(R.layout.activity_ticket)
 
         lifecycleScope.launch {
-            val dao = MySmartRouteDatabase.getInstance(applicationContext).seatReservationDao()
-            val printer = ReservationPrinter(dao)
+            val db = MySmartRouteDatabase.getInstance(applicationContext)
+            val printer = ReservationPrinter(
+                db.seatReservationDao(),
+                db.seatReservationDetailDao(),
+                db.poIDao()
+            )
             val text = printer.buildPrintText()
             findViewById<TextView>(R.id.printTextView).text = text
         }
