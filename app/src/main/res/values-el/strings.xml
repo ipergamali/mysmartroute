@@ -217,7 +217,7 @@
     <string name="boarding_stop">Στάση εκκίνησης</string>
     <string name="dropoff_stop">Στάση αποβίβασης</string>
     <string name="invalid_stop_order">Η στάση αποβίβασης πρέπει να είναι μετά τη στάση εκκίνησης.</string>
-    <string name="bigbus_required">Οι στάσεις λεωφορείου απαιτούν όχημα τύπου BIGBUS.</string>
+    <string name="bus_required">Οι στάσεις λεωφορείου απαιτούν όχημα τύπου λεωφορείου.</string>
     <string name="favorites_preferred">Προτιμώμενα μέσα μεταφοράς</string>
     <string name="favorites_non_preferred">Μη προτιμώμενα μέσα μεταφοράς</string>
     <string name="add_favorite">Προσθήκη</string>
