@@ -142,7 +142,7 @@ class VehicleRequestViewModel(
                     driverId = tr.driverId,
                     status = tr.status.name.lowercase(),
                     requestNumber = tr.requestNumber
-                )
+                ).also { it.driverName = tr.driverName }
                 enrichMoving(moving, routeDao, userDao, vehicleDao)
                 movings.add(moving)
             }
