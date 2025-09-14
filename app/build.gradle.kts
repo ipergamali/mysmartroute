@@ -8,6 +8,7 @@ val mapsApiKey: String = gradleLocalProperties(rootDir, providers)
     plugins {
         id("com.android.application")
         id("org.jetbrains.kotlin.android")
+        id("org.jetbrains.kotlin.plugin.compose")
         id("com.google.devtools.ksp")
         id("com.google.gms.google-services")
         id("com.google.dagger.hilt.android")
@@ -40,8 +41,7 @@ android {
     }
 
     composeOptions {
-        // Τελευταία σταθερή έκδοση του compiler για Kotlin 1.9.24
-        kotlinCompilerExtensionVersion = "1.5.14"
+        // Η έκδοση του compiler ρυθμίζεται αυτόματα από το plugin Compose.
     }
 
     dependenciesInfo {
@@ -79,12 +79,12 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.2.1")
 
     // Jetpack Compose
-    // Jetpack Compose BOM (σταθερή έκδοση 1.6.7)
-    implementation(platform("androidx.compose:compose-bom:2024.06.00"))
-    androidTestImplementation(platform("androidx.compose:compose-bom:2024.06.00"))
+    // Jetpack Compose BOM (τελευταία έκδοση 2025.09.00)
+    implementation(platform("androidx.compose:compose-bom:2025.09.00"))
+    androidTestImplementation(platform("androidx.compose:compose-bom:2025.09.00"))
 
     // Χρήση της σταθερής έκδοσης Material3
-    implementation("androidx.compose.material3:material3:1.3.2")
+    implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-text")
     implementation("androidx.compose.ui:ui-tooling-preview")
