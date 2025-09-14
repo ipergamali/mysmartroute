@@ -193,6 +193,8 @@
     <string name="save_route">Αποθήκευση διαδρομής</string>
     <string name="route_name">Όνομα διαδρομής</string>
     <string name="stops_header">Στάσεις</string>
+    <string name="rename_route">Μετονομασία διαδρομής</string>
+    <string name="new_route_name">Νέο όνομα διαδρομής</string>
     <string name="poi_outside_heraklion">Επιλέξτε σημείο εντός Ηρακλείου</string>
     <string name="search_address">Αναζήτηση διεύθυνσης</string>
     <string name="no_duplicate_pois">Δεν βρέθηκαν διπλά σημεία ενδιαφέροντος</string>
