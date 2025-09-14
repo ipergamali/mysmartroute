@@ -330,6 +330,7 @@ fun AvailableTransportsScreen(
                         Divider()
                     }
                 }
+
                 if (message.isNotBlank()) {
                     Spacer(Modifier.height(8.dp))
                     Text(message)

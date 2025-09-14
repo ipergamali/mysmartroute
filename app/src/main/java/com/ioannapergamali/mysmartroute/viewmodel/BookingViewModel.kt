@@ -25,7 +25,9 @@ import java.util.UUID
 data class ReservationSegment(
     val startPoiId: String,
     val endPoiId: String,
-    val vehicleId: String
+    val vehicleId: String,
+    val cost: Double,
+    val startTime: Long
 )
 
 /**
@@ -126,7 +128,9 @@ class BookingViewModel : ViewModel() {
                     id = UUID.randomUUID().toString(),
                     reservationId = reservation.id,
                     startPoiId = seg.startPoiId,
-                    endPoiId = seg.endPoiId
+                    endPoiId = seg.endPoiId,
+                    cost = seg.cost,
+                    startTime = seg.startTime
                 )
                 resDetailDao.insert(resDetail)
                 resRef.collection("details")

@@ -43,25 +43,25 @@ fun ReservationDetailsScreen(
 
     val context = LocalContext.current
     var routeName by remember { mutableStateOf("") }
-    var startPoiName by remember { mutableStateOf("") }
-    var endPoiName by remember { mutableStateOf("") }
     var driverName by remember { mutableStateOf("") }
     var passengerName by remember { mutableStateOf("") }
-    var cost by remember { mutableStateOf<Double?>(null) }
+    var detailInfos by remember { mutableStateOf<List<DetailInfo>>(emptyList()) }
 
     LaunchedEffect(reservation) {
         reservation?.let { res ->
             val db = MySmartRouteDatabase.getInstance(context)
             routeName = db.routeDao().findById(res.routeId)?.name ?: res.routeId
-            val det = db
+            val details = db
                 .seatReservationDetailDao()
                 .getForReservation(res.id)
                 .firstOrNull()
-                ?.firstOrNull()
-            startPoiName = det?.startPoiId?.let { db.poIDao().findById(it)?.name ?: it } ?: ""
-            endPoiName = det?.endPoiId?.let { db.poIDao().findById(it)?.name ?: it } ?: ""
+                ?: emptyList()
+            detailInfos = details.map { det ->
+                val start = db.poIDao().findById(det.startPoiId)?.name ?: det.startPoiId
+                val end = db.poIDao().findById(det.endPoiId)?.name ?: det.endPoiId
+                DetailInfo(start, end, det.cost, det.startTime)
+            }
             val decl = db.transportDeclarationDao().getById(res.declarationId)
-            cost = decl?.cost
             driverName = decl?.driverId?.let { driverId ->
                 val user = db.userDao().getUser(driverId)
                     ?: FirebaseFirestore.getInstance()
@@ -111,6 +111,7 @@ fun ReservationDetailsScreen(
     ) { paddingValues ->
         reservation?.let { res ->
             val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+            val timeFormatter = SimpleDateFormat("HH:mm", Locale.getDefault())
             Card(
                 modifier = Modifier
                     .padding(paddingValues)
@@ -130,11 +131,15 @@ fun ReservationDetailsScreen(
                     Spacer(modifier = Modifier.height(8.dp))
                     Text("${stringResource(R.string.date)}: ${formatter.format(Date(res.date))}")
                     Text("${stringResource(R.string.route)}: $routeName")
-                    Text("${stringResource(R.string.start_point)}: $startPoiName")
-                    Text("${stringResource(R.string.destination)}: $endPoiName")
                     Text("${stringResource(R.string.driver)}: $driverName")
-                    cost?.let { Text("${stringResource(R.string.cost)}: $it") }
                     Text("${stringResource(R.string.passenger)}: $passengerName")
+                    detailInfos.forEach { info ->
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text("${stringResource(R.string.start_point)}: ${info.start}")
+                        Text("${stringResource(R.string.destination)}: ${info.end}")
+                        Text("${stringResource(R.string.cost)}: ${info.cost}")
+                        Text("${stringResource(R.string.time)}: ${timeFormatter.format(Date(info.startTime))}")
+                    }
                 }
             }
         } ?: Text(
@@ -143,3 +148,10 @@ fun ReservationDetailsScreen(
         )
     }
 }
+
+private data class DetailInfo(
+    val start: String,
+    val end: String,
+    val cost: Double,
+    val startTime: Long,
+)
