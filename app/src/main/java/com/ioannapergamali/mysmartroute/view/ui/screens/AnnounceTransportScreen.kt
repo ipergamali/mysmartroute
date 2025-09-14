@@ -820,16 +820,17 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                 } else emptyList()
                             }
                             val minSeatsValue = if (details.isNotEmpty()) minSeats else selectedVehicleSeats
+                            val costPerDetail = if (detailList.isNotEmpty()) cost / detailList.size else 0.0
+                            val detailedCosts = detailList.map { it.copy(cost = costPerDetail) }
                             val success = declarationViewModel.declareTransport(
                                 context,
                                 routeId,
                                 driverId,
                                 if (minSeatsValue == Int.MAX_VALUE) 0 else minSeatsValue,
-                                cost,
                                 duration,
                                 date,
                                 startTime,
-                                detailList
+                                detailedCosts
                             )
                             Toast.makeText(
                                 context,
