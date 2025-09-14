@@ -231,7 +231,9 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         }
     }
 
-    LaunchedEffect(vehicles, selectedDriverId) {
+
+    LaunchedEffect(vehicles, selectedDriverId, selectedRouteId) {
+
         var list = vehicles
         selectedDriverId?.let { id -> list = list.filter { it.userId == id } }
         filteredVehicles = list
