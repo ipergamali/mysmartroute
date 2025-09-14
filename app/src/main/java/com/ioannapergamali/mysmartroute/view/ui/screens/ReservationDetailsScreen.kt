@@ -21,6 +21,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.SeatReservationEntity
+import kotlinx.coroutines.flow.firstOrNull
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.utils.toUserEntity
 import com.ioannapergamali.mysmartroute.data.local.insertUserSafely
@@ -52,8 +53,9 @@ fun ReservationDetailsScreen(
         reservation?.let { res ->
             val db = MySmartRouteDatabase.getInstance(context)
             routeName = db.routeDao().findById(res.routeId)?.name ?: res.routeId
-            startPoiName = db.poIDao().findById(res.startPoiId)?.name ?: res.startPoiId
-            endPoiName = db.poIDao().findById(res.endPoiId)?.name ?: res.endPoiId
+            val det = db.seatReservationDetailDao().getForReservation(res.id).firstOrNull()
+            startPoiName = det?.startPoiId?.let { db.poIDao().findById(it)?.name ?: it } ?: ""
+            endPoiName = det?.endPoiId?.let { db.poIDao().findById(it)?.name ?: it } ?: ""
             val decl = db.transportDeclarationDao().getById(res.declarationId)
             cost = decl?.cost
             driverName = decl?.driverId?.let { driverId ->

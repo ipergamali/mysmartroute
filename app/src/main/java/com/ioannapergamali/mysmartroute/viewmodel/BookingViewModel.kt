@@ -8,7 +8,9 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.RouteEntity
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.SeatReservationEntity
+import com.ioannapergamali.mysmartroute.data.local.SeatReservationDetailEntity
 import com.ioannapergamali.mysmartroute.data.local.MovingEntity
+import com.ioannapergamali.mysmartroute.data.local.MovingDetailEntity
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.Dispatchers
@@ -69,7 +71,9 @@ class BookingViewModel : ViewModel() {
 
         val dbInstance = MySmartRouteDatabase.getInstance(context)
         val resDao = dbInstance.seatReservationDao()
+        val resDetailDao = dbInstance.seatReservationDetailDao()
         val movingDao = dbInstance.movingDao()
+        val movingDetailDao = dbInstance.movingDetailDao()
 
         // Έλεγχος για ήδη υπάρχουσα κράτηση
         // Check for an existing reservation
@@ -84,34 +88,49 @@ class BookingViewModel : ViewModel() {
             routeId = routeId,
             userId = userId,
             date = date,
-            startTime = startTime,
+            startTime = startTime
+        )
+        val resDetail = SeatReservationDetailEntity(
+            id = UUID.randomUUID().toString(),
+            reservationId = reservation.id,
             startPoiId = startPoiId,
             endPoiId = endPoiId
         )
 
         return@withContext try {
             resDao.insert(reservation)
-            db.collection("seat_reservations")
-                .document(reservation.id)
-                .set(reservation.toFirestoreMap())
+            resDetailDao.insert(resDetail)
+            val resRef = db.collection("seat_reservations").document(reservation.id)
+            resRef.set(reservation.toFirestoreMap()).await()
+            resRef.collection("details")
+                .document(resDetail.id)
+                .set(resDetail.toFirestoreMap())
                 .await()
+
             val moving = MovingEntity(
                 id = UUID.randomUUID().toString(),
                 routeId = routeId,
                 userId = userId,
                 date = date,
-                vehicleId = vehicleId,
                 cost = cost,
                 durationMinutes = durationMinutes,
-                startPoiId = startPoiId,
-                endPoiId = endPoiId,
                 driverId = driverId,
                 status = "pending"
             )
             movingDao.insert(moving)
-            db.collection("movings")
-                .document(moving.id)
-                .set(moving.toFirestoreMap())
+            val movingDetail = MovingDetailEntity(
+                id = UUID.randomUUID().toString(),
+                movingId = moving.id,
+                startPoiId = startPoiId,
+                endPoiId = endPoiId,
+                vehicleId = vehicleId
+            )
+            movingDetailDao.insert(movingDetail)
+            val movingRef = db.collection("movings").document(moving.id)
+            movingRef.set(moving.toFirestoreMap()).await()
+            movingRef.collection("details")
+                .document(movingDetail.id)
+                .set(movingDetail.toFirestoreMap())
                 .await()
             Result.success(Unit)
         } catch (e: Exception) {

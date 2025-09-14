@@ -16,9 +16,5 @@ data class SeatReservationEntity(
     /** Ημερομηνία κράτησης σε millis */
     val date: Long = 0L,
     /** Ώρα έναρξης της διαδρομής σε millis από τα μεσάνυχτα */
-    val startTime: Long = 0L,
-    /** Σημείο επιβίβασης */
-    val startPoiId: String = "",
-    /** Σημείο αποβίβασης */
-    val endPoiId: String = ""
+    val startTime: Long = 0L
 )

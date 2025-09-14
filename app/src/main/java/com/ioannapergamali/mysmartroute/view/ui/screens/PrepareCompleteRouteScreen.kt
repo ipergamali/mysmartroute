@@ -44,6 +44,9 @@ import com.ioannapergamali.mysmartroute.viewmodel.ReservationViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.TransportDeclarationViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.UserViewModel
+import com.ioannapergamali.mysmartroute.data.local.SeatReservationDetailEntity
+import androidx.compose.runtime.mutableStateMapOf
+import kotlinx.coroutines.flow.firstOrNull
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
@@ -165,16 +168,22 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
         }
     }
 
+    val reservationDetails = remember { mutableStateMapOf<String, SeatReservationDetailEntity>() }
     LaunchedEffect(reservations) {
+        val db = MySmartRouteDatabase.getInstance(context)
         reservations.forEach { res ->
             if (res.userId.isNotBlank() && userNames[res.userId] == null) {
                 userNames[res.userId] = userViewModel.getUserName(context, res.userId)
             }
-            if (res.startPoiId.isNotBlank() && poiNames[res.startPoiId] == null) {
-                poiNames[res.startPoiId] = poiViewModel.getPoiName(context, res.startPoiId)
-            }
-            if (res.endPoiId.isNotBlank() && poiNames[res.endPoiId] == null) {
-                poiNames[res.endPoiId] = poiViewModel.getPoiName(context, res.endPoiId)
+            val detail = db.seatReservationDetailDao().getForReservation(res.id).firstOrNull()
+            if (detail != null) {
+                reservationDetails[res.id] = detail
+                if (detail.startPoiId.isNotBlank() && poiNames[detail.startPoiId] == null) {
+                    poiNames[detail.startPoiId] = poiViewModel.getPoiName(context, detail.startPoiId)
+                }
+                if (detail.endPoiId.isNotBlank() && poiNames[detail.endPoiId] == null) {
+                    poiNames[detail.endPoiId] = poiViewModel.getPoiName(context, detail.endPoiId)
+                }
             }
         }
     }
@@ -411,8 +420,9 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                     Divider()
                     reservations.forEach { res ->
                         val userName = userNames[res.userId] ?: ""
-                        val startName = poiNames[res.startPoiId] ?: ""
-                        val endName = poiNames[res.endPoiId] ?: ""
+                        val detail = reservationDetails[res.id]
+                        val startName = detail?.let { poiNames[it.startPoiId] } ?: ""
+                        val endName = detail?.let { poiNames[it.endPoiId] } ?: ""
 
                         Row(modifier = Modifier.fillMaxWidth()) {
                             Text(userName, modifier = Modifier.weight(1f))
