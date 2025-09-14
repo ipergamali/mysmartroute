@@ -544,7 +544,9 @@ class VehicleRequestViewModel(
                         id = UUID.randomUUID().toString(),
                         reservationId = reservation.id,
                         startPoiId = current.startPoiId,
-                        endPoiId = current.endPoiId
+                        endPoiId = current.endPoiId,
+                        cost = declaration?.cost ?: 0.0,
+                        startTime = declaration?.startTime ?: 0L
                     )
                     resDao.insert(reservation)
                     resDetailDao.insert(resDetail)

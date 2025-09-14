@@ -25,5 +25,7 @@ data class SeatReservationDetailEntity(
     @PrimaryKey val id: String = "",
     val reservationId: String = "",
     val startPoiId: String = "",
-    val endPoiId: String = ""
+    val endPoiId: String = "",
+    val cost: Double = 0.0,
+    val startTime: Long = 0L
 )
