@@ -44,6 +44,26 @@ import java.time.LocalDate
 
 private val ColumnWidth = 120.dp
 
+private fun hasPath(
+    details: List<TransportDeclarationDetailEntity>,
+    startId: String,
+    endId: String
+): Boolean {
+    val adjacency = details.groupBy { it.startPoiId }.mapValues { entry ->
+        entry.value.map { it.endPoiId }
+    }
+    val visited = mutableSetOf<String>()
+    val stack = ArrayDeque<String>()
+    stack.add(startId)
+    while (stack.isNotEmpty()) {
+        val current = stack.removeFirst()
+        if (current == endId) return true
+        if (visited.add(current)) {
+            adjacency[current]?.forEach { stack.add(it) }
+        }
+    }
+    return false
+}
 
 @Composable
 private fun HeaderRow(scrollState: ScrollState) {
@@ -155,7 +175,7 @@ fun AvailableTransportsScreen(
         if (routeId != null && decl.routeId != routeId) return@filter false
         if (startId != null && endId != null) {
             val dets = detailsMap[decl.id] ?: emptyList()
-            if (dets.none { it.startPoiId == startId && it.endPoiId == endId }) return@filter false
+            if (!hasPath(dets, startId, endId)) return@filter false
         }
         // Η δήλωση πρέπει να έχει κόστος μικρότερο ή ίσο με αυτό που όρισε ο χρήστης
         if (maxCost != null && decl.cost > maxCost) return@filter false
