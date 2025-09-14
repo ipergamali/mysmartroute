@@ -76,7 +76,7 @@ import com.ioannapergamali.mysmartroute.data.local.TripRatingDao
         UserPoiEntity::class
     ],
 
-    version = 69
+    version = 70
 
 )
 @TypeConverters(Converters::class)
@@ -979,6 +979,17 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_69_70 = object : Migration(69, 70) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "ALTER TABLE `transport_declarations_details` ADD COLUMN `cost` REAL NOT NULL DEFAULT 0"
+                )
+                database.execSQL(
+                    "ALTER TABLE `transport_declarations_details` ADD COLUMN `startTime` INTEGER NOT NULL DEFAULT 0"
+                )
+            }
+        }
+
         private fun prepopulate(db: SupportSQLiteDatabase) {
             Log.d(TAG, "Prepopulating database")
             db.execSQL(
@@ -1127,7 +1138,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_65_66,
                     MIGRATION_66_67,
                     MIGRATION_67_68,
-                    MIGRATION_68_69
+                    MIGRATION_68_69,
+                    MIGRATION_69_70
 
                 )
                     .addCallback(object : RoomDatabase.Callback() {
