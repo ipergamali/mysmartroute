@@ -20,6 +20,15 @@ import kotlinx.coroutines.flow.StateFlow
 import java.util.UUID
 
 /**
+ * Αναπαριστά ένα τμήμα διαδρομής για κράτηση.
+ */
+data class ReservationSegment(
+    val startPoiId: String,
+    val endPoiId: String,
+    val vehicleId: String
+)
+
+/**
  * ViewModel που διαχειρίζεται τη διαδικασία κράτησης θέσεων.
  * ViewModel that manages seat booking operations.
  */
@@ -58,16 +67,18 @@ class BookingViewModel : ViewModel() {
         routeId: String,
         date: Long,
         startTime: Long,
-        startPoiId: String,
-        endPoiId: String,
+        segments: List<ReservationSegment>,
         declarationId: String = "",
         driverId: String = "",
-        vehicleId: String = "",
         cost: Double? = null,
         durationMinutes: Int = 0
     ): Result<Unit> = withContext(Dispatchers.IO) {
         val userId = auth.currentUser?.uid
             ?: return@withContext Result.failure(Exception("Απαιτείται σύνδεση"))
+
+        if (segments.isEmpty()) {
+            return@withContext Result.failure(Exception("Δεν επιλέχθηκαν στάσεις"))
+        }
 
         val dbInstance = MySmartRouteDatabase.getInstance(context)
         val resDao = dbInstance.seatReservationDao()
@@ -90,48 +101,52 @@ class BookingViewModel : ViewModel() {
             date = date,
             startTime = startTime
         )
-        val resDetail = SeatReservationDetailEntity(
+
+        val moving = MovingEntity(
             id = UUID.randomUUID().toString(),
-            reservationId = reservation.id,
-            startPoiId = startPoiId,
-            endPoiId = endPoiId
+            routeId = routeId,
+            userId = userId,
+            date = date,
+            cost = cost,
+            durationMinutes = durationMinutes,
+            driverId = driverId,
+            status = "pending"
         )
 
         return@withContext try {
             resDao.insert(reservation)
-            resDetailDao.insert(resDetail)
+            movingDao.insert(moving)
             val resRef = db.collection("seat_reservations").document(reservation.id)
             resRef.set(reservation.toFirestoreMap()).await()
-            resRef.collection("details")
-                .document(resDetail.id)
-                .set(resDetail.toFirestoreMap())
-                .await()
-
-            val moving = MovingEntity(
-                id = UUID.randomUUID().toString(),
-                routeId = routeId,
-                userId = userId,
-                date = date,
-                cost = cost,
-                durationMinutes = durationMinutes,
-                driverId = driverId,
-                status = "pending"
-            )
-            movingDao.insert(moving)
-            val movingDetail = MovingDetailEntity(
-                id = UUID.randomUUID().toString(),
-                movingId = moving.id,
-                startPoiId = startPoiId,
-                endPoiId = endPoiId,
-                vehicleId = vehicleId
-            )
-            movingDetailDao.insert(movingDetail)
             val movingRef = db.collection("movings").document(moving.id)
             movingRef.set(moving.toFirestoreMap()).await()
-            movingRef.collection("details")
-                .document(movingDetail.id)
-                .set(movingDetail.toFirestoreMap())
-                .await()
+
+            segments.forEach { seg ->
+                val resDetail = SeatReservationDetailEntity(
+                    id = UUID.randomUUID().toString(),
+                    reservationId = reservation.id,
+                    startPoiId = seg.startPoiId,
+                    endPoiId = seg.endPoiId
+                )
+                resDetailDao.insert(resDetail)
+                resRef.collection("details")
+                    .document(resDetail.id)
+                    .set(resDetail.toFirestoreMap())
+                    .await()
+
+                val movingDetail = MovingDetailEntity(
+                    id = UUID.randomUUID().toString(),
+                    movingId = moving.id,
+                    startPoiId = seg.startPoiId,
+                    endPoiId = seg.endPoiId,
+                    vehicleId = seg.vehicleId
+                )
+                movingDetailDao.insert(movingDetail)
+                movingRef.collection("details")
+                    .document(movingDetail.id)
+                    .set(movingDetail.toFirestoreMap())
+                    .await()
+            }
             Result.success(Unit)
         } catch (e: Exception) {
             Log.e(TAG, "Αποτυχία κράτησης", e)
