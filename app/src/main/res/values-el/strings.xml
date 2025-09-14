@@ -147,6 +147,9 @@
     <string name="passenger_avg_rating_label">Ικανοποίηση επιβατών: %1$.1f/5</string>
     <string name="no_completed_movings">Δεν υπάρχουν ολοκληρωμένες μετακινήσεις</string>
     <string name="advance_date">Μεταφορά ημερομηνίας</string>
+    <string name="system_datetime">Ημερομηνία/ώρα συστήματος</string>
+    <string name="stored_datetime">Αποθηκευμένη ημερομηνία/ώρα</string>
+    <string name="reset_time">Επαναφορά στην τρέχουσα</string>
     <string name="declare_route">Δήλωση διαδρομής</string>
     <string name="announce_transport">Δήλωση μεταφοράς</string>
     <string name="from">Από</string>

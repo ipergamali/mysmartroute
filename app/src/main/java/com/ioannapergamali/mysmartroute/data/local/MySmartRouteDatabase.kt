@@ -45,6 +45,8 @@ import androidx.room.TypeConverters
 import com.ioannapergamali.mysmartroute.data.local.Converters
 import com.ioannapergamali.mysmartroute.data.local.TripRatingEntity
 import com.ioannapergamali.mysmartroute.data.local.TripRatingDao
+import com.ioannapergamali.mysmartroute.data.local.AppDateTimeEntity
+import com.ioannapergamali.mysmartroute.data.local.AppDateTimeDao
 
 @Database(
     entities = [
@@ -73,10 +75,11 @@ import com.ioannapergamali.mysmartroute.data.local.TripRatingDao
         TransferRequestEntity::class,
         TripRatingEntity::class,
         NotificationEntity::class,
-        UserPoiEntity::class
+        UserPoiEntity::class,
+        AppDateTimeEntity::class
     ],
 
-    version = 72
+    version = 73
 
 )
 @TypeConverters(Converters::class)
@@ -107,6 +110,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
     abstract fun tripRatingDao(): TripRatingDao
     abstract fun notificationDao(): NotificationDao
     abstract fun userPoiDao(): UserPoiDao
+    abstract fun appDateTimeDao(): AppDateTimeDao
 
     companion object {
         @Volatile
@@ -1001,6 +1005,13 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_72_73 = object : Migration(72, 73) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("CREATE TABLE IF NOT EXISTS `app_datetime` (`id` INTEGER NOT NULL, `timestamp` INTEGER NOT NULL, PRIMARY KEY(`id`))")
+                database.execSQL("INSERT OR IGNORE INTO app_datetime (id, timestamp) VALUES (1, strftime('%s','now')*1000)")
+            }
+        }
+
         private fun prepopulate(db: SupportSQLiteDatabase) {
             Log.d(TAG, "Prepopulating database")
             db.execSQL(
@@ -1084,6 +1095,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             insertOption("opt_admin_13", adminMenuId, "view_pois", "viewPois")
             Log.d(TAG, "Prepopulate complete")
             db.execSQL("INSERT INTO app_language (id, language) VALUES (1, 'el')")
+            db.execSQL("INSERT INTO app_datetime (id, timestamp) VALUES (1, strftime('%s', 'now')*1000)")
         }
 
         fun getInstance(context: Context): MySmartRouteDatabase {
@@ -1151,7 +1163,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_67_68,
                     MIGRATION_68_69,
                     MIGRATION_69_70,
-                    MIGRATION_71_72
+                    MIGRATION_71_72,
+                    MIGRATION_72_73
 
                 )
                     .addCallback(object : RoomDatabase.Callback() {
