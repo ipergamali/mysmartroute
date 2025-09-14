@@ -229,6 +229,7 @@
     <string name="invalid_cost">Invalid cost</string>
     <string name="bus_required">Bus station links require a bus vehicle.</string>
     <string name="clear_selection">Clear selection</string>
+    <string name="search">Search</string>
     <string name="passenger">Passenger</string>
     <string name="favorites_preferred">Preferred transport modes</string>
     <string name="favorites_non_preferred">Non-preferred transport modes</string>

@@ -59,6 +59,7 @@ fun FindPassengersScreen(
     val selectedTimeText = selectedTimeMillis?.let {
         String.format("%02d:%02d", timePickerState.hour, timePickerState.minute)
     } ?: stringResource(R.string.select_time)
+    var showResults by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         requestViewModel.loadRequests(context, allUsers = true)
@@ -94,6 +95,10 @@ fun FindPassengersScreen(
         routeIds.contains(req.routeId) &&
             (selectedDateMillis == null || req.date == selectedDateMillis) &&
             req.status != "completed"
+    }
+
+    LaunchedEffect(selectedDateMillis, selectedTimeMillis, selectedRouteId) {
+        showResults = false
     }
 
     val poiNames = pois.associate { it.id to it.name }
@@ -152,51 +157,62 @@ fun FindPassengersScreen(
                 }
                 Spacer(modifier = Modifier.height(8.dp))
             }
-            if (filteredRequests.isEmpty()) {
-                Text(stringResource(R.string.no_requests))
-            } else {
-                LazyColumn {
-                    items(filteredRequests) { req ->
-                        val passengerName = userNames[req.userId] ?: ""
-                        val routeName = listOfNotNull(
-                            poiNames[req.startPoiId],
-                            poiNames[req.endPoiId]
-                        ).joinToString(" - ")
-                        val isChecked = selectedRequests[req.id] ?: false
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(vertical = 4.dp)
-                        ) {
-                            Checkbox(
-                                checked = isChecked,
-                                onCheckedChange = { checked ->
-                                    if (checked) selectedRequests[req.id] = true
-                                    else selectedRequests.remove(req.id)
+            Button(
+                onClick = { showResults = true },
+                enabled = selectedRouteId != null && selectedDateMillis != null && selectedTimeMillis != null
+            ) {
+                Text(stringResource(R.string.search))
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            if (showResults) {
+                if (filteredRequests.isEmpty()) {
+                    Text(stringResource(R.string.no_requests))
+                } else {
+                    LazyColumn {
+                        items(filteredRequests) { req ->
+                            val passengerName = userNames[req.userId] ?: ""
+                            val routeName = listOfNotNull(
+                                poiNames[req.startPoiId],
+                                poiNames[req.endPoiId]
+                            ).joinToString(" - ")
+                            val isChecked = selectedRequests[req.id] ?: false
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(vertical = 4.dp)
+                            ) {
+                                Checkbox(
+                                    checked = isChecked,
+                                    onCheckedChange = { checked ->
+                                        if (checked) selectedRequests[req.id] = true
+                                        else selectedRequests.remove(req.id)
+                                    }
+                                )
+                                Column {
+                                    Text(passengerName)
+                                    Text(routeName, style = MaterialTheme.typography.bodySmall)
                                 }
-                            )
-                            Column {
-                                Text(passengerName)
-                                Text(routeName, style = MaterialTheme.typography.bodySmall)
                             }
                         }
                     }
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(
-                    onClick = {
-                        val ids = selectedRequests.filterValues { it }.keys
-                        ids.forEach { id ->
-                            val req = filteredRequests.find { it.id == id }
-                            if (req != null) {
-                                requestViewModel.notifyRoute(context, id)
-                                transferViewModel.notifyDriver(context, req.requestNumber)
+
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button(
+                        onClick = {
+                            val ids = selectedRequests.filterValues { it }.keys
+                            ids.forEach { id ->
+                                val req = filteredRequests.find { it.id == id }
+                                if (req != null) {
+                                    requestViewModel.notifyPassenger(context, id)
+                                    transferViewModel.notifyDriver(context, req.requestNumber)
+                                }
                             }
-                        }
-                        selectedRequests.clear()
-                    },
-                    enabled = hasSelection
-                ) {
-                    Text(stringResource(R.string.notify_route))
+                            selectedRequests.clear()
+                        },
+                        enabled = hasSelection
+                    ) {
+                        Text(stringResource(R.string.notify_selected))
+                    }
+
                 }
             }
         }
