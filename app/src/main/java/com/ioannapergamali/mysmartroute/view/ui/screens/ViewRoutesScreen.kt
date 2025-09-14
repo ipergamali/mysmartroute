@@ -47,6 +47,8 @@ fun ViewRoutesScreen(navController: NavController, openDrawer: () -> Unit) {
     var pois by remember { mutableStateOf<List<PoIEntity>>(emptyList()) }
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     var expanded by remember { mutableStateOf(false) }
+    var showRenameDialog by remember { mutableStateOf(false) }
+    var newRouteName by remember { mutableStateOf("") }
 
     val cameraPositionState = rememberCameraPositionState()
     val apiKey = MapsUtils.getApiKey(context)
@@ -154,6 +156,13 @@ fun ViewRoutesScreen(navController: NavController, openDrawer: () -> Unit) {
                 Spacer(Modifier.height(16.dp))
             }
 
+            if (selectedRoute != null) {
+                Button(onClick = { showRenameDialog = true }) {
+                    Text(stringResource(R.string.rename_route))
+                }
+                Spacer(Modifier.height(16.dp))
+            }
+
             if (pois.isNotEmpty()) {
                 Text(stringResource(R.string.stops_header))
                 Column(modifier = Modifier.fillMaxWidth()) {
@@ -177,6 +186,45 @@ fun ViewRoutesScreen(navController: NavController, openDrawer: () -> Unit) {
                         }
                     }
                 }
+            }
+
+            if (showRenameDialog) {
+                AlertDialog(
+                    onDismissRequest = { showRenameDialog = false },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            if (newRouteName.isNotBlank()) {
+                                selectedRoute?.let { route ->
+                                    scope.launch {
+                                        routeViewModel.duplicateRoute(
+                                            context,
+                                            route.id,
+                                            newRouteName
+                                        )
+                                        routeViewModel.loadRoutes(context, includeAll = true)
+                                    }
+                                }
+                                showRenameDialog = false
+                                newRouteName = ""
+                            }
+                        }) {
+                            Text(stringResource(R.string.ok))
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showRenameDialog = false }) {
+                            Text(stringResource(R.string.cancel))
+                        }
+                    },
+                    title = { Text(stringResource(R.string.rename_route)) },
+                    text = {
+                        TextField(
+                            value = newRouteName,
+                            onValueChange = { newRouteName = it },
+                            label = { Text(stringResource(R.string.new_route_name)) }
+                        )
+                    }
+                )
             }
         }
     }

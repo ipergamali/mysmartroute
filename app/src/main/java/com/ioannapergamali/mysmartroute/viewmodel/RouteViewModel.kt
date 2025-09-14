@@ -308,6 +308,31 @@ class RouteViewModel : ViewModel() {
     }
 
     /**
+     * Δημιουργεί αντίγραφο μιας υπάρχουσας διαδρομής με νέο όνομα.
+     * Duplicates an existing route with a new name.
+     */
+    suspend fun duplicateRoute(
+        context: Context,
+        routeId: String,
+        newName: String
+    ): String? {
+        val db = MySmartRouteDatabase.getInstance(context)
+        val pointDao = db.routePointDao()
+        val busDao = db.routeBusStationDao()
+
+        val points = pointDao.getPointsForRoute(routeId)
+            .first()
+            .sortedBy { it.position }
+            .map { it.poiId }
+        val busStations = busDao.getStationsForRoute(routeId)
+            .first()
+            .sortedBy { it.position }
+            .map { it.poiId }
+
+        return addRoute(context, points, newName, busStations)
+    }
+
+    /**
      * Συγχρονίζει τα σημεία μιας διαδρομής από τη Room στη συλλογή `route_points` του Firestore.
      */
     suspend fun syncRoutePoints(context: Context, routeId: String) {
