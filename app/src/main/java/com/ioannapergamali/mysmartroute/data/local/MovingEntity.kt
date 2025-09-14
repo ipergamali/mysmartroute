@@ -27,6 +27,12 @@ data class MovingEntity(
     val date: Long = 0L,
     val cost: Double? = null,
     val durationMinutes: Int = 0,
+    /** Το όχημα που θα εκτελέσει τη μετακίνηση */
+    val vehicleId: String = "",
+    /** Το σημείο εκκίνησης της διαδρομής */
+    val startPoiId: String = "",
+    /** Το σημείο τερματισμού της διαδρομής */
+    val endPoiId: String = "",
     /** Ο οδηγός που ενδιαφέρεται να πραγματοποιήσει τη μεταφορά */
     val driverId: String = "",
     /** Κατάσταση προσφοράς: open, pending, accepted, rejected, completed */
@@ -63,7 +69,10 @@ data class MovingEntity(
         requestNumber: Int = 0,
         driverName: String = "",
         routeName: String = "",
-        vehicleName: String = ""
+        vehicleName: String = "",
+        vehicleId: String = "",
+        startPoiId: String = "",
+        endPoiId: String = ""
     ) : this(
         id,
         routeId,
@@ -71,6 +80,9 @@ data class MovingEntity(
         date,
         cost,
         durationMinutes,
+        vehicleId,
+        startPoiId,
+        endPoiId,
         driverId,
         status,
         requestNumber
