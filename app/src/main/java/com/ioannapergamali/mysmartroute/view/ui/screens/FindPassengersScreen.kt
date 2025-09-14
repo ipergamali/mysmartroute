@@ -42,12 +42,9 @@ fun FindPassengersScreen(
     val declarationViewModel: TransportDeclarationViewModel = viewModel()
     val userViewModel: UserViewModel = viewModel()
     val poiViewModel: PoIViewModel = viewModel()
-    val routeViewModel: RouteViewModel = viewModel()
-
     val requests by requestViewModel.requests.collectAsState()
     val declarations by declarationViewModel.declarations.collectAsState()
     val pois by poiViewModel.pois.collectAsState()
-    val routes by routeViewModel.routes.collectAsState()
     val userNames = remember { mutableStateMapOf<String, String>() }
     val selectedRequests = remember { mutableStateMapOf<String, Boolean>() }
     val driverId = FirebaseAuth.getInstance().currentUser?.uid
@@ -65,7 +62,6 @@ fun FindPassengersScreen(
         requestViewModel.loadRequests(context, allUsers = true)
         declarationViewModel.loadDeclarations(context, driverId)
         poiViewModel.loadPois(context)
-        routeViewModel.loadRoutes(context)
     }
 
     LaunchedEffect(requests) {
@@ -114,7 +110,7 @@ fun FindPassengersScreen(
             )
         }
     ) { padding ->
-        val routeMap = routes.associate { it.id to it.name }
+        val routeMap = requests.associate { it.routeId to it.routeName }
         val routeOptions = routeMap.filterKeys { id -> declarations.any { it.routeId == id } }
 
         ScreenContainer(modifier = Modifier.padding(padding), scrollable = false) {
