@@ -29,7 +29,11 @@ fun MovingScreen(viewModel: MovingViewModel = hiltViewModel()) {
     val grouped = categorizeMovings(movings)
 
     LazyColumn {
-        MovingStatus.values().forEach { status ->
+        listOf(
+            MovingStatus.PENDING,
+            MovingStatus.UNSUCCESSFUL,
+            MovingStatus.COMPLETED
+        ).forEach { status ->
             val list = grouped[status].orEmpty()
 
             Log.d(TAG, "Κατηγορία $status περιέχει ${list.size} εγγραφές")
@@ -55,10 +59,10 @@ fun MovingScreen(viewModel: MovingViewModel = hiltViewModel()) {
 }
 
 private fun titleFor(status: MovingStatus) = when (status) {
-    MovingStatus.ACTIVE -> "Ενεργές μετακινήσεις"
     MovingStatus.PENDING -> "Εκκρεμείς μετακινήσεις"
     MovingStatus.UNSUCCESSFUL -> "Ανεπιτυχείς μετακινήσεις"
     MovingStatus.COMPLETED -> "Ολοκληρωμένες μετακινήσεις"
+    else -> ""
 }
 
 private fun formatDate(epochMillis: Long): String =
