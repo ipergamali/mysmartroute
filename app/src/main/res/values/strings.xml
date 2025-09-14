@@ -226,7 +226,7 @@
     <string name="boarding_stop">Boarding stop</string>
     <string name="dropoff_stop">Drop-off stop</string>
     <string name="invalid_stop_order">Drop-off stop must be after boarding stop.</string>
-    <string name="bigbus_required">Bus station links require a BIGBUS vehicle.</string>
+    <string name="bus_required">Bus station links require a bus vehicle.</string>
     <string name="clear_selection">Clear selection</string>
     <string name="passenger">Passenger</string>
     <string name="favorites_preferred">Preferred transport modes</string>
