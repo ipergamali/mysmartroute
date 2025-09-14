@@ -123,12 +123,9 @@ private fun MovingTable(list: List<MovingEntity>) {
             Row {
                 TableHeaderCell(stringResource(R.string.route))
                 TableHeaderCell(stringResource(R.string.driver))
-                TableHeaderCell(stringResource(R.string.vehicle_name))
                 TableHeaderCell(stringResource(R.string.passenger))
                 TableHeaderCell(stringResource(R.string.date))
-                TableHeaderCell(stringResource(R.string.time))
                 TableHeaderCell(stringResource(R.string.cost))
-                TableHeaderCell(stringResource(R.string.duration))
             }
             Divider()
             list.forEach { m ->
@@ -138,12 +135,9 @@ private fun MovingTable(list: List<MovingEntity>) {
                 Row {
                     TableCell(m.routeName.ifBlank { "-" })
                     TableCell(m.driverName.ifBlank { "-" })
-                    TableCell(m.vehicleName.ifBlank { "-" })
                     TableCell(m.createdByName.ifBlank { "-" })
                     TableCell(formatDate(m.date))
-                    TableCell(formatTime(m.date))
                     TableCell(formatCost(m.cost))
-                    TableCell(formatDuration(m.durationMinutes))
                 }
                 Divider()
             }
@@ -157,21 +151,8 @@ private fun formatDate(epochMillis: Long): String =
         .toLocalDate()
         .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
 
-private fun formatTime(epochMillis: Long): String =
-    Instant.ofEpochMilli(epochMillis)
-        .atZone(ZoneId.systemDefault())
-        .toLocalTime()
-        .format(DateTimeFormatter.ofPattern("HH:mm"))
-
 private fun formatCost(cost: Double?): String =
     cost?.let { String.format(Locale.getDefault(), "%.2f€", it) } ?: "-"
-
-private fun formatDuration(minutes: Int): String {
-    val hours = minutes / 60
-    val mins = minutes % 60
-    return if (hours > 0) String.format(Locale.getDefault(), "%d:%02d", hours, mins)
-    else String.format(Locale.getDefault(), "0:%02d", mins)
-}
 
 @Composable
 private fun RowScope.TableHeaderCell(text: String) {
