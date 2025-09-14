@@ -188,7 +188,10 @@ class ReservationViewModel : ViewModel() {
             val reservations = resDao.getReservationsForRouteAndDateTime(routeId, date, startTime).first()
             val currentMovings = movingDao.getAll().first()
             reservations.forEach { res ->
-                val detail = resDetailDao.getForReservation(res.id).firstOrNull() ?: return@forEach
+                val detail = resDetailDao
+                    .getForReservation(res.id)
+                    .firstOrNull()
+                    ?.firstOrNull() ?: return@forEach
                 val found = currentMovings.find {
                     it.routeId == routeId &&
                         it.userId == res.userId &&
