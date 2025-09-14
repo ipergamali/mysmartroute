@@ -145,6 +145,9 @@
     <string name="passenger_avg_rating_label">Passenger satisfaction: %1$.1f/5</string>
     <string name="no_completed_movings">No completed movings</string>
     <string name="advance_date">Advance Date</string>
+    <string name="system_datetime">System date/time</string>
+    <string name="stored_datetime">Stored date/time</string>
+    <string name="reset_time">Reset to now</string>
     <string name="declare_route">Declare Route</string>
     <string name="announce_transport">Announce Transport</string>
     <string name="from">From</string>

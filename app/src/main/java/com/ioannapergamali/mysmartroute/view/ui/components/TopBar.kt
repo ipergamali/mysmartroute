@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Notifications
 import android.util.Log
 import androidx.compose.foundation.layout.Row
+import Column
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -33,6 +34,10 @@ import com.ioannapergamali.mysmartroute.utils.LocaleUtils
 import com.ioannapergamali.mysmartroute.model.AppLanguage
 import kotlinx.coroutines.launch
 import com.google.firebase.auth.FirebaseAuth
+import com.ioannapergamali.mysmartroute.viewmodel.AppDateTimeViewModel
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ioannapergamali.mysmartroute.viewmodel.SettingsViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
@@ -67,6 +72,12 @@ fun TopBar(
     val currentLanguage by LanguagePreferenceManager.languageFlow(context).collectAsState(initial = AppLanguage.Greek.code)
     val role by authViewModel.currentUserRole.collectAsState()
     val hasUnreadNotifications by requestViewModel.hasUnreadNotifications.collectAsState()
+    val dateTimeViewModel: AppDateTimeViewModel = viewModel()
+    val storedMillis by dateTimeViewModel.dateTime.collectAsState()
+    LaunchedEffect(Unit) {
+        dateTimeViewModel.load(context)
+    }
+    val formattedDate = storedMillis?.let { SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date(it)) } ?: ""
 
     LaunchedEffect(Unit) {
         authViewModel.loadCurrentUserRole(context)
@@ -98,7 +109,7 @@ fun TopBar(
                 actionIconContentColor = MaterialTheme.colorScheme.primary,
                 titleContentColor = MaterialTheme.colorScheme.primary
             ),
-        title = { Text(title) },
+        title = { if (formattedDate.isNotEmpty()) { Column { Text(title); Text(formattedDate, style = MaterialTheme.typography.labelSmall) } } else { Text(title) } },
         navigationIcon = {
             Row {
                 IconButton(onClick = {

@@ -29,6 +29,7 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.LocalDatabaseScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.FirebaseDatabaseScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.AdminSignUpScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.EditPrivilegesScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.AdvanceDateScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.DatabaseSyncScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.RolesScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.ProfileScreen
@@ -407,6 +408,10 @@ fun NavigationHost(
 
         composable("userPoints") {
             UserPointsScreen(navController = navController, openDrawer = openDrawer)
+        }
+
+        composable("advanceDate") {
+            AdvanceDateScreen(navController = navController, openDrawer = openDrawer)
         }
 
 
