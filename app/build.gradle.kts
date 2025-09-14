@@ -8,7 +8,7 @@ val mapsApiKey: String = gradleLocalProperties(rootDir, providers)
     plugins {
         id("com.android.application")
         id("org.jetbrains.kotlin.android")
-        id("kotlin-kapt")
+        id("com.google.devtools.ksp")
         id("com.google.gms.google-services")
         id("org.jetbrains.kotlin.plugin.compose")
         id("com.google.dagger.hilt.android")
@@ -102,7 +102,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.9.3")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
     implementation("com.google.dagger:hilt-android:2.51.1")
-    kapt("com.google.dagger:hilt-compiler:2.51.1")
+    ksp("com.google.dagger:hilt-compiler:2.51.1")
 
     // DataStore για αποθήκευση ρυθμίσεων
     implementation("androidx.datastore:datastore-preferences:1.1.7")
@@ -110,7 +110,7 @@ dependencies {
     // Room
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
-    kapt("androidx.room:room-compiler:2.6.1")
+    ksp("androidx.room:room-compiler:2.6.1")
 
     // Google Maps
     implementation("com.google.android.gms:play-services-maps:19.2.0")
@@ -146,7 +146,3 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 }
 
-
-kapt {
-    correctErrorTypes = true
-}
