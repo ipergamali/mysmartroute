@@ -307,6 +307,15 @@ fun MovingEntity.toFirestoreMap(): Map<String, Any> {
         "requestNumber" to requestNumber
     )
     cost?.let { map["cost"] = it }
+    if (vehicleId.isNotEmpty()) {
+        map["vehicleId"] = FirebaseFirestore.getInstance().collection("vehicles").document(vehicleId)
+    }
+    if (startPoiId.isNotEmpty()) {
+        map["startPoiId"] = FirebaseFirestore.getInstance().collection("pois").document(startPoiId)
+    }
+    if (endPoiId.isNotEmpty()) {
+        map["endPoiId"] = FirebaseFirestore.getInstance().collection("pois").document(endPoiId)
+    }
     if (createdById.isNotEmpty()) {
         map["createdById"] = FirebaseFirestore.getInstance().collection("users").document(createdById)
         map["createdByName"] = createdByName
@@ -339,6 +348,21 @@ fun DocumentSnapshot.toMovingEntity(): MovingEntity? {
     }
     val costVal = getDouble("cost")
     val durVal = (getLong("durationMinutes") ?: 0L).toInt()
+    val vehicleId = when (val v = get("vehicleId")) {
+        is DocumentReference -> v.id
+        is String -> v
+        else -> getString("vehicleId")
+    } ?: ""
+    val startPoiId = when (val s = get("startPoiId")) {
+        is DocumentReference -> s.id
+        is String -> s
+        else -> getString("startPoiId")
+    } ?: ""
+    val endPoiId = when (val e = get("endPoiId")) {
+        is DocumentReference -> e.id
+        is String -> e
+        else -> getString("endPoiId")
+    } ?: ""
     val createdById = when (val c = get("createdById")) {
         is DocumentReference -> c.id
         is String -> c
@@ -356,20 +380,23 @@ fun DocumentSnapshot.toMovingEntity(): MovingEntity? {
     val routeName = getString("routeName") ?: ""
     val vehicleName = getString("vehicleName") ?: ""
     return MovingEntity(
-        movingId,
-        routeId,
-        userId,
-        dateVal,
-        costVal,
-        durVal,
-        createdById,
-        createdByName,
-        driverId,
-        status,
-        requestNumber,
-        driverName,
-        routeName,
-        vehicleName
+        id = movingId,
+        routeId = routeId,
+        userId = userId,
+        date = dateVal,
+        cost = costVal,
+        durationMinutes = durVal,
+        vehicleId = vehicleId,
+        startPoiId = startPoiId,
+        endPoiId = endPoiId,
+        createdById = createdById,
+        createdByName = createdByName,
+        driverId = driverId,
+        status = status,
+        requestNumber = requestNumber,
+        driverName = driverName,
+        routeName = routeName,
+        vehicleName = vehicleName
     )
 }
 
