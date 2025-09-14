@@ -45,8 +45,6 @@ import com.ioannapergamali.mysmartroute.data.local.RouteEntity
 import com.ioannapergamali.mysmartroute.data.local.VehicleEntity
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationDetailEntity
-import com.ioannapergamali.mysmartroute.view.ui.util.observeBubble
-import com.ioannapergamali.mysmartroute.view.ui.util.LocalKeyboardBubbleState
 import kotlinx.coroutines.launch
 import com.google.firebase.auth.FirebaseAuth
 import com.ioannapergamali.mysmartroute.model.classes.poi.PoiAddress
@@ -98,12 +96,12 @@ private fun canSend(
     details: List<TransportDeclarationDetailEntity>,
     startIndex: Int?,
     endIndex: Int?,
-    cost: String,
+    segmentCost: String,
     dateSelected: Boolean,
     timeSelected: Boolean,
     calculating: Boolean
 ): Boolean {
-    if (!routeSelected || cost.isBlank() || !dateSelected || !timeSelected || calculating) return false
+    if (!routeSelected || !dateSelected || !timeSelected || calculating) return false
     if (details.isNotEmpty()) {
         if (arePoisSequential(pois, details)) return true
         val firstId = pois.firstOrNull()?.id
@@ -113,7 +111,7 @@ private fun canSend(
         }
         return false
     }
-    return startIndex == 0 && endIndex == pois.lastIndex
+    return segmentCost.toDoubleOrNull() != null && startIndex == 0 && endIndex == pois.lastIndex
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -145,10 +143,16 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     var selectedVehicleName by remember { mutableStateOf("") }
     var selectedVehicleDescription by remember { mutableStateOf("") }
     var selectedVehicleSeats by remember { mutableStateOf(0) }
-    var costText by remember { mutableStateOf("") }
+    var detailCostText by remember { mutableStateOf("") }
     var segmentDuration by remember { mutableStateOf(0) }
     val detailDurations = remember { mutableStateListOf<Int>() }
     val duration by remember { derivedStateOf { detailDurations.sum() + segmentDuration } }
+    val totalCost by remember {
+        derivedStateOf {
+            details.sumOf { it.cost } +
+                (if (details.isEmpty()) detailCostText.toDoubleOrNull() ?: 0.0 else 0.0)
+        }
+    }
     var calculating by remember { mutableStateOf(false) }
     val now = LocalDateTime.now()
     val todayMillis = remember {
@@ -295,7 +299,6 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         )
     }) { padding ->
         ScreenContainer(modifier = Modifier.padding(padding)) {
-            val bubbleState = LocalKeyboardBubbleState.current!!
 
             if (role == UserRole.ADMIN) {
                 ExposedDropdownMenuBox(expanded = expandedDriver, onExpandedChange = { expandedDriver = !expandedDriver }) {
@@ -534,14 +537,25 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     Text(stringResource(R.string.duration_format, segmentDuration))
                 }
                 Spacer(Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = detailCostText,
+                    onValueChange = { detailCostText = it },
+                    label = { Text(stringResource(R.string.cost)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number)
+                )
+                Spacer(Modifier.height(8.dp))
                 FilledIconButton(onClick = {
                     val s = startIndex
                     val e = endIndex
                     val veh = selectedVehicle
+                    val cost = detailCostText.toDoubleOrNull()
                     if (s != null && e != null && veh != null) {
                         val startPoi = pois[s]
                         val endPoi = pois[e]
-                        if (startPoi.type == Place.Type.BUS_STATION &&
+                        if (cost == null) {
+                            message = context.getString(R.string.invalid_cost)
+                        } else if (startPoi.type == Place.Type.BUS_STATION &&
                             endPoi.type == Place.Type.BUS_STATION &&
                             veh != VehicleType.BIGBUS &&
                             veh != VehicleType.SMALLBUS
@@ -556,6 +570,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                 vehicleId = selectedVehicleId,
                                 vehicleType = veh.name,
                                 seats = selectedVehicleSeats,
+                                cost = cost,
                                 startTime = detailStartTime
                             )
                             details.add(detail)
@@ -564,6 +579,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                             startIndex = null
                             endIndex = null
                             segmentDuration = 0
+                            detailCostText = ""
                         }
                     } else {
                         message = context.getString(R.string.invalid_stop_order)
@@ -581,6 +597,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                             Text(stringResource(R.string.dropoff_stop), Modifier.weight(1f))
                             Text(stringResource(R.string.vehicle_name), Modifier.weight(1f))
                             Text(stringResource(R.string.time), Modifier.weight(1f))
+                            Text(stringResource(R.string.cost), Modifier.weight(1f))
                         }
                         Divider()
                         details.forEachIndexed { index, d ->
@@ -603,6 +620,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                 val h = (d.startTime / 3_600_000).toInt()
                                 val m = ((d.startTime / 60_000) % 60).toInt()
                                 Text(String.format("%02d:%02d", h, m), Modifier.weight(1f))
+                                Text(String.format("%1$.2f€", d.cost), Modifier.weight(1f))
                                 IconButton(onClick = {
                                     details.removeAt(index)
                                     detailDurations.removeAt(index)
@@ -690,19 +708,9 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
 
             Spacer(Modifier.height(16.dp))
 
-            OutlinedTextField(
-                value = costText,
-                onValueChange = { costText = it },
-                label = { Text(stringResource(R.string.cost)) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .observeBubble(bubbleState, 0) { costText },
-                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number)
-            )
-
-            Spacer(Modifier.height(16.dp))
-
             Text(stringResource(R.string.duration_format, duration))
+            Spacer(Modifier.height(8.dp))
+            Text(stringResource(R.string.total_cost_label, totalCost))
 
             if (calculating) {
                 Spacer(Modifier.height(8.dp))
@@ -720,7 +728,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                 details,
                 startIndex,
                 endIndex,
-                costText,
+                detailCostText,
                 datePickerState.selectedDateMillis,
                 timePickerState.hour,
                 timePickerState.minute,
@@ -732,7 +740,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     details = details.toList(),
                     startIndex = startIndex,
                     endIndex = endIndex,
-                    cost = costText,
+                    segmentCost = detailCostText,
                     dateSelected = datePickerState.selectedDateMillis != null,
                     timeSelected = true,
                     calculating = calculating
@@ -742,7 +750,6 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
             Button(
                 onClick = {
                     val routeId = selectedRouteId
-                    val cost = costText.toDoubleOrNull() ?: 0.0
                     val date = datePickerState.selectedDateMillis ?: 0L
                     val selectedDate = Instant.ofEpochMilli(date).atZone(ZoneId.systemDefault()).toLocalDate()
                     val selectedTime = LocalTime.of(timePickerState.hour, timePickerState.minute)
@@ -778,6 +785,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                 val s = startIndex ?: 0
                                 val e = endIndex ?: pois.lastIndex
                                 val veh = selectedVehicle
+                                val cost = detailCostText.toDoubleOrNull() ?: 0.0
                                 if (veh != null && s < pois.size && e < pois.size) {
                                     listOf(
                                         TransportDeclarationDetailEntity(
@@ -786,14 +794,13 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                             vehicleId = selectedVehicleId,
                                             vehicleType = veh.name,
                                             seats = selectedVehicleSeats,
+                                            cost = cost,
                                             startTime = startTime
                                         )
                                     )
                                 } else emptyList()
                             }
                             val minSeatsValue = if (details.isNotEmpty()) minSeats else selectedVehicleSeats
-                            val costPerDetail = if (detailList.isNotEmpty()) cost / detailList.size else 0.0
-                            val detailedCosts = detailList.map { it.copy(cost = costPerDetail) }
                             val success = declarationViewModel.declareTransport(
                                 context,
                                 routeId,
@@ -802,7 +809,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                 duration,
                                 date,
                                 startTime,
-                                detailedCosts
+                                detailList
                             )
                             Toast.makeText(
                                 context,
