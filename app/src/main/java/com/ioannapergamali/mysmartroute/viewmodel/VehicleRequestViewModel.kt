@@ -455,10 +455,10 @@ class VehicleRequestViewModel(
     }
 
     /**
-     * Ενημερώνει τον επιβάτη ότι ένας οδηγός απάντησε στο αίτημά του.
-     * Notifies the passenger that a driver responded to their request.
+     * Στέλνει ειδοποίηση διαδρομής στον επιβάτη όταν ο οδηγός ενδιαφέρεται.
+     * Sends a route notification to the passenger when a driver is interested.
      */
-    fun notifyPassenger(context: Context, requestId: String) {
+    fun notifyRoute(context: Context, requestId: String) {
         viewModelScope.launch {
             val dao = MySmartRouteDatabase.getInstance(context).movingDao()
             val driver = FirebaseAuth.getInstance().currentUser ?: return@launch
@@ -486,7 +486,7 @@ class VehicleRequestViewModel(
                         )
                     ).await()
                 } catch (e: Exception) {
-                    Log.e(TAG, "Failed to notify passenger", e)
+                    Log.e(TAG, "Failed to send route notification", e)
                 }
             }
         }

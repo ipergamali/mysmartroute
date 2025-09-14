@@ -241,7 +241,7 @@
     <string name="sort_by_cost">Ταξινόμηση κατά κόστος</string>
     <string name="sort_by_date">Ταξινόμηση κατά ημερομηνία</string>
     <string name="cancel_request">Ακύρωση αιτήματος</string>
-    <string name="notify_passenger">Ειδοποίηση επιβάτη</string>
+    <string name="notify_route">Ειδοποίηση διαδρομής</string>
     <string name="accept_offer">Αποδοχή</string>
     <string name="reject_offer">Απόρριψη</string>
     <string name="no_notifications">Καμία ειδοποίηση</string>

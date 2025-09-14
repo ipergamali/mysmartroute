@@ -184,12 +184,12 @@ fun ViewTransportRequestsScreen(
                                 if (req.status == "open" && !isExpired) {
                                     Button(
                                         onClick = {
-                                            viewModel.notifyPassenger(context, req.id)
+                                            viewModel.notifyRoute(context, req.id)
                                             transferViewModel.notifyDriver(context, req.requestNumber)
                                         },
                                         modifier = Modifier.width(columnWidth)
                                     ) {
-                                        Text(stringResource(R.string.notify_passenger))
+                                        Text(stringResource(R.string.notify_route))
                                     }
                                 } else {
                                     val statusText = if (isExpired) stringResource(R.string.request_unsuccessful) else req.status
