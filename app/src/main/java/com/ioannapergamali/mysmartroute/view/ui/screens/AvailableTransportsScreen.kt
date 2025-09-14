@@ -32,6 +32,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.utils.matchesFavorites
 import com.ioannapergamali.mysmartroute.utils.isUpcoming
 import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationDetailEntity
+import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationEntity
 import kotlinx.coroutines.launch
 import kotlin.math.max
 import java.time.Instant
@@ -110,6 +111,10 @@ fun AvailableTransportsScreen(
     val detailsMap = remember { mutableStateMapOf<String, List<TransportDeclarationDetailEntity>>() }
     val detailReservationCounts = remember { mutableStateMapOf<String, MutableMap<String, Int>>() }
     var message by remember { mutableStateOf("") }
+    // Χάρτης με τα τμήματα διαδρομών που έχει επιλέξει ο χρήστης για κράτηση
+    val selectedDetails = remember {
+        mutableStateMapOf<String, Pair<TransportDeclarationEntity, TransportDeclarationDetailEntity>>()
+    }
 
     LaunchedEffect(Unit) {
         declarationViewModel.loadDeclarations(context)
@@ -247,43 +252,56 @@ fun AvailableTransportsScreen(
                                         Text(endName, modifier = Modifier.width(ColumnWidth))
                                         Text(routeName, modifier = Modifier.width(ColumnWidth))
                                         Text(availableSeg.toString(), modifier = Modifier.width(ColumnWidth))
-                                        Button(
-                                            onClick = {
-                                                scope.launch {
-                                                    val result = bookingViewModel.reserveSeat(
-                                                        context = context,
-                                                        routeId = decl.routeId,
-                                                        date = decl.date,
-                                                        startTime = decl.startTime,
-                                                        startPoiId = detail.startPoiId,
-                                                        endPoiId = detail.endPoiId,
-                                                        declarationId = decl.id,
-                                                        driverId = decl.driverId,
-                                                        vehicleId = detail.vehicleId,
-                                                        cost = decl.cost,
-                                                        durationMinutes = decl.durationMinutes
-                                                    )
-                                                    message = result.fold(
-                                                        onSuccess = {
-                                                            val map = detailReservationCounts.getOrPut(decl.id) { mutableMapOf() }
-                                                            map[detail.id] = reservedSeg + 1
-                                                            reservationCounts[decl.id] = (reservationCounts[decl.id] ?: 0) + 1
-                                                            context.getString(R.string.seat_booked)
-                                                        },
-                                                        onFailure = { context.getString(R.string.seat_unavailable) }
-                                                    )
+                                        val checked = selectedDetails.containsKey(detail.id)
+                                        Switch(
+                                            checked = checked,
+                                            onCheckedChange = { isChecked ->
+                                                if (isChecked) {
+                                                    selectedDetails[detail.id] = decl to detail
+                                                } else {
+                                                    selectedDetails.remove(detail.id)
                                                 }
                                             },
                                             enabled = availableSeg > 0,
                                             modifier = Modifier.width(ColumnWidth)
-                                        ) {
-                                            Text(stringResource(R.string.reserve_seat))
-                                        }
+                                        )
                                     }
                                 }
                             }
                         }
                         Divider()
+                    }
+                }
+                if (selectedDetails.isNotEmpty()) {
+                    Spacer(Modifier.height(8.dp))
+                    Button(onClick = {
+                        scope.launch {
+                            selectedDetails.values.forEach { (decl, detail) ->
+                                val reservedSeg = detailReservationCounts[decl.id]?.get(detail.id) ?: 0
+                                val result = bookingViewModel.reserveSeat(
+                                    context = context,
+                                    routeId = decl.routeId,
+                                    date = decl.date,
+                                    startTime = decl.startTime,
+                                    startPoiId = detail.startPoiId,
+                                    endPoiId = detail.endPoiId,
+                                    declarationId = decl.id,
+                                    driverId = decl.driverId,
+                                    vehicleId = detail.vehicleId,
+                                    cost = decl.cost,
+                                    durationMinutes = decl.durationMinutes
+                                )
+                                result.onSuccess {
+                                    val map = detailReservationCounts.getOrPut(decl.id) { mutableMapOf() }
+                                    map[detail.id] = reservedSeg + 1
+                                    reservationCounts[decl.id] = (reservationCounts[decl.id] ?: 0) + 1
+                                }
+                            }
+                            selectedDetails.clear()
+                            message = context.getString(R.string.seat_booked)
+                        }
+                    }, modifier = Modifier.fillMaxWidth()) {
+                        Text(stringResource(R.string.reserve_seat))
                     }
                 }
                 if (message.isNotBlank()) {

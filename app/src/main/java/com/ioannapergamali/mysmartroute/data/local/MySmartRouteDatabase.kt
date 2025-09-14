@@ -17,6 +17,8 @@ import com.ioannapergamali.mysmartroute.data.local.LanguageSettingEntity
 import com.ioannapergamali.mysmartroute.data.local.LanguageSettingDao
 import com.ioannapergamali.mysmartroute.data.local.RouteEntity
 import com.ioannapergamali.mysmartroute.data.local.MovingEntity
+import com.ioannapergamali.mysmartroute.data.local.MovingDetailEntity
+import com.ioannapergamali.mysmartroute.data.local.MovingDetailDao
 import com.ioannapergamali.mysmartroute.data.local.WalkingEntity
 import com.ioannapergamali.mysmartroute.data.local.RoutePointEntity
 import com.ioannapergamali.mysmartroute.data.local.RoutePointDao
@@ -28,7 +30,9 @@ import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationDetailDao
 import com.ioannapergamali.mysmartroute.data.local.AvailabilityEntity
 import com.ioannapergamali.mysmartroute.data.local.AvailabilityDao
 import com.ioannapergamali.mysmartroute.data.local.SeatReservationEntity
+import com.ioannapergamali.mysmartroute.data.local.SeatReservationDetailEntity
 import com.ioannapergamali.mysmartroute.data.local.SeatReservationDao
+import com.ioannapergamali.mysmartroute.data.local.SeatReservationDetailDao
 import com.ioannapergamali.mysmartroute.data.local.FavoriteEntity
 import com.ioannapergamali.mysmartroute.data.local.FavoriteDao
 import com.ioannapergamali.mysmartroute.data.local.FavoriteRouteEntity
@@ -55,6 +59,7 @@ import com.ioannapergamali.mysmartroute.data.local.TripRatingDao
         LanguageSettingEntity::class,
         RouteEntity::class,
         MovingEntity::class,
+        MovingDetailEntity::class,
         WalkingEntity::class,
         RoutePointEntity::class,
         RouteBusStationEntity::class,
@@ -62,6 +67,7 @@ import com.ioannapergamali.mysmartroute.data.local.TripRatingDao
         TransportDeclarationDetailEntity::class,
         AvailabilityEntity::class,
         SeatReservationEntity::class,
+        SeatReservationDetailEntity::class,
         FavoriteEntity::class,
         FavoriteRouteEntity::class,
         TransferRequestEntity::class,
@@ -69,7 +75,7 @@ import com.ioannapergamali.mysmartroute.data.local.TripRatingDao
         NotificationEntity::class,
         UserPoiEntity::class
     ],
-    version = 67
+    version = 68
 )
 @TypeConverters(Converters::class)
 abstract class MySmartRouteDatabase : RoomDatabase() {
@@ -84,6 +90,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
     abstract fun languageSettingDao(): LanguageSettingDao
     abstract fun routeDao(): RouteDao
     abstract fun movingDao(): MovingDao
+    abstract fun movingDetailDao(): MovingDetailDao
     abstract fun walkingDao(): WalkingDao
     abstract fun routePointDao(): RoutePointDao
     abstract fun routeBusStationDao(): RouteBusStationDao
@@ -91,6 +98,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
     abstract fun transportDeclarationDetailDao(): TransportDeclarationDetailDao
     abstract fun availabilityDao(): AvailabilityDao
     abstract fun seatReservationDao(): SeatReservationDao
+    abstract fun seatReservationDetailDao(): SeatReservationDetailDao
     abstract fun favoriteDao(): FavoriteDao
     abstract fun favoriteRouteDao(): FavoriteRouteDao
     abstract fun transferRequestDao(): TransferRequestDao
@@ -900,6 +908,32 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_67_68 = object : Migration(67, 68) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `seat_reservation_details` (" +
+                        "`id` TEXT NOT NULL, " +
+                        "`reservationId` TEXT NOT NULL, " +
+                        "`startPoiId` TEXT NOT NULL, " +
+                        "`endPoiId` TEXT NOT NULL, " +
+                        "PRIMARY KEY(`id`), " +
+                        "FOREIGN KEY(`reservationId`) REFERENCES `seat_reservations`(`id`) ON DELETE CASCADE" +
+                    ")"
+                )
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `moving_details` (" +
+                        "`id` TEXT NOT NULL, " +
+                        "`movingId` TEXT NOT NULL, " +
+                        "`startPoiId` TEXT NOT NULL, " +
+                        "`endPoiId` TEXT NOT NULL, " +
+                        "`vehicleId` TEXT NOT NULL, " +
+                        "PRIMARY KEY(`id`), " +
+                        "FOREIGN KEY(`movingId`) REFERENCES `movings`(`id`) ON DELETE CASCADE" +
+                    ")"
+                )
+            }
+        }
+
         private fun prepopulate(db: SupportSQLiteDatabase) {
             Log.d(TAG, "Prepopulating database")
             db.execSQL(
@@ -1046,7 +1080,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_63_64,
                     MIGRATION_64_65,
                     MIGRATION_65_66,
-                    MIGRATION_66_67
+                    MIGRATION_66_67,
+                    MIGRATION_67_68
                 )
                     .addCallback(object : RoomDatabase.Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {
