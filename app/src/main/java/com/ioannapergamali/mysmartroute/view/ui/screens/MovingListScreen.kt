@@ -17,8 +17,8 @@ import java.util.Locale
  * [com.ioannapergamali.mysmartroute.data.local.MovingStatus].
  */
 @Composable
-fun MovingListScreen(movings: List<MovingEntity>) {
-    val categorized = categorizeMovings(movings)
+fun MovingListScreen(movings: List<MovingEntity>, now: Long = System.currentTimeMillis()) {
+    val categorized = categorizeMovings(movings, now)
     LazyColumn {
         categorized.forEach { (status, list) ->
             item {
