@@ -22,7 +22,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.google.firebase.auth.FirebaseAuth
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
@@ -39,15 +38,12 @@ fun FindPassengersScreen(
     val context = LocalContext.current
     val requestViewModel: VehicleRequestViewModel = viewModel()
     val transferViewModel: TransferRequestViewModel = viewModel()
-    val declarationViewModel: TransportDeclarationViewModel = viewModel()
     val userViewModel: UserViewModel = viewModel()
     val poiViewModel: PoIViewModel = viewModel()
     val requests by requestViewModel.requests.collectAsState()
-    val declarations by declarationViewModel.declarations.collectAsState()
     val pois by poiViewModel.pois.collectAsState()
     val userNames = remember { mutableStateMapOf<String, String>() }
     val selectedRequests = remember { mutableStateMapOf<String, Boolean>() }
-    val driverId = FirebaseAuth.getInstance().currentUser?.uid
     var selectedRouteId by remember { mutableStateOf<String?>(null) }
     var routeExpanded by remember { mutableStateOf(false) }
     val timePickerState = rememberTimePickerState()
@@ -59,8 +55,7 @@ fun FindPassengersScreen(
     var showResults by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        requestViewModel.loadRequests(context, allUsers = true)
-        declarationViewModel.loadDeclarations(context, driverId)
+        requestViewModel.loadPassengerMovings(context, allUsers = true)
         poiViewModel.loadPois(context)
     }
 
@@ -79,17 +74,13 @@ fun FindPassengersScreen(
     val selectedDateText = selectedDateMillis?.let { dateFormatter.format(Date(it)) }
         ?: stringResource(R.string.select_date)
 
-    val filteredDeclarations = remember(declarations, selectedDateMillis, selectedTimeMillis, selectedRouteId) {
-        declarations.filter { decl ->
-            (selectedDateMillis == null || decl.date == selectedDateMillis) &&
-            (selectedTimeMillis == null || decl.startTime == selectedTimeMillis) &&
-            (selectedRouteId == null || decl.routeId == selectedRouteId)
-        }
-    }
-    val routeIds = filteredDeclarations.map { it.routeId }.toSet()
+    val dayMillis = 24 * 60 * 60 * 1000L
     val filteredRequests = requests.filter { req ->
-        routeIds.contains(req.routeId) &&
-            (selectedDateMillis == null || req.date == selectedDateMillis) &&
+        val reqDate = req.date - (req.date % dayMillis)
+        val reqTime = req.date % dayMillis
+        (selectedRouteId == null || req.routeId == selectedRouteId) &&
+            (selectedDateMillis == null || reqDate == selectedDateMillis) &&
+            (selectedTimeMillis == null || reqTime == selectedTimeMillis) &&
             req.status != "completed"
     }
 
@@ -110,8 +101,7 @@ fun FindPassengersScreen(
             )
         }
     ) { padding ->
-        val routeMap = requests.associate { it.routeId to it.routeName }
-        val routeOptions = routeMap.filterKeys { id -> declarations.any { it.routeId == id } }
+        val routeOptions = requests.associate { it.routeId to it.routeName }
 
         ScreenContainer(modifier = Modifier.padding(padding), scrollable = false) {
             Button(onClick = { showDatePicker = true }) {
