@@ -131,7 +131,6 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     val vehicles by vehicleViewModel.vehicles.collectAsState()
     val drivers by userViewModel.drivers.collectAsState()
     var filteredVehicles by remember { mutableStateOf<List<VehicleEntity>>(emptyList()) }
-    var routeHasBusStations by remember { mutableStateOf(false) }
 
     var displayRoutes by remember { mutableStateOf<List<RouteEntity>>(emptyList()) }
 
@@ -232,14 +231,10 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
         }
     }
 
-    LaunchedEffect(vehicles, selectedDriverId, routeHasBusStations) {
+    LaunchedEffect(vehicles, selectedDriverId, selectedRouteId) {
         var list = vehicles
         selectedDriverId?.let { id -> list = list.filter { it.userId == id } }
-        filteredVehicles = if (routeHasBusStations) {
-            list.filter { it.type == VehicleType.BIGBUS.name || it.type == VehicleType.SMALLBUS.name }
-        } else {
-            list
-        }
+        filteredVehicles = list
     }
 
     LaunchedEffect(Unit) {
@@ -322,7 +317,6 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                 selectedVehicleName = ""
                                 selectedVehicleDescription = ""
                                 selectedVehicleSeats = 0
-                                routeHasBusStations = false
                                 vehicleViewModel.loadRegisteredVehicles(context, userId = driver.id)
                             })
                         }
@@ -362,9 +356,6 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                             startIndex = null
                             endIndex = null
                             message = ""
-                            scope.launch {
-                                routeHasBusStations = routeViewModel.hasBusStations(context, route.id)
-                            }
                         })
                     }
                 }
@@ -546,9 +537,10 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         val endPoi = pois[e]
                         if (startPoi.type == Place.Type.BUS_STATION &&
                             endPoi.type == Place.Type.BUS_STATION &&
-                            veh != VehicleType.BIGBUS
+                            veh != VehicleType.BIGBUS &&
+                            veh != VehicleType.SMALLBUS
                         ) {
-                            message = context.getString(R.string.bigbus_required)
+                            message = context.getString(R.string.bus_required)
                         } else {
                             val detail = TransportDeclarationDetailEntity(
                                 startPoiId = startPoi.id,
@@ -752,8 +744,8 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                             if (veh != null && s < pois.size && e < pois.size) {
                                 val startPoi = pois[s]
                                 val endPoi = pois[e]
-                                if (startPoi.type == Place.Type.BUS_STATION && endPoi.type == Place.Type.BUS_STATION && veh != VehicleType.BIGBUS) {
-                                    Toast.makeText(context, R.string.bigbus_required, Toast.LENGTH_SHORT).show()
+                                if (startPoi.type == Place.Type.BUS_STATION && endPoi.type == Place.Type.BUS_STATION && veh != VehicleType.BIGBUS && veh != VehicleType.SMALLBUS) {
+                                    Toast.makeText(context, R.string.bus_required, Toast.LENGTH_SHORT).show()
                                     return@Button
                                 }
                             }
