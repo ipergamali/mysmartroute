@@ -16,6 +16,9 @@ interface SeatReservationDao {
     @Query("SELECT * FROM seat_reservations")
     fun getAll(): Flow<List<SeatReservationEntity>>
 
+    @Query("SELECT * FROM seat_reservations")
+    suspend fun getAllList(): List<SeatReservationEntity>
+
     @Query("DELETE FROM seat_reservations WHERE id = :id")
     suspend fun deleteById(id: String)
 
