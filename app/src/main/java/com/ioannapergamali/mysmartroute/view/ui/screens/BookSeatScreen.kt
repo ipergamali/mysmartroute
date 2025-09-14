@@ -183,7 +183,9 @@ fun BookSeatScreen(
     }
 
     suspend fun saveEditedRouteIfChanged(): String {
-        if (poiIds == originalPoiIds) return selectedRouteId ?: ""
+        val current = poiIds.toSet()
+        val original = originalPoiIds.toSet()
+        if (current == original) return selectedRouteId ?: ""
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return selectedRouteId ?: ""
         val username = FirebaseFirestore.getInstance()
             .collection("users")
