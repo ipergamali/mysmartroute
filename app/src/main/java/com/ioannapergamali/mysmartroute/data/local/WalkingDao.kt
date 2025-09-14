@@ -16,4 +16,7 @@ interface WalkingDao {
      */
     @Query("SELECT DISTINCT routeId FROM walking WHERE userId = :userId")
     fun getRouteIdsForUser(userId: String): Flow<List<String>>
+
+    @Query("SELECT * FROM walking")
+    fun getAll(): Flow<List<WalkingEntity>>
 }
