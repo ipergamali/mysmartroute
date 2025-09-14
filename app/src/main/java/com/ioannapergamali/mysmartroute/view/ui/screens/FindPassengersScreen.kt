@@ -136,27 +136,44 @@ fun FindPassengersScreen(
                 Text(selectedTimeText)
             }
             Spacer(modifier = Modifier.height(8.dp))
-            if (routeOptions.isNotEmpty()) {
-                ExposedDropdownMenuBox(expanded = routeExpanded, onExpandedChange = { routeExpanded = !routeExpanded }) {
-                    OutlinedTextField(
-                        value = routeOptions[selectedRouteId] ?: "",
-                        onValueChange = {},
-                        label = { Text(stringResource(R.string.route)) },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = routeExpanded) },
-                        modifier = Modifier.menuAnchor().fillMaxWidth(),
-                        readOnly = true
-                    )
+            ExposedDropdownMenuBox(
+                expanded = routeExpanded,
+                onExpandedChange = {
+                    if (routeOptions.isNotEmpty()) {
+                        routeExpanded = !routeExpanded
+                    }
+                }
+            ) {
+                OutlinedTextField(
+                    value = routeOptions[selectedRouteId] ?: "",
+                    onValueChange = {},
+                    label = { Text(stringResource(R.string.route)) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = routeExpanded) },
+                    modifier = Modifier.menuAnchor().fillMaxWidth(),
+                    readOnly = true,
+                    enabled = routeOptions.isNotEmpty()
+                )
+                if (routeOptions.isNotEmpty()) {
                     ExposedDropdownMenu(expanded = routeExpanded, onDismissRequest = { routeExpanded = false }) {
                         routeOptions.forEach { (id, name) ->
-                            DropdownMenuItem(text = { Text(name) }, onClick = {
-                                selectedRouteId = id
-                                routeExpanded = false
-                            })
+                            DropdownMenuItem(
+                                text = { Text(name) },
+                                onClick = {
+                                    selectedRouteId = id
+                                    routeExpanded = false
+                                }
+                            )
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(8.dp))
             }
+            if (routeOptions.isEmpty()) {
+                Text(
+                    text = stringResource(R.string.no_routes_available),
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
             Button(
                 onClick = { showResults = true },
                 enabled = selectedRouteId != null && selectedDateMillis != null && selectedTimeMillis != null
