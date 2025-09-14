@@ -62,7 +62,7 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.NotificationsScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.ReservationDetailsScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.RankTransportsScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.RankDriversScreen
-import com.ioannapergamali.mysmartroute.view.ui.screens.UserPointsScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.ReviewRouteScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.PassengerRoutesScreen
 import com.ioannapergamali.mysmartroute.R
 
@@ -406,8 +406,8 @@ fun NavigationHost(
             EditPrivilegesScreen(navController = navController, openDrawer = openDrawer)
         }
 
-        composable("userPoints") {
-            UserPointsScreen(navController = navController, openDrawer = openDrawer)
+        composable("reviewRoute") {
+            ReviewRouteScreen(navController = navController, openDrawer = openDrawer)
         }
 
         composable("advanceDate") {

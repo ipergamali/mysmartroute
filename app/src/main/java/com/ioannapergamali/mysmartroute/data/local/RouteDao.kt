@@ -26,4 +26,7 @@ interface RouteDao {
 
     @Query("UPDATE routes SET startPoiId = CASE WHEN startPoiId = :oldId THEN :newId ELSE startPoiId END, endPoiId = CASE WHEN endPoiId = :oldId THEN :newId ELSE endPoiId END")
     suspend fun updatePoiReferences(oldId: String, newId: String)
+
+    @Query("DELETE FROM routes WHERE id = :id")
+    suspend fun deleteById(id: String)
 }
