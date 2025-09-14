@@ -147,7 +147,9 @@ fun RouteModeScreen(
         }
     }
     suspend fun saveEditedRouteAsNewRoute(): String {
-        if (routePoiIds == originalPoiIds) return selectedRouteId ?: ""
+        val current = routePoiIds.toSet()
+        val original = originalPoiIds.toSet()
+        if (current == original) return selectedRouteId ?: ""
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return selectedRouteId ?: ""
         val username = FirebaseFirestore.getInstance()
             .collection("users")
