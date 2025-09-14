@@ -20,8 +20,8 @@ interface TransferRequestDao {
     @Query("UPDATE transfer_requests SET status = :status WHERE requestNumber = :requestNumber")
     suspend fun updateStatus(requestNumber: Int, status: RequestStatus)
 
-    @Query("UPDATE transfer_requests SET driverId = :driverId, status = :status WHERE requestNumber = :requestNumber")
-    suspend fun assignDriver(requestNumber: Int, driverId: String, status: RequestStatus)
+    @Query("UPDATE transfer_requests SET driverId = :driverId, driverName = :driverName, status = :status WHERE requestNumber = :requestNumber")
+    suspend fun assignDriver(requestNumber: Int, driverId: String, driverName: String, status: RequestStatus)
 
     @Query("UPDATE transfer_requests SET firebaseId = :firebaseId WHERE requestNumber = :requestNumber")
     suspend fun setFirebaseId(requestNumber: Int, firebaseId: String)

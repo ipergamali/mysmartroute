@@ -161,6 +161,7 @@
     <string name="cost">Κόστος</string>
     <string name="duration">Διάρκεια</string>
     <string name="date">Ημερομηνία</string>
+    <string name="status">Κατάσταση</string>
     <string name="time">Ώρα</string>
     <string name="ok">OK</string>
     <string name="cancel">Ακύρωση</string>

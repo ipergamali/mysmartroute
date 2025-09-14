@@ -70,9 +70,13 @@ class TransferRequestViewModel : ViewModel() {
     fun notifyDriver(context: Context, requestNumber: Int) {
         val driverId = auth.currentUser?.uid ?: return
         viewModelScope.launch(Dispatchers.IO) {
-            val dao = MySmartRouteDatabase.getInstance(context).transferRequestDao()
+            val dbInstance = MySmartRouteDatabase.getInstance(context)
+            val dao = dbInstance.transferRequestDao()
+            val userDao = dbInstance.userDao()
             val request = dao.getRequestByNumber(requestNumber) ?: return@launch
-            dao.assignDriver(requestNumber, driverId, RequestStatus.PENDING)
+            val driver = userDao.getUser(driverId)
+            val driverName = driver?.let { "${it.name} ${it.surname}" } ?: ""
+            dao.assignDriver(requestNumber, driverId, driverName, RequestStatus.PENDING)
             try {
                 if (request.firebaseId.isNotBlank()) {
                     db.collection("transfer_requests")
@@ -80,6 +84,7 @@ class TransferRequestViewModel : ViewModel() {
                         .update(
                             mapOf(
                                 "driverId" to driverId,
+                                "driverName" to driverName,
                                 "status" to RequestStatus.PENDING.name
                             )
                         )

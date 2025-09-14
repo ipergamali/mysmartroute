@@ -606,6 +606,9 @@ fun TransferRequestEntity.toFirestoreMap(): Map<String, Any> {
 
     if (driverId.isNotBlank()) {
         map["driverId"] = db.collection("users").document(driverId)
+        if (driverName.isNotBlank()) {
+            map["driverName"] = driverName
+        }
     }
 
     return map
@@ -629,10 +632,11 @@ fun DocumentSnapshot.toTransferRequestEntity(): TransferRequestEntity? {
         is String -> d
         else -> getString("driverId")
     } ?: ""
+    val driverName = getString("driverName") ?: ""
     val dateVal = getLong("date") ?: 0L
     val costVal = getDouble("cost")
     val statusStr = getString("status") ?: RequestStatus.OPEN.name
-    return TransferRequestEntity(number, routeId, passengerId, driverId, id, dateVal, costVal, enumValueOf(statusStr))
+    return TransferRequestEntity(number, routeId, passengerId, driverId, driverName, id, dateVal, costVal, enumValueOf(statusStr))
 }
 
 fun NotificationEntity.toFirestoreMap(): Map<String, Any> = mapOf(

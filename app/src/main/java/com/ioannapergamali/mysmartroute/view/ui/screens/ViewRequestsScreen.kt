@@ -39,6 +39,8 @@ import com.ioannapergamali.mysmartroute.viewmodel.UserViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.TransferRequestViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.AppDateTimeViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.RequestStatus
+import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
+import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import android.text.format.DateFormat
 import java.util.Date
 
@@ -57,8 +59,10 @@ fun ViewRequestsScreen(
     val userViewModel: UserViewModel = viewModel()
     val transferViewModel: TransferRequestViewModel = viewModel()
     val dateViewModel: AppDateTimeViewModel = viewModel()
+    val authViewModel: AuthenticationViewModel = viewModel()
     val requests by viewModel.requests.collectAsState()
     val pois by poiViewModel.pois.collectAsState()
+    val role by authViewModel.currentUserRole.collectAsState()
     val driverNames = remember { mutableStateMapOf<String, String>() }
     val scrollState = rememberScrollState()
     val listState = rememberLazyListState()
@@ -69,15 +73,20 @@ fun ViewRequestsScreen(
         SortOption.DATE -> requests.sortedBy { it.date }
     }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(role) {
         poiViewModel.loadPois(context)
-        viewModel.loadRequests(context)
+        val isAdmin = role == UserRole.ADMIN
+        viewModel.loadRequests(context, allUsers = isAdmin)
     }
 
     LaunchedEffect(requests) {
         requests.forEach { req ->
             if (req.driverId.isNotBlank() && driverNames[req.driverId] == null) {
-                driverNames[req.driverId] = userViewModel.getUserName(context, req.driverId)
+                driverNames[req.driverId] = if (req.driverName.isNotBlank()) {
+                    req.driverName
+                } else {
+                    userViewModel.getUserName(context, req.driverId)
+                }
             }
         }
     }
@@ -146,6 +155,14 @@ fun ViewRequestsScreen(
                                     stringResource(R.string.date),
                                     modifier = Modifier.width(columnWidth)
                                 )
+                                Text(
+                                    stringResource(R.string.driver),
+                                    modifier = Modifier.width(columnWidth)
+                                )
+                                Text(
+                                    stringResource(R.string.status),
+                                    modifier = Modifier.width(columnWidth)
+                                )
                             }
                             Divider()
                         }
@@ -163,6 +180,7 @@ fun ViewRequestsScreen(
                             val costText = req.cost?.toString() ?: "-"
                             val isExpired = req.date > 0L && now > req.date && req.status != "completed"
                             val statusText = if (isExpired) stringResource(R.string.request_unsuccessful) else req.status
+                            val driverName = req.driverName.ifBlank { driverNames[req.driverId] ?: "" }
                             Row(
                                 modifier = Modifier.padding(vertical = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically,
@@ -171,9 +189,8 @@ fun ViewRequestsScreen(
                                 Text(routeName, modifier = Modifier.width(columnWidth))
                                 Text(costText, modifier = Modifier.width(columnWidth))
                                 Text(dateTimeText, modifier = Modifier.width(columnWidth))
+                                Text(driverName, modifier = Modifier.width(columnWidth))
                                 if (req.status == "pending" && req.driverId.isNotBlank() && !isExpired) {
-                                    val dName = driverNames[req.driverId] ?: ""
-                                    Text(dName, modifier = Modifier.width(columnWidth))
                                     Button(onClick = {
                                         viewModel.respondToOffer(context, req.id, true)
                                         transferViewModel.updateStatus(
