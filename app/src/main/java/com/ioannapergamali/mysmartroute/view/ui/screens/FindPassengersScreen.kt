@@ -188,7 +188,7 @@ fun FindPassengersScreen(
                         ids.forEach { id ->
                             val req = filteredRequests.find { it.id == id }
                             if (req != null) {
-                                requestViewModel.notifyPassenger(context, id)
+                                requestViewModel.notifyRoute(context, id)
                                 transferViewModel.notifyDriver(context, req.requestNumber)
                             }
                         }
@@ -196,7 +196,7 @@ fun FindPassengersScreen(
                     },
                     enabled = hasSelection
                 ) {
-                    Text(stringResource(R.string.notify_selected))
+                    Text(stringResource(R.string.notify_route))
                 }
             }
         }

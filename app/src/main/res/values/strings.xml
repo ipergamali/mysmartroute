@@ -255,8 +255,7 @@
     <string name="sort_by_date">Sort by date</string>
     <string name="cancel_request">Cancel request</string>
     <string name="request_number">Request number</string>
-    <string name="notify_passenger">Notify passenger</string>
-    <string name="notify_selected">Notify selected</string>
+    <string name="notify_route">Notify route</string>
     <string name="request_expired">Request expired</string>
     <string name="request_unsuccessful">Ανεπιτυχής</string>
     <string name="accept_offer">Accept</string>
