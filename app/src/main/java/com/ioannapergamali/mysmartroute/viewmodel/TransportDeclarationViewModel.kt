@@ -106,7 +106,6 @@ class TransportDeclarationViewModel : ViewModel() {
         routeId: String,
         driverId: String,
         seats: Int,
-        cost: Double,
         durationMinutes: Int,
         date: Long,
         startTime: Long = 0L,
@@ -116,7 +115,8 @@ class TransportDeclarationViewModel : ViewModel() {
         val declDao = db.transportDeclarationDao()
         val detailDao = db.transportDeclarationDetailDao()
         val id = UUID.randomUUID().toString()
-        val entity = TransportDeclarationEntity(id, routeId, driverId, cost, durationMinutes, date, startTime)
+        val totalCost = details.sumOf { it.cost }
+        val entity = TransportDeclarationEntity(id, routeId, driverId, totalCost, durationMinutes, date, startTime)
         entity.seats = seats
         if (details.isNotEmpty()) {
             entity.vehicleId = details.first().vehicleId
