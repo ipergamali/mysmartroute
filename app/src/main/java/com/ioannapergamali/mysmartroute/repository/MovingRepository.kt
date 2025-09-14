@@ -16,4 +16,8 @@ class MovingRepository @Inject constructor(
 ) {
     /** Επιστρέφει όλες τις μετακινήσεις ως ροή. */
     fun getMovings(): Flow<List<MovingEntity>> = dao.getAll()
+
+    /** Επιστρέφει τις εκκρεμείς μετακινήσεις με βάση την τρέχουσα στιγμή. */
+    suspend fun getPendingMovings(now: Long = System.currentTimeMillis()): List<MovingEntity> =
+        dao.getPendingMovings(now)
 }
