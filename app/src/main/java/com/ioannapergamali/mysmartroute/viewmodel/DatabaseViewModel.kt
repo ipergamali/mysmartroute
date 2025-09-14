@@ -56,6 +56,8 @@ import com.ioannapergamali.mysmartroute.utils.toNotificationEntity
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import com.ioannapergamali.mysmartroute.data.local.MovingDetailEntity
 import com.ioannapergamali.mysmartroute.utils.toMovingDetailEntity
+import com.ioannapergamali.mysmartroute.data.local.WalkingEntity
+import com.ioannapergamali.mysmartroute.data.local.AppDateTimeEntity
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -136,7 +138,13 @@ class DatabaseViewModel : ViewModel() {
                 db.seatReservationDao().getAll(),
                 db.transferRequestDao().getAll(),
                 db.tripRatingDao().getAll(),
-                db.notificationDao().getAll()
+                db.notificationDao().getAll(),
+                db.routeBusStationDao().getAll(),
+                db.movingDetailDao().getAll(),
+                db.transportDeclarationDetailDao().getAll(),
+                db.seatReservationDetailDao().getAll(),
+                db.walkingDao().getAll(),
+                db.appDateTimeDao().getAll()
             ) { values ->
                 val users = values[0] as List<UserEntity>
                 val vehicles = values[1] as List<VehicleEntity>
@@ -159,6 +167,12 @@ class DatabaseViewModel : ViewModel() {
                 val transferRequests = values[18] as List<TransferRequestEntity>
                 val tripRatings = values[19] as List<TripRatingEntity>
                 val notifications = values[20] as List<NotificationEntity>
+                val routeBusStations = values[21] as List<RouteBusStationEntity>
+                val movingDetails = values[22] as List<MovingDetailEntity>
+                val declDetails = values[23] as List<TransportDeclarationDetailEntity>
+                val seatResDetails = values[24] as List<SeatReservationDetailEntity>
+                val walking = values[25] as List<WalkingEntity>
+                val appDateTimes = values[26] as List<AppDateTimeEntity>
 
                 DatabaseData(
                     users,
@@ -181,7 +195,13 @@ class DatabaseViewModel : ViewModel() {
                     seatReservations,
                     transferRequests,
                     tripRatings,
-                    notifications
+                    notifications,
+                    routeBusStations,
+                    movingDetails,
+                    declDetails,
+                    seatResDetails,
+                    walking,
+                    appDateTimes
                 )
             }.collect { data ->
                 Log.d(
@@ -192,7 +212,10 @@ class DatabaseViewModel : ViewModel() {
                     "points:${data.routePoints.size} movings:${data.movings.size} declarations:${data.declarations.size}" +
                     " availabilities:${data.availabilities.size} favorites:${data.favorites.size} favRoutes:${data.favoriteRoutes.size} " +
                     "userPois:${data.userPois.size} seatRes:${data.seatReservations.size} transferReq:${data.transferRequests.size} " +
-                    "tripRatings:${data.tripRatings.size} notifications:${data.notifications.size}"
+                    "tripRatings:${data.tripRatings.size} notifications:${data.notifications.size} " +
+                    "busStations:${data.routeBusStations.size} movingDetails:${data.movingDetails.size} " +
+                    "declDetails:${data.transportDeclarationDetails.size} seatResDetails:${data.seatReservationDetails.size} " +
+                    "walking:${data.walking.size} appDate:${data.appDateTimes.size}"
                 )
                 _localData.value = data
             }
@@ -293,19 +316,30 @@ class DatabaseViewModel : ViewModel() {
             val routePoints = routeTriples.flatMap { it.second }
             val busStations = routeTriples.flatMap { it.third }
 
-            val movings = firestore.collection("movings").get().await()
-                .documents.mapNotNull { it.toMovingEntity() }
+            val movingSnap = firestore.collection("movings").get().await()
+            val movingDetails = mutableListOf<MovingDetailEntity>()
+            val movings = movingSnap.documents.mapNotNull { doc ->
+                val moving = doc.toMovingEntity()
+                if (moving != null) {
+                    val dets = doc.reference.collection("details").get().await()
+                    movingDetails += dets.documents.mapNotNull { it.toMovingDetailEntity(moving.id) }
+                }
+                moving
+            }
 
             val declSnap = firestore.collection("transport_declarations").get().await()
             val declarations = mutableListOf<TransportDeclarationEntity>()
+            val declDetails = mutableListOf<TransportDeclarationDetailEntity>()
             for (doc in declSnap.documents) {
                 val decl = doc.toTransportDeclarationEntity() ?: continue
-                val detailDoc = doc.reference.collection("details").get().await()
-                    .documents.firstOrNull()?.toTransportDeclarationDetailEntity(decl.id)
-                if (detailDoc != null) {
-                    decl.vehicleId = detailDoc.vehicleId
-                    decl.vehicleType = detailDoc.vehicleType
-                    decl.seats = detailDoc.seats
+                val details = doc.reference.collection("details").get().await()
+                    .documents.mapNotNull { it.toTransportDeclarationDetailEntity(decl.id) }
+                if (details.isNotEmpty()) {
+                    val first = details.first()
+                    decl.vehicleId = first.vehicleId
+                    decl.vehicleType = first.vehicleType
+                    decl.seats = first.seats
+                    declDetails.addAll(details)
                 }
                 declarations += decl
             }
@@ -317,8 +351,32 @@ class DatabaseViewModel : ViewModel() {
                 .get()
                 .await()
                 .documents.mapNotNull { it.toFavoriteEntity() }
-            val seatReservations = firestore.collection("seat_reservations").get().await()
-                .documents.mapNotNull { it.toSeatReservationEntity() }
+
+            val seatResSnap = firestore.collection("seat_reservations").get().await()
+            val seatResDetails = mutableListOf<SeatReservationDetailEntity>()
+            val seatReservations = seatResSnap.documents.mapNotNull { doc ->
+                val res = doc.toSeatReservationEntity()
+                if (res != null) {
+                    val dets = doc.reference.collection("details").get().await()
+                    seatResDetails += dets.documents.mapNotNull { it.toSeatReservationDetailEntity(res.id) }
+                }
+                res
+            }
+
+            val walking = firestore.collection("walking").get().await()
+                .documents.mapNotNull { doc ->
+                    val id = doc.getString("id") ?: doc.id
+                    val userId = doc.getString("userId") ?: return@mapNotNull null
+                    val routeId = doc.getString("routeId") ?: ""
+                    val startTime = doc.getLong("startTime") ?: 0L
+                    WalkingEntity(id, userId, routeId, startTime)
+                }
+
+            val appDateTimes = firestore.collection("app_datetime").get().await()
+                .documents.mapNotNull { doc ->
+                    val ts = doc.getLong("timestamp") ?: return@mapNotNull null
+                    AppDateTimeEntity(id = doc.id.toIntOrNull() ?: 1, timestamp = ts)
+                }
 
             val transferRequests = firestore.collection("transfer_requests").get().await()
                 .documents.mapNotNull { it.toTransferRequestEntity() }
@@ -333,7 +391,7 @@ class DatabaseViewModel : ViewModel() {
 
             Log.d(
                 TAG,
-                "Firebase data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} types:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size} routes:${routes.size} movings:${movings.size} declarations:${declarations.size} availabilities:${availabilities.size} favorites:${favorites.size} seatRes:${seatReservations.size} transferReq:${transferRequests.size} tripRatings:${tripRatings.size}"
+                "Firebase data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} types:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size} routes:${routes.size} movings:${movings.size} movingDetails:${movingDetails.size} declarations:${declarations.size} declDetails:${declDetails.size} busStations:${busStations.size} availabilities:${availabilities.size} favorites:${favorites.size} seatRes:${seatReservations.size} seatResDetails:${seatResDetails.size} transferReq:${transferRequests.size} tripRatings:${tripRatings.size} walking:${walking.size} appDate:${appDateTimes.size}"
             )
             _firebaseData.value = DatabaseData(
                 users,
@@ -356,7 +414,13 @@ class DatabaseViewModel : ViewModel() {
                 seatReservations,
                 transferRequests,
                 tripRatings,
-                notifications
+                notifications,
+                busStations,
+                movingDetails,
+                declDetails,
+                seatResDetails,
+                walking,
+                appDateTimes
             )
             } catch (e: FirebaseFirestoreException) {
                 Log.e(TAG, "Firestore permission error", e)
@@ -784,7 +848,13 @@ data class DatabaseData(
     val seatReservations: List<SeatReservationEntity>,
     val transferRequests: List<TransferRequestEntity>,
     val tripRatings: List<TripRatingEntity>,
-    val notifications: List<NotificationEntity>
+    val notifications: List<NotificationEntity>,
+    val routeBusStations: List<RouteBusStationEntity>,
+    val movingDetails: List<MovingDetailEntity>,
+    val transportDeclarationDetails: List<TransportDeclarationDetailEntity>,
+    val seatReservationDetails: List<SeatReservationDetailEntity>,
+    val walking: List<WalkingEntity>,
+    val appDateTimes: List<AppDateTimeEntity>
 )
 
 sealed class SyncState {

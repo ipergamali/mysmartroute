@@ -17,6 +17,9 @@ interface SeatReservationDetailDao {
     @Query("SELECT * FROM seat_reservation_details WHERE reservationId = :reservationId")
     fun getForReservation(reservationId: String): Flow<List<SeatReservationDetailEntity>>
 
+    @Query("SELECT * FROM seat_reservation_details")
+    fun getAll(): Flow<List<SeatReservationDetailEntity>>
+
     @Query("DELETE FROM seat_reservation_details WHERE reservationId = :reservationId")
     suspend fun deleteForReservation(reservationId: String)
 }

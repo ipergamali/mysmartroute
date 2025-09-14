@@ -159,6 +159,36 @@ fun FirebaseDatabaseScreen(navController: NavController, openDrawer: () -> Unit)
                     Text("${n.userId} -> ${n.message}")
                 }
                 item { Spacer(modifier = Modifier.padding(8.dp)) }
+                item { Text("Route Bus Stations", style = MaterialTheme.typography.titleMedium) }
+                items(data!!.routeBusStations) { s ->
+                    Text("${s.routeId} (${s.position}) -> ${s.poiId}")
+                }
+                item { Spacer(modifier = Modifier.padding(8.dp)) }
+                item { Text("Moving Details", style = MaterialTheme.typography.titleMedium) }
+                items(data!!.movingDetails) { d ->
+                    Text("${d.movingId}: ${d.startPoiId}->${d.endPoiId} vehicle:${d.vehicleId}")
+                }
+                item { Spacer(modifier = Modifier.padding(8.dp)) }
+                item { Text("Declaration Details", style = MaterialTheme.typography.titleMedium) }
+                items(data!!.transportDeclarationDetails) { d ->
+                    Text("${d.declarationId}: ${d.startPoiId}->${d.endPoiId} vehicle:${d.vehicleId}")
+                }
+                item { Spacer(modifier = Modifier.padding(8.dp)) }
+                item { Text("Seat Reservation Details", style = MaterialTheme.typography.titleMedium) }
+                items(data!!.seatReservationDetails) { d ->
+                    Text("${d.reservationId}: ${d.startPoiId}->${d.endPoiId}")
+                }
+                item { Spacer(modifier = Modifier.padding(8.dp)) }
+                item { Text("Walking", style = MaterialTheme.typography.titleMedium) }
+                items(data!!.walking) { w ->
+                    Text("${w.id} user:${w.userId} route:${w.routeId}")
+                }
+                item { Spacer(modifier = Modifier.padding(8.dp)) }
+                item { Text("App DateTime", style = MaterialTheme.typography.titleMedium) }
+                items(data!!.appDateTimes) { dt ->
+                    Text("${dt.id} -> ${dt.timestamp}")
+                }
+                item { Spacer(modifier = Modifier.padding(8.dp)) }
                 item { Text("Authentication table δεν είναι διαθέσιμη από το client", color = MaterialTheme.colorScheme.error) }
                 }
             }
