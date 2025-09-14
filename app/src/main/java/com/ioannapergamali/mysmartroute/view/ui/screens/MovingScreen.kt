@@ -13,8 +13,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ioannapergamali.mysmartroute.viewmodel.MovingViewModel
-import com.ioannapergamali.mysmartroute.data.local.MovingStatus
-import com.ioannapergamali.mysmartroute.data.local.categorizeMovings
 import com.ioannapergamali.mysmartroute.viewmodel.AppDateTimeViewModel
 import java.time.Instant
 import java.time.ZoneId
@@ -23,7 +21,7 @@ import java.time.format.DateTimeFormatter
 private const val TAG = "MovingScreen"
 
 /**
- * Οθόνη που εμφανίζει τις μετακινήσεις ομαδοποιημένες ανά κατάσταση.
+ * Οθόνη που εμφανίζει μόνο τις εκκρεμείς μετακινήσεις.
  */
 @Composable
 fun MovingScreen(viewModel: MovingViewModel = hiltViewModel()) {
@@ -33,46 +31,28 @@ fun MovingScreen(viewModel: MovingViewModel = hiltViewModel()) {
     val storedMillis by dateViewModel.dateTime.collectAsState()
 
     LaunchedEffect(Unit) { dateViewModel.load(context) }
+    LaunchedEffect(storedMillis) {
+        viewModel.load(storedMillis ?: System.currentTimeMillis())
+    }
 
-    val now = storedMillis ?: System.currentTimeMillis()
-    Log.d(TAG, "Σύνολο μετακινήσεων: ${movings.size}")
-
-    val grouped = categorizeMovings(movings, now)
+    Log.d(TAG, "Εκκρεμείς μετακινήσεις: ${movings.size}")
 
     LazyColumn {
-        listOf(
-            MovingStatus.PENDING,
-            MovingStatus.UNSUCCESSFUL,
-            MovingStatus.COMPLETED
-        ).forEach { status ->
-            val list = grouped[status].orEmpty()
-
-            Log.d(TAG, "Κατηγορία $status περιέχει ${list.size} εγγραφές")
-
-            item {
-                Text(
-                    text = titleFor(status),
-                    style = MaterialTheme.typography.titleMedium
-                )
-            }
-            if (list.isEmpty()) {
-                item { Text("Δεν βρέθηκαν μετακινήσεις") }
-            } else {
-                items(list) { moving ->
-
-                    Log.d(TAG, "Εμφάνιση μετακίνησης ${moving.id} με ημερομηνία ${formatDate(moving.date)}")
-                    Text("Μετακίνηση ${moving.id} – ${formatDate(moving.date)}")
-
-                }
+        item {
+            Text(
+                text = "Εκκρεμείς μετακινήσεις",
+                style = MaterialTheme.typography.titleMedium
+            )
+        }
+        if (movings.isEmpty()) {
+            item { Text("Δεν βρέθηκαν μετακινήσεις") }
+        } else {
+            items(movings) { moving ->
+                Log.d(TAG, "Εμφάνιση μετακίνησης ${moving.id} με ημερομηνία ${formatDate(moving.date)}")
+                Text("Μετακίνηση ${moving.id} – ${formatDate(moving.date)}")
             }
         }
     }
-}
-
-private fun titleFor(status: MovingStatus) = when (status) {
-    MovingStatus.PENDING -> "Εκκρεμείς μετακινήσεις"
-    MovingStatus.UNSUCCESSFUL -> "Ανεπιτυχείς μετακινήσεις"
-    MovingStatus.COMPLETED -> "Ολοκληρωμένες μετακινήσεις"
 }
 
 private fun formatDate(epochMillis: Long): String =

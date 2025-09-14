@@ -6,23 +6,24 @@ import com.ioannapergamali.mysmartroute.data.local.MovingEntity
 import com.ioannapergamali.mysmartroute.repository.MovingRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 /**
  * ViewModel που εκθέτει τις μετακινήσεις ως StateFlow.
  */
 @HiltViewModel
 class MovingViewModel @Inject constructor(
-    repo: MovingRepository
+    private val repo: MovingRepository
 ) : ViewModel() {
 
-    val state: StateFlow<List<MovingEntity>> =
-        repo.getMovings()
-            .stateIn(
-                viewModelScope,
-                SharingStarted.WhileSubscribed(5_000),
-                emptyList()
-            )
+    private val _state = MutableStateFlow<List<MovingEntity>>(emptyList())
+    val state: StateFlow<List<MovingEntity>> = _state
+
+    fun load(now: Long = System.currentTimeMillis()) {
+        viewModelScope.launch {
+            _state.value = repo.getPendingMovings(now)
+        }
+    }
 }
