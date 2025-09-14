@@ -5,9 +5,10 @@ package com.ioannapergamali.mysmartroute.model.enumerations
  * English: Possible states of a transport request.
  */
 enum class RequestStatus {
+    OPEN,
+    PENDING,
     ACCEPTED,
     REJECTED,
     CANCELED,
-    PENDING,
     COMPLETED
 }

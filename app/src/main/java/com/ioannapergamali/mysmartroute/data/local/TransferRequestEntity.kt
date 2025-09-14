@@ -19,5 +19,5 @@ data class TransferRequestEntity(
     val date: Long = 0L,
     val cost: Double? = null,
     /** Κατάσταση αιτήματος */
-    val status: RequestStatus = RequestStatus.PENDING
+    val status: RequestStatus = RequestStatus.OPEN
 )

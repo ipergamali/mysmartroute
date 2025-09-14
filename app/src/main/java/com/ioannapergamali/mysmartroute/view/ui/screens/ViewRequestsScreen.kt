@@ -171,7 +171,7 @@ fun ViewRequestsScreen(
                                 Text(routeName, modifier = Modifier.width(columnWidth))
                                 Text(costText, modifier = Modifier.width(columnWidth))
                                 Text(dateTimeText, modifier = Modifier.width(columnWidth))
-                                if (req.status == "pending" && !isExpired) {
+                                if (req.status == "pending" && req.driverId.isNotBlank() && !isExpired) {
                                     val dName = driverNames[req.driverId] ?: ""
                                     Text(dName, modifier = Modifier.width(columnWidth))
                                     Button(onClick = {
