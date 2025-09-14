@@ -47,6 +47,7 @@ fun ViewRoutesScreen(navController: NavController, openDrawer: () -> Unit) {
     var pois by remember { mutableStateOf<List<PoIEntity>>(emptyList()) }
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     var expanded by remember { mutableStateOf(false) }
+    var newRouteName by remember { mutableStateOf("") }
 
     val cameraPositionState = rememberCameraPositionState()
     val apiKey = MapsUtils.getApiKey(context)
@@ -118,6 +119,7 @@ fun ViewRoutesScreen(navController: NavController, openDrawer: () -> Unit) {
                                     )
                                     pathPoints = path
                                     pois = routeViewModel.getRoutePois(context, route.id)
+                                    newRouteName = route.name
                                     path.firstOrNull()?.let {
                                         cameraPositionState.move(
                                             CameraUpdateFactory.newLatLngZoom(it, 13f)
@@ -176,6 +178,40 @@ fun ViewRoutesScreen(navController: NavController, openDrawer: () -> Unit) {
                             Text(poi.type.name, modifier = Modifier.weight(1f))
                         }
                     }
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            if (selectedRoute != null && pois.isNotEmpty()) {
+                OutlinedTextField(
+                    value = newRouteName,
+                    onValueChange = { newRouteName = it },
+                    label = { Text(stringResource(R.string.new_route_name)) },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(Modifier.height(8.dp))
+                Button(
+                    onClick = {
+                        scope.launch {
+                            val ids = pois.map { it.id }
+                            val result = routeViewModel.addRoute(context, ids, newRouteName)
+                            val msg = if (result != null) {
+                                routeViewModel.loadRoutes(context, includeAll = true)
+                                R.string.route_saved
+                            } else {
+                                R.string.route_save_failed
+                            }
+                            Toast.makeText(
+                                context,
+                                context.getString(msg),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    },
+                    enabled = newRouteName.isNotBlank()
+                ) {
+                    Text(stringResource(R.string.save_as_new_route))
                 }
             }
         }

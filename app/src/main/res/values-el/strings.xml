@@ -291,5 +291,7 @@
     <string name="declare_failure">Αποτυχία αποστολής δήλωσης</string>
     <string name="rating_saved_success">Η βαθμολογία αποθηκεύτηκε</string>
     <string name="rating_save_failed">Αποτυχία αποθήκευσης βαθμολογίας</string>
+    <string name="new_route_name">Νέο όνομα διαδρομής</string>
+    <string name="save_as_new_route">Αποθήκευση ως νέα διαδρομή</string>
 
 </resources>

@@ -317,6 +317,8 @@
     <string name="declare_failure">Failed to declare transport</string>
     <string name="rating_saved_success">Rating saved</string>
     <string name="rating_save_failed">Unable to save rating</string>
+    <string name="new_route_name">New route name</string>
+    <string name="save_as_new_route">Save as new route</string>
     <string name="no_duplicate_pois">No duplicate points found</string>
     <string name="coordinates_label">Coordinates</string>
     <string name="lat">Latitude</string>
