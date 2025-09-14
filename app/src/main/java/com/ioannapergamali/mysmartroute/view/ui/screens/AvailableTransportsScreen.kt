@@ -295,7 +295,13 @@ fun AvailableTransportsScreen(
                                         onClick = {
                                             scope.launch {
                                                 val segments = selectedForDecl.map { (_, detail) ->
-                                                    ReservationSegment(detail.startPoiId, detail.endPoiId, detail.vehicleId)
+                                                    ReservationSegment(
+                                                        detail.startPoiId,
+                                                        detail.endPoiId,
+                                                        detail.vehicleId,
+                                                        detail.cost,
+                                                        detail.startTime
+                                                    )
                                                 }
                                                 val result = bookingViewModel.reserveSeat(
                                                     context = context,
