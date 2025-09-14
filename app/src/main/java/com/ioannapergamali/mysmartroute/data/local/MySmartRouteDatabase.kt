@@ -79,8 +79,8 @@ import com.ioannapergamali.mysmartroute.data.local.AppDateTimeDao
         AppDateTimeEntity::class
     ],
 
-    version = 74
-
+    version = 74,
+    exportSchema = false,
 )
 @TypeConverters(Converters::class)
 abstract class MySmartRouteDatabase : RoomDatabase() {
