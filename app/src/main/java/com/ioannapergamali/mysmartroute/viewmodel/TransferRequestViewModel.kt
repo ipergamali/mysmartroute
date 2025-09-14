@@ -34,7 +34,7 @@ class TransferRequestViewModel : ViewModel() {
         context: Context,
         routeId: String,
         date: Long,
-        cost: Double?,
+            cost: Double?,
     ) {
         val passengerId = auth.currentUser?.uid ?: return
         val entity = TransferRequestEntity(
@@ -43,7 +43,7 @@ class TransferRequestViewModel : ViewModel() {
             driverId = "",
             date = date,
             cost = cost,
-            status = RequestStatus.PENDING
+            status = RequestStatus.OPEN
         )
         viewModelScope.launch(Dispatchers.IO) {
             val dao = MySmartRouteDatabase.getInstance(context).transferRequestDao()

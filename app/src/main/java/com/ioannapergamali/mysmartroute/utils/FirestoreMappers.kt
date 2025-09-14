@@ -631,7 +631,7 @@ fun DocumentSnapshot.toTransferRequestEntity(): TransferRequestEntity? {
     } ?: ""
     val dateVal = getLong("date") ?: 0L
     val costVal = getDouble("cost")
-    val statusStr = getString("status") ?: RequestStatus.PENDING.name
+    val statusStr = getString("status") ?: RequestStatus.OPEN.name
     return TransferRequestEntity(number, routeId, passengerId, driverId, id, dateVal, costVal, enumValueOf(statusStr))
 }
 
