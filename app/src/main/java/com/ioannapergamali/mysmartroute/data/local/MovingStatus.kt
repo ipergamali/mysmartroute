@@ -7,13 +7,11 @@ import android.util.Log
 /**
  * Περιγράφει την κατάσταση μιας μετακίνησης όπως εμφανίζεται στην εφαρμογή.
  *
- * - [ACTIVE]    Μετακινήσεις "accepted" με μελλοντική ημερομηνία.
- * - [PENDING]   Μετακινήσεις "open" που ακόμη δεν έχει παρέλθει η προγραμματισμένη ώρα.
- * - [UNSUCCESSFUL] Μετακινήσεις "open" ή "accepted" των οποίων έχει λήξει ο χρόνος χωρίς να γίνουν αποδεκτές/ολοκληρωθούν.
+ * - [PENDING]   Μετακινήσεις "open" ή "pending" πριν την προγραμματισμένη ώρα.
+ * - [UNSUCCESSFUL] Μετακινήσεις "open" ή "pending" μετά την προγραμματισμένη ώρα.
  * - [COMPLETED] Μετακινήσεις με status "completed", δηλαδή όταν ο οδηγός έχει πατήσει ολοκλήρωση.
  */
 enum class MovingStatus {
-    ACTIVE,
     PENDING,
     UNSUCCESSFUL,
     COMPLETED
@@ -28,12 +26,6 @@ private const val TAG = "MovingStatus"
 fun MovingEntity.movingStatus(now: Long = System.currentTimeMillis()): MovingStatus {
     val result = when (status.lowercase()) {
         "completed" -> MovingStatus.COMPLETED
-        // Οι "accepted" μετακινήσεις θεωρούνται ενεργές μόνο εφόσον δεν έχει παρέλθει η ημερομηνία.
-        "accepted" -> if (date > now) {
-            MovingStatus.ACTIVE
-        } else {
-            MovingStatus.UNSUCCESSFUL
-        }
         // Τα statuses "open" και "pending" αντιμετωπίζονται το ίδιο:
         // αν η ημερομηνία είναι μελλοντική θεωρούνται εκκρεμείς, αλλιώς ανεπιτυχείς.
         "open", "pending" -> if (date > now) {
@@ -56,9 +48,7 @@ fun categorizeMovings(
     movings: List<MovingEntity>,
     now: Long = System.currentTimeMillis()
 ): Map<MovingStatus, List<MovingEntity>> {
-    val grouped = movings
-        .groupBy { it.movingStatus(now) }
-        .filterKeys { it != MovingStatus.ACTIVE }
+    val grouped = movings.groupBy { it.movingStatus(now) }
     grouped.forEach { (status, list) ->
 
         Log.d(TAG, "Ομαδοποίηση $status -> ${list.size} εγγραφές")

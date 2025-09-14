@@ -31,6 +31,7 @@ import com.ioannapergamali.mysmartroute.data.local.MovingStatus
 import com.ioannapergamali.mysmartroute.data.local.categorizeMovings
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
+import com.ioannapergamali.mysmartroute.viewmodel.AppDateTimeViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
@@ -48,6 +49,10 @@ fun PassengerMovingsScreen(navController: NavController, openDrawer: () -> Unit)
     val role by authViewModel.currentUserRole.collectAsState()
     val movings by viewModel.movings.collectAsState()
     val context = LocalContext.current
+    val dateViewModel: AppDateTimeViewModel = viewModel()
+    val storedMillis by dateViewModel.dateTime.collectAsState()
+
+    LaunchedEffect(Unit) { dateViewModel.load(context) }
 
     LaunchedEffect(role) {
         val isAdmin = role == UserRole.ADMIN
@@ -55,8 +60,9 @@ fun PassengerMovingsScreen(navController: NavController, openDrawer: () -> Unit)
     }
 
 
+    val now = storedMillis ?: System.currentTimeMillis()
     Log.d(TAG, "Φόρτωση ${movings.size} μετακινήσεων επιβάτη")
-    val grouped = categorizeMovings(movings).also { map ->
+    val grouped = categorizeMovings(movings, now).also { map ->
         map.forEach { (status, list) ->
             Log.d(TAG, "Κατηγορία $status έχει ${list.size} εγγραφές")
 
