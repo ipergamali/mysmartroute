@@ -525,7 +525,9 @@ fun DocumentSnapshot.toSeatReservationEntity(): SeatReservationEntity? {
 fun SeatReservationDetailEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     "id" to id,
     "startPoiId" to FirebaseFirestore.getInstance().collection("pois").document(startPoiId),
-    "endPoiId" to FirebaseFirestore.getInstance().collection("pois").document(endPoiId)
+    "endPoiId" to FirebaseFirestore.getInstance().collection("pois").document(endPoiId),
+    "cost" to cost,
+    "startTime" to startTime
 )
 
 fun DocumentSnapshot.toSeatReservationDetailEntity(reservationId: String): SeatReservationDetailEntity? {
@@ -540,7 +542,9 @@ fun DocumentSnapshot.toSeatReservationDetailEntity(reservationId: String): SeatR
         is String -> e
         else -> return null
     }
-    return SeatReservationDetailEntity(detId, reservationId, start, end)
+    val costVal = getDouble("cost") ?: 0.0
+    val timeVal = getLong("startTime") ?: 0L
+    return SeatReservationDetailEntity(detId, reservationId, start, end, costVal, timeVal)
 }
 
 fun MovingDetailEntity.toFirestoreMap(): Map<String, Any> = mapOf(

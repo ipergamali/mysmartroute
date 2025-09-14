@@ -301,7 +301,13 @@ fun AvailableTransportsScreen(
                               grouped.values.forEach { list ->
                                   val decl = list.first().first
                                   val segments = list.map { (_, detail) ->
-                                      ReservationSegment(detail.startPoiId, detail.endPoiId, detail.vehicleId)
+                                      ReservationSegment(
+                                          detail.startPoiId,
+                                          detail.endPoiId,
+                                          detail.vehicleId,
+                                          detail.cost,
+                                          detail.startTime
+                                      )
                                   }
                                   val result = bookingViewModel.reserveSeat(
                                       context = context,
