@@ -76,7 +76,7 @@ import com.ioannapergamali.mysmartroute.data.local.TripRatingDao
         UserPoiEntity::class
     ],
 
-    version = 70
+    version = 71
 
 )
 @TypeConverters(Converters::class)
