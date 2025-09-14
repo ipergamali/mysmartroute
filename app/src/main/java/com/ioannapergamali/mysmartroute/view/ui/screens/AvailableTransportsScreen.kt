@@ -27,7 +27,6 @@ import com.ioannapergamali.mysmartroute.viewmodel.TransportDeclarationViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.ReservationViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.BookingViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.UserViewModel
-import com.ioannapergamali.mysmartroute.viewmodel.VehicleViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.utils.matchesFavorites
@@ -71,7 +70,7 @@ private fun DetailHeaderRow(scrollState: ScrollState) {
     ) {
         Text(stringResource(R.string.start_point), modifier = Modifier.width(ColumnWidth))
         Text(stringResource(R.string.destination), modifier = Modifier.width(ColumnWidth))
-        Text(stringResource(R.string.vehicle_name), modifier = Modifier.width(ColumnWidth))
+        Text(stringResource(R.string.route_name), modifier = Modifier.width(ColumnWidth))
         Text(stringResource(R.string.seats_label), modifier = Modifier.width(ColumnWidth))
         Text(stringResource(R.string.reserve_seat), modifier = Modifier.width(ColumnWidth))
     }
@@ -92,7 +91,6 @@ fun AvailableTransportsScreen(
     val context = LocalContext.current
     val declarationViewModel: TransportDeclarationViewModel = viewModel()
     val userViewModel: UserViewModel = viewModel()
-    val vehicleViewModel: VehicleViewModel = viewModel()
     val favoritesViewModel: FavoritesViewModel = viewModel()
     val reservationViewModel: ReservationViewModel = viewModel()
     val bookingViewModel: BookingViewModel = viewModel()
@@ -103,7 +101,6 @@ fun AvailableTransportsScreen(
 
     val declarations by declarationViewModel.pendingDeclarations.collectAsState()
     val drivers by userViewModel.drivers.collectAsState()
-    val vehicles by vehicleViewModel.vehicles.collectAsState()
     val pois by poiViewModel.pois.collectAsState()
     val routes by routeViewModel.routes.collectAsState()
     val preferred by favoritesViewModel.preferredFlow(context).collectAsState(initial = emptySet())
@@ -117,13 +114,11 @@ fun AvailableTransportsScreen(
     LaunchedEffect(Unit) {
         declarationViewModel.loadDeclarations(context)
         userViewModel.loadDrivers(context)
-        vehicleViewModel.loadRegisteredVehicles(context, includeAll = true)
         poiViewModel.loadPois(context)
         routeViewModel.loadRoutes(context, includeAll = true)
     }
 
     val driverNames = drivers.associate { it.id to "${it.name} ${it.surname}" }
-    val vehiclesMap = vehicles.associateBy { it.id }
     val poiNames = pois.associate { it.id to it.name }
     val routeNames = routes.associate { it.id to it.name }
 
@@ -239,12 +234,8 @@ fun AvailableTransportsScreen(
                                 Spacer(Modifier.height(8.dp))
                                 DetailHeaderRow(scrollState)
                                 dets.forEach { detail ->
-                                    if (vehiclesMap[detail.vehicleId] == null) {
-                                        vehicleViewModel.loadVehicleById(context, detail.vehicleId)
-                                    }
                                     val startName = poiNames[detail.startPoiId] ?: detail.startPoiId
                                     val endName = poiNames[detail.endPoiId] ?: detail.endPoiId
-                                    val detailVehicleName = vehiclesMap[detail.vehicleId]?.name ?: ""
                                     val reservedSeg = detailReservationCounts[decl.id]?.get(detail.id) ?: 0
                                     val availableSeg = max(0, detail.seats - reservedSeg)
                                     Row(
@@ -254,7 +245,7 @@ fun AvailableTransportsScreen(
                                     ) {
                                         Text(startName, modifier = Modifier.width(ColumnWidth))
                                         Text(endName, modifier = Modifier.width(ColumnWidth))
-                                        Text(detailVehicleName, modifier = Modifier.width(ColumnWidth))
+                                        Text(routeName, modifier = Modifier.width(ColumnWidth))
                                         Text(availableSeg.toString(), modifier = Modifier.width(ColumnWidth))
                                         Button(
                                             onClick = {
