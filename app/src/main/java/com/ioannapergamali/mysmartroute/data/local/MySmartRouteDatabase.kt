@@ -75,7 +75,9 @@ import com.ioannapergamali.mysmartroute.data.local.TripRatingDao
         NotificationEntity::class,
         UserPoiEntity::class
     ],
+
     version = 69
+
 )
 @TypeConverters(Converters::class)
 abstract class MySmartRouteDatabase : RoomDatabase() {
@@ -1126,6 +1128,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_66_67,
                     MIGRATION_67_68,
                     MIGRATION_68_69
+
                 )
                     .addCallback(object : RoomDatabase.Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {
