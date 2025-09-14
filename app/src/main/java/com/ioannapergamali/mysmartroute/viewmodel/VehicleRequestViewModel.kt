@@ -24,6 +24,7 @@ import com.ioannapergamali.mysmartroute.utils.NotificationUtils
 import com.ioannapergamali.mysmartroute.utils.toTransferRequestEntity
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.data.local.SeatReservationEntity
+import com.ioannapergamali.mysmartroute.data.local.SeatReservationDetailEntity
 import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationEntity
 import com.ioannapergamali.mysmartroute.viewmodel.MainActivity
 import com.ioannapergamali.mysmartroute.repository.WalkRepository
@@ -505,7 +506,9 @@ class VehicleRequestViewModel(
                 var declaration: TransportDeclarationEntity? = null
 
                 if (accept) {
-                    val resDao = MySmartRouteDatabase.getInstance(context).seatReservationDao()
+                    val dbInstance = MySmartRouteDatabase.getInstance(context)
+                    val resDao = dbInstance.seatReservationDao()
+                    val resDetailDao = dbInstance.seatReservationDetailDao()
 
                     declaration = try {
                         db.collection("transport_declarations")
@@ -535,15 +538,22 @@ class VehicleRequestViewModel(
                         routeId = current.routeId,
                         userId = current.userId,
                         date = current.date,
-                        startTime = declaration?.startTime ?: 0L,
+                        startTime = declaration?.startTime ?: 0L
+                    )
+                    val resDetail = SeatReservationDetailEntity(
+                        id = UUID.randomUUID().toString(),
+                        reservationId = reservation.id,
                         startPoiId = current.startPoiId,
                         endPoiId = current.endPoiId
                     )
                     resDao.insert(reservation)
+                    resDetailDao.insert(resDetail)
                     try {
-                        db.collection("seat_reservations")
-                            .document(reservation.id)
-                            .set(reservation.toFirestoreMap())
+                        val resRef = db.collection("seat_reservations").document(reservation.id)
+                        resRef.set(reservation.toFirestoreMap()).await()
+                        resRef.collection("details")
+                            .document(resDetail.id)
+                            .set(resDetail.toFirestoreMap())
                             .await()
                     } catch (e: Exception) {
                         Log.e(TAG, "Failed to create seat reservation", e)
