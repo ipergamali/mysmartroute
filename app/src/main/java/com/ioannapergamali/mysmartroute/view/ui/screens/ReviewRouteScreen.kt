@@ -142,9 +142,14 @@ fun ReviewRouteScreen(navController: NavController, openDrawer: () -> Unit) {
                     )
                     Spacer(Modifier.height(8.dp))
                     Button(onClick = {
-                        selectedRoute?.let { route ->
-                            val updated = route.copy(name = editedName)
-                            adminViewModel.updateRoute(updated)
+                        selectedRoute?.let {
+                            scope.launch {
+                                routeViewModel.addRoute(
+                                    context,
+                                    pois.map { p -> p.id },
+                                    editedName
+                                )
+                            }
                         }
                         selectedRoute = null
                         editedName = ""
