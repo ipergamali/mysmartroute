@@ -114,7 +114,7 @@ dependencies {
 
     // Google Maps
     implementation("com.google.android.gms:play-services-maps:19.2.0")
-    implementation("com.google.maps.android:maps-compose:6.6.0")
+    implementation("com.google.maps.android:maps-compose:6.10.0")
     implementation("com.google.maps.android:maps-ktx:5.2.0")
     implementation("com.google.maps.android:maps-utils-ktx:5.2.0")
     implementation("com.google.android.gms:play-services-location:21.3.0")
