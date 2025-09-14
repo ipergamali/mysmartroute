@@ -185,6 +185,13 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     var endIndex by remember { mutableStateOf<Int?>(null) }
     var message by remember { mutableStateOf("") }
     val details = remember { mutableStateListOf<TransportDeclarationDetailEntity>() }
+    var detailCostText by remember { mutableStateOf("") }
+    val detailTimePickerState = rememberTimePickerState(
+        initialHour = now.hour,
+        initialMinute = now.minute
+    )
+    var showDetailTimePicker by remember { mutableStateOf(false) }
+    val detailTimeText = String.format("%02d:%02d", detailTimePickerState.hour, detailTimePickerState.minute)
     var minSeats by remember { mutableStateOf(Int.MAX_VALUE) }
     val cameraPositionState = rememberCameraPositionState()
     val apiKey = MapsUtils.getApiKey(context)
@@ -530,6 +537,31 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                     )
                 )
                 Spacer(Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = detailCostText,
+                    onValueChange = { detailCostText = it },
+                    label = { Text(stringResource(R.string.cost)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number)
+                )
+                Spacer(Modifier.height(8.dp))
+                Button(onClick = { showDetailTimePicker = true }) {
+                    Icon(Icons.Default.AccessTime, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text(detailTimeText)
+                }
+                if (showDetailTimePicker) {
+                    AlertDialog(
+                        onDismissRequest = { showDetailTimePicker = false },
+                        confirmButton = {
+                            TextButton(onClick = { showDetailTimePicker = false }) {
+                                Text(stringResource(android.R.string.ok))
+                            }
+                        },
+                        text = { TimePicker(state = detailTimePickerState) }
+                    )
+                }
+                Spacer(Modifier.height(8.dp))
                 FilledIconButton(onClick = {
                     val s = startIndex
                     val e = endIndex
@@ -544,12 +576,16 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                         ) {
                             message = context.getString(R.string.bus_required)
                         } else {
+                            val detailCost = detailCostText.toDoubleOrNull() ?: 0.0
+                            val detailStartTime = (detailTimePickerState.hour * 60 + detailTimePickerState.minute) * 60_000L
                             val detail = TransportDeclarationDetailEntity(
                                 startPoiId = startPoi.id,
                                 endPoiId = endPoi.id,
                                 vehicleId = selectedVehicleId,
                                 vehicleType = veh.name,
-                                seats = selectedVehicleSeats
+                                seats = selectedVehicleSeats,
+                                cost = detailCost,
+                                startTime = detailStartTime
                             )
                             details.add(detail)
                             detailDurations.add(segmentDuration)
@@ -557,6 +593,9 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                             startIndex = null
                             endIndex = null
                             segmentDuration = 0
+                            detailCostText = ""
+                            detailTimePickerState.hour = now.hour
+                            detailTimePickerState.minute = now.minute
                         }
                     } else {
                         message = context.getString(R.string.invalid_stop_order)
@@ -573,6 +612,8 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                             Text(stringResource(R.string.boarding_stop), Modifier.weight(1f))
                             Text(stringResource(R.string.dropoff_stop), Modifier.weight(1f))
                             Text(stringResource(R.string.vehicle_name), Modifier.weight(1f))
+                            Text(stringResource(R.string.cost), Modifier.weight(1f))
+                            Text(stringResource(R.string.time), Modifier.weight(1f))
                         }
                         Divider()
                         details.forEachIndexed { index, d ->
@@ -592,6 +633,10 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                     vehicles.firstOrNull { it.id == d.vehicleId }?.name ?: d.vehicleId,
                                     Modifier.weight(1f)
                                 )
+                                val h = (d.startTime / 3_600_000).toInt()
+                                val m = ((d.startTime / 60_000) % 60).toInt()
+                                Text(String.format("%.2f", d.cost), Modifier.weight(1f))
+                                Text(String.format("%02d:%02d", h, m), Modifier.weight(1f))
                                 IconButton(onClick = {
                                     details.removeAt(index)
                                     detailDurations.removeAt(index)
@@ -767,7 +812,9 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                             endPoiId = pois[e].id,
                                             vehicleId = selectedVehicleId,
                                             vehicleType = veh.name,
-                                            seats = selectedVehicleSeats
+                                            seats = selectedVehicleSeats,
+                                            cost = cost,
+                                            startTime = startTime
                                         )
                                     )
                                 } else emptyList()
