@@ -6,16 +6,20 @@ import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.tasks.await
+
+data class RouteDuplicateGroups(
+    val sameName: List<List<RouteEntity>>,
+    val samePois: List<List<RouteEntity>>
+)
 
 class AdminRouteRepository(private val db: MySmartRouteDatabase) {
     private val routeDao = db.routeDao()
     private val pointDao = db.routePointDao()
     private val busDao = db.routeBusStationDao()
 
-    fun getDuplicateRoutes(): Flow<List<List<RouteEntity>>> =
+    fun getDuplicateRoutes(): Flow<RouteDuplicateGroups> =
         combine(routeDao.getAll(), pointDao.getAll()) { routes, points ->
             val nameGroups = routes.groupBy { it.name.trim() }
                 .values
@@ -36,9 +40,20 @@ class AdminRouteRepository(private val db: MySmartRouteDatabase) {
                 }
                 .filter { it.size > 1 }
 
-            (nameGroups + poiGroups)
+            val processedNameGroups = nameGroups
                 .map { it.distinctBy(RouteEntity::id).sortedBy(RouteEntity::id) }
-                .distinct()
+            val processedPoiGroups = poiGroups
+                .map { it.distinctBy(RouteEntity::id).sortedBy(RouteEntity::id) }
+            val uniquePoiGroups = processedPoiGroups.filter { poiGroup ->
+                processedNameGroups.none { nameGroup ->
+                    nameGroup.map(RouteEntity::id) == poiGroup.map(RouteEntity::id)
+                }
+            }
+
+            RouteDuplicateGroups(
+                sameName = processedNameGroups,
+                samePois = uniquePoiGroups
+            )
         }
 
     suspend fun updateRoute(route: RouteEntity) {

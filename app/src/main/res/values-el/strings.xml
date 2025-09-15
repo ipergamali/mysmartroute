@@ -132,6 +132,8 @@
     <string name="review_poi">Έλεγχος ονομάτων σημείων ενδιαφέροντος</string>
     <string name="review_route">Έλεγχος ονομάτων διαδρομών</string>
     <string name="no_duplicate_routes">Δεν βρέθηκαν διπλές διαδρομές</string>
+    <string name="duplicate_routes_same_name">Διαδρομές με ίδιο όνομα</string>
+    <string name="duplicate_routes_same_pois">Διαδρομές με ίδια σημεία</string>
     <string name="rank_drivers">Προβολή 10 καλύτερων και χειρότερων οδηγών</string>
     <string name="top_drivers">Κορυφαίοι 10 οδηγοί</string>
     <string name="worst_drivers">Χειρότεροι 10 οδηγοί</string>

@@ -7,17 +7,18 @@ import androidx.lifecycle.viewModelScope
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.RouteEntity
 import com.ioannapergamali.mysmartroute.repository.AdminRouteRepository
+import com.ioannapergamali.mysmartroute.repository.RouteDuplicateGroups
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class AdminRouteViewModel(private val repo: AdminRouteRepository) : ViewModel() {
-    val duplicateRoutes: StateFlow<List<List<RouteEntity>>> =
+    val duplicateRoutes: StateFlow<RouteDuplicateGroups> =
         repo.getDuplicateRoutes().stateIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
-            initialValue = emptyList()
+            initialValue = RouteDuplicateGroups(emptyList(), emptyList())
         )
 
     fun updateRoute(route: RouteEntity) {
