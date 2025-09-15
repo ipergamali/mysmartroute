@@ -18,6 +18,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
@@ -31,9 +32,10 @@ import com.ioannapergamali.mysmartroute.model.enumerations.localizedName
 @Composable
 fun FirebaseDatabaseScreen(navController: NavController, openDrawer: () -> Unit) {
     val viewModel: DatabaseViewModel = viewModel()
+    val context = LocalContext.current
     val data by viewModel.firebaseData.collectAsState()
 
-    LaunchedEffect(Unit) { viewModel.loadFirebaseData() }
+    LaunchedEffect(Unit) { viewModel.loadFirebaseData(context) }
 
     Scaffold(
         topBar = {

@@ -39,7 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.R
-import com.ioannapergamali.mysmartroute.data.local.DatabaseData
+import com.ioannapergamali.mysmartroute.viewmodel.DatabaseData
 import com.ioannapergamali.mysmartroute.data.local.FavoriteEntity
 import com.ioannapergamali.mysmartroute.data.local.FavoriteRouteEntity
 import com.ioannapergamali.mysmartroute.data.local.LanguageSettingEntity
@@ -86,7 +86,7 @@ fun DatabaseSyncScreen(navController: NavController, openDrawer: () -> Unit) {
     LaunchedEffect(selectedTab) {
         when (selectedTab) {
             SyncTab.LOCAL -> viewModel.loadLocalData(context)
-            SyncTab.FIRESTORE -> viewModel.loadFirebaseData()
+            SyncTab.FIRESTORE -> viewModel.loadFirebaseData(context)
             SyncTab.SYNC -> Unit
         }
     }
@@ -123,7 +123,7 @@ fun DatabaseSyncScreen(navController: NavController, openDrawer: () -> Unit) {
                         data = firebaseData,
                         emptyMessage = stringResource(R.string.sync_empty_table),
                         refreshLabel = stringResource(R.string.sync_reload_firestore),
-                        onRefresh = { viewModel.loadFirebaseData() }
+                        onRefresh = { viewModel.loadFirebaseData(context) }
                     )
                 }
 

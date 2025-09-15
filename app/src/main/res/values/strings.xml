@@ -78,6 +78,7 @@
     <string name="sync_success">Ο συγχρονισμός ολοκληρώθηκε</string>
     <string name="sync_error_prefix">Σφάλμα συγχρονισμού: %1$s</string>
     <string name="sync_empty_table">Ο πίνακας είναι άδειος</string>
+    <string name="syncing_table">Συγχρονίζεται ο πίνακας %1$s</string>
     <string name="sync_table_title">Πίνακας %1$s (%2$d εγγραφές)</string>
     <string name="sync_local_title">Τοπική βάση δεδομένων</string>
     <string name="sync_firestore_title">Firestore</string>
