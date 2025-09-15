@@ -43,8 +43,6 @@ fun ReviewRouteScreen(navController: NavController, openDrawer: () -> Unit) {
     val routeViewModel: RouteViewModel = viewModel()
     val duplicateGroups by adminViewModel.duplicateRoutes.collectAsState()
 
-    val routes = duplicateGroups.flatten()
-
     var selectedRoute by remember { mutableStateOf<RouteEntity?>(null) }
     var pois by remember { mutableStateOf<List<PoIEntity>>(emptyList()) }
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
@@ -78,31 +76,36 @@ fun ReviewRouteScreen(navController: NavController, openDrawer: () -> Unit) {
         )
     }) { padding ->
         ScreenContainer(modifier = Modifier.padding(padding)) {
-            if (routes.isEmpty()) {
-                Text(text = stringResource(R.string.no_duplicate_routes), modifier = Modifier.padding(16.dp))
+            if (duplicateGroups.isEmpty()) {
+                Text(
+                    text = stringResource(R.string.no_duplicate_routes),
+                    modifier = Modifier.padding(16.dp)
+                )
             } else {
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    items(routes) { route ->
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Button(
-                                onClick = {
-                                    selectedRoute = route
-                                    newRouteName = route.name
-                                    pois = emptyList()
-                                    pathPoints = emptyList()
-                                },
-                                shape = CircleShape,
-                                contentPadding = PaddingValues(0.dp),
-                                modifier = Modifier.size(48.dp)
-                            ) {
-                                Text(route.name.take(2))
+                duplicateGroups.forEach { group ->
+                    Text(group.firstOrNull()?.name.orEmpty())
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        items(group) { route ->
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Button(
+                                    onClick = {
+                                        selectedRoute = route
+                                        newRouteName = route.name
+                                        pois = emptyList()
+                                        pathPoints = emptyList()
+                                    },
+                                    shape = CircleShape,
+                                    contentPadding = PaddingValues(0.dp),
+                                    modifier = Modifier.size(48.dp)
+                                ) {
+                                    Text(route.name.take(2))
+                                }
+                                Text(route.name)
                             }
-                            Text(route.name)
                         }
                     }
+                    Spacer(Modifier.height(16.dp))
                 }
-
-                Spacer(Modifier.height(16.dp))
 
                 if (selectedRoute != null && pois.isNotEmpty() && !isKeyMissing) {
                     GoogleMap(
