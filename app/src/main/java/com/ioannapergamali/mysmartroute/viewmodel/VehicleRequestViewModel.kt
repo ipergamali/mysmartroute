@@ -546,6 +546,7 @@ class VehicleRequestViewModel(
                         startPoiId = current.startPoiId,
                         endPoiId = current.endPoiId,
                         cost = declaration?.cost ?: 0.0,
+                        durationMinutes = declaration?.durationMinutes ?: 0,
                         startTime = declaration?.startTime ?: 0L
                     )
                     resDao.insert(reservation)

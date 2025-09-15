@@ -309,7 +309,8 @@ fun AvailableTransportsScreen(
                                                         detail.endPoiId,
                                                         detail.vehicleId,
                                                         detail.cost,
-                                                        detail.startTime
+                                                        detail.startTime,
+                                                        detail.durationMinutes
                                                     )
                                                 }
                                                 val result = bookingViewModel.reserveSeat(

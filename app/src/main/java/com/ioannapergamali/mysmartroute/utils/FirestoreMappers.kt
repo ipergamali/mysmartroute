@@ -529,6 +529,7 @@ fun SeatReservationDetailEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     "startPoiId" to FirebaseFirestore.getInstance().collection("pois").document(startPoiId),
     "endPoiId" to FirebaseFirestore.getInstance().collection("pois").document(endPoiId),
     "cost" to cost,
+    "durationMinutes" to durationMinutes,
     "startTime" to startTime
 )
 
@@ -545,14 +546,16 @@ fun DocumentSnapshot.toSeatReservationDetailEntity(reservationId: String): SeatR
         else -> return null
     }
     val costVal = getDouble("cost") ?: 0.0
+    val durationVal = getLong("durationMinutes")?.toInt() ?: 0
     val timeVal = getLong("startTime") ?: 0L
-    return SeatReservationDetailEntity(detId, reservationId, start, end, costVal, timeVal)
+    return SeatReservationDetailEntity(detId, reservationId, start, end, costVal, durationVal, timeVal)
 }
 
 fun MovingDetailEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     "id" to id,
     "startPoiId" to FirebaseFirestore.getInstance().collection("pois").document(startPoiId),
     "endPoiId" to FirebaseFirestore.getInstance().collection("pois").document(endPoiId),
+    "durationMinutes" to durationMinutes,
     "vehicleId" to FirebaseFirestore.getInstance().collection("vehicles").document(vehicleId)
 )
 
@@ -573,7 +576,8 @@ fun DocumentSnapshot.toMovingDetailEntity(movingId: String): MovingDetailEntity?
         is String -> v
         else -> ""
     }
-    return MovingDetailEntity(detId, movingId, start, end, vehicle)
+    val durationVal = getLong("durationMinutes")?.toInt() ?: 0
+    return MovingDetailEntity(detId, movingId, start, end, durationVal, vehicle)
 }
 
 fun FavoriteEntity.toFirestoreMap(): Map<String, Any> = mapOf(
