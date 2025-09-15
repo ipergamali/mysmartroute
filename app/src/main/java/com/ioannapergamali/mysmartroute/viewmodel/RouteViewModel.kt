@@ -112,6 +112,16 @@ class RouteViewModel : ViewModel() {
                 firestore.collection("routes").whereEqualTo("userId", userId)
             }
 
+            val localRoutes = runCatching {
+                if (includeAll) {
+                    routeDao.getAll().first()
+                } else if (userId != null) {
+                    routeDao.getRoutesForUser(userId).first()
+                } else {
+                    emptyList()
+                }
+            }.getOrDefault(emptyList())
+
             val snapshot = runCatching { query.get().await() }.getOrNull()
             if (snapshot != null) {
                 var list = snapshot.documents.mapNotNull { it.toRouteWithStations() }.toMutableList()
@@ -140,20 +150,15 @@ class RouteViewModel : ViewModel() {
                         }
                     }
                 }
-                _routes.value = list.map { it.first }
+                val remoteRoutes = list.map { it.first }
+                _routes.value = (remoteRoutes + localRoutes).distinctBy { it.id }
                 list.forEach { (route, points, busStations) ->
                     routeDao.insert(route)
                     points.forEach { pointDao.insert(it) }
                     busStations.forEach { busDao.insert(it) }
                 }
             } else {
-                _routes.value = if (includeAll) {
-                    routeDao.getAll().first()
-                } else if (userId != null) {
-                    routeDao.getRoutesForUser(userId).first()
-                } else {
-                    emptyList()
-                }
+                _routes.value = localRoutes
             }
         }
     }
