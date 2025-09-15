@@ -7,12 +7,15 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
+import com.ioannapergamali.mysmartroute.data.local.MovingEntity
+import com.ioannapergamali.mysmartroute.data.local.MovingDetailEntity
 import com.ioannapergamali.mysmartroute.data.local.TransferRequestEntity
 import com.ioannapergamali.mysmartroute.model.enumerations.RequestStatus
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import java.util.UUID
 
 /**
  * ViewModel για υποβολή και διαχείριση αιτημάτων μεταφοράς.
@@ -46,7 +49,11 @@ class TransferRequestViewModel : ViewModel() {
             status = RequestStatus.OPEN
         )
         viewModelScope.launch(Dispatchers.IO) {
-            val dao = MySmartRouteDatabase.getInstance(context).transferRequestDao()
+            val dbInstance = MySmartRouteDatabase.getInstance(context)
+            val dao = dbInstance.transferRequestDao()
+            val movingDao = dbInstance.movingDao()
+            val movingDetailDao = dbInstance.movingDetailDao()
+            val routeDao = dbInstance.routeDao()
             try {
                 Log.d(TAG, "Εισαγωγή αιτήματος: $entity")
                 val id = dao.insert(entity).toInt()
@@ -57,6 +64,39 @@ class TransferRequestViewModel : ViewModel() {
                     .await()
                 dao.setFirebaseId(id, docRef.id)
                 Log.d(TAG, "Το αίτημα αποθηκεύτηκε στο Firestore με id=${docRef.id}")
+
+                val route = routeDao.findById(routeId)
+                val startPoi = route?.startPoiId ?: ""
+                val endPoi = route?.endPoiId ?: ""
+
+                val moving = MovingEntity(
+                    id = UUID.randomUUID().toString(),
+                    routeId = routeId,
+                    userId = passengerId,
+                    date = date,
+                    cost = cost,
+                    durationMinutes = 0,
+                    startPoiId = startPoi,
+                    endPoiId = endPoi,
+                    requestNumber = id
+                )
+                movingDao.insert(moving)
+
+                val detail = MovingDetailEntity(
+                    id = UUID.randomUUID().toString(),
+                    movingId = moving.id,
+                    startPoiId = startPoi,
+                    endPoiId = endPoi,
+                    vehicleId = ""
+                )
+                movingDetailDao.insert(detail)
+
+                val movingRef = db.collection("movings").document(moving.id)
+                movingRef.set(moving.toFirestoreMap()).await()
+                movingRef.collection("details")
+                    .document(detail.id)
+                    .set(detail.toFirestoreMap())
+                    .await()
             } catch (e: Exception) {
                 Log.e(TAG, "Αποτυχία υποβολής αιτήματος", e)
             }
