@@ -3,6 +3,7 @@ package com.ioannapergamali.mysmartroute.viewmodel
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.data.local.MovingEntity
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
@@ -18,6 +19,7 @@ import kotlinx.coroutines.launch
 class TripRatingViewModel : ViewModel() {
 
     private val repository = TripRatingRepository()
+    private val auth = FirebaseAuth.getInstance()
 
     private val _trips = MutableStateFlow<List<TripWithRating>>(emptyList())
     val trips: StateFlow<List<TripWithRating>> = _trips
@@ -27,9 +29,14 @@ class TripRatingViewModel : ViewModel() {
 
     fun loadTrips(context: Context) {
         viewModelScope.launch {
+            val userId = auth.currentUser?.uid ?: run {
+                _trips.value = emptyList()
+                return@launch
+            }
+
             val db = MySmartRouteDatabase.getInstance(context)
             try {
-                val movings = db.movingDao().getAll().first()
+                val movings = db.movingDao().getMovingsForUser(userId).first()
                 movings.forEach { moving ->
                     val local = db.tripRatingDao().get(moving.id, moving.userId)
                     if (local == null) {
@@ -39,7 +46,7 @@ class TripRatingViewModel : ViewModel() {
                                     moving.id,
                                     remote.tripRating.userId,
                                     remote.tripRating.rating,
-                                    remote.tripRating.comment ?: ""
+                                    remote.tripRating.comment ?: "",
                                 )
                             )
                         }
@@ -48,7 +55,7 @@ class TripRatingViewModel : ViewModel() {
             } catch (_: Exception) {
             }
 
-            val movingFlow = db.movingDao().getAll()
+            val movingFlow = db.movingDao().getMovingsForUser(userId)
             val ratingFlow = db.tripRatingDao().getAll()
             val routeFlow = db.routeDao().getAll()
             combine(movingFlow, ratingFlow, routeFlow) { movings, ratings, routes ->
@@ -94,3 +101,4 @@ class TripRatingViewModel : ViewModel() {
         _message.value = null
     }
 }
+
