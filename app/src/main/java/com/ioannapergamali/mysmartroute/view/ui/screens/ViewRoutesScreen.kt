@@ -23,7 +23,6 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.data.local.RouteEntity
-import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.utils.offsetPois
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
@@ -112,15 +111,12 @@ fun ViewRoutesScreen(navController: NavController, openDrawer: () -> Unit) {
                                 selectedRoute = route
                                 expanded = false
                                 scope.launch {
-                                    val (_, path) = routeViewModel.getRouteDirections(
-                                        context,
-                                        route.id,
-                                        VehicleType.CAR
-                                    )
-                                    pathPoints = path
                                     pois = routeViewModel.getRoutePois(context, route.id)
+
+                                    pathPoints = pois.map { LatLng(it.lat, it.lng) }
                                     newRouteName = route.name
-                                    path.firstOrNull()?.let {
+                                    pathPoints.firstOrNull()?.let {
+
                                         cameraPositionState.move(
                                             CameraUpdateFactory.newLatLngZoom(it, 13f)
                                         )
@@ -134,14 +130,16 @@ fun ViewRoutesScreen(navController: NavController, openDrawer: () -> Unit) {
 
             Spacer(Modifier.height(16.dp))
 
-            if (selectedRoute != null && pathPoints.isNotEmpty() && !isKeyMissing) {
+            if (selectedRoute != null && pois.isNotEmpty() && !isKeyMissing) {
                 GoogleMap(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(dimensionResource(id = R.dimen.map_height)),
                     cameraPositionState = cameraPositionState
                 ) {
-                    Polyline(points = pathPoints)
+                    if (pathPoints.size > 1) {
+                        Polyline(points = pathPoints)
+                    }
                     offsetPois(pois).forEach { (poi, position) ->
                         Marker(
                             state = MarkerState(position = position),
