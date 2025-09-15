@@ -5,6 +5,9 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
@@ -164,7 +167,7 @@ fun ReviewRouteScreen(navController: NavController, openDrawer: () -> Unit) {
                     )
                     Spacer(Modifier.height(8.dp))
                     Row {
-                        Button(
+                        FilledIconButton(
                             onClick = {
                                 selectedRoute?.let { route ->
                                     val group = duplicateGroups.find { g -> g.any { it.id == route.id } } ?: emptyList()
@@ -185,12 +188,16 @@ fun ReviewRouteScreen(navController: NavController, openDrawer: () -> Unit) {
                                     }
                                 }
                             },
-                            enabled = newRouteName.isNotBlank()
+                            enabled = newRouteName.isNotBlank(),
+                            shape = CircleShape
                         ) {
-                            Text(stringResource(R.string.keep))
+                            Icon(
+                                imageVector = Icons.Filled.Check,
+                                contentDescription = stringResource(R.string.keep)
+                            )
                         }
                         Spacer(Modifier.width(8.dp))
-                        Button(
+                        FilledIconButton(
                             onClick = {
                                 selectedRoute?.let { route ->
                                     val group = duplicateGroups.find { g -> g.any { it.id == route.id } } ?: emptyList()
@@ -210,9 +217,13 @@ fun ReviewRouteScreen(navController: NavController, openDrawer: () -> Unit) {
                                     }
                                 }
                             },
-                            enabled = newRouteName.isNotBlank()
+                            enabled = newRouteName.isNotBlank(),
+                            shape = CircleShape
                         ) {
-                            Text(stringResource(R.string.keep_all))
+                            Icon(
+                                imageVector = Icons.Filled.DoneAll,
+                                contentDescription = stringResource(R.string.keep_all)
+                            )
                         }
                     }
                 }
