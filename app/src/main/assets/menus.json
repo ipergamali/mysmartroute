@@ -158,10 +158,6 @@
             "route": "editRoute"
           },
           {
-            "titleKey": "define_duration",
-            "route": "defineDuration"
-          },
-          {
             "titleKey": "view_unassigned",
             "route": "viewUnassigned"
           },

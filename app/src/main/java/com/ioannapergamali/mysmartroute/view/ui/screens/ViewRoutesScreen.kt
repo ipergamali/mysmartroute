@@ -125,6 +125,7 @@ fun ViewRoutesScreen(navController: NavController, openDrawer: () -> Unit) {
                                 pois = emptyList()
                                 pathPoints = emptyList()
                                 expanded = false
+
                             }
                         )
                     }
