@@ -1,11 +1,11 @@
 package com.ioannapergamali.mysmartroute.viewmodel
 
 import android.content.Context
-import android.database.DatabaseUtils
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.room.withTransaction
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.DocumentReference
@@ -376,7 +376,7 @@ class DatabaseViewModel : ViewModel() {
         withContext(Dispatchers.IO) {
             db.withTransaction {
                 val sqliteDb = db.openHelper.writableDatabase
-                val before = DatabaseUtils.queryNumEntries(sqliteDb, tableName)
+                val before = sqliteDb.countRows(tableName)
                 Log.d(TAG, "Clearing local table $tableName (rowsBefore=$before)")
                 val shouldPreserveUser = tableName == "users" && !preserveUserId.isNullOrBlank()
                 if (shouldPreserveUser) {
@@ -384,7 +384,7 @@ class DatabaseViewModel : ViewModel() {
                         "DELETE FROM `$tableName` WHERE id != ?",
                         arrayOf(preserveUserId)
                     )
-                    val afterPreserve = DatabaseUtils.queryNumEntries(sqliteDb, tableName)
+                    val afterPreserve = sqliteDb.countRows(tableName)
                     Log.d(
                         TAG,
                         "Preserved user $preserveUserId in $tableName (rowsAfter=$afterPreserve)"
@@ -393,9 +393,15 @@ class DatabaseViewModel : ViewModel() {
                     sqliteDb.execSQL("DELETE FROM `$tableName`")
                     Log.d(TAG, "Executed DELETE FROM `$tableName`")
                 }
-                val after = DatabaseUtils.queryNumEntries(sqliteDb, tableName)
+                val after = sqliteDb.countRows(tableName)
                 Log.d(TAG, "Cleared local table $tableName (rowsAfter=$after)")
             }
+        }
+    }
+
+    private fun SupportSQLiteDatabase.countRows(tableName: String): Long {
+        query("SELECT COUNT(*) FROM `$tableName`").use { cursor ->
+            return if (cursor.moveToFirst()) cursor.getLong(0) else 0L
         }
     }
 
