@@ -68,6 +68,7 @@
     <string name="clear_success">Ο καθαρισμός ολοκληρώθηκε</string>
     <string name="clear_error_no_selection">Επιλέξτε τουλάχιστον έναν πίνακα</string>
     <string name="clear_error_generic">Αποτυχία καθαρισμού δεδομένων: %1$s</string>
+    <string name="clear_progress_message">Διαγράφεται: %1$s\nDeleting: %2$s</string>
     <string name="initialize_button">Αρχικοποίηση</string>
     <string name="initialize_success">Η αρχικοποίηση ολοκληρώθηκε</string>
     <string name="local_db">Τοπική ΒΔ</string>
