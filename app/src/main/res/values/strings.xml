@@ -130,6 +130,8 @@
     <string name="review_poi">Review Point of Interest Names</string>
     <string name="review_route">Review Route Names</string>
     <string name="no_duplicate_routes">No duplicate routes found</string>
+    <string name="duplicate_routes_same_name">Routes with same name</string>
+    <string name="duplicate_routes_same_pois">Routes with same points</string>
     <string name="rank_drivers">Show 10 Best and Worst Drivers</string>
     <string name="top_drivers">Top 10 drivers</string>
     <string name="worst_drivers">Bottom 10 drivers</string>
