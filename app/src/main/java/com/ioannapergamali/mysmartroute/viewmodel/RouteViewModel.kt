@@ -150,13 +150,19 @@ class RouteViewModel : ViewModel() {
                         }
                     }
                 }
-                val remoteRoutes = list.map { it.first }
-                _routes.value = (remoteRoutes + localRoutes).distinctBy { it.id }
+
                 list.forEach { (route, points, busStations) ->
                     routeDao.insert(route)
                     points.forEach { pointDao.insert(it) }
                     busStations.forEach { busDao.insert(it) }
                 }
+                val localRoutes = when {
+                    includeAll -> routeDao.getAll().first()
+                    userId != null -> routeDao.getRoutesForUser(userId).first()
+                    else -> emptyList()
+                }
+                val combined = (list.map { it.first } + localRoutes).distinctBy { it.id }
+                _routes.value = combined
             } else {
                 _routes.value = localRoutes
             }
