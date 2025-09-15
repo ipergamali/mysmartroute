@@ -12,6 +12,7 @@ import com.ioannapergamali.mysmartroute.data.local.TripRatingEntity
 import com.ioannapergamali.mysmartroute.model.classes.transports.TripWithRating
 import com.ioannapergamali.mysmartroute.repository.TripRatingRepository
 import com.ioannapergamali.mysmartroute.utils.SessionManager
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
