@@ -250,8 +250,8 @@ class RouteViewModel : ViewModel() {
     }
 
     /**
-     * Προσθέτει νέα διαδρομή με τα δοθέντα σημεία και όνομα.
-     * Adds a new route with the provided points and name.
+     * Προσθέτει νέα διαδρομή ή ενημερώνει υπάρχουσα με το ίδιο όνομα.
+     * Adds a new route or updates an existing one with the same name.
      */
     suspend fun addRoute(
         context: Context,
@@ -262,9 +262,14 @@ class RouteViewModel : ViewModel() {
         if (poiIds.size < 2 || name.isBlank()) return null
         val db = MySmartRouteDatabase.getInstance(context)
         val routeDao = db.routeDao()
+        val existing = routeDao.findByName(name)
+        if (existing != null) {
+            updateRoute(context, existing.id, poiIds, name, busPoiIds)
+            return existing.id
+        }
+
         val pointDao = db.routePointDao()
         val busDao = db.routeBusStationDao()
-
         val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return null
         val id = UUID.randomUUID().toString()
         val entity = RouteEntity(id, userId, name, poiIds.first(), poiIds.last())
@@ -278,7 +283,6 @@ class RouteViewModel : ViewModel() {
             }
         }
         val busStations = busIds.mapIndexed { index, p -> RouteBusStationEntity(id, index, p) }
-
 
         runCatching {
             val routeRef = firestore.collection("routes").document(id)
