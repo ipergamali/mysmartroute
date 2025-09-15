@@ -571,6 +571,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                 vehicleType = veh.name,
                                 seats = selectedVehicleSeats,
                                 cost = cost,
+                                durationMinutes = segmentDuration,
                                 startTime = detailStartTime
                             )
                             details.add(detail)
@@ -795,6 +796,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
                                             vehicleType = veh.name,
                                             seats = selectedVehicleSeats,
                                             cost = cost,
+                                            durationMinutes = duration,
                                             startTime = startTime
                                         )
                                     )

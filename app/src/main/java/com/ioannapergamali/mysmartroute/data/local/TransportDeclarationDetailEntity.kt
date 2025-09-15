@@ -27,5 +27,6 @@ data class TransportDeclarationDetailEntity(
     val vehicleType: String = "",
     val seats: Int = 0,
     val cost: Double = 0.0,
+    val durationMinutes: Int = 0,
     val startTime: Long = 0L
 )
