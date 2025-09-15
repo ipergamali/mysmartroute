@@ -1,11 +1,15 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
@@ -45,7 +49,6 @@ fun ViewRoutesScreen(navController: NavController, openDrawer: () -> Unit) {
     var selectedRoute by remember { mutableStateOf<RouteEntity?>(null) }
     var pois by remember { mutableStateOf<List<PoIEntity>>(emptyList()) }
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
-    var expanded by remember { mutableStateOf(false) }
     var newRouteName by remember { mutableStateOf("") }
 
     val cameraPositionState = rememberCameraPositionState()
@@ -111,23 +114,25 @@ fun ViewRoutesScreen(navController: NavController, openDrawer: () -> Unit) {
         }
     ) { padding ->
         ScreenContainer(modifier = Modifier.padding(padding)) {
-            Box {
-                Button(onClick = { expanded = true }) {
-                    Text(selectedRoute?.name ?: stringResource(R.string.select_route))
-                }
-                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                    routes.forEach { route ->
-                        DropdownMenuItem(
-                            text = { Text(route.name) },
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(routes) { route ->
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Button(
                             onClick = {
                                 selectedRoute = route
                                 newRouteName = route.name
                                 pois = emptyList()
                                 pathPoints = emptyList()
-                                expanded = false
-
-                            }
-                        )
+                            },
+                            shape = CircleShape,
+                            contentPadding = PaddingValues(0.dp),
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                            Text(route.name.take(2))
+                        }
+                        Text(route.name)
                     }
                 }
             }
