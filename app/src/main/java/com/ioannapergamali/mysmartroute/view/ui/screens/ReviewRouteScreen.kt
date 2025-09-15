@@ -8,6 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DoneAll
+import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
@@ -101,7 +102,10 @@ fun ReviewRouteScreen(navController: NavController, openDrawer: () -> Unit) {
                                     contentPadding = PaddingValues(0.dp),
                                     modifier = Modifier.size(48.dp)
                                 ) {
-                                    Text(route.name.take(2))
+                                    Icon(
+                                        imageVector = Icons.Filled.DirectionsCar,
+                                        contentDescription = stringResource(R.string.route)
+                                    )
                                 }
                                 Text(route.name)
                             }
