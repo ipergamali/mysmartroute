@@ -41,10 +41,11 @@ fun ReviewPoiScreen(navController: NavController, openDrawer: () -> Unit) {
     val context = LocalContext.current
     val viewModel: AdminPoiViewModel = viewModel(factory = AdminPoiViewModel.Factory(context))
     val duplicateGroups by viewModel.duplicatePois.collectAsState()
+    val sameNameGroups by viewModel.sameNamePois.collectAsState()
 
     Scaffold(topBar = { TopBar(title = stringResource(R.string.review_poi), navController = navController, showMenu = true, onMenuClick = openDrawer) }) { padding ->
         ScreenContainer(modifier = Modifier.padding(padding), scrollable = false) {
-            if (duplicateGroups.isEmpty()) {
+            if (duplicateGroups.isEmpty() && sameNameGroups.isEmpty()) {
                 Text(text = stringResource(R.string.no_duplicate_pois), modifier = Modifier.padding(16.dp))
             } else {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
@@ -103,6 +104,68 @@ fun ReviewPoiScreen(navController: NavController, openDrawer: () -> Unit) {
                                 modifier = Modifier.padding(top = 8.dp)
                             ) {
                                 Text(stringResource(R.string.keep))
+                            }
+                        }
+                    }
+
+                    if (sameNameGroups.isNotEmpty()) {
+                        item {
+                            Text(
+                                text = stringResource(R.string.same_name_pois),
+                                modifier = Modifier.padding(16.dp)
+                            )
+                        }
+                        items(sameNameGroups) { group ->
+                            var selected by remember { mutableStateOf<PoIEntity?>(null) }
+                            var edited by remember { mutableStateOf("") }
+
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp)
+                            ) {
+                                group.forEach { poi ->
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 4.dp),
+                                        horizontalArrangement = Arrangement.Start
+                                    ) {
+                                        RadioButton(
+                                            selected = selected?.id == poi.id,
+                                            onClick = {
+                                                selected = poi
+                                                edited = poi.name
+                                            }
+                                        )
+                                        if (selected?.id == poi.id) {
+                                            TextField(
+                                                value = edited,
+                                                onValueChange = { edited = it },
+                                                modifier = Modifier.fillMaxWidth()
+                                            )
+                                        } else {
+                                            Text(text = poi.name)
+                                        }
+                                    }
+                                }
+
+                                Button(
+                                    onClick = {
+                                        selected?.let { keep ->
+                                            val updated = keep.copy(name = edited)
+                                            viewModel.updatePoi(updated)
+                                            group.filter { it.id != updated.id }.forEach { other ->
+                                                viewModel.mergePois(updated.id, other.id)
+                                            }
+                                        }
+                                        selected = null
+                                    },
+                                    enabled = selected != null,
+                                    modifier = Modifier.padding(top = 8.dp)
+                                ) {
+                                    Text(stringResource(R.string.keep))
+                                }
                             }
                         }
                     }

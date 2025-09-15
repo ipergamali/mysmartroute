@@ -199,6 +199,7 @@
     <string name="coordinates_label">Συντεταγμένες</string>
     <string name="lat">Πλάτος</string>
     <string name="lng">Μήκος</string>
+    <string name="same_name_pois">Σημεία με ίδιο όνομα</string>
     <string name="edit">Επεξεργασία</string>
     <string name="keep">Κράτησε</string>
     <string name="keep_all">Κράτησε όλα</string>

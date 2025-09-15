@@ -57,3 +57,17 @@ fun duplicatePois(
             group.size > 1 && group.map { it.name }.toSet().size > 1
         }
 
+/**
+ * Επιστρέφει ομάδες από POI που έχουν ακριβώς το ίδιο όνομα,
+ * ανεξάρτητα από τις συντεταγμένες τους. Χρήσιμο για τον
+ * εντοπισμό διπλών εγγραφών που μοιράζονται την ίδια ονομασία.
+ * Returns groups of POIs that share the same name regardless of
+ * coordinates, useful to detect duplicates by name.
+ */
+fun duplicatePoisByName(
+    pois: List<PoIEntity>
+): List<List<PoIEntity>> =
+    pois.groupBy { it.name.trim().lowercase() }
+        .values
+        .filter { group -> group.size > 1 }
+

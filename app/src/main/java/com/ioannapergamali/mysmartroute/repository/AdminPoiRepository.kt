@@ -2,6 +2,7 @@ package com.ioannapergamali.mysmartroute.repository
 
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
+import com.ioannapergamali.mysmartroute.utils.duplicatePoisByName
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.DocumentReference
@@ -52,6 +53,16 @@ class AdminPoiRepository(private val db: MySmartRouteDatabase) {
                 }
                 .map { it }
         }
+
+    /**
+     * Επιστρέφει ομάδες σημείων με ακριβώς το ίδιο όνομα.
+     * Χρήσιμο για εντοπισμό διπλών καταχωρίσεων βάσει ονομασίας.
+     *
+     * Returns groups of points sharing the same name, useful to detect
+     * duplicate entries by name.
+     */
+    fun getPoisWithSameName(): Flow<List<List<PoIEntity>>> =
+        poiDao.getAll().map { pois -> duplicatePoisByName(pois) }
 
     /**
      * Ενημέρωση στοιχείων σημείου.
