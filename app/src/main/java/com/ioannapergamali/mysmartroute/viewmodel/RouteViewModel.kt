@@ -112,7 +112,24 @@ class RouteViewModel : ViewModel() {
 
             val snapshot = runCatching { query.get().await() }.getOrNull()
             if (snapshot != null) {
-                val list = snapshot.documents.mapNotNull { it.toRouteWithStations() }
+                var list = snapshot.documents.mapNotNull { it.toRouteWithStations() }.toMutableList()
+                if (includeAll) {
+                    val declSnap = runCatching {
+                        firestore.collection("transport_declarations").get().await()
+                    }.getOrNull()
+                    val declaredIds = declSnap?.documents
+                        ?.mapNotNull { it.getString("routeId") }
+                        ?.toSet() ?: emptySet()
+                    val existingIds = list.map { it.first.id }.toMutableSet()
+                    for (routeId in declaredIds) {
+                        if (existingIds.add(routeId)) {
+                            val doc = runCatching {
+                                firestore.collection("routes").document(routeId).get().await()
+                            }.getOrNull()
+                            doc?.toRouteWithStations()?.let { list.add(it) }
+                        }
+                    }
+                }
                 _routes.value = list.map { it.first }
                 list.forEach { (route, points, busStations) ->
                     routeDao.insert(route)
