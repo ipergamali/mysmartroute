@@ -1116,16 +1116,16 @@ class DatabaseViewModel : ViewModel() {
                     prefs.edit().putLong("last_sync", newTs).apply()
                     _lastSyncTime.value = newTs
                 }
-                _syncState.value = SyncState.Success
-            } catch (e: TimeoutCancellationException) {
-                Log.e(TAG, "Sync timeout", e)
-                _syncState.value = SyncState.Error("Sync timeout")
-            } catch (e: Exception) {
-                Log.e(TAG, "Sync error", e)
-                _syncState.value = SyncState.Error(
-                    e.localizedMessage ?: "Sync failed"
-                )
             }
+            _syncState.value = SyncState.Success
+        } catch (e: TimeoutCancellationException) {
+            Log.e(TAG, "Sync timeout", e)
+            _syncState.value = SyncState.Error("Sync timeout")
+        } catch (e: Exception) {
+            Log.e(TAG, "Sync error", e)
+            _syncState.value = SyncState.Error(
+                e.localizedMessage ?: "Sync failed"
+            )
         } finally {
             if (_syncState.value !is SyncState.Loading) {
                 updateSyncMessage(null)
