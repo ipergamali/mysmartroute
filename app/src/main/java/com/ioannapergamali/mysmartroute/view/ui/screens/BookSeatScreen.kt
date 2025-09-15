@@ -65,7 +65,6 @@ import com.ioannapergamali.mysmartroute.viewmodel.BookingViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.TransportDeclarationViewModel
-import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.TransferRequestViewModel
 import kotlinx.coroutines.launch
 import java.time.Instant
@@ -93,7 +92,6 @@ fun BookSeatScreen(
     val routeViewModel: RouteViewModel = viewModel()
     val poiViewModel: PoIViewModel = viewModel()
     val declarationViewModel: TransportDeclarationViewModel = viewModel()
-    val requestViewModel: VehicleRequestViewModel = viewModel()
     val transferRequestViewModel: TransferRequestViewModel = viewModel()
     val routes by viewModel.availableRoutes.collectAsState()
     val allPois by poiViewModel.pois.collectAsState()
@@ -576,19 +574,13 @@ fun BookSeatScreen(
                             val startId = startIndex?.let { pois[it].id } ?: return@launch
                             val endId = endIndex?.let { pois[it].id } ?: return@launch
                             val routeId = saveEditedRouteIfChanged()
-                            requestViewModel.requestTransport(
+                            transferRequestViewModel.submitRequest(
                                 context,
                                 routeId,
                                 startId,
                                 endId,
                                 null,
-                                dateMillis
-                            )
-                            transferRequestViewModel.submitRequest(
-                                context,
-                                routeId,
                                 dateMillis,
-                                null
                             )
                             message = context.getString(R.string.request_sent)
                         }

@@ -8,11 +8,16 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.TransferRequestEntity
+import com.ioannapergamali.mysmartroute.data.local.MovingEntity
+import com.ioannapergamali.mysmartroute.data.local.MovingDetailEntity
+import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationDetailEntity
 import com.ioannapergamali.mysmartroute.model.enumerations.RequestStatus
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.flow.first
+import java.util.UUID
 
 /**
  * ViewModel για υποβολή και διαχείριση αιτημάτων μεταφοράς.
@@ -33,8 +38,10 @@ class TransferRequestViewModel : ViewModel() {
     fun submitRequest(
         context: Context,
         routeId: String,
+        startPoiId: String,
+        endPoiId: String,
+        cost: Double?,
         date: Long,
-            cost: Double?,
     ) {
         val passengerId = auth.currentUser?.uid ?: return
         val entity = TransferRequestEntity(
@@ -46,21 +53,85 @@ class TransferRequestViewModel : ViewModel() {
             status = RequestStatus.OPEN
         )
         viewModelScope.launch(Dispatchers.IO) {
-            val dao = MySmartRouteDatabase.getInstance(context).transferRequestDao()
+            val dbLocal = MySmartRouteDatabase.getInstance(context)
+            val transferDao = dbLocal.transferRequestDao()
+            val movingDao = dbLocal.movingDao()
+            val movingDetailDao = dbLocal.movingDetailDao()
+            val declDao = dbLocal.transportDeclarationDao()
+            val detailDao = dbLocal.transportDeclarationDetailDao()
             try {
                 Log.d(TAG, "Εισαγωγή αιτήματος: $entity")
-                val id = dao.insert(entity).toInt()
-                Log.d(TAG, "Το αίτημα αποθηκεύτηκε τοπικά με id=$id")
-                val saved = entity.copy(requestNumber = id)
+                val requestId = transferDao.insert(entity).toInt()
+                Log.d(TAG, "Το αίτημα αποθηκεύτηκε τοπικά με id=$requestId")
+                val saved = entity.copy(requestNumber = requestId)
                 val docRef = db.collection("transfer_requests")
                     .add(saved.toFirestoreMap())
                     .await()
-                dao.setFirebaseId(id, docRef.id)
+                transferDao.setFirebaseId(requestId, docRef.id)
+
+                // Αναζήτηση διαδρομής στις δηλώσεις μεταφοράς
+                val declaration = declDao.getAll().first().firstOrNull { it.routeId == routeId }
+                val declDetails = declaration?.let { detailDao.getForDeclaration(it.id) } ?: emptyList()
+                val path = buildPath(declDetails, startPoiId, endPoiId)
+                val totalDuration = path.sumOf { it.durationMinutes }
+                val totalCost = cost ?: path.sumOf { it.cost }
+
+                val movingId = UUID.randomUUID().toString()
+                val moving = MovingEntity(
+                    id = movingId,
+                    routeId = routeId,
+                    userId = passengerId,
+                    date = date,
+                    cost = totalCost,
+                    durationMinutes = totalDuration,
+                    driverId = "",
+                    status = "open",
+                    requestNumber = requestId,
+                    vehicleId = path.firstOrNull()?.vehicleId ?: "",
+                    startPoiId = startPoiId,
+                    endPoiId = endPoiId,
+                )
+                movingDao.insert(moving)
+                val movingRef = db.collection("movings").document(movingId)
+                movingRef.set(moving.toFirestoreMap()).await()
+                path.forEach { det ->
+                    val movingDetail = MovingDetailEntity(
+                        id = UUID.randomUUID().toString(),
+                        movingId = movingId,
+                        startPoiId = det.startPoiId,
+                        endPoiId = det.endPoiId,
+                        durationMinutes = det.durationMinutes,
+                        vehicleId = det.vehicleId,
+                    )
+                    movingDetailDao.insert(movingDetail)
+                    movingRef.collection("details")
+                        .document(movingDetail.id)
+                        .set(movingDetail.toFirestoreMap())
+                        .await()
+                }
+
                 Log.d(TAG, "Το αίτημα αποθηκεύτηκε στο Firestore με id=${docRef.id}")
             } catch (e: Exception) {
                 Log.e(TAG, "Αποτυχία υποβολής αιτήματος", e)
             }
         }
+    }
+
+    private fun buildPath(
+        details: List<TransportDeclarationDetailEntity>,
+        start: String,
+        end: String,
+    ): List<TransportDeclarationDetailEntity> {
+        val map = details.associateBy { it.startPoiId }
+        val path = mutableListOf<TransportDeclarationDetailEntity>()
+        var current = start
+        val visited = mutableSetOf<String>()
+        while (current != end && visited.add(current)) {
+            val next = map[current] ?: break
+            path += next
+            current = next.endPoiId
+        }
+        return if (path.lastOrNull()?.endPoiId == end) path else emptyList()
     }
 
     /**
