@@ -13,6 +13,7 @@ import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.TransferRequestEntity
 import com.ioannapergamali.mysmartroute.model.enumerations.RequestStatus
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
+import com.ioannapergamali.mysmartroute.utils.SessionManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -44,7 +45,7 @@ class TransferRequestViewModel : ViewModel() {
         cost: Double?,
         poiChanged: Boolean = false,
     ) {
-        val passengerId = auth.currentUser?.uid ?: return
+        val passengerId = SessionManager.currentUserId(auth) ?: return
         viewModelScope.launch(Dispatchers.IO) {
             val dbInstance = MySmartRouteDatabase.getInstance(context)
             val transferDao = dbInstance.transferRequestDao()
@@ -167,7 +168,7 @@ class TransferRequestViewModel : ViewModel() {
      * Notifies the driver that they have taken a transfer request.
      */
     fun notifyDriver(context: Context, requestNumber: Int) {
-        val driverId = auth.currentUser?.uid ?: return
+        val driverId = SessionManager.currentUserId(auth) ?: return
         viewModelScope.launch(Dispatchers.IO) {
             val dbInstance = MySmartRouteDatabase.getInstance(context)
             val dao = dbInstance.transferRequestDao()

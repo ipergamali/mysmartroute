@@ -33,7 +33,6 @@ import com.ioannapergamali.mysmartroute.utils.LanguagePreferenceManager
 import com.ioannapergamali.mysmartroute.utils.LocaleUtils
 import com.ioannapergamali.mysmartroute.model.AppLanguage
 import kotlinx.coroutines.launch
-import com.google.firebase.auth.FirebaseAuth
 import com.ioannapergamali.mysmartroute.viewmodel.AppDateTimeViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -43,6 +42,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.SettingsViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
+import com.ioannapergamali.mysmartroute.utils.SessionManager
 
 private const val TAG = "TopBar"
 
@@ -88,7 +88,7 @@ fun TopBar(
         }
     }
 
-    val userId = FirebaseAuth.getInstance().currentUser?.uid
+    val userId = SessionManager.currentUserId()
     val isLoggedIn = userId != null
 
     val logoutAction = {

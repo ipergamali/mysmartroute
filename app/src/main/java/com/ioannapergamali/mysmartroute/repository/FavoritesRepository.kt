@@ -1,9 +1,9 @@
 package com.ioannapergamali.mysmartroute.repository
 
-import com.google.firebase.auth.FirebaseAuth
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.UserPoiEntity
 import com.ioannapergamali.mysmartroute.data.local.insertUserPoiSafely
+import com.ioannapergamali.mysmartroute.utils.SessionManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
@@ -16,7 +16,7 @@ class FavoritesRepository(private val db: MySmartRouteDatabase) {
     private val userDao = db.userDao()
     private val poiDao = db.poIDao()
 
-    private fun userId() = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+    private fun userId() = SessionManager.currentUserId() ?: ""
 
     /**
      * Αποθηκεύει ένα POI ως αγαπημένο για τον τρέχοντα χρήστη.

@@ -47,10 +47,13 @@ import com.ioannapergamali.mysmartroute.data.local.TripRatingEntity
 import com.ioannapergamali.mysmartroute.data.local.TripRatingDao
 import com.ioannapergamali.mysmartroute.data.local.AppDateTimeEntity
 import com.ioannapergamali.mysmartroute.data.local.AppDateTimeDao
+import com.ioannapergamali.mysmartroute.data.local.AuthenticationEntity
+import com.ioannapergamali.mysmartroute.data.local.AuthenticationDao
 
 @Database(
     entities = [
         UserEntity::class,
+        AuthenticationEntity::class,
         VehicleEntity::class,
         PoiTypeEntity::class,
         PoIEntity::class,
@@ -79,7 +82,7 @@ import com.ioannapergamali.mysmartroute.data.local.AppDateTimeDao
         AppDateTimeEntity::class
     ],
 
-    version = 76
+    version = 77
 
 )
 @TypeConverters(Converters::class)
@@ -111,6 +114,7 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
     abstract fun notificationDao(): NotificationDao
     abstract fun userPoiDao(): UserPoiDao
     abstract fun appDateTimeDao(): AppDateTimeDao
+    abstract fun authenticationDao(): AuthenticationDao
 
     companion object {
         @Volatile
@@ -1036,6 +1040,23 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_76_77 = object : Migration(76, 77) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `auth_credentials` (" +
+                        "`userId` TEXT NOT NULL, " +
+                        "`email` TEXT NOT NULL, " +
+                        "`encryptedPassword` TEXT NOT NULL, " +
+                        "FOREIGN KEY(`userId`) REFERENCES `users`(`id`) ON DELETE CASCADE, " +
+                        "PRIMARY KEY(`userId`)" +
+                        ")"
+                )
+                database.execSQL(
+                    "CREATE UNIQUE INDEX IF NOT EXISTS `index_auth_credentials_email` ON `auth_credentials` (`email`)"
+                )
+            }
+        }
+
         private fun prepopulate(db: SupportSQLiteDatabase) {
             Log.d(TAG, "Prepopulating database")
             db.execSQL(
@@ -1190,7 +1211,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_72_73,
                     MIGRATION_73_74,
                     MIGRATION_74_75,
-                    MIGRATION_75_76
+                    MIGRATION_75_76,
+                    MIGRATION_76_77
 
                 )
                     .addCallback(object : RoomDatabase.Callback() {

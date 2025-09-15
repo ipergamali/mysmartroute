@@ -40,8 +40,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
-import com.google.firebase.auth.FirebaseAuth
-
+import com.ioannapergamali.mysmartroute.utils.SessionManager
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> Unit) {
@@ -86,7 +85,7 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
             selectedDriverId = null
             selectedDriverName = ""
         } else {
-            val uid = FirebaseAuth.getInstance().currentUser?.uid
+            val uid = SessionManager.currentUserId()
             if (uid != null) {
                 selectedDriverId = uid
                 selectedDriverName = userViewModel.getUserName(context, uid)
@@ -96,7 +95,7 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
 
     LaunchedEffect(role, drivers) {
         if (role != UserRole.ADMIN && selectedDriverName.isBlank()) {
-            val uid = FirebaseAuth.getInstance().currentUser?.uid
+            val uid = SessionManager.currentUserId()
             if (uid != null) {
                 selectedDriverId = uid
                 selectedDriverName = userViewModel.getUserName(context, uid)

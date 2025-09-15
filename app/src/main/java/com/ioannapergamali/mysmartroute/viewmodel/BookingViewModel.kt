@@ -12,6 +12,7 @@ import com.ioannapergamali.mysmartroute.data.local.SeatReservationDetailEntity
 import com.ioannapergamali.mysmartroute.data.local.MovingEntity
 import com.ioannapergamali.mysmartroute.data.local.MovingDetailEntity
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
+import com.ioannapergamali.mysmartroute.utils.SessionManager
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -74,7 +75,7 @@ class BookingViewModel : ViewModel() {
         declarationId: String = "",
         driverId: String = ""
     ): Result<Unit> = withContext(Dispatchers.IO) {
-        val userId = auth.currentUser?.uid
+        val userId = SessionManager.currentUserId(auth)
             ?: return@withContext Result.failure(Exception("Απαιτείται σύνδεση"))
 
         if (segments.isEmpty()) {

@@ -3,10 +3,10 @@ package com.ioannapergamali.mysmartroute.viewmodel
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.FavoriteRouteEntity
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
+import com.ioannapergamali.mysmartroute.utils.SessionManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -28,7 +28,7 @@ class FavoriteRoutesViewModel : ViewModel() {
 
     private fun userDoc(uid: String) = firestore.collection("users").document(uid)
 
-    private fun userId() = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+    private fun userId() = SessionManager.currentUserId() ?: ""
 
     private fun routesCollection(uid: String) =
         userDoc(uid).collection("favorites").document("data").collection("routes")

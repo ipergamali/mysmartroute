@@ -3,7 +3,6 @@ package com.ioannapergamali.mysmartroute.viewmodel
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
@@ -16,6 +15,7 @@ import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import com.ioannapergamali.mysmartroute.utils.toUserEntity
+import com.ioannapergamali.mysmartroute.utils.SessionManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -169,7 +169,7 @@ class UserViewModel : ViewModel() {
             if (oldRole == UserRole.PASSENGER && newRole == UserRole.DRIVER) {
                 handlePassengerPromotion(dbInstance, userId)
             }
-            if (FirebaseAuth.getInstance().currentUser?.uid == userId) {
+            if (SessionManager.currentUserId() == userId) {
                 authViewModel?.loadCurrentUserRole(context, loadMenus = true)
             }
         }

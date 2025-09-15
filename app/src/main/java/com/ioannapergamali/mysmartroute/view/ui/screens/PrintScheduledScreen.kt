@@ -17,7 +17,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.google.firebase.auth.FirebaseAuth
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
@@ -30,6 +29,7 @@ import kotlinx.coroutines.flow.first
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.ioannapergamali.mysmartroute.utils.SessionManager
 
 @Composable
 fun PrintScheduledScreen(navController: NavController, openDrawer: () -> Unit) {
@@ -43,7 +43,7 @@ fun PrintScheduledScreen(navController: NavController, openDrawer: () -> Unit) {
     val passengerNames = remember { mutableStateMapOf<String, List<String>>() }
 
     LaunchedEffect(Unit) {
-        val driverId = FirebaseAuth.getInstance().currentUser?.uid
+        val driverId = SessionManager.currentUserId()
         if (driverId != null) {
             declarationViewModel.loadDeclarations(context, driverId)
             routeViewModel.loadRoutes(context)

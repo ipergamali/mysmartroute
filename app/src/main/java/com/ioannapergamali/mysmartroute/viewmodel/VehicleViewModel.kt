@@ -17,6 +17,7 @@ import com.ioannapergamali.mysmartroute.model.classes.vehicles.RemoteVehicle
 import com.ioannapergamali.mysmartroute.utils.toVehicleEntity
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.repository.VehicleRepository
+import com.ioannapergamali.mysmartroute.utils.SessionManager
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -66,7 +67,7 @@ class VehicleViewModel : ViewModel() {
             Log.d(TAG, "Έναρξη καταχώρησης οχήματος $name τύπος=$type")
             _registerState.value = RegisterState.Loading
 
-            val userId = auth.currentUser?.uid
+            val userId = SessionManager.currentUserId(auth)
             if (userId == null) {
                 _registerState.value = RegisterState.Error(
                     context.getString(R.string.user_not_logged_in)
@@ -148,7 +149,7 @@ class VehicleViewModel : ViewModel() {
         userId: String? = null
     ) {
         val repo = getRepository(context)
-        val uid = userId ?: auth.currentUser?.uid
+        val uid = userId ?: SessionManager.currentUserId(auth)
         vehiclesJob?.cancel()
         vehiclesJob = viewModelScope.launch {
             when {

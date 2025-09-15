@@ -7,7 +7,6 @@ import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.Timestamp
 import com.ioannapergamali.mysmartroute.data.local.MovingEntity
@@ -39,6 +38,7 @@ import java.util.UUID
 import com.google.android.gms.maps.model.LatLng
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
+import com.ioannapergamali.mysmartroute.utils.SessionManager
 
 data class PassengerRequest(
     val passengerId: String,
@@ -93,7 +93,7 @@ class VehicleRequestViewModel(
             val routeDao = dbInstance.routeDao()
             val userDao = dbInstance.userDao()
             val vehicleDao = dbInstance.vehicleDao()
-            val userId = FirebaseAuth.getInstance().currentUser?.uid
+            val userId = SessionManager.currentUserId()
 
             val local: List<TransferRequestEntity> = if (allUsers) {
                 dao.getAll().first()
@@ -192,7 +192,7 @@ class VehicleRequestViewModel(
      */
     fun loadPassengerMovings(context: Context, allUsers: Boolean = false) {
         viewModelScope.launch {
-            val uid = FirebaseAuth.getInstance().currentUser?.uid
+            val uid = SessionManager.currentUserId()
                 ?: return@launch
             val dbInstance = MySmartRouteDatabase.getInstance(context)
             val dao = dbInstance.movingDao()
@@ -277,7 +277,7 @@ class VehicleRequestViewModel(
         viewModelScope.launch {
             val dbInstance = MySmartRouteDatabase.getInstance(context)
             val dao = dbInstance.movingDao()
-            val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+            val userId = SessionManager.currentUserId() ?: return@launch
             val id = UUID.randomUUID().toString()
             val entity = MovingEntity(
                 id = id,
@@ -318,7 +318,7 @@ class VehicleRequestViewModel(
         walkDurationMinutes: Int
     ) {
         viewModelScope.launch {
-            val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+            val userId = SessionManager.currentUserId() ?: return@launch
             val id = UUID.randomUUID().toString()
             val routeRef = db.collection("routes").document(routeId)
             val data = mapOf(
@@ -342,7 +342,7 @@ class VehicleRequestViewModel(
      * Marks notifications as read.
      */
     fun markNotificationsRead(allUsers: Boolean) {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid
+        val userId = SessionManager.currentUserId()
         val notifications = if (allUsers) {
             _requests.value.filter {
                 (it.driverId.isBlank() && it.status.isBlank()) ||
@@ -680,7 +680,7 @@ class VehicleRequestViewModel(
     }
 
     private suspend fun showAcceptedNotifications(context: Context) {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val userId = SessionManager.currentUserId() ?: return
         _requests.value.filter { it.status == "accepted" && it.driverId == userId && it.id !in notifiedRequests }
             .forEach { req ->
                 val intent = Intent(context, MainActivity::class.java).apply {
@@ -705,7 +705,7 @@ class VehicleRequestViewModel(
     }
 
     private suspend fun showRejectedNotifications(context: Context) {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val userId = SessionManager.currentUserId() ?: return
         _requests.value.filter { it.status == "rejected" && it.driverId == userId && it.id !in notifiedRequests }
             .forEach { req ->
                 val intent = Intent(context, MainActivity::class.java).apply {

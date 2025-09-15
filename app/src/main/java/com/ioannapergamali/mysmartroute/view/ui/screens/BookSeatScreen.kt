@@ -73,8 +73,8 @@ import java.time.format.DateTimeFormatter
 import kotlin.math.abs
 import androidx.compose.ui.graphics.Color
 import androidx.annotation.StringRes
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.ioannapergamali.mysmartroute.utils.SessionManager
 import kotlinx.coroutines.tasks.await
 
 private const val MARKER_ORANGE = BitmapDescriptorFactory.HUE_ORANGE
@@ -186,7 +186,7 @@ fun BookSeatScreen(
         val original = originalPoiIds.toSet()
         if (current == original) return currentRouteId to false
 
-        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return "" to false
+        val uid = SessionManager.currentUserId() ?: return "" to false
         val username = FirebaseFirestore.getInstance()
             .collection("users")
             .document(uid)

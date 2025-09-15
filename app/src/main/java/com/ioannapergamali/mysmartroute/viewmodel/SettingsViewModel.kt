@@ -21,6 +21,7 @@ import com.ioannapergamali.mysmartroute.model.interfaces.ThemeOption
 import com.ioannapergamali.mysmartroute.utils.SoundPreferenceManager
 import com.ioannapergamali.mysmartroute.utils.LanguagePreferenceManager
 import com.ioannapergamali.mysmartroute.utils.LocaleUtils
+import com.ioannapergamali.mysmartroute.utils.SessionManager
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -42,7 +43,7 @@ class SettingsViewModel : ViewModel() {
         context: Context,
         transform: (SettingsEntity) -> SettingsEntity
     ) {
-        val userId = auth.currentUser?.uid
+        val userId = SessionManager.currentUserId(auth)
         if (userId == null) {
             val message = "Δεν βρέθηκε χρήστης"
             Log.w("SettingsViewModel", message)
@@ -205,7 +206,7 @@ class SettingsViewModel : ViewModel() {
      */
     fun syncSettings(context: Context) {
         viewModelScope.launch {
-            val userId = auth.currentUser?.uid ?: return@launch
+            val userId = SessionManager.currentUserId(auth) ?: return@launch
             val dbLocal = MySmartRouteDatabase.getInstance(context)
             val userDao = dbLocal.userDao()
             if (userDao.getUser(userId) == null) {
@@ -268,7 +269,7 @@ class SettingsViewModel : ViewModel() {
 
             // Αν δεν υπάρχει συνδεδεμένος χρήστης, αποθηκεύουμε μόνο τοπικά
             // If no user is logged in, save only locally
-            if (auth.currentUser?.uid == null) {
+            if (SessionManager.currentUserId(auth) == null) {
                 ThemePreferenceManager.setTheme(context, theme)
                 ThemePreferenceManager.setDarkTheme(context, dark)
                 FontPreferenceManager.setFont(context, font)
