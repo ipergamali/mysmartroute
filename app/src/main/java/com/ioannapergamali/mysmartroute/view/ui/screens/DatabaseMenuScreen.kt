@@ -89,6 +89,15 @@ fun DatabaseMenuScreen(navController: NavController, openDrawer: () -> Unit) {
                 Text(stringResource(R.string.clear_data))
             }
 
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Button(
+                onClick = { viewModel.clearAllTables(context) },
+                enabled = !isClearing
+            ) {
+                Text(stringResource(R.string.initialize_button))
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
 
             when (val state = clearState) {

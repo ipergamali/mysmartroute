@@ -234,6 +234,29 @@ class DatabaseViewModel : ViewModel() {
             return
         }
 
+        clearTables(
+            context = context,
+            localToClear = localToClear,
+            firebaseToClear = firebaseToClear,
+            successMessage = context.getString(R.string.clear_success)
+        )
+    }
+
+    fun clearAllTables(context: Context) {
+        clearTables(
+            context = context,
+            localToClear = localTableDefinitions,
+            firebaseToClear = firebaseTableDefinitions.map { it.collection },
+            successMessage = context.getString(R.string.initialize_success)
+        )
+    }
+
+    private fun clearTables(
+        context: Context,
+        localToClear: List<String>,
+        firebaseToClear: List<String>,
+        successMessage: String
+    ) {
         viewModelScope.launch {
             _clearState.value = ClearState.Running
             try {
@@ -241,7 +264,7 @@ class DatabaseViewModel : ViewModel() {
                 clearFirebaseCollections(firebaseToClear)
                 _localTables.update { tables -> tables.map { it.copy(selected = false) } }
                 _firebaseTables.update { tables -> tables.map { it.copy(selected = false) } }
-                _clearState.value = ClearState.Success(context.getString(R.string.clear_success))
+                _clearState.value = ClearState.Success(successMessage)
             } catch (e: Exception) {
                 Log.e(TAG, "Error clearing tables", e)
                 val reason = e.localizedMessage ?: e.message ?: ""
