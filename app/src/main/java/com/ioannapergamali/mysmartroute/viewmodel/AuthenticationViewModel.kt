@@ -32,6 +32,7 @@ import com.ioannapergamali.mysmartroute.utils.EncryptionManager
 import com.ioannapergamali.mysmartroute.utils.SessionManager
 import com.ioannapergamali.mysmartroute.model.menus.MenuConfig
 import com.ioannapergamali.mysmartroute.model.menus.RoleMenuConfig
+import com.ioannapergamali.mysmartroute.utils.toUserEntity
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -246,6 +247,7 @@ class AuthenticationViewModel : ViewModel() {
 
                 val uid = result?.user?.uid
                 if (uid != null) {
+                    ensureUserStored(userDao, uid)
                     storeCredentials(authDao, uid, normalizedEmail, password)
                     SessionManager.setOfflineUser(uid)
                     _loginState.value = LoginState.Success
@@ -286,6 +288,23 @@ class AuthenticationViewModel : ViewModel() {
                 encryptedPassword = encryptedPassword
             )
         )
+    }
+
+    private suspend fun ensureUserStored(
+        userDao: UserDao,
+        userId: String
+    ) {
+        if (userDao.getUser(userId) != null) return
+
+        val remoteUser = runCatching {
+            db.collection("users")
+                .document(userId)
+                .get()
+                .await()
+                .toUserEntity()
+        }.getOrNull()
+
+        insertUserSafely(userDao, remoteUser ?: UserEntity(id = userId))
     }
 
     private suspend fun tryLocalLogin(
