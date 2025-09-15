@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import android.util.Log
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
@@ -118,7 +119,13 @@ class RouteViewModel : ViewModel() {
                         firestore.collection("transport_declarations").get().await()
                     }.getOrNull()
                     val declaredIds = declSnap?.documents
-                        ?.mapNotNull { it.getString("routeId") }
+                        ?.mapNotNull { doc ->
+                            when (val routeRef = doc.get("routeId")) {
+                                is DocumentReference -> routeRef.id
+                                is String -> routeRef
+                                else -> doc.getString("routeId")
+                            }
+                        }
                         ?.toSet() ?: emptySet()
                     val existingIds = list.map { it.first.id }.toMutableSet()
                     for (routeId in declaredIds) {
