@@ -92,6 +92,7 @@ class DatabaseViewModel : ViewModel() {
 
     companion object {
         private const val TAG = "DatabaseViewModel"
+        private const val SYNC_TIMEOUT_MS = 120_000L
     }
 
     private val auth = FirebaseAuth.getInstance()
@@ -763,7 +764,7 @@ class DatabaseViewModel : ViewModel() {
         val db = MySmartRouteDatabase.getInstance(context)
 
         try {
-            withTimeout(30000L) {
+            withTimeout(SYNC_TIMEOUT_MS) {
                 if (remoteTs > localTs) {
                     logStep("Το Firestore είναι νεότερο - λήψη δεδομένων")
                     Log.d(TAG, "Fetching users from Firestore")
