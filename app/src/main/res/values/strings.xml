@@ -57,6 +57,7 @@
     <string name="roles_title">Roles</string>
     <string name="roles_load_error">Failed to load roles: %1$s</string>
     <string name="roles_empty">No roles found</string>
+    <string name="drawer_roles">Ρόλοι</string>
     <string name="about_title">About</string>
     <string name="support_title">Support</string>
     <string name="databases_title">Databases</string>
