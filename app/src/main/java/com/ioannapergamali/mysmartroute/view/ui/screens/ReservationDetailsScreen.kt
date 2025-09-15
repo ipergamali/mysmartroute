@@ -25,6 +25,7 @@ import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.utils.toSeatReservationDetailEntity
 import com.ioannapergamali.mysmartroute.utils.toUserEntity
 import com.ioannapergamali.mysmartroute.data.local.insertUserSafely
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -51,13 +52,23 @@ fun ReservationDetailsScreen(
         reservation?.let { res ->
             val db = MySmartRouteDatabase.getInstance(context)
             routeName = db.routeDao().findById(res.routeId)?.name ?: res.routeId
-            val detailDocs = FirebaseFirestore.getInstance()
-                .collection("seat_reservations")
-                .document(res.id)
-                .collection("details")
-                .get()
-                .await()
-            val details = detailDocs.documents.mapNotNull { it.toSeatReservationDetailEntity(res.id) }
+            val detailDao = db.seatReservationDetailDao()
+            val local = detailDao.getForReservation(res.id).first()
+            val details = if (local.isNotEmpty()) {
+                local
+            } else {
+                val remoteDocs = FirebaseFirestore.getInstance()
+                    .collection("seat_reservations")
+                    .document(res.id)
+                    .collection("details")
+                    .get()
+                    .await()
+                remoteDocs.documents
+                    .mapNotNull { it.toSeatReservationDetailEntity(res.id) }
+                    .also { fetched ->
+                        fetched.forEach { detailDao.insert(it) }
+                    }
+            }
             detailInfos = details.map { det ->
                 val start = db.poIDao().findById(det.startPoiId)?.name ?: det.startPoiId
                 val end = db.poIDao().findById(det.endPoiId)?.name ?: det.endPoiId
