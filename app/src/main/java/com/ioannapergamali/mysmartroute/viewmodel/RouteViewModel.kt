@@ -250,8 +250,8 @@ class RouteViewModel : ViewModel() {
     }
 
     /**
-     * Προσθέτει νέα διαδρομή ή ενημερώνει υπάρχουσα με το ίδιο όνομα.
-     * Adds a new route or updates an existing one with the same name.
+     * Προσθέτει νέα διαδρομή ακόμη κι αν υπάρχει με το ίδιο όνομα.
+     * Adds a new route even if one with the same name exists.
      */
     suspend fun addRoute(
         context: Context,
@@ -262,11 +262,6 @@ class RouteViewModel : ViewModel() {
         if (poiIds.size < 2 || name.isBlank()) return null
         val db = MySmartRouteDatabase.getInstance(context)
         val routeDao = db.routeDao()
-        val existing = routeDao.findByName(name)
-        if (existing != null) {
-            updateRoute(context, existing.id, poiIds, name, busPoiIds)
-            return existing.id
-        }
 
         val pointDao = db.routePointDao()
         val busDao = db.routeBusStationDao()
