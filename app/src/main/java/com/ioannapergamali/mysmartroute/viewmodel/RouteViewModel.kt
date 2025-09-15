@@ -299,6 +299,7 @@ class RouteViewModel : ViewModel() {
             Log.e("RouteViewModel", "Αποτυχία αποθήκευσης στο Firestore", e)
         }.isSuccess
 
+
         val roomSuccess = runCatching {
             routeDao.insert(entity)
             points.forEach { pointDao.insert(it) }
