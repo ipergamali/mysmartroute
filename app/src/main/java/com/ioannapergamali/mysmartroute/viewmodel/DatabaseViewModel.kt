@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.room.withTransaction
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestoreException
@@ -90,6 +91,8 @@ class DatabaseViewModel : ViewModel() {
     companion object {
         private const val TAG = "DatabaseViewModel"
     }
+
+    private val auth = FirebaseAuth.getInstance()
 
     private val _localData = MutableStateFlow<DatabaseData?>(null)
     val localData: StateFlow<DatabaseData?> = _localData
@@ -181,10 +184,63 @@ class DatabaseViewModel : ViewModel() {
 
     private val firebaseDefinitionsById = firebaseTableDefinitions.associateBy { it.collection }
 
-    private val _localTables = MutableStateFlow(localTableDefinitions.map { TableToggleState(id = it, title = it) })
+    private val tableNames = mapOf(
+        "users" to TableNames("Χρήστες", "Users"),
+        "vehicles" to TableNames("Οχήματα", "Vehicles"),
+        "poi_types" to TableNames("Τύποι σημείων ενδιαφέροντος", "PoI Types"),
+        "pois" to TableNames("Σημεία ενδιαφέροντος", "Points of Interest"),
+        "settings" to TableNames("Ρυθμίσεις", "Settings"),
+        "roles" to TableNames("Ρόλοι", "Roles"),
+        "menus" to TableNames("Μενού", "Menus"),
+        "menu_options" to TableNames("Επιλογές μενού", "Menu Options"),
+        "app_language" to TableNames("Γλώσσα εφαρμογής", "App Language"),
+        "routes" to TableNames("Διαδρομές", "Routes"),
+        "route_points" to TableNames("Σημεία διαδρομών", "Route Points"),
+        "route_bus_station" to TableNames("Στάσεις λεωφορείου διαδρομής", "Route Bus Stations"),
+        "movings" to TableNames("Μετακινήσεις", "Movings"),
+        "moving_details" to TableNames("Λεπτομέρειες μετακινήσεων", "Moving Details"),
+        "walking" to TableNames("Πεζοπορίες", "Walking"),
+        "walking_routes" to TableNames("Διαδρομές πεζοπορίας", "Walking Routes"),
+        "transport_declarations" to TableNames("Δηλώσεις μεταφορών", "Transport Declarations"),
+        "transport_declarations_details" to TableNames("Λεπτομέρειες δηλώσεων μεταφορών", "Transport Declaration Details"),
+        "availabilities" to TableNames("Διαθεσιμότητες", "Availabilities"),
+        "seat_reservations" to TableNames("Κρατήσεις θέσεων", "Seat Reservations"),
+        "seat_reservation_details" to TableNames("Λεπτομέρειες κρατήσεων θέσεων", "Seat Reservation Details"),
+        "favorites" to TableNames("Αγαπημένα", "Favorites"),
+        "favorite_routes" to TableNames("Αγαπημένες διαδρομές", "Favorite Routes"),
+        "transfer_requests" to TableNames("Αιτήματα μεταφοράς", "Transfer Requests"),
+        "trip_ratings" to TableNames("Αξιολογήσεις διαδρομών", "Trip Ratings"),
+        "notifications" to TableNames("Ειδοποιήσεις", "Notifications"),
+        "user_pois" to TableNames("Σημεία ενδιαφέροντος χρηστών", "User PoIs"),
+        "app_datetime" to TableNames("Ημερομηνία/ώρα συστήματος", "System Date/Time"),
+        "user_settings" to TableNames("Ρυθμίσεις χρήστη", "User Settings")
+    )
+
+    private fun tableNamesFor(id: String): TableNames {
+        return tableNames[id] ?: run {
+            val english = id.split('_').joinToString(" ") { part ->
+                part.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
+            }
+            TableNames(english, english)
+        }
+    }
+
+    private fun tableLabelFor(id: String): String {
+        val names = tableNamesFor(id)
+        return "${names.greek} / ${names.english}"
+    }
+
+    private fun progressMessage(context: Context, id: String): String {
+        val names = tableNamesFor(id)
+        return context.getString(R.string.clear_progress_message, names.greek, names.english)
+    }
+
+    private val _localTables = MutableStateFlow(localTableDefinitions.map { TableToggleState(id = it, title = tableLabelFor(it)) })
     val localTables: StateFlow<List<TableToggleState>> = _localTables
 
-    private val _firebaseTables = MutableStateFlow(firebaseTableDefinitions.map { TableToggleState(id = it.collection, title = it.collection) })
+    private val _firebaseTables = MutableStateFlow(
+        firebaseTableDefinitions.map { TableToggleState(id = it.collection, title = tableLabelFor(it.collection)) }
+    )
     val firebaseTables: StateFlow<List<TableToggleState>> = _firebaseTables
 
     private val _clearState = MutableStateFlow<ClearState>(ClearState.Idle)
@@ -238,7 +294,8 @@ class DatabaseViewModel : ViewModel() {
             context = context,
             localToClear = localToClear,
             firebaseToClear = firebaseToClear,
-            successMessage = context.getString(R.string.clear_success)
+            successMessage = context.getString(R.string.clear_success),
+            preserveUserId = auth.currentUser?.uid
         )
     }
 
@@ -247,7 +304,8 @@ class DatabaseViewModel : ViewModel() {
             context = context,
             localToClear = localTableDefinitions,
             firebaseToClear = firebaseTableDefinitions.map { it.collection },
-            successMessage = context.getString(R.string.initialize_success)
+            successMessage = context.getString(R.string.initialize_success),
+            preserveUserId = auth.currentUser?.uid
         )
     }
 
@@ -255,13 +313,22 @@ class DatabaseViewModel : ViewModel() {
         context: Context,
         localToClear: List<String>,
         firebaseToClear: List<String>,
-        successMessage: String
+        successMessage: String,
+        preserveUserId: String?
     ) {
         viewModelScope.launch {
-            _clearState.value = ClearState.Running
+            _clearState.value = ClearState.Running(message = null)
             try {
-                clearLocalTables(context, localToClear)
-                clearFirebaseCollections(firebaseToClear)
+                val db = MySmartRouteDatabase.getInstance(context)
+                localToClear.forEach { table ->
+                    _clearState.value = ClearState.Running(progressMessage(context, table))
+                    clearLocalTable(db, table, preserveUserId)
+                }
+                firebaseToClear.forEach { table ->
+                    _clearState.value = ClearState.Running(progressMessage(context, table))
+                    val definition = firebaseDefinitionsById[table] ?: FirebaseTableDefinition(collection = table)
+                    clearFirebaseCollection(definition, preserveUserId)
+                }
                 _localTables.update { tables -> tables.map { it.copy(selected = false) } }
                 _firebaseTables.update { tables -> tables.map { it.copy(selected = false) } }
                 _clearState.value = ClearState.Success(successMessage)
@@ -281,36 +348,42 @@ class DatabaseViewModel : ViewModel() {
         }
     }
 
-    private suspend fun clearLocalTables(context: Context, tableNames: List<String>) {
-        if (tableNames.isEmpty()) return
+    private suspend fun clearLocalTable(
+        db: MySmartRouteDatabase,
+        tableName: String,
+        preserveUserId: String?
+    ) {
         withContext(Dispatchers.IO) {
-            val db = MySmartRouteDatabase.getInstance(context)
             db.withTransaction {
                 val sqliteDb = db.openHelper.writableDatabase
-                tableNames.forEach { table ->
-                    Log.d(TAG, "Clearing local table $table")
-                    sqliteDb.execSQL("DELETE FROM `$table`")
+                Log.d(TAG, "Clearing local table $tableName")
+                val shouldPreserveUser = tableName == "users" && !preserveUserId.isNullOrBlank()
+                if (shouldPreserveUser) {
+                    sqliteDb.execSQL(
+                        "DELETE FROM `$tableName` WHERE id != ?",
+                        arrayOf(preserveUserId)
+                    )
+                } else {
+                    sqliteDb.execSQL("DELETE FROM `$tableName`")
                 }
             }
         }
     }
 
-    private suspend fun clearFirebaseCollections(tableNames: List<String>) {
-        if (tableNames.isEmpty()) return
+    private suspend fun clearFirebaseCollection(
+        definition: FirebaseTableDefinition,
+        preserveUserId: String?
+    ) {
         withContext(Dispatchers.IO) {
-            tableNames.forEach { name ->
-                val definition = firebaseDefinitionsById[name] ?: FirebaseTableDefinition(collection = name)
-                Log.d(TAG, "Clearing Firebase collection ${definition.collection}")
-                clearFirebaseCollection(definition)
+            Log.d(TAG, "Clearing Firebase collection ${definition.collection}")
+            val snapshot = firestore.collection(definition.collection).get().await()
+            for (doc in snapshot.documents) {
+                val preserveDocument = definition.collection == "users" && !preserveUserId.isNullOrBlank() && doc.id == preserveUserId
+                deleteSubcollections(doc.reference, definition.subcollections)
+                if (!preserveDocument) {
+                    doc.reference.delete().await()
+                }
             }
-        }
-    }
-
-    private suspend fun clearFirebaseCollection(definition: FirebaseTableDefinition) {
-        val snapshot = firestore.collection(definition.collection).get().await()
-        for (doc in snapshot.documents) {
-            deleteSubcollections(doc.reference, definition.subcollections)
-            doc.reference.delete().await()
         }
     }
 
@@ -989,6 +1062,11 @@ data class TableToggleState(
     val selected: Boolean = false
 )
 
+data class TableNames(
+    val greek: String,
+    val english: String
+)
+
 data class FirebaseTableDefinition(
     val collection: String,
     val subcollections: List<SubcollectionDefinition> = emptyList()
@@ -1001,7 +1079,7 @@ data class SubcollectionDefinition(
 
 sealed class ClearState {
     object Idle : ClearState()
-    object Running : ClearState()
+    data class Running(val message: String?) : ClearState()
     data class Success(val message: String) : ClearState()
     data class Error(val message: String) : ClearState()
 }

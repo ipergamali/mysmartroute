@@ -66,6 +66,7 @@
     <string name="clear_success">Data cleared successfully</string>
     <string name="clear_error_no_selection">Select at least one table</string>
     <string name="clear_error_generic">Failed to clear data: %1$s</string>
+    <string name="clear_progress_message">Διαγράφεται: %1$s\nDeleting: %2$s</string>
     <string name="initialize_button">Initialize</string>
     <string name="initialize_success">Initialization completed</string>
     <string name="local_db">Local DB</string>

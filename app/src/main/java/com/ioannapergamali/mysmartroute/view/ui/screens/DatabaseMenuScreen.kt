@@ -101,6 +101,16 @@ fun DatabaseMenuScreen(navController: NavController, openDrawer: () -> Unit) {
             Spacer(modifier = Modifier.height(16.dp))
 
             when (val state = clearState) {
+                is ClearState.Running -> {
+                    state.message?.takeIf { it.isNotBlank() }?.let { message ->
+                        Text(
+                            text = message,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+                }
+
                 is ClearState.Success -> {
                     Text(
                         text = state.message,
@@ -162,7 +172,7 @@ private fun TableSelectionRow(
             text = table.title,
             style = MaterialTheme.typography.bodyLarge,
             modifier = Modifier.weight(1f),
-            maxLines = 1
+            maxLines = 2
         )
         Switch(
             checked = table.selected,
