@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.room.withTransaction
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestoreException
@@ -56,6 +57,7 @@ import com.ioannapergamali.mysmartroute.utils.toNotificationEntity
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
 import com.ioannapergamali.mysmartroute.data.local.MovingDetailEntity
 import com.ioannapergamali.mysmartroute.utils.toMovingDetailEntity
+import com.ioannapergamali.mysmartroute.R
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -64,6 +66,9 @@ import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
  * ViewModel για προβολή και συγχρονισμό δεδομένων βάσεων.
@@ -98,6 +103,93 @@ class DatabaseViewModel : ViewModel() {
     private val _lastSyncTime = MutableStateFlow(0L)
     val lastSyncTime: StateFlow<Long> = _lastSyncTime
 
+    private val localTableDefinitions = listOf(
+        "users",
+        "vehicles",
+        "poi_types",
+        "pois",
+        "settings",
+        "roles",
+        "menus",
+        "menu_options",
+        "app_language",
+        "routes",
+        "route_points",
+        "route_bus_station",
+        "movings",
+        "moving_details",
+        "walking",
+        "walking_routes",
+        "transport_declarations",
+        "transport_declarations_details",
+        "availabilities",
+        "seat_reservations",
+        "seat_reservation_details",
+        "favorites",
+        "favorite_routes",
+        "transfer_requests",
+        "trip_ratings",
+        "notifications",
+        "user_pois",
+        "app_datetime"
+    )
+
+    private val firebaseTableDefinitions = listOf(
+        FirebaseTableDefinition(
+            collection = "users",
+            subcollections = listOf(
+                SubcollectionDefinition(
+                    name = "favorites",
+                    children = listOf(SubcollectionDefinition(name = "items"))
+                )
+            )
+        ),
+        FirebaseTableDefinition(collection = "vehicles"),
+        FirebaseTableDefinition(collection = "pois"),
+        FirebaseTableDefinition(collection = "poi_types"),
+        FirebaseTableDefinition(collection = "user_settings"),
+        FirebaseTableDefinition(
+            collection = "roles",
+            subcollections = listOf(
+                SubcollectionDefinition(
+                    name = "menus",
+                    children = listOf(SubcollectionDefinition(name = "options"))
+                )
+            )
+        ),
+        FirebaseTableDefinition(
+            collection = "routes",
+            subcollections = listOf(SubcollectionDefinition(name = "bus_stations"))
+        ),
+        FirebaseTableDefinition(
+            collection = "movings",
+            subcollections = listOf(SubcollectionDefinition(name = "details"))
+        ),
+        FirebaseTableDefinition(
+            collection = "transport_declarations",
+            subcollections = listOf(SubcollectionDefinition(name = "details"))
+        ),
+        FirebaseTableDefinition(collection = "availabilities"),
+        FirebaseTableDefinition(
+            collection = "seat_reservations",
+            subcollections = listOf(SubcollectionDefinition(name = "details"))
+        ),
+        FirebaseTableDefinition(collection = "transfer_requests"),
+        FirebaseTableDefinition(collection = "trip_ratings"),
+        FirebaseTableDefinition(collection = "notifications")
+    )
+
+    private val firebaseDefinitionsById = firebaseTableDefinitions.associateBy { it.collection }
+
+    private val _localTables = MutableStateFlow(localTableDefinitions.map { TableToggleState(id = it, title = it) })
+    val localTables: StateFlow<List<TableToggleState>> = _localTables
+
+    private val _firebaseTables = MutableStateFlow(firebaseTableDefinitions.map { TableToggleState(id = it.collection, title = it.collection) })
+    val firebaseTables: StateFlow<List<TableToggleState>> = _firebaseTables
+
+    private val _clearState = MutableStateFlow<ClearState>(ClearState.Idle)
+    val clearState: StateFlow<ClearState> = _clearState
+
     /**
      * Φορτώνει τον χρόνο τελευταίου συγχρονισμού από τα SharedPreferences.
      * Loads the last sync timestamp from SharedPreferences.
@@ -105,6 +197,112 @@ class DatabaseViewModel : ViewModel() {
     fun loadLastSync(context: Context) {
         val prefs = context.getSharedPreferences("db_sync", Context.MODE_PRIVATE)
         _lastSyncTime.value = prefs.getLong("last_sync", 0L)
+    }
+
+    fun setLocalTableSelected(tableId: String, selected: Boolean) {
+        _localTables.update { tables ->
+            tables.map { table ->
+                if (table.id == tableId) {
+                    table.copy(selected = selected)
+                } else {
+                    table
+                }
+            }
+        }
+        resetClearStateIfPossible()
+    }
+
+    fun setFirebaseTableSelected(tableId: String, selected: Boolean) {
+        _firebaseTables.update { tables ->
+            tables.map { table ->
+                if (table.id == tableId) {
+                    table.copy(selected = selected)
+                } else {
+                    table
+                }
+            }
+        }
+        resetClearStateIfPossible()
+    }
+
+    fun clearSelectedTables(context: Context) {
+        val localToClear = _localTables.value.filter { it.selected }.map { it.id }
+        val firebaseToClear = _firebaseTables.value.filter { it.selected }.map { it.id }
+
+        if (localToClear.isEmpty() && firebaseToClear.isEmpty()) {
+            _clearState.value = ClearState.Error(context.getString(R.string.clear_error_no_selection))
+            return
+        }
+
+        viewModelScope.launch {
+            _clearState.value = ClearState.Running
+            try {
+                clearLocalTables(context, localToClear)
+                clearFirebaseCollections(firebaseToClear)
+                _localTables.update { tables -> tables.map { it.copy(selected = false) } }
+                _firebaseTables.update { tables -> tables.map { it.copy(selected = false) } }
+                _clearState.value = ClearState.Success(context.getString(R.string.clear_success))
+            } catch (e: Exception) {
+                Log.e(TAG, "Error clearing tables", e)
+                val reason = e.localizedMessage ?: e.message ?: ""
+                val message = context.getString(R.string.clear_error_generic, reason.ifEmpty { "-" })
+                _clearState.value = ClearState.Error(message)
+            }
+        }
+    }
+
+    private fun resetClearStateIfPossible() {
+        val current = _clearState.value
+        if (current is ClearState.Success || current is ClearState.Error) {
+            _clearState.value = ClearState.Idle
+        }
+    }
+
+    private suspend fun clearLocalTables(context: Context, tableNames: List<String>) {
+        if (tableNames.isEmpty()) return
+        withContext(Dispatchers.IO) {
+            val db = MySmartRouteDatabase.getInstance(context)
+            db.withTransaction {
+                val sqliteDb = db.openHelper.writableDatabase
+                tableNames.forEach { table ->
+                    Log.d(TAG, "Clearing local table $table")
+                    sqliteDb.execSQL("DELETE FROM `$table`")
+                }
+            }
+        }
+    }
+
+    private suspend fun clearFirebaseCollections(tableNames: List<String>) {
+        if (tableNames.isEmpty()) return
+        withContext(Dispatchers.IO) {
+            tableNames.forEach { name ->
+                val definition = firebaseDefinitionsById[name] ?: FirebaseTableDefinition(collection = name)
+                Log.d(TAG, "Clearing Firebase collection ${definition.collection}")
+                clearFirebaseCollection(definition)
+            }
+        }
+    }
+
+    private suspend fun clearFirebaseCollection(definition: FirebaseTableDefinition) {
+        val snapshot = firestore.collection(definition.collection).get().await()
+        for (doc in snapshot.documents) {
+            deleteSubcollections(doc.reference, definition.subcollections)
+            doc.reference.delete().await()
+        }
+    }
+
+    private suspend fun deleteSubcollections(
+        document: DocumentReference,
+        subcollections: List<SubcollectionDefinition>
+    ) {
+        if (subcollections.isEmpty()) return
+        subcollections.forEach { subcollection ->
+            val subSnapshot = document.collection(subcollection.name).get().await()
+            for (doc in subSnapshot.documents) {
+                deleteSubcollections(doc.reference, subcollection.children)
+                doc.reference.delete().await()
+            }
+        }
     }
 
     /**
@@ -761,6 +959,29 @@ class DatabaseViewModel : ViewModel() {
             }
         }
     }
+
+data class TableToggleState(
+    val id: String,
+    val title: String,
+    val selected: Boolean = false
+)
+
+data class FirebaseTableDefinition(
+    val collection: String,
+    val subcollections: List<SubcollectionDefinition> = emptyList()
+)
+
+data class SubcollectionDefinition(
+    val name: String,
+    val children: List<SubcollectionDefinition> = emptyList()
+)
+
+sealed class ClearState {
+    object Idle : ClearState()
+    object Running : ClearState()
+    data class Success(val message: String) : ClearState()
+    data class Error(val message: String) : ClearState()
+}
 
 /** Δομή για τα δεδομένα κάθε βάσης. */
 data class DatabaseData(

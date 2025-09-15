@@ -62,6 +62,12 @@
     <string name="about_title">Σχετικά</string>
     <string name="support_title">Υποστήριξη</string>
     <string name="databases_title">Βάσεις Δεδομένων</string>
+    <string name="room_tables">Πίνακες Room</string>
+    <string name="firebase_tables">Συλλογές Firebase</string>
+    <string name="clear_data">Καθάρισε</string>
+    <string name="clear_success">Ο καθαρισμός ολοκληρώθηκε</string>
+    <string name="clear_error_no_selection">Επιλέξτε τουλάχιστον έναν πίνακα</string>
+    <string name="clear_error_generic">Αποτυχία καθαρισμού δεδομένων: %1$s</string>
     <string name="local_db">Τοπική ΒΔ</string>
     <string name="firebase_db">Firestore ΒΔ</string>
     <string name="sync_db">Συγχρονισμός</string>
