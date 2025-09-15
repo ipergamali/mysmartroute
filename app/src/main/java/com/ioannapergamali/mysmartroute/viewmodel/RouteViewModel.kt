@@ -121,6 +121,8 @@ class RouteViewModel : ViewModel() {
                 }
             }.getOrDefault(emptyList())
 
+            _routes.value = localRoutes
+
             val snapshot = runCatching { query.get().await() }.getOrNull()
             if (snapshot != null) {
                 var list = snapshot.documents.mapNotNull { it.toRouteWithStations() }.toMutableList()
@@ -155,15 +157,13 @@ class RouteViewModel : ViewModel() {
                     points.forEach { pointDao.insert(it) }
                     busStations.forEach { busDao.insert(it) }
                 }
-                val localRoutes = when {
+                val updatedLocalRoutes = when {
                     includeAll -> routeDao.getAll().first()
                     userId != null -> routeDao.getRoutesForUser(userId).first()
                     else -> emptyList()
                 }
-                val combined = (list.map { it.first } + localRoutes).distinctBy { it.id }
+                val combined = (list.map { it.first } + updatedLocalRoutes).distinctBy { it.id }
                 _routes.value = combined
-            } else {
-                _routes.value = localRoutes
             }
         }
     }

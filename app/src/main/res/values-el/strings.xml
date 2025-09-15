@@ -68,6 +68,8 @@
     <string name="clear_success">Ο καθαρισμός ολοκληρώθηκε</string>
     <string name="clear_error_no_selection">Επιλέξτε τουλάχιστον έναν πίνακα</string>
     <string name="clear_error_generic">Αποτυχία καθαρισμού δεδομένων: %1$s</string>
+    <string name="initialize_button">Αρχικοποίηση</string>
+    <string name="initialize_success">Η αρχικοποίηση ολοκληρώθηκε</string>
     <string name="local_db">Τοπική ΒΔ</string>
     <string name="firebase_db">Firestore ΒΔ</string>
     <string name="sync_db">Συγχρονισμός</string>
@@ -300,6 +302,7 @@
     <string name="declare_success">Η δήλωση στάλθηκε επιτυχώς</string>
     <string name="declare_failure">Αποτυχία αποστολής δήλωσης</string>
     <string name="rating_saved_success">Η βαθμολογία αποθηκεύτηκε</string>
+    <string name="rating_saved_offline">Αποθηκεύτηκε τοπικά. Θα συγχρονιστεί μόλις υπάρξει σύνδεση</string>
     <string name="rating_save_failed">Αποτυχία αποθήκευσης βαθμολογίας</string>
     <string name="new_route_name">Νέο όνομα διαδρομής</string>
     <string name="save_as_new_route">Αποθήκευση ως νέα διαδρομή</string>

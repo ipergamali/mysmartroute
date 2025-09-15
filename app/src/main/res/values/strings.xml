@@ -66,6 +66,8 @@
     <string name="clear_success">Data cleared successfully</string>
     <string name="clear_error_no_selection">Select at least one table</string>
     <string name="clear_error_generic">Failed to clear data: %1$s</string>
+    <string name="initialize_button">Initialize</string>
+    <string name="initialize_success">Initialization completed</string>
     <string name="local_db">Local DB</string>
     <string name="firebase_db">Firestore DB</string>
     <string name="sync_db">Synchronization</string>
@@ -324,6 +326,7 @@
     <string name="declare_success">Transport declared successfully</string>
     <string name="declare_failure">Failed to declare transport</string>
     <string name="rating_saved_success">Rating saved</string>
+    <string name="rating_saved_offline">Saved locally. Will sync when online</string>
     <string name="rating_save_failed">Unable to save rating</string>
     <string name="new_route_name">New route name</string>
     <string name="save_as_new_route">Save as new route</string>

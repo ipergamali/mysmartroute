@@ -1,6 +1,7 @@
 package com.ioannapergamali.mysmartroute.viewmodel
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class TripRatingViewModel : ViewModel() {
 
@@ -77,29 +79,43 @@ class TripRatingViewModel : ViewModel() {
     fun saveTripRating(context: Context, moving: MovingEntity, rating: Int, comment: String) {
         viewModelScope.launch {
             val db = MySmartRouteDatabase.getInstance(context)
-            try {
-                db.tripRatingDao().upsert(
-                    TripRatingEntity(moving.id, moving.userId, rating, comment)
-                )
-                val success = repository.saveTripRating(
+            val entity = TripRatingEntity(moving.id, moving.userId, rating, comment)
+
+            val localResult = runCatching {
+                withContext(Dispatchers.IO) {
+                    db.tripRatingDao().upsert(entity)
+                }
+            }
+            localResult.exceptionOrNull()?.let {
+                Log.e(TAG, "Αποτυχία αποθήκευσης βαθμολογίας στη Room", it)
+            }
+
+            val remoteSuccess = try {
+                repository.saveTripRating(
                     moving.id,
                     moving.userId,
                     rating,
                     comment,
                 )
-                _message.value = if (success) {
-                    context.getString(R.string.rating_saved_success)
-                } else {
-                    context.getString(R.string.rating_save_failed)
-                }
-            } catch (_: Exception) {
-                _message.value = context.getString(R.string.rating_save_failed)
+            } catch (e: Exception) {
+                Log.e(TAG, "Αποτυχία αποθήκευσης βαθμολογίας στο Firestore", e)
+                false
+            }
+
+            _message.value = when {
+                remoteSuccess -> context.getString(R.string.rating_saved_success)
+                localResult.isSuccess -> context.getString(R.string.rating_saved_offline)
+                else -> context.getString(R.string.rating_save_failed)
             }
         }
     }
 
     fun clearMessage() {
         _message.value = null
+    }
+
+    companion object {
+        private const val TAG = "TripRatingViewModel"
     }
 }
 
