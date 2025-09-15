@@ -35,7 +35,6 @@ import com.ioannapergamali.mysmartroute.viewmodel.ReservationViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.TransportDeclarationViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.UserViewModel
-import com.ioannapergamali.mysmartroute.data.local.SeatReservationDetailEntity
 import androidx.compose.runtime.mutableStateMapOf
 import kotlinx.coroutines.flow.firstOrNull
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
@@ -59,7 +58,6 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
     val role by authViewModel.currentUserRole.collectAsState()
     val drivers by userViewModel.drivers.collectAsState()
     val userNames = remember { mutableStateMapOf<String, String>() }
-    val poiNames = remember { mutableStateMapOf<String, String>() }
     var selectedRoute by remember { mutableStateOf<RouteEntity?>(null) }
     var selectedDate by remember { mutableStateOf<Long?>(null) }
     var selectedDeclaration by remember { mutableStateOf<TransportDeclarationEntity?>(null) }
@@ -139,28 +137,10 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
         }
     }
 
-    val reservationDetails = remember { mutableStateMapOf<String, SeatReservationDetailEntity>() }
     LaunchedEffect(reservations) {
-        val db = MySmartRouteDatabase.getInstance(context)
         reservations.forEach { res ->
             if (res.userId.isNotBlank() && userNames[res.userId] == null) {
                 userNames[res.userId] = userViewModel.getUserName(context, res.userId)
-            }
-            val detail = db
-                .seatReservationDetailDao()
-                .getForReservation(res.id)
-                .firstOrNull()
-                ?.firstOrNull()
-            if (detail != null) {
-                reservationDetails[res.id] = detail
-                if (detail.startPoiId.isNotBlank() && poiNames[detail.startPoiId] == null) {
-                    poiNames[detail.startPoiId] =
-                        poiViewModel.getPoiName(context, detail.startPoiId)
-                }
-                if (detail.endPoiId.isNotBlank() && poiNames[detail.endPoiId] == null) {
-                    poiNames[detail.endPoiId] =
-                        poiViewModel.getPoiName(context, detail.endPoiId)
-                }
             }
         }
     }
@@ -287,21 +267,16 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                 Text(stringResource(R.string.print_list))
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Row(modifier = Modifier.fillMaxWidth()) {
-                        Text(stringResource(R.string.passenger), modifier = Modifier.weight(1f), style = MaterialTheme.typography.labelMedium)
-                        Text(stringResource(R.string.boarding_stop), modifier = Modifier.weight(1f), style = MaterialTheme.typography.labelMedium)
-                        Text(stringResource(R.string.dropoff_stop), modifier = Modifier.weight(1f), style = MaterialTheme.typography.labelMedium)
+                        Text(
+                            stringResource(R.string.passenger),
+                            style = MaterialTheme.typography.labelMedium
+                        )
                     }
                     Divider()
                     reservations.forEach { res ->
                         val userName = userNames[res.userId] ?: ""
-                        val detail = reservationDetails[res.id]
-                        val startName = detail?.let { poiNames[it.startPoiId] } ?: ""
-                        val endName = detail?.let { poiNames[it.endPoiId] } ?: ""
-
                         Row(modifier = Modifier.fillMaxWidth()) {
-                            Text(userName, modifier = Modifier.weight(1f))
-                            Text(startName, modifier = Modifier.weight(1f))
-                            Text(endName, modifier = Modifier.weight(1f))
+                            Text(userName)
                         }
                     }
                 }
