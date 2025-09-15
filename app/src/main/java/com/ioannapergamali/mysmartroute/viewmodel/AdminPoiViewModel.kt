@@ -45,6 +45,17 @@ class AdminPoiViewModel(private val repo: AdminPoiRepository) : ViewModel() {
         )
 
     /**
+     * Ομάδες σημείων με ίδιο όνομα.
+     * Groups of points sharing the same name.
+     */
+    val sameNamePois: StateFlow<List<List<PoIEntity>>> =
+        repo.getPoisWithSameName().stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = emptyList()
+        )
+
+    /**
      * Ενημερώνει τα στοιχεία ενός σημείου ενδιαφέροντος.
      * Updates the details of a point of interest.
      */

@@ -322,6 +322,7 @@
     <string name="coordinates_label">Coordinates</string>
     <string name="lat">Latitude</string>
     <string name="lng">Longitude</string>
+    <string name="same_name_pois">Points with the same name</string>
     <string name="edit">Edit</string>
     <string name="keep">Keep</string>
     <string name="keep_all">Keep all</string>

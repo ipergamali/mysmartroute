@@ -70,5 +70,20 @@ class AdminPoiRepositoryTest {
         assertEquals(1, duplicates.size)
         assertTrue(duplicates[0].map { it.id }.toSet() == setOf("1", "2"))
     }
+
+    @Test
+    fun getPoisWithSameName_returnsDuplicateGroups() = runBlocking {
+        val type = PoiTypeEntity(id = Place.Type.ESTABLISHMENT.name, name = "")
+        db.poiTypeDao().insertAll(listOf(type))
+        val poi1 = PoIEntity(id = "1", name = "A", type = Place.Type.ESTABLISHMENT, lat = 1.0, lng = 2.0)
+        val poi2 = PoIEntity(id = "2", name = "a", type = Place.Type.ESTABLISHMENT, lat = 3.0, lng = 4.0)
+        val poi3 = PoIEntity(id = "3", name = "B", type = Place.Type.ESTABLISHMENT)
+        db.poIDao().insertAll(listOf(poi1, poi2, poi3))
+
+        val duplicates = repo.getPoisWithSameName().first()
+
+        assertEquals(1, duplicates.size)
+        assertTrue(duplicates[0].map { it.id }.toSet() == setOf("1", "2"))
+    }
 }
 
