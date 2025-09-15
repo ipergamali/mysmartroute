@@ -23,8 +23,8 @@ android {
         applicationId = "com.ioannapergamali.mysmartroute"
         minSdk = 26
         targetSdk = 36
-        versionCode = 22
-        versionName = "2.21"
+        versionCode = 23
+        versionName = "2.22"
 
         manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
         buildConfigField("String", "MAPS_API_KEY", "\"$mapsApiKey\"")

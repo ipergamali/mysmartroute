@@ -41,6 +41,44 @@
                     κουμπιά αναθεώρησης.
 Από την έκδοση 2.21 η αναζήτηση οχήματος εμφανίζει ταυτόχρονα τοπικές και απομακρυσμένες διαδρομές,
                     επιτρέποντας κύλιση στην ανασκόπηση και διασφαλίζοντας ορθή φόρτωση `routeId` από το Firestore.
+Από την έκδοση 2.22 προστέθηκε πλήρης οθόνη συγχρονισμού για διαχειριστές με καρτέλες για τοπική βάση και Firestore,
+                    παρέχοντας ζωντανή απεικόνιση προόδου και σαφή τίτλους για κάθε πίνακα δεδομένων.
+
+## Περιλήψεις των 10 τελευταίων commits
+
+- **95bf599 – feat: add admin synchronization screen (#1803)**
+  Συγχωνεύει την ολοκληρωμένη ροή συγχρονισμού διαχειριστή στο κύριο κλάδο της εφαρμογής.
+  Προσθέτει επιλογή «Συγχρονισμός» στο admin menu με tabs για τοπική βάση, Firestore και ροή εργασιών.
+  Ολοκληρώνει το πακέτο μεταφράσεων για κάθε πίνακα και μήνυμα προόδου.
+- **3080a8c – feat: add admin synchronization screen**
+  Υλοποιεί την οθόνη DatabaseSyncScreen με λεπτομερή ενημέρωση προόδου ανά πίνακα.
+  Διαχωρίζει τη διαδικασία σε καρτέλες για τοπικά δεδομένα, Firestore και ενέργειες συγχρονισμού.
+  Εμπλουτίζει τα string resources ώστε τα μηνύματα να εμφανίζονται δίγλωσσα.
+- **ff79cfd – Fix TripRatingViewModel coroutine import (#1802)**
+  Συγχωνεύει τη διόρθωση των imports στο TripRatingViewModel εξασφαλίζοντας ότι οι coroutines έχουν σωστό context.
+  Προλαμβάνει build αποτυχίες που οφείλονται σε ελλιπή αναφορά του `Dispatchers`.
+- **7794fa6 – Add missing Dispatchers import**
+  Προσθέτει το import `kotlinx.coroutines.Dispatchers` στον TripRatingViewModel.
+  Αφαιρεί το compile error που εμπόδιζε τη χρήση του `withContext`.
+- **5114adb – Fix Compose State delegate import (#1801)**
+  Ενσωματώνει τη διόρθωση των απαιτούμενων extensions για delegates `by state` στον NavigationDrawer.
+  Εξασφαλίζει ότι η οθόνη χρησιμοποιεί σωστά τα Compose State αντικείμενα.
+- **133e934 – Fix Compose State delegate import**
+  Εισάγει το extension `getValue` από το Compose runtime στο NavigationDrawer.
+  Επιτρέπει την απρόσκοπτη αξιοποίηση των `State` ιδιοτήτων ως delegated values.
+- **c5074c5 – Fix unresolved collectAsState import in navigation drawer (#1800)**
+  Συγχωνεύει τη διόρθωση των imports του Compose runtime στο NavigationDrawer.
+  Διασφαλίζει ότι οι κλήσεις `collectAsState` επιλύονται σωστά σε όλα τα build variants.
+- **fad913e – Add missing Compose imports for navigation drawer**
+  Προσθέτει τα απαραίτητα imports του Compose runtime για τη λειτουργία του NavigationDrawer.
+  Αποτρέπει compile σφάλματα κατά την ανάγνωση ροών με `collectAsState`.
+- **94e0fa1 – Implement progressive system initialization cleanup (#1799)**
+  Συγχωνεύει τις βελτιώσεις της προοδευτικής εκκαθάρισης αρχικοποίησης συστήματος.
+  Διατηρεί τον συνδεδεμένο διαχειριστή, ενημερώνει δίγλωσσα τις ενέργειες και εκθέτει προοδευτική πρόοδο.
+- **73e6967 – Implement progressive system initialization cleanup**
+  Αναβαθμίζει το DatabaseMenuScreen ώστε να εμφανίζει προοδευτική κατάσταση καθαρισμού.
+  Εμπλουτίζει το DatabaseViewModel με bilingual περιγραφές πινάκων και διατήρηση λογαριασμού διαχειριστή.
+  Εξασφαλίζει συνεπή εμφάνιση προόδου μέσα από κοινά string resources.
 
 Για να λειτουργήσει ο χάρτης χρειάζεται να ορίσεις το Google Maps API key στο
 `local.properties` της ρίζας του project:
