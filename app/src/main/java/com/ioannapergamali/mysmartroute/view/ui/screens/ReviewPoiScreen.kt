@@ -1,12 +1,12 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -21,17 +21,27 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.MapsInitializer
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.rememberCameraPositionState
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
+import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.viewmodel.AdminPoiViewModel
 
 /**
@@ -45,6 +55,13 @@ fun ReviewPoiScreen(navController: NavController, openDrawer: () -> Unit) {
     val duplicateGroups by viewModel.duplicatePois.collectAsState()
     val sameNameGroups by viewModel.sameNamePois.collectAsState()
 
+    val apiKey = MapsUtils.getApiKey(context)
+    val isKeyMissing = apiKey.isBlank()
+
+    LaunchedEffect(Unit) {
+        MapsInitializer.initialize(context)
+    }
+
     Scaffold(topBar = { TopBar(title = stringResource(R.string.review_poi), navController = navController, showMenu = true, onMenuClick = openDrawer) }) { padding ->
         ScreenContainer(modifier = Modifier.padding(padding), scrollable = false) {
             if (duplicateGroups.isEmpty() && sameNameGroups.isEmpty()) {
@@ -54,6 +71,15 @@ fun ReviewPoiScreen(navController: NavController, openDrawer: () -> Unit) {
                     items(duplicateGroups) { group ->
                         var selected by remember { mutableStateOf<PoIEntity?>(null) }
                         var edited by remember { mutableStateOf("") }
+                        val cameraPositionState = rememberCameraPositionState()
+
+                        LaunchedEffect(selected) {
+                            selected?.let {
+                                cameraPositionState.move(
+                                    CameraUpdateFactory.newLatLngZoom(LatLng(it.lat, it.lng), 15f)
+                                )
+                            }
+                        }
 
                         Column(
                             modifier = Modifier
@@ -77,9 +103,6 @@ fun ReviewPoiScreen(navController: NavController, openDrawer: () -> Unit) {
                                         onClick = {
                                             selected = poi
                                             edited = poi.name
-                                            val uri = Uri.parse("geo:${poi.lat},${poi.lng}?q=" + Uri.encode(poi.name))
-                                            val intent = Intent(Intent.ACTION_VIEW, uri)
-                                            context.startActivity(intent)
                                         }
                                     )
                                     if (selected?.id == poi.id) {
@@ -92,6 +115,27 @@ fun ReviewPoiScreen(navController: NavController, openDrawer: () -> Unit) {
                                         Text(text = poi.name)
                                     }
                                 }
+                            }
+
+                            if (selected != null) {
+                                if (!isKeyMissing) {
+                                    GoogleMap(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(dimensionResource(id = R.dimen.map_height)),
+                                        cameraPositionState = cameraPositionState
+                                    ) {
+                                        selected?.let {
+                                            Marker(
+                                                state = MarkerState(position = LatLng(it.lat, it.lng)),
+                                                title = it.name
+                                            )
+                                        }
+                                    }
+                                } else {
+                                    Text(stringResource(R.string.map_api_key_missing))
+                                }
+                                Spacer(Modifier.height(16.dp))
                             }
 
                             Button(
@@ -123,6 +167,15 @@ fun ReviewPoiScreen(navController: NavController, openDrawer: () -> Unit) {
                         items(sameNameGroups) { group ->
                             var selected by remember { mutableStateOf<PoIEntity?>(null) }
                             var edited by remember { mutableStateOf("") }
+                            val cameraPositionState = rememberCameraPositionState()
+
+                            LaunchedEffect(selected) {
+                                selected?.let {
+                                    cameraPositionState.move(
+                                        CameraUpdateFactory.newLatLngZoom(LatLng(it.lat, it.lng), 15f)
+                                    )
+                                }
+                            }
 
                             Column(
                                 modifier = Modifier
@@ -141,9 +194,6 @@ fun ReviewPoiScreen(navController: NavController, openDrawer: () -> Unit) {
                                             onClick = {
                                                 selected = poi
                                                 edited = poi.name
-                                                val uri = Uri.parse("geo:${poi.lat},${poi.lng}?q=" + Uri.encode(poi.name))
-                                                val intent = Intent(Intent.ACTION_VIEW, uri)
-                                                context.startActivity(intent)
                                             }
                                         )
                                         if (selected?.id == poi.id) {
@@ -156,6 +206,27 @@ fun ReviewPoiScreen(navController: NavController, openDrawer: () -> Unit) {
                                             Text(text = poi.name)
                                         }
                                     }
+                                }
+
+                                if (selected != null) {
+                                    if (!isKeyMissing) {
+                                        GoogleMap(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .height(dimensionResource(id = R.dimen.map_height)),
+                                            cameraPositionState = cameraPositionState
+                                        ) {
+                                            selected?.let {
+                                                Marker(
+                                                    state = MarkerState(position = LatLng(it.lat, it.lng)),
+                                                    title = it.name
+                                                )
+                                            }
+                                        }
+                                    } else {
+                                        Text(stringResource(R.string.map_api_key_missing))
+                                    }
+                                    Spacer(Modifier.height(16.dp))
                                 }
 
                                 Button(
