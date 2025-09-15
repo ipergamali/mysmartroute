@@ -1,14 +1,9 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.DoneAll
-import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
@@ -35,6 +30,7 @@ import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.AdminRouteViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.UserViewModel
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
 import android.widget.Toast
@@ -45,6 +41,7 @@ fun ReviewRouteScreen(navController: NavController, openDrawer: () -> Unit) {
     val context = LocalContext.current
     val adminViewModel: AdminRouteViewModel = viewModel(factory = AdminRouteViewModel.Factory(context))
     val routeViewModel: RouteViewModel = viewModel()
+    val userViewModel: UserViewModel = viewModel()
     val duplicateGroups by adminViewModel.duplicateRoutes.collectAsState()
 
     var selectedRoute by remember { mutableStateOf<RouteEntity?>(null) }
@@ -86,33 +83,39 @@ fun ReviewRouteScreen(navController: NavController, openDrawer: () -> Unit) {
                     modifier = Modifier.padding(16.dp)
                 )
             } else {
-                duplicateGroups.forEach { group ->
-                    Text(group.map { it.name }.distinct().joinToString(" / "))
-                    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        items(group) { route ->
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Button(
-                                    onClick = {
-                                        selectedRoute = route
-                                        newRouteName = route.name
-                                        pois = emptyList()
-                                        pathPoints = emptyList()
-                                    },
-                                    shape = CircleShape,
-                                    contentPadding = PaddingValues(0.dp),
-                                    modifier = Modifier.size(48.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Filled.DirectionsCar,
-                                        contentDescription = stringResource(R.string.route)
-                                    )
+                LazyColumn {
+                    items(duplicateGroups) { group ->
+                        Text(group.map { it.name }.distinct().joinToString(" / "))
+                        Column {
+                            group.forEach { route ->
+                                var driverName by remember { mutableStateOf("") }
+                                LaunchedEffect(route.userId) {
+                                    driverName = userViewModel.getUserName(context, route.userId)
                                 }
-                                Text(route.name)
-                                Text(stringResource(R.string.registered_by, route.userId))
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    RadioButton(
+                                        selected = selectedRoute?.id == route.id,
+                                        onClick = {
+                                            selectedRoute = route
+                                            newRouteName = route.name
+                                            pois = emptyList()
+                                            pathPoints = emptyList()
+                                        }
+                                    )
+                                    Column {
+                                        Text(route.name)
+                                        Text(driverName)
+                                    }
+                                }
                             }
                         }
+                        Spacer(Modifier.height(16.dp))
                     }
-                    Spacer(Modifier.height(16.dp))
                 }
 
                 if (selectedRoute != null && pois.isNotEmpty() && !isKeyMissing) {
@@ -172,7 +175,7 @@ fun ReviewRouteScreen(navController: NavController, openDrawer: () -> Unit) {
                     )
                     Spacer(Modifier.height(8.dp))
                     Row {
-                        FilledIconButton(
+                        Button(
                             onClick = {
                                 selectedRoute?.let { route ->
                                     val group = duplicateGroups.find { g -> g.any { it.id == route.id } } ?: emptyList()
@@ -193,16 +196,12 @@ fun ReviewRouteScreen(navController: NavController, openDrawer: () -> Unit) {
                                     }
                                 }
                             },
-                            enabled = newRouteName.isNotBlank(),
-                            shape = CircleShape
+                            enabled = newRouteName.isNotBlank()
                         ) {
-                            Icon(
-                                imageVector = Icons.Filled.Check,
-                                contentDescription = stringResource(R.string.keep)
-                            )
+                            Text(stringResource(R.string.keep))
                         }
                         Spacer(Modifier.width(8.dp))
-                        FilledIconButton(
+                        Button(
                             onClick = {
                                 selectedRoute?.let { route ->
                                     val group = duplicateGroups.find { g -> g.any { it.id == route.id } } ?: emptyList()
@@ -222,13 +221,9 @@ fun ReviewRouteScreen(navController: NavController, openDrawer: () -> Unit) {
                                     }
                                 }
                             },
-                            enabled = newRouteName.isNotBlank(),
-                            shape = CircleShape
+                            enabled = newRouteName.isNotBlank()
                         ) {
-                            Icon(
-                                imageVector = Icons.Filled.DoneAll,
-                                contentDescription = stringResource(R.string.keep_all)
-                            )
+                            Text(stringResource(R.string.keep_all))
                         }
                     }
                 }
