@@ -70,6 +70,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.util.Locale
 
 /**
  * ViewModel για προβολή και συγχρονισμό δεδομένων βάσεων.
@@ -102,6 +103,9 @@ class DatabaseViewModel : ViewModel() {
 
     private val _syncState = MutableStateFlow<SyncState>(SyncState.Idle)
     val syncState: StateFlow<SyncState> = _syncState
+
+    private val _currentSyncMessage = MutableStateFlow<String?>(null)
+    val currentSyncMessage: StateFlow<String?> = _currentSyncMessage
 
     private val _lastSyncTime = MutableStateFlow(0L)
     val lastSyncTime: StateFlow<Long> = _lastSyncTime
@@ -535,6 +539,7 @@ class DatabaseViewModel : ViewModel() {
                 Log.d(TAG, "Fetched ${settings.size} settings from Firebase")
 
                 Log.d(TAG, "Fetching roles from Firestore")
+                updateSyncTable(context, "roles")
                 val rolesSnap = firestore.collection("roles").get().await()
                 Log.d(TAG, "Fetched ${rolesSnap.documents.size} role documents")
                 val roles = rolesSnap.documents.map { doc ->
@@ -550,6 +555,7 @@ class DatabaseViewModel : ViewModel() {
                 for (roleDoc in rolesSnap.documents) {
                     val roleId = roleDoc.getString("id") ?: roleDoc.id
                     Log.d(TAG, "Fetching menus for role $roleId")
+                    updateSyncTable(context, "menus")
                     val menusSnap = roleDoc.reference.collection("menus").get().await()
                     Log.d(TAG, "Fetched ${menusSnap.documents.size} menus for role $roleId")
                     for (menuDoc in menusSnap.documents) {
@@ -565,6 +571,7 @@ class DatabaseViewModel : ViewModel() {
                             )
                         )
                         Log.d(TAG, "Fetching options for menu $menuId")
+                        updateSyncTable(context, "menu_options")
                         val optsSnap = menuDoc.reference.collection("options").get().await()
                         Log.d(TAG, "Fetched ${optsSnap.documents.size} options for menu $menuId")
                         for (optDoc in optsSnap.documents) {
@@ -581,15 +588,18 @@ class DatabaseViewModel : ViewModel() {
                     }
                 }
 
+            updateSyncTable(context, "routes")
             val routeTriples = firestore.collection("routes").get().await()
                 .documents.mapNotNull { it.toRouteWithStations() }
             val routes = routeTriples.map { it.first }
             val routePoints = routeTriples.flatMap { it.second }
             val busStations = routeTriples.flatMap { it.third }
 
+            updateSyncTable(context, "movings")
             val movings = firestore.collection("movings").get().await()
                 .documents.mapNotNull { it.toMovingEntity() }
 
+            updateSyncTable(context, "transport_declarations")
             val declSnap = firestore.collection("transport_declarations").get().await()
             val declarations = mutableListOf<TransportDeclarationEntity>()
             for (doc in declSnap.documents) {
@@ -681,6 +691,7 @@ class DatabaseViewModel : ViewModel() {
         }
         Log.d(TAG, "Internet connection available")
         _syncState.value = SyncState.Loading
+        updateSyncMessage(context.getString(R.string.sync_loading))
         val prefs = context.getSharedPreferences("db_sync", Context.MODE_PRIVATE)
         val localTs = prefs.getLong("last_sync", 0L)
         Log.d(TAG, "Local timestamp: $localTs")
@@ -701,23 +712,28 @@ class DatabaseViewModel : ViewModel() {
                 if (remoteTs > localTs) {
                     Log.d(TAG, "Remote database is newer, downloading data")
                     Log.d(TAG, "Fetching users from Firestore")
+                    updateSyncTable(context, "users")
                     val users = firestore.collection("users").get().await()
                         .documents.mapNotNull { it.toUserEntity() }
                     Log.d(TAG, "Fetched ${users.size} users")
                     Log.d(TAG, "Fetching vehicles from Firestore")
+                    updateSyncTable(context, "vehicles")
                     val vehicles = firestore.collection("vehicles").get().await()
                         .documents.mapNotNull { doc -> doc.toVehicleEntity() }
                     Log.d(TAG, "Fetching PoIs from Firestore")
+                    updateSyncTable(context, "pois")
                     val pois = firestore.collection("pois").get().await()
                         .documents.mapNotNull { it.toPoIEntity() }
                     Log.d(TAG, "Fetched ${pois.size} pois")
                     Log.d(TAG, "Fetching PoiTypes from Firestore")
+                    updateSyncTable(context, "poi_types")
                     val poiTypes = firestore.collection("poi_types").get().await()
                         .documents.mapNotNull { doc: com.google.firebase.firestore.DocumentSnapshot ->
                             doc.toPoiTypeEntity()
                         }
                     Log.d(TAG, "Fetched ${poiTypes.size} poi types")
                     Log.d(TAG, "Fetching settings from Firestore")
+                    updateSyncTable(context, "user_settings")
                     val settings = firestore.collection("user_settings").get().await()
                         .documents.mapNotNull { doc ->
                             val userId = when (val uid = doc.get("userId")) {
@@ -737,6 +753,7 @@ class DatabaseViewModel : ViewModel() {
                         }
 
             Log.d(TAG, "Fetching roles from Firestore")
+                    updateSyncTable(context, "roles")
                     val rolesSnap = firestore.collection("roles").get().await()
             Log.d(TAG, "Fetched ${rolesSnap.documents.size} role documents")
                     val roles = rolesSnap.documents.map { doc ->
@@ -751,6 +768,7 @@ class DatabaseViewModel : ViewModel() {
                     for (roleDoc in rolesSnap.documents) {
                         val roleId = roleDoc.getString("id") ?: roleDoc.id
                 Log.d(TAG, "Fetching menus for role $roleId")
+                        updateSyncTable(context, "menus")
                         val menusSnap = roleDoc.reference.collection("menus").get().await()
                 Log.d(TAG, "Fetched ${menusSnap.documents.size} menus for role $roleId")
                         for (menuDoc in menusSnap.documents) {
@@ -763,6 +781,7 @@ class DatabaseViewModel : ViewModel() {
                                 )
                             )
                     Log.d(TAG, "Fetching options for menu $menuId")
+                            updateSyncTable(context, "menu_options")
                             val optsSnap = menuDoc.reference.collection("options").get().await()
                     Log.d(TAG, "Fetched ${optsSnap.documents.size} options for menu $menuId")
                             for (optDoc in optsSnap.documents) {
@@ -778,28 +797,33 @@ class DatabaseViewModel : ViewModel() {
                         }
                     }
 
+                    updateSyncTable(context, "routes")
                     val routeTriples = firestore.collection("routes").get().await()
                         .documents.mapNotNull { it.toRouteWithStations() }
                     val routes = routeTriples.map { it.first }
                     val routePoints = routeTriples.flatMap { it.second }
                     val busStations = routeTriples.flatMap { it.third }
 
+                    updateSyncTable(context, "movings")
                     val movingSnap = firestore.collection("movings").get().await()
                     val movingDetails = mutableListOf<MovingDetailEntity>()
                     val movings = movingSnap.documents.mapNotNull { doc ->
                         val moving = doc.toMovingEntity()
                         if (moving != null) {
+                            updateSyncTable(context, "moving_details")
                             val dets = doc.reference.collection("details").get().await()
                             movingDetails += dets.documents.mapNotNull { it.toMovingDetailEntity(moving.id) }
                         }
                         moving
                     }
 
+                    updateSyncTable(context, "transport_declarations")
                     val declSnap = firestore.collection("transport_declarations").get().await()
                     val declarations = mutableListOf<TransportDeclarationEntity>()
                     val declDetails = mutableListOf<TransportDeclarationDetailEntity>()
                     for (doc in declSnap.documents) {
                         val decl = doc.toTransportDeclarationEntity() ?: continue
+                        updateSyncTable(context, "transport_declarations_details")
                         val details = doc.reference.collection("details").get().await()
                             .documents.mapNotNull { it.toTransportDeclarationDetailEntity(decl.id) }
                         if (details.isNotEmpty()) {
@@ -812,59 +836,87 @@ class DatabaseViewModel : ViewModel() {
                         declarations += decl
                     }
 
+                    updateSyncTable(context, "availabilities")
                     val availabilities = firestore.collection("availabilities").get().await()
                         .documents.mapNotNull { it.toAvailabilityEntity() }
 
+                    updateSyncTable(context, "favorites")
                     val favorites = favoritesGroup
                         .get()
                         .await()
                         .documents.mapNotNull { it.toFavoriteEntity() }
 
+                    updateSyncTable(context, "seat_reservations")
                     val seatResSnap = firestore.collection("seat_reservations").get().await()
                     val seatResDetails = mutableListOf<SeatReservationDetailEntity>()
                     val seatReservations = seatResSnap.documents.mapNotNull { doc ->
                         val res = doc.toSeatReservationEntity()
                         if (res != null) {
+                            updateSyncTable(context, "seat_reservation_details")
                             val dets = doc.reference.collection("details").get().await()
                             seatResDetails += dets.documents.mapNotNull { it.toSeatReservationDetailEntity(res.id) }
                         }
                         res
                     }
 
+                    updateSyncTable(context, "transfer_requests")
                     val transferRequests = firestore.collection("transfer_requests").get().await()
                         .documents.mapNotNull { it.toTransferRequestEntity() }
 
+                    updateSyncTable(context, "trip_ratings")
                     val tripRatings = firestore.collection("trip_ratings").get().await()
                         .documents.mapNotNull { it.toTripRatingEntity() }
 
+                    updateSyncTable(context, "user_pois")
                     val userPois = emptyList<UserPoiEntity>()
 
                     Log.d(
                         TAG,
                         "Remote data -> users:${users.size} vehicles:${vehicles.size} pois:${pois.size} poiTypes:${poiTypes.size} settings:${settings.size} roles:${roles.size} menus:${menus.size} options:${menuOptions.size} routes:${routes.size} movings:${movings.size} declarations:${declarations.size} availabilities:${availabilities.size} favorites:${favorites.size} seatRes:${seatReservations.size} transferReq:${transferRequests.size} tripRatings:${tripRatings.size}"
                     )
+                    updateSyncTable(context, "users")
                     users.forEach { insertUserSafely(db.userDao(), it) }
+                    updateSyncTable(context, "vehicles")
                     vehicles.forEach { insertVehicleSafely(db, it) }
+                    updateSyncTable(context, "pois")
                     pois.forEach { db.poIDao().insert(it) }
+                    updateSyncTable(context, "poi_types")
                     db.poiTypeDao().insertAll(poiTypes)
+                    updateSyncTable(context, "settings")
                     settings.forEach { insertSettingsSafely(db.settingsDao(), db.userDao(), it) }
+                    updateSyncTable(context, "roles")
                     roles.forEach { db.roleDao().insert(it) }
+                    updateSyncTable(context, "menus")
                     menus.forEach { insertMenuSafely(db.menuDao(), db.roleDao(), it) }
+                    updateSyncTable(context, "menu_options")
                     menuOptions.forEach { db.menuOptionDao().insert(it) }
+                    updateSyncTable(context, "routes")
                     routes.forEach { db.routeDao().insert(it) }
+                    updateSyncTable(context, "route_points")
                     routePoints.forEach { db.routePointDao().insert(it) }
+                    updateSyncTable(context, "route_bus_station")
                     busStations.forEach { db.routeBusStationDao().insert(it) }
+                    updateSyncTable(context, "movings")
                     movings.forEach { db.movingDao().insert(it) }
+                    updateSyncTable(context, "moving_details")
                     movingDetails.forEach { db.movingDetailDao().insert(it) }
+                    updateSyncTable(context, "transport_declarations")
                     declarations.forEach { db.transportDeclarationDao().insert(it) }
                     if (declDetails.isNotEmpty()) {
+                        updateSyncTable(context, "transport_declarations_details")
                         db.transportDeclarationDetailDao().insertAll(declDetails)
                     }
+                    updateSyncTable(context, "availabilities")
                     availabilities.forEach { db.availabilityDao().insert(it) }
+                    updateSyncTable(context, "favorites")
                     favorites.forEach { insertFavoriteSafely(db.favoriteDao(), db.userDao(), it) }
+                    updateSyncTable(context, "seat_reservations")
                     seatReservations.forEach { db.seatReservationDao().insert(it) }
+                    updateSyncTable(context, "seat_reservation_details")
                     seatResDetails.forEach { db.seatReservationDetailDao().insert(it) }
+                    updateSyncTable(context, "transfer_requests")
                     transferRequests.forEach { db.transferRequestDao().insert(it) }
+                    updateSyncTable(context, "trip_ratings")
                     tripRatings.forEach { db.tripRatingDao().upsert(it) }
                     Log.d(TAG, "Inserted remote data to local DB")
                     prefs.edit().putLong("last_sync", remoteTs).apply()
@@ -926,32 +978,41 @@ class DatabaseViewModel : ViewModel() {
 
                     // Αποφεύγουμε την δημιουργία κενών εγγράφων στο Firestore
                     // Avoid creating empty documents in Firestore
+                    updateSyncTable(context, "users")
                     users.filter { it.id.isNotBlank() && it.name.isNotBlank() }.forEach { user ->
                         firestore.collection("users")
                             .document(user.id)
                             .set(user.toFirestoreMap()).await()
                     }
+                    updateSyncTable(context, "vehicles")
                     vehicles.forEach {
                         firestore.collection("vehicles")
                             .document(it.id)
                             .set(it.toFirestoreMap()).await()
                     }
-                    pois.forEach { firestore.collection("pois").document(it.id).set(it.toFirestoreMap()).await() }
+                    updateSyncTable(context, "pois")
+                    pois.forEach {
+                        firestore.collection("pois").document(it.id).set(it.toFirestoreMap()).await()
+                    }
+                    updateSyncTable(context, "poi_types")
                     poiTypes.forEach {
                         firestore.collection("poi_types")
                             .document(it.id)
                             .set(it.toFirestoreMap()).await()
                     }
+                    updateSyncTable(context, "user_settings")
                     settings.forEach {
                         firestore.collection("user_settings")
                             .document(it.userId)
                             .set(it.toFirestoreMap()).await()
                     }
+                    updateSyncTable(context, "roles")
                     roles.forEach {
                         firestore.collection("roles")
                             .document(it.id)
                             .set(it.toFirestoreMap()).await()
                     }
+                    updateSyncTable(context, "menus")
                     menus.forEach { menu ->
                         val ref = firestore.collection("roles")
                             .document(menu.roleId)
@@ -959,12 +1020,14 @@ class DatabaseViewModel : ViewModel() {
                             .document(menu.id)
                         ref.set(menu.toFirestoreMap()).await()
                         menuOptions.filter { it.menuId == menu.id }.forEach { opt ->
+                            updateSyncTable(context, "menu_options")
                             ref.collection("options")
                                 .document(opt.id)
                                 .set(opt.toFirestoreMap()).await()
                         }
                     }
 
+                    updateSyncTable(context, "routes")
                     routes.forEach { route ->
                         val points = routePoints.filter { it.routeId == route.id }
                         firestore.collection("routes")
@@ -972,22 +1035,26 @@ class DatabaseViewModel : ViewModel() {
                             .set(route.toFirestoreMap(points)).await()
                     }
 
+                    updateSyncTable(context, "movings")
                     movings.forEach { moving ->
                         val ref = firestore.collection("movings").document(moving.id)
                         ref.set(moving.toFirestoreMap()).await()
                         movingDetailDao.getForMoving(moving.id).first().forEach { detail ->
+                            updateSyncTable(context, "moving_details")
                             ref.collection("details")
                                 .document(detail.id)
                                 .set(detail.toFirestoreMap()).await()
                         }
                     }
 
+                    updateSyncTable(context, "transport_declarations")
                     declarations.forEach { decl ->
                         firestore.collection("transport_declarations")
                             .document(decl.id)
                             .set(decl.toFirestoreMap()).await()
                         val details = detailDao.getForDeclaration(decl.id)
                         details.forEach { detail ->
+                            updateSyncTable(context, "transport_declarations_details")
                             firestore.collection("transport_declarations")
                                 .document(decl.id)
                                 .collection("details")
@@ -996,39 +1063,46 @@ class DatabaseViewModel : ViewModel() {
                         }
                     }
 
+                    updateSyncTable(context, "availabilities")
                     availabilities.forEach {
                         firestore.collection("availabilities")
                             .document(it.id)
                             .set(it.toFirestoreMap()).await()
                     }
+                    updateSyncTable(context, "favorites")
                     favorites.forEach { fav ->
                         userVehicles(fav.userId)
                             .document(fav.id)
                             .set(fav.toFirestoreMap()).await()
                     }
 
+                    updateSyncTable(context, "seat_reservations")
                     seatReservations.forEach { res ->
                         val ref = firestore.collection("seat_reservations").document(res.id)
                         ref.set(res.toFirestoreMap()).await()
                         seatResDetailDao.getForReservation(res.id).first().forEach { detail ->
+                            updateSyncTable(context, "seat_reservation_details")
                             ref.collection("details")
                                 .document(detail.id)
                                 .set(detail.toFirestoreMap()).await()
                         }
                     }
 
+                    updateSyncTable(context, "transfer_requests")
                     transferRequests.forEach {
                         firestore.collection("transfer_requests")
                             .document(it.requestNumber.toString())
                             .set(it.toFirestoreMap()).await()
                     }
 
+                    updateSyncTable(context, "trip_ratings")
                     tripRatings.forEach {
                         firestore.collection("trip_ratings")
                             .document("${'$'}{it.movingId}_${'$'}{it.userId}")
                             .set(it.toFirestoreMap()).await()
                     }
 
+                    updateSyncTable(context, "notifications")
                     notifications.forEach {
                         firestore.collection("notifications")
                             .document(it.id)
@@ -1053,7 +1127,51 @@ class DatabaseViewModel : ViewModel() {
                     e.localizedMessage ?: "Sync failed"
                 )
             }
+        } finally {
+            if (_syncState.value !is SyncState.Loading) {
+                updateSyncMessage(null)
+            }
         }
+    }
+
+    private fun updateSyncMessage(message: String?) {
+        _currentSyncMessage.value = message
+    }
+
+    private fun updateSyncTable(context: Context, tableId: String) {
+        updateSyncMessage(context.getString(R.string.syncing_table, context.tableDisplayName(tableId)))
+    }
+
+    private fun Context.tableDisplayName(tableId: String): String = when (tableId) {
+        "users" -> getString(R.string.table_name_users)
+        "vehicles" -> getString(R.string.table_name_vehicles)
+        "pois" -> getString(R.string.table_name_pois)
+        "poi_types" -> getString(R.string.table_name_poi_types)
+        "settings", "user_settings" -> getString(R.string.table_name_settings)
+        "roles" -> getString(R.string.table_name_roles)
+        "menus" -> getString(R.string.table_name_menus)
+        "menu_options" -> getString(R.string.table_name_menu_options)
+        "app_language" -> getString(R.string.table_name_languages)
+        "routes" -> getString(R.string.table_name_routes)
+        "route_points" -> getString(R.string.table_name_route_points)
+        "route_bus_station" -> getString(R.string.table_name_route_bus_stations)
+        "movings" -> getString(R.string.table_name_movings)
+        "moving_details" -> getString(R.string.table_name_moving_details)
+        "transport_declarations" -> getString(R.string.table_name_transport_declarations)
+        "transport_declarations_details" -> getString(R.string.table_name_transport_declaration_details)
+        "availabilities" -> getString(R.string.table_name_availabilities)
+        "favorites" -> getString(R.string.table_name_favorites)
+        "favorite_routes" -> getString(R.string.table_name_favorite_routes)
+        "user_pois" -> getString(R.string.table_name_user_pois)
+        "walking" -> getString(R.string.table_name_walking)
+        "walking_routes" -> getString(R.string.table_name_walking_routes)
+        "seat_reservations" -> getString(R.string.table_name_seat_reservations)
+        "seat_reservation_details" -> getString(R.string.table_name_seat_reservation_details)
+        "transfer_requests" -> getString(R.string.table_name_transfer_requests)
+        "trip_ratings" -> getString(R.string.table_name_trip_ratings)
+        "notifications" -> getString(R.string.table_name_notifications)
+        "app_datetime" -> getString(R.string.table_name_app_datetime)
+        else -> tableId.replace('_', ' ').replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
     }
 
 data class TableToggleState(

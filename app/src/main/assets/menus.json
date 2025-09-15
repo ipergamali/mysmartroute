@@ -138,6 +138,10 @@
             "route": "initSystem"
           },
           {
+            "titleKey": "sync_db",
+            "route": "syncDb"
+          },
+          {
             "titleKey": "create_user",
             "route": "createUser"
           },
