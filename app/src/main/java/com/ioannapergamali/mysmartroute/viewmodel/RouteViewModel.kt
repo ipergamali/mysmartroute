@@ -284,7 +284,7 @@ class RouteViewModel : ViewModel() {
         }
         val busStations = busIds.mapIndexed { index, p -> RouteBusStationEntity(id, index, p) }
 
-        runCatching {
+        val firestoreSuccess = runCatching {
             val routeRef = firestore.collection("routes").document(id)
             routeRef.set(entity.toFirestoreMap(points)).await()
             if (busStations.isNotEmpty()) {
@@ -302,13 +302,18 @@ class RouteViewModel : ViewModel() {
             }
         }.onFailure { e ->
             Log.e("RouteViewModel", "Αποτυχία αποθήκευσης στο Firestore", e)
-        }
+        }.isSuccess
 
-        routeDao.insert(entity)
-        points.forEach { pointDao.insert(it) }
-        busStations.forEach { busDao.insert(it) }
+        val roomSuccess = runCatching {
+            routeDao.insert(entity)
+            points.forEach { pointDao.insert(it) }
+            busStations.forEach { busDao.insert(it) }
+            routeDao.findById(id) != null
+        }.onFailure { e ->
+            Log.e("RouteViewModel", "Αποτυχία αποθήκευσης στη Room", e)
+        }.getOrDefault(false)
 
-        return id
+        return if (firestoreSuccess && roomSuccess) id else null
     }
 
     /**
