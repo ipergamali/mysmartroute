@@ -234,7 +234,7 @@ private fun SyncActions(
     currentMessage: String?,
     onSync: () -> Unit
 ) {
-    val lastSyncText = remember(lastSync) { formatTimestamp(lastSync) }
+    val lastSyncText = remember(lastSync) { formatTimestamp(lastSync, includeTime = true) }
 
     Text(
         text = stringResource(R.string.sync_last_sync, lastSyncText),
