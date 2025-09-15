@@ -27,5 +27,6 @@ data class SeatReservationDetailEntity(
     val startPoiId: String = "",
     val endPoiId: String = "",
     val cost: Double = 0.0,
+    val durationMinutes: Int = 0,
     val startTime: Long = 0L
 )

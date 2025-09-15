@@ -79,7 +79,7 @@ import com.ioannapergamali.mysmartroute.data.local.AppDateTimeDao
         AppDateTimeEntity::class
     ],
 
-    version = 75
+    version = 76
 
 )
 @TypeConverters(Converters::class)
@@ -1025,6 +1025,17 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_75_76 = object : Migration(75, 76) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "ALTER TABLE `seat_reservation_details` ADD COLUMN `durationMinutes` INTEGER NOT NULL DEFAULT 0"
+                )
+                database.execSQL(
+                    "ALTER TABLE `moving_details` ADD COLUMN `durationMinutes` INTEGER NOT NULL DEFAULT 0"
+                )
+            }
+        }
+
         private fun prepopulate(db: SupportSQLiteDatabase) {
             Log.d(TAG, "Prepopulating database")
             db.execSQL(
@@ -1178,7 +1189,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_71_72,
                     MIGRATION_72_73,
                     MIGRATION_73_74,
-                    MIGRATION_74_75
+                    MIGRATION_74_75,
+                    MIGRATION_75_76
 
                 )
                     .addCallback(object : RoomDatabase.Callback() {

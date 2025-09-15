@@ -26,5 +26,6 @@ data class MovingDetailEntity(
     val movingId: String = "",
     val startPoiId: String = "",
     val endPoiId: String = "",
+    val durationMinutes: Int = 0,
     val vehicleId: String = ""
 )

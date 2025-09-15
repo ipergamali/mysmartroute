@@ -27,7 +27,8 @@ data class ReservationSegment(
     val endPoiId: String,
     val vehicleId: String,
     val cost: Double,
-    val startTime: Long
+    val startTime: Long,
+    val durationMinutes: Int
 )
 
 /**
@@ -94,10 +95,7 @@ class BookingViewModel : ViewModel() {
         }
 
         val totalCost = segments.sumOf { it.cost }
-        val durationMinutes = if (segments.size > 1) {
-            val startTimes = segments.map { it.startTime }.sorted()
-            startTimes.zipWithNext { a, b -> ((b - a) / 60000).toInt() }.sum()
-        } else 0
+        val durationMinutes = segments.sumOf { it.durationMinutes }
 
         val reservation = SeatReservationEntity(
             id = UUID.randomUUID().toString(),
@@ -134,6 +132,7 @@ class BookingViewModel : ViewModel() {
                     startPoiId = seg.startPoiId,
                     endPoiId = seg.endPoiId,
                     cost = seg.cost,
+                    durationMinutes = seg.durationMinutes,
                     startTime = seg.startTime
                 )
                 resDetailDao.insert(resDetail)
@@ -147,14 +146,11 @@ class BookingViewModel : ViewModel() {
                     movingId = moving.id,
                     startPoiId = seg.startPoiId,
                     endPoiId = seg.endPoiId,
+                    durationMinutes = seg.durationMinutes,
                     vehicleId = seg.vehicleId
                 )
                 movingDetailDao.insert(movingDetail)
-                val detailMap = mapOf(
-                    "id" to movingDetail.id,
-                    "startPoiId" to db.collection("pois").document(seg.startPoiId),
-                    "endPoiId" to db.collection("pois").document(seg.endPoiId),
-                    "vehicleId" to db.collection("vehicles").document(seg.vehicleId),
+                val detailMap = movingDetail.toFirestoreMap() + mapOf(
                     "cost" to seg.cost,
                     "startTime" to seg.startTime
                 )

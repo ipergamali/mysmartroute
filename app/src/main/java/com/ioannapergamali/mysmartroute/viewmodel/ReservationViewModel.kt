@@ -222,6 +222,7 @@ class ReservationViewModel : ViewModel() {
                     movingId = moving.id,
                     startPoiId = detail.startPoiId,
                     endPoiId = detail.endPoiId,
+                    durationMinutes = declaration.durationMinutes,
                     vehicleId = declaration.vehicleId
                 )
                 movingDetailDao.insert(movingDetail)
