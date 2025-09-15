@@ -23,7 +23,6 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.data.local.RouteEntity
-import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.utils.offsetPois
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
@@ -47,6 +46,7 @@ fun ViewRoutesScreen(navController: NavController, openDrawer: () -> Unit) {
     var pois by remember { mutableStateOf<List<PoIEntity>>(emptyList()) }
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     var expanded by remember { mutableStateOf(false) }
+    var newRouteName by remember { mutableStateOf("") }
 
     val cameraPositionState = rememberCameraPositionState()
     val apiKey = MapsUtils.getApiKey(context)
@@ -56,6 +56,18 @@ fun ViewRoutesScreen(navController: NavController, openDrawer: () -> Unit) {
         MapsInitializer.initialize(context)
         routeViewModel.loadRoutes(context, includeAll = true)
         favViewModel.loadFavorites(context)
+    }
+
+    LaunchedEffect(selectedRoute, routes) {
+        selectedRoute?.let { route ->
+            pois = routeViewModel.getRoutePois(context, route.id)
+            pathPoints = pois.map { LatLng(it.lat, it.lng) }
+            pathPoints.firstOrNull()?.let {
+                cameraPositionState.move(
+                    CameraUpdateFactory.newLatLngZoom(it, 13f)
+                )
+            }
+        }
     }
 
     Scaffold(
@@ -109,21 +121,10 @@ fun ViewRoutesScreen(navController: NavController, openDrawer: () -> Unit) {
                             text = { Text(route.name) },
                             onClick = {
                                 selectedRoute = route
+                                newRouteName = route.name
+                                pois = emptyList()
+                                pathPoints = emptyList()
                                 expanded = false
-                                scope.launch {
-                                    val (_, path) = routeViewModel.getRouteDirections(
-                                        context,
-                                        route.id,
-                                        VehicleType.CAR
-                                    )
-                                    pathPoints = path
-                                    pois = routeViewModel.getRoutePois(context, route.id)
-                                    path.firstOrNull()?.let {
-                                        cameraPositionState.move(
-                                            CameraUpdateFactory.newLatLngZoom(it, 13f)
-                                        )
-                                    }
-                                }
                             }
                         )
                     }
@@ -132,14 +133,16 @@ fun ViewRoutesScreen(navController: NavController, openDrawer: () -> Unit) {
 
             Spacer(Modifier.height(16.dp))
 
-            if (selectedRoute != null && pathPoints.isNotEmpty() && !isKeyMissing) {
+            if (selectedRoute != null && pois.isNotEmpty() && !isKeyMissing) {
                 GoogleMap(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(dimensionResource(id = R.dimen.map_height)),
                     cameraPositionState = cameraPositionState
                 ) {
-                    Polyline(points = pathPoints)
+                    if (pathPoints.size > 1) {
+                        Polyline(points = pathPoints)
+                    }
                     offsetPois(pois).forEach { (poi, position) ->
                         Marker(
                             state = MarkerState(position = position),
@@ -176,6 +179,40 @@ fun ViewRoutesScreen(navController: NavController, openDrawer: () -> Unit) {
                             Text(poi.type.name, modifier = Modifier.weight(1f))
                         }
                     }
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            if (selectedRoute != null && pois.isNotEmpty()) {
+                OutlinedTextField(
+                    value = newRouteName,
+                    onValueChange = { newRouteName = it },
+                    label = { Text(stringResource(R.string.new_route_name)) },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(Modifier.height(8.dp))
+                Button(
+                    onClick = {
+                        scope.launch {
+                            val ids = pois.map { it.id }
+                            val result = routeViewModel.addRoute(context, ids, newRouteName)
+                            val msg = if (result != null) {
+                                routeViewModel.loadRoutes(context, includeAll = true)
+                                R.string.route_saved
+                            } else {
+                                R.string.route_save_failed
+                            }
+                            Toast.makeText(
+                                context,
+                                context.getString(msg),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    },
+                    enabled = newRouteName.isNotBlank()
+                ) {
+                    Text(stringResource(R.string.save_as_new_route))
                 }
             }
         }
