@@ -317,7 +317,6 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                 insertOption("opt_admin_8", adminMenuId, "rank_passengers", "rankPassengers")
             insertOption("opt_admin_9", adminMenuId, "view_vehicles", "viewVehicles")
             insertOption("opt_admin_10", adminMenuId, "view_users", "viewUsers")
-            insertOption("opt_admin_11", adminMenuId, "advance_date", "advanceDate")
         }
         }
 
