@@ -160,23 +160,57 @@ fun ReviewRouteScreen(navController: NavController, openDrawer: () -> Unit) {
                         modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(Modifier.height(8.dp))
-                    Button(
-                        onClick = {
-                            selectedRoute?.let { route ->
-                                scope.launch {
-                                    val updated = route.copy(name = newRouteName)
-                                    adminViewModel.updateRoute(updated)
-                                    Toast.makeText(
-                                        context,
-                                        context.getString(R.string.route_saved),
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                    Row {
+                        Button(
+                            onClick = {
+                                selectedRoute?.let { route ->
+                                    val group = duplicateGroups.find { g -> g.any { it.id == route.id } } ?: emptyList()
+                                    val baseName = newRouteName.ifBlank { route.name }
+                                    scope.launch {
+                                        val updated = route.copy(name = baseName)
+                                        adminViewModel.updateRoute(updated)
+                                        group.filter { it.id != route.id }.forEach { other ->
+                                            adminViewModel.mergeRoutes(route.id, other.id)
+                                        }
+                                        Toast.makeText(
+                                            context,
+                                            context.getString(R.string.route_saved),
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        selectedRoute = null
+                                        newRouteName = ""
+                                    }
                                 }
-                            }
-                        },
-                        enabled = newRouteName.isNotBlank()
-                    ) {
-                        Text(stringResource(R.string.save))
+                            },
+                            enabled = newRouteName.isNotBlank()
+                        ) {
+                            Text(stringResource(R.string.keep))
+                        }
+                        Spacer(Modifier.width(8.dp))
+                        Button(
+                            onClick = {
+                                selectedRoute?.let { route ->
+                                    val group = duplicateGroups.find { g -> g.any { it.id == route.id } } ?: emptyList()
+                                    val baseName = newRouteName.ifBlank { route.name }
+                                    scope.launch {
+                                        group.forEachIndexed { index, r ->
+                                            val newName = if (index == 0) baseName else "${baseName} ${index + 1}"
+                                            adminViewModel.updateRoute(r.copy(name = newName))
+                                        }
+                                        Toast.makeText(
+                                            context,
+                                            context.getString(R.string.route_saved),
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        selectedRoute = null
+                                        newRouteName = ""
+                                    }
+                                }
+                            },
+                            enabled = newRouteName.isNotBlank()
+                        ) {
+                            Text(stringResource(R.string.keep_all))
+                        }
                     }
                 }
             }
