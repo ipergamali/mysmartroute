@@ -320,8 +320,6 @@ fun AvailableTransportsScreen(
                                                     segments = segments,
                                                     declarationId = decl.id,
                                                     driverId = decl.driverId,
-                                                    cost = decl.cost,
-                                                    durationMinutes = decl.durationMinutes,
                                                 )
                                                 result.onSuccess {
                                                     val map = detailReservationCounts.getOrPut(decl.id) { mutableMapOf() }
