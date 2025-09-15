@@ -71,9 +71,7 @@ class BookingViewModel : ViewModel() {
         startTime: Long,
         segments: List<ReservationSegment>,
         declarationId: String = "",
-        driverId: String = "",
-        cost: Double? = null,
-        durationMinutes: Int = 0
+        driverId: String = ""
     ): Result<Unit> = withContext(Dispatchers.IO) {
         val userId = auth.currentUser?.uid
             ?: return@withContext Result.failure(Exception("Απαιτείται σύνδεση"))
@@ -95,6 +93,13 @@ class BookingViewModel : ViewModel() {
             return@withContext Result.failure(Exception("Η θέση έχει ήδη κρατηθεί"))
         }
 
+        val totalCost = segments.sumOf { it.cost }
+        val durationMinutes = if (segments.size > 1) {
+            val minStart = segments.minOf { it.startTime }
+            val maxStart = segments.maxOf { it.startTime }
+            ((maxStart - minStart) / 60000).toInt()
+        } else 0
+
         val reservation = SeatReservationEntity(
             id = UUID.randomUUID().toString(),
             declarationId = declarationId,
@@ -109,7 +114,7 @@ class BookingViewModel : ViewModel() {
             routeId = routeId,
             userId = userId,
             date = date,
-            cost = cost,
+            cost = totalCost,
             durationMinutes = durationMinutes,
             driverId = driverId,
             status = "pending"
@@ -146,9 +151,17 @@ class BookingViewModel : ViewModel() {
                     vehicleId = seg.vehicleId
                 )
                 movingDetailDao.insert(movingDetail)
+                val detailMap = mapOf(
+                    "id" to movingDetail.id,
+                    "startPoiId" to db.collection("pois").document(seg.startPoiId),
+                    "endPoiId" to db.collection("pois").document(seg.endPoiId),
+                    "vehicleId" to db.collection("vehicles").document(seg.vehicleId),
+                    "cost" to seg.cost,
+                    "startTime" to seg.startTime
+                )
                 movingRef.collection("details")
                     .document(movingDetail.id)
-                    .set(movingDetail.toFirestoreMap())
+                    .set(detailMap)
                     .await()
             }
             Result.success(Unit)
