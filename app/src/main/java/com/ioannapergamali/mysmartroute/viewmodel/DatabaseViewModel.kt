@@ -111,6 +111,9 @@ class DatabaseViewModel : ViewModel() {
     private val _lastSyncTime = MutableStateFlow(0L)
     val lastSyncTime: StateFlow<Long> = _lastSyncTime
 
+    @Volatile
+    private var activeSyncStep: String = "Idle"
+
     private val localTableDefinitions = listOf(
         "users",
         "vehicles",
@@ -733,18 +736,20 @@ class DatabaseViewModel : ViewModel() {
     }
 
     suspend fun syncDatabasesSuspend(context: Context) {
-        Log.d(TAG, "Starting database synchronization")
+        logStep("Έναρξη συγχρονισμού βάσεων")
         if (!NetworkUtils.isInternetAvailable(context)) {
-            Log.w(TAG, "No internet connection")
+            logStep("Αποτυχία ελέγχου σύνδεσης (δεν υπάρχει δίκτυο)")
             _syncState.value = SyncState.Error("No internet connection")
             return
         }
-        Log.d(TAG, "Internet connection available")
+        logStep("Διαθέσιμη σύνδεση στο διαδίκτυο")
         _syncState.value = SyncState.Loading
         updateSyncMessage(context.getString(R.string.sync_loading))
         val prefs = context.getSharedPreferences("db_sync", Context.MODE_PRIVATE)
+        logStep("Ανάγνωση τοπικού timestamp")
         val localTs = prefs.getLong("last_sync", 0L)
         Log.d(TAG, "Local timestamp: $localTs")
+        logStep("Ανάκτηση timestamp από Firestore")
         val remoteTs = try {
             firestore.collection("metadata").document("sync").get().await()
                 .getLong("last_sync")?.also { Log.d(TAG, "Remote timestamp: $it") } ?: 0L
@@ -753,14 +758,14 @@ class DatabaseViewModel : ViewModel() {
             0L
         }
 
-        Log.d(TAG, "Start sync: localTs=$localTs remoteTs=$remoteTs")
+        logStep("Έναρξη διαδικασίας συγχρονισμού (localTs=$localTs remoteTs=$remoteTs)")
 
         val db = MySmartRouteDatabase.getInstance(context)
 
         try {
             withTimeout(30000L) {
                 if (remoteTs > localTs) {
-                    Log.d(TAG, "Remote database is newer, downloading data")
+                    logStep("Το Firestore είναι νεότερο - λήψη δεδομένων")
                     Log.d(TAG, "Fetching users from Firestore")
                     updateSyncTable(context, "users")
                     val users = firestore.collection("users").get().await()
@@ -969,10 +974,11 @@ class DatabaseViewModel : ViewModel() {
                     updateSyncTable(context, "trip_ratings")
                     tripRatings.forEach { db.tripRatingDao().upsert(it) }
                     Log.d(TAG, "Inserted remote data to local DB")
+                    logStep("Ολοκληρώθηκε η ενημέρωση της τοπικής βάσης από Firestore")
                     prefs.edit().putLong("last_sync", remoteTs).apply()
                     _lastSyncTime.value = remoteTs
                 } else {
-                    Log.d(TAG, "Local database is newer, uploading data")
+                    logStep("Η τοπική βάση είναι νεότερη - αποστολή δεδομένων")
                     val users = db.userDao().getAllUsers().first()
                     Log.d(TAG, "Fetched ${users.size} local users")
                     val vehicles = db.vehicleDao().getVehicles().first()
@@ -1159,7 +1165,7 @@ class DatabaseViewModel : ViewModel() {
                             .set(it.toFirestoreMap()).await()
                     }
 
-                    Log.d(TAG, "Uploaded local data to Firebase")
+                    logStep("Ολοκληρώθηκε η αποστολή τοπικών δεδομένων στο Firestore")
 
                     val newTs = System.currentTimeMillis()
                     firestore.collection("metadata").document("sync").set(mapOf("last_sync" to newTs)).await()
@@ -1167,12 +1173,13 @@ class DatabaseViewModel : ViewModel() {
                     _lastSyncTime.value = newTs
                 }
             }
+            logStep("Ο συγχρονισμός ολοκληρώθηκε επιτυχώς")
             _syncState.value = SyncState.Success
         } catch (e: TimeoutCancellationException) {
-            Log.e(TAG, "Sync timeout", e)
+            Log.e(TAG, "Sync timeout στο στάδιο: $activeSyncStep", e)
             _syncState.value = SyncState.Error("Sync timeout")
         } catch (e: Exception) {
-            Log.e(TAG, "Sync error", e)
+            Log.e(TAG, "Sync error στο στάδιο: $activeSyncStep", e)
             _syncState.value = SyncState.Error(
                 e.localizedMessage ?: "Sync failed"
             )
@@ -1187,8 +1194,15 @@ class DatabaseViewModel : ViewModel() {
         _currentSyncMessage.value = message
     }
 
+    private fun logStep(step: String) {
+        activeSyncStep = step
+        Log.d(TAG, "[Sync] $step")
+    }
+
     private fun updateSyncTable(context: Context, tableId: String) {
-        updateSyncMessage(context.getString(R.string.syncing_table, context.tableDisplayName(tableId)))
+        val tableName = context.tableDisplayName(tableId)
+        logStep("Συγχρονισμός πίνακα $tableId ($tableName)")
+        updateSyncMessage(context.getString(R.string.syncing_table, tableName))
     }
 
     private fun Context.tableDisplayName(tableId: String): String = when (tableId) {
