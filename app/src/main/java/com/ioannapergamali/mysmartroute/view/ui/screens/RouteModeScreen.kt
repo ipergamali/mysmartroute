@@ -38,7 +38,6 @@ import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
-import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.TransferRequestViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
@@ -69,7 +68,6 @@ fun RouteModeScreen(
     val context = LocalContext.current
     val routeViewModel: RouteViewModel = viewModel()
     val poiViewModel: PoIViewModel = viewModel()
-    val requestViewModel: VehicleRequestViewModel = viewModel()
     val transferRequestViewModel: TransferRequestViewModel = viewModel()
     val routes by routeViewModel.routes.collectAsState()
     val allPois by poiViewModel.pois.collectAsState()
@@ -146,23 +144,32 @@ fun RouteModeScreen(
             pathPoints = emptyList()
         }
     }
-    suspend fun saveEditedRouteAsNewRoute(): String {
+    suspend fun resolveRouteForRequest(): Pair<String, Boolean> {
+        val currentRouteId = selectedRouteId ?: return "" to false
         val current = routePoiIds.toSet()
         val original = originalPoiIds.toSet()
-        if (current == original) return selectedRouteId ?: ""
-        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return selectedRouteId ?: ""
+        if (current == original) return currentRouteId to false
+
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return "" to false
         val username = FirebaseFirestore.getInstance()
             .collection("users")
             .document(uid)
             .get()
             .await()
             .getString("username") ?: uid
-        val baseName = routes.find { it.id == selectedRouteId }?.name ?: "route"
-        return routeViewModel.addRoute(
+        val baseName = routes.find { it.id == currentRouteId }?.name ?: "route"
+        val newRouteId = routeViewModel.addRoute(
             context,
             routePoiIds.toList(),
             "${baseName}_edited_by_$username"
-        ) ?: selectedRouteId ?: ""
+        ) ?: return "" to false
+
+        selectedRouteId = newRouteId
+        originalPoiIds.clear()
+        originalPoiIds.addAll(routePoiIds)
+        routeViewModel.loadRoutes(context, includeAll = true)
+
+        return newRouteId to true
     }
 
 
@@ -478,10 +485,20 @@ fun RouteModeScreen(
                             val toId = routePois[toIdx].id
                             val cost = maxCostText.toDoubleOrNull()
                             val date = datePickerState.selectedDateMillis ?: 0L
-                            val routeId = saveEditedRouteAsNewRoute()
-
-                            requestViewModel.requestTransport(context, routeId, fromId, toId, cost, date)
-                            transferRequestViewModel.submitRequest(context, routeId, date, cost)
+                            val (routeId, poiChanged) = resolveRouteForRequest()
+                            if (routeId.isBlank()) {
+                                message = context.getString(R.string.request_unsuccessful)
+                                return@launch
+                            }
+                            transferRequestViewModel.submitRequest(
+                                context,
+                                routeId,
+                                fromId,
+                                toId,
+                                date,
+                                cost,
+                                poiChanged
+                            )
                             message = context.getString(R.string.request_sent)
                         }
                     },

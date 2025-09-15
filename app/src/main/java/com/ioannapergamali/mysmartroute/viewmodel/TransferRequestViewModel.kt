@@ -5,7 +5,10 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
+import com.ioannapergamali.mysmartroute.data.local.MovingDetailEntity
+import com.ioannapergamali.mysmartroute.data.local.MovingEntity
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.TransferRequestEntity
 import com.ioannapergamali.mysmartroute.model.enumerations.RequestStatus
@@ -13,6 +16,8 @@ import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import java.util.ArrayDeque
+import java.util.UUID
 
 /**
  * ViewModel για υποβολή και διαχείριση αιτημάτων μεταφοράς.
@@ -33,34 +38,126 @@ class TransferRequestViewModel : ViewModel() {
     fun submitRequest(
         context: Context,
         routeId: String,
+        startPoiId: String,
+        endPoiId: String,
         date: Long,
-            cost: Double?,
+        cost: Double?,
+        poiChanged: Boolean = false,
     ) {
         val passengerId = auth.currentUser?.uid ?: return
-        val entity = TransferRequestEntity(
-            routeId = routeId,
-            passengerId = passengerId,
-            driverId = "",
-            date = date,
-            cost = cost,
-            status = RequestStatus.OPEN
-        )
         viewModelScope.launch(Dispatchers.IO) {
-            val dao = MySmartRouteDatabase.getInstance(context).transferRequestDao()
+            val dbInstance = MySmartRouteDatabase.getInstance(context)
+            val transferDao = dbInstance.transferRequestDao()
+            val movingDao = dbInstance.movingDao()
+            val detailDao = dbInstance.movingDetailDao()
+
+            val requestEntity = TransferRequestEntity(
+                routeId = routeId,
+                passengerId = passengerId,
+                driverId = "",
+                date = date,
+                cost = cost,
+                status = RequestStatus.OPEN
+            )
+
             try {
-                Log.d(TAG, "Εισαγωγή αιτήματος: $entity")
-                val id = dao.insert(entity).toInt()
-                Log.d(TAG, "Το αίτημα αποθηκεύτηκε τοπικά με id=$id")
-                val saved = entity.copy(requestNumber = id)
-                val docRef = db.collection("transfer_requests")
-                    .add(saved.toFirestoreMap())
+                val requestNumber = transferDao.insert(requestEntity).toInt()
+                val savedRequest = requestEntity.copy(requestNumber = requestNumber)
+
+                val baseSegments = if (poiChanged) emptyList() else fetchSegments(routeId, startPoiId, endPoiId)
+                val duration = baseSegments.sumOf { it.durationMinutes }
+                val movingId = UUID.randomUUID().toString()
+                val segments = baseSegments.map { it.copy(movingId = movingId) }
+                val moving = MovingEntity(
+                    id = movingId,
+                    routeId = routeId,
+                    userId = passengerId,
+                    date = date,
+                    cost = cost,
+                    durationMinutes = duration,
+                    startPoiId = startPoiId,
+                    endPoiId = endPoiId,
+                    driverId = "",
+                    status = "open",
+                    requestNumber = requestNumber
+                )
+
+                movingDao.insert(moving)
+                segments.forEach { detailDao.insert(it) }
+
+                val reqRef = db.collection("transfer_requests")
+                    .add(savedRequest.toFirestoreMap())
                     .await()
-                dao.setFirebaseId(id, docRef.id)
-                Log.d(TAG, "Το αίτημα αποθηκεύτηκε στο Firestore με id=${docRef.id}")
+                transferDao.setFirebaseId(requestNumber, reqRef.id)
+
+                val movingRef = db.collection("movings").document(movingId)
+                movingRef.set(moving.toFirestoreMap()).await()
+                segments.forEach { seg ->
+                    movingRef.collection("details")
+                        .document(seg.id)
+                        .set(seg.toFirestoreMap())
+                        .await()
+                }
             } catch (e: Exception) {
                 Log.e(TAG, "Αποτυχία υποβολής αιτήματος", e)
             }
         }
+    }
+
+    private suspend fun fetchSegments(
+        routeId: String,
+        startPoiId: String,
+        endPoiId: String,
+    ): List<MovingDetailEntity> {
+        val routeRef = db.collection("routes").document(routeId)
+        val declSnap = db.collection("transport_declarations")
+            .whereEqualTo("routeId", routeRef)
+            .get()
+            .await()
+        val rawSegments = mutableListOf<MovingDetailEntity>()
+        declSnap.documents.forEach { decl ->
+            val dets = decl.reference.collection("details").get().await()
+            dets.documents.forEach { doc ->
+                val start = when (val rawStart = doc.get("startPoiId")) {
+                    is DocumentReference -> rawStart.id
+                    is String -> rawStart
+                    else -> doc.getString("startPoiId")
+                } ?: return@forEach
+                val end = when (val rawEnd = doc.get("endPoiId")) {
+                    is DocumentReference -> rawEnd.id
+                    is String -> rawEnd
+                    else -> doc.getString("endPoiId")
+                } ?: return@forEach
+                val duration = (doc.getLong("durationMinutes") ?: 0L).toInt()
+                val vehicle = when (val rawVehicle = doc.get("vehicleId")) {
+                    is DocumentReference -> rawVehicle.id
+                    is String -> rawVehicle
+                    else -> doc.getString("vehicleId")
+                } ?: ""
+                rawSegments += MovingDetailEntity(
+                    id = UUID.randomUUID().toString(),
+                    movingId = "",
+                    startPoiId = start,
+                    endPoiId = end,
+                    durationMinutes = duration,
+                    vehicleId = vehicle,
+                )
+            }
+        }
+        val graph = rawSegments.groupBy { it.startPoiId }
+        val queue: ArrayDeque<List<MovingDetailEntity>> = ArrayDeque()
+        queue.add(emptyList())
+        val visited = mutableSetOf<String>()
+        while (queue.isNotEmpty()) {
+            val path = queue.removeFirst()
+            val current = path.lastOrNull()?.endPoiId ?: startPoiId
+            if (current == endPoiId) return path
+            if (!visited.add(current)) continue
+            graph[current].orEmpty().forEach { seg ->
+                queue.add(path + seg)
+            }
+        }
+        return emptyList()
     }
 
     /**
