@@ -43,42 +43,41 @@
                     επιτρέποντας κύλιση στην ανασκόπηση και διασφαλίζοντας ορθή φόρτωση `routeId` από το Firestore.
 Από την έκδοση 2.22 προστέθηκε πλήρης οθόνη συγχρονισμού για διαχειριστές με καρτέλες για τοπική βάση και Firestore,
                     παρέχοντας ζωντανή απεικόνιση προόδου και σαφή τίτλους για κάθε πίνακα δεδομένων.
+Από την έκδοση 2.23 βελτιώθηκε η καταγραφή συμβάντων συγχρονισμού και αρχικοποίησης βάσης,
+                    προστέθηκαν χρονικές σφραγίδες στις ενδείξεις και σταθεροποιήθηκαν οι εξαρτήσεις φόρτωσης Firebase.
 
 ## Περιλήψεις των 10 τελευταίων commits
 
-- **95bf599 – feat: add admin synchronization screen (#1803)**
-  Συγχωνεύει την ολοκληρωμένη ροή συγχρονισμού διαχειριστή στο κύριο κλάδο της εφαρμογής.
-  Προσθέτει επιλογή «Συγχρονισμός» στο admin menu με tabs για τοπική βάση, Firestore και ροή εργασιών.
-  Ολοκληρώνει το πακέτο μεταφράσεων για κάθε πίνακα και μήνυμα προόδου.
-- **3080a8c – feat: add admin synchronization screen**
-  Υλοποιεί την οθόνη DatabaseSyncScreen με λεπτομερή ενημέρωση προόδου ανά πίνακα.
-  Διαχωρίζει τη διαδικασία σε καρτέλες για τοπικά δεδομένα, Firestore και ενέργειες συγχρονισμού.
-  Εμπλουτίζει τα string resources ώστε τα μηνύματα να εμφανίζονται δίγλωσσα.
-- **ff79cfd – Fix TripRatingViewModel coroutine import (#1802)**
-  Συγχωνεύει τη διόρθωση των imports στο TripRatingViewModel εξασφαλίζοντας ότι οι coroutines έχουν σωστό context.
-  Προλαμβάνει build αποτυχίες που οφείλονται σε ελλιπή αναφορά του `Dispatchers`.
-- **7794fa6 – Add missing Dispatchers import**
-  Προσθέτει το import `kotlinx.coroutines.Dispatchers` στον TripRatingViewModel.
-  Αφαιρεί το compile error που εμπόδιζε τη χρήση του `withContext`.
-- **5114adb – Fix Compose State delegate import (#1801)**
-  Ενσωματώνει τη διόρθωση των απαιτούμενων extensions για delegates `by state` στον NavigationDrawer.
-  Εξασφαλίζει ότι η οθόνη χρησιμοποιεί σωστά τα Compose State αντικείμενα.
-- **133e934 – Fix Compose State delegate import**
-  Εισάγει το extension `getValue` από το Compose runtime στο NavigationDrawer.
-  Επιτρέπει την απρόσκοπτη αξιοποίηση των `State` ιδιοτήτων ως delegated values.
-- **c5074c5 – Fix unresolved collectAsState import in navigation drawer (#1800)**
-  Συγχωνεύει τη διόρθωση των imports του Compose runtime στο NavigationDrawer.
-  Διασφαλίζει ότι οι κλήσεις `collectAsState` επιλύονται σωστά σε όλα τα build variants.
-- **fad913e – Add missing Compose imports for navigation drawer**
-  Προσθέτει τα απαραίτητα imports του Compose runtime για τη λειτουργία του NavigationDrawer.
-  Αποτρέπει compile σφάλματα κατά την ανάγνωση ροών με `collectAsState`.
-- **94e0fa1 – Implement progressive system initialization cleanup (#1799)**
-  Συγχωνεύει τις βελτιώσεις της προοδευτικής εκκαθάρισης αρχικοποίησης συστήματος.
-  Διατηρεί τον συνδεδεμένο διαχειριστή, ενημερώνει δίγλωσσα τις ενέργειες και εκθέτει προοδευτική πρόοδο.
-- **73e6967 – Implement progressive system initialization cleanup**
-  Αναβαθμίζει το DatabaseMenuScreen ώστε να εμφανίζει προοδευτική κατάσταση καθαρισμού.
-  Εμπλουτίζει το DatabaseViewModel με bilingual περιγραφές πινάκων και διατήρηση λογαριασμού διαχειριστή.
-  Εξασφαλίζει συνεπή εμφάνιση προόδου μέσα από κοινά string resources.
+- **6f5fae3 – Προσθήκη logging για εντοπισμό σφαλμάτων συγχρονισμού (#1813)**
+  Συγχωνεύει τις βελτιώσεις καταγραφής του συγχρονισμού στη βασική branch για ενιαία παρακολούθηση ροών.
+  Ενοποιεί τα tags logging, ώστε οι διαχειριστές να εντοπίζουν άμεσα τα βήματα κάθε διεργασίας.
+- **9522909 – Προσθήκη logging στον συγχρονισμό**
+  Καταγράφει αναλυτικά τα checkpoints του συγχρονισμού βάσης και Firestore με σαφήνεια στα logs.
+  Παρέχει ορατότητα σε σφάλματα και χρονικά όρια, διευκολύνοντας την αποσφαλμάτωση.
+- **4d90e55 – Fix SupportSQLiteDatabase usage in clearLocalTable (#1812)**
+  Επιστρέφει στη σωστή API του `SupportSQLiteDatabase` κατά την εκκαθάριση τοπικών πινάκων.
+  Προλαμβάνει πιθανές εξαιρέσεις αποφεύγοντας deprecated βοηθητικά utilities.
+- **cebf7b7 – Replace DatabaseUtils usage in clearLocalTable**
+  Αφαιρεί την εξάρτηση από `DatabaseUtils` υλοποιώντας άμεση κλήση SQL για διαγραφή πινάκων.
+  Δημιουργεί πιο καθαρή βάση για μελλοντικές βελτιστοποιήσεις του καθαρισμού.
+- **b8ecad1 – Add diagnostic logging to database initialization workflow (#1811)**
+  Εμπλουτίζει την αρχικοποίηση της βάσης με βήμα-βήμα διαγνωστική καταγραφή.
+  Επιτρέπει τον έλεγχο της προόδου εκκίνησης τόσο τοπικά όσο και σε περιβάλλοντα δοκιμών.
+- **f33d98d – Add detailed logging around database initialization**
+  Προσθέτει timestamps και περιγραφές στα logs ώστε να εντοπίζονται καθυστερήσεις εκκίνησης.
+  Αυξάνει την διαύγεια των αναφορών όταν αποτυγχάνει η δημιουργία πινάκων.
+- **f3a6d78 – Προσθήκη ώρας στην επισήμανση συγχρονισμού (#1810)**
+  Συγχωνεύει την προσθήκη χρονικής σφραγίδας στο UI ενημέρωσης συγχρονισμού.
+  Επιτρέπει στους διαχειριστές να γνωρίζουν πότε εκτελέστηκε τελευταία φορά η λειτουργία.
+- **c054006 – Show time in database sync status**
+  Επεκτείνει το status view του συγχρονισμού ώστε να εμφανίζει την ώρα ολοκλήρωσης κάθε ροής.
+  Ενοποιεί το formatting χρόνου για μεγαλύτερη συνέπεια στα μηνύματα.
+- **309ee82 – Fix Firebase data loading dependencies (#1809)**
+  Διορθώνει τις εξαρτήσεις φόρτωσης δεδομένων Firebase εξασφαλίζοντας σωστή σειρά εκκίνησης.
+  Μειώνει τον κίνδυνο race conditions όταν ζητούνται ταυτόχρονα remote και local δεδομένα.
+- **9ef0391 – Fix Firebase data loading dependencies**
+  Ρυθμίζει εκ νέου τη σύνδεση με τα repositories ώστε οι ροές να παραδίδουν αξιόπιστα αποτελέσματα.
+  Προλαμβάνει ασυνέπειες κατά τη συγχώνευση δεδομένων στη μνήμη.
 
 Για να λειτουργήσει ο χάρτης χρειάζεται να ορίσεις το Google Maps API key στο
 `local.properties` της ρίζας του project:
