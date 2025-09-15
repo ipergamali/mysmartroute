@@ -5,7 +5,6 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Logout
-import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.AdminPanelSettings
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Login
@@ -111,15 +110,6 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
                 closeDrawer()
             },
             icon = { Icon(Icons.Filled.Email, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
-        )
-        NavigationDrawerItem(
-            label = { Text(stringResource(R.string.databases_title)) },
-            selected = false,
-            onClick = {
-                navController.navigate("databaseMenu")
-                closeDrawer()
-            },
-            icon = { Icon(Icons.Filled.Storage, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
         )
         NavigationDrawerItem(
             label = { Text(stringResource(R.string.admin_option)) },
