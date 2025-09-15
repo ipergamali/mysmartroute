@@ -13,6 +13,7 @@ import com.google.firebase.firestore.FirebaseFirestoreException
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.utils.toUserEntity
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
+import com.ioannapergamali.mysmartroute.data.local.WalkingRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.data.local.PoiTypeEntity
 import com.ioannapergamali.mysmartroute.data.local.SettingsEntity
@@ -378,6 +379,10 @@ class DatabaseViewModel : ViewModel() {
         tableName: String,
         preserveUserId: String?
     ) {
+        if (tableName == "walking_routes") {
+            clearWalkingRoutes(context)
+            return
+        }
         withContext(Dispatchers.IO) {
             db.withTransaction {
                 val sqliteDb = db.openHelper.writableDatabase
@@ -416,6 +421,20 @@ class DatabaseViewModel : ViewModel() {
                 }
                 val after = sqliteDb.countRows(tableName)
                 Log.d(TAG, "Cleared local table $tableName (rowsAfter=$after)")
+            }
+        }
+    }
+
+    private suspend fun clearWalkingRoutes(context: Context) {
+        withContext(Dispatchers.IO) {
+            val walkingDb = WalkingRouteDatabase.getDatabase(context)
+            walkingDb.withTransaction {
+                val sqliteDb = walkingDb.openHelper.writableDatabase
+                val before = sqliteDb.countRows("walking_routes")
+                Log.d(TAG, "Clearing local table walking_routes (rowsBefore=$before)")
+                sqliteDb.execSQL("DELETE FROM `walking_routes`")
+                val after = sqliteDb.countRows("walking_routes")
+                Log.d(TAG, "Cleared local table walking_routes (rowsAfter=$after)")
             }
         }
     }
