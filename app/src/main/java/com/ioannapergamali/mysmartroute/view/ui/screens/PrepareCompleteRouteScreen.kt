@@ -265,8 +265,6 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                 Spacer(Modifier.height(16.dp))
             }
 
-            val seats = selectedDeclaration?.seats ?: 0
-
             if (selectedRoute != null && pathPoints.isNotEmpty() && !isKeyMissing) {
                 GoogleMap(
                     modifier = Modifier
@@ -282,11 +280,6 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
                 Spacer(Modifier.height(16.dp))
             } else if (isKeyMissing) {
                 Text(stringResource(R.string.map_api_key_missing))
-                Spacer(Modifier.height(16.dp))
-            }
-
-            if (seats > 0) {
-                Text(stringResource(R.string.available_seats, seats - reservations.size))
                 Spacer(Modifier.height(16.dp))
             }
 
