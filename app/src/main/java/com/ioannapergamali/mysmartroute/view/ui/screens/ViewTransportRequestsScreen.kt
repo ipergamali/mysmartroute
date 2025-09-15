@@ -13,6 +13,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -34,7 +35,10 @@ import com.ioannapergamali.mysmartroute.viewmodel.UserViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.TransferRequestViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.AppDateTimeViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.TransportDeclarationViewModel
+import com.ioannapergamali.mysmartroute.utils.SessionManager
 import android.text.format.DateFormat
+import android.net.Uri
 import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -57,10 +61,18 @@ fun ViewTransportRequestsScreen(
     val scrollState = rememberScrollState()
     val listState = rememberLazyListState()
     val columnWidth = 150.dp
+    val declarationViewModel: TransportDeclarationViewModel = viewModel()
+    val declarations by declarationViewModel.declarations.collectAsState()
+    val offlineDriverId by SessionManager.userIdFlow.collectAsState()
+    val driverId = offlineDriverId ?: SessionManager.currentUserId()
 
     LaunchedEffect(Unit) {
         poiViewModel.loadPois(context)
         viewModel.loadRequests(context, allUsers = true)
+    }
+
+    LaunchedEffect(driverId) {
+        driverId?.let { declarationViewModel.loadDeclarations(context, it) }
     }
 
     LaunchedEffect(requests) {
@@ -81,6 +93,13 @@ fun ViewTransportRequestsScreen(
     val appTime by dateViewModel.dateTime.collectAsState()
     LaunchedEffect(Unit) { dateViewModel.load(context) }
     val now = appTime ?: System.currentTimeMillis()
+    val declaredRouteIds = remember(declarations, driverId) {
+        if (driverId != null) {
+            declarations.filter { it.driverId == driverId }.map { it.routeId }.toSet()
+        } else {
+            emptySet()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -149,6 +168,16 @@ fun ViewTransportRequestsScreen(
                                     modifier = Modifier.width(columnWidth),
                                     style = MaterialTheme.typography.labelMedium
                                 )
+                                Text(
+                                    stringResource(R.string.transport_request_new_column),
+                                    modifier = Modifier.width(columnWidth),
+                                    style = MaterialTheme.typography.labelMedium
+                                )
+                                Text(
+                                    stringResource(R.string.transport_request_declaration_link),
+                                    modifier = Modifier.width(columnWidth),
+                                    style = MaterialTheme.typography.labelMedium
+                                )
                             }
                             Divider()
                         }
@@ -185,6 +214,29 @@ fun ViewTransportRequestsScreen(
                                 Text(costText, modifier = Modifier.width(columnWidth))
                                 Text(dateTimeText, modifier = Modifier.width(columnWidth))
                                 Text(req.requestNumber.toString(), modifier = Modifier.width(columnWidth))
+                                val isNewRequest = req.routeId.isBlank() || req.routeId !in declaredRouteIds
+                                Text(
+                                    text = stringResource(
+                                        if (isNewRequest) {
+                                            R.string.transport_request_new_yes
+                                        } else {
+                                            R.string.transport_request_new_no
+                                        }
+                                    ),
+                                    modifier = Modifier.width(columnWidth)
+                                )
+                                TextButton(
+                                    onClick = {
+                                        if (req.routeId.isNotBlank()) {
+                                            val encoded = Uri.encode(req.routeId)
+                                            navController.navigate("announceAvailability?routeId=$encoded")
+                                        }
+                                    },
+                                    modifier = Modifier.width(columnWidth),
+                                    enabled = req.routeId.isNotBlank()
+                                ) {
+                                    Text(stringResource(R.string.transport_request_declaration_link))
+                                }
                                 val isExpired = req.date > 0L && now > req.date && req.status != "completed"
                                 if (req.status == "open" && !isExpired) {
                                     Button(

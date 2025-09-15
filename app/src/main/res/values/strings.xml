@@ -340,6 +340,10 @@
     <string name="sort_by_date">Sort by date</string>
     <string name="cancel_request">Cancel request</string>
     <string name="request_number">Request number</string>
+    <string name="transport_request_new_column">New</string>
+    <string name="transport_request_new_yes">yes</string>
+    <string name="transport_request_new_no">no</string>
+    <string name="transport_request_declaration_link">Declaration</string>
     <string name="notify_route">Notify route</string>
     <string name="notify_selected">Notify selected</string>
     <string name="request_expired">Request expired</string>

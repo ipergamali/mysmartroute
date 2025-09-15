@@ -116,7 +116,11 @@ private fun canSend(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit) {
+fun AnnounceTransportScreen(
+    navController: NavController,
+    openDrawer: () -> Unit,
+    initialRouteId: String? = null
+) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val routeViewModel: RouteViewModel = viewModel()
@@ -136,7 +140,9 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
     var selectedDriverId by remember { mutableStateOf<String?>(null) }
     var selectedDriverName by remember { mutableStateOf("") }
     var expandedRoute by remember { mutableStateOf(false) }
-    var selectedRouteId by remember { mutableStateOf<String?>(null) }
+    var selectedRouteId by remember(initialRouteId) {
+        mutableStateOf(initialRouteId?.takeIf { it.isNotBlank() })
+    }
     var expandedVehicle by remember { mutableStateOf(false) }
     var selectedVehicle by remember { mutableStateOf<VehicleType?>(null) }
     var selectedVehicleId by remember { mutableStateOf("") }
