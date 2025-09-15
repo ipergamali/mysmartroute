@@ -1,6 +1,7 @@
 package com.ioannapergamali.mysmartroute.viewmodel
 
 import android.content.Context
+import android.database.DatabaseUtils
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -320,22 +321,37 @@ class DatabaseViewModel : ViewModel() {
         successMessage: String,
         preserveUserId: String?
     ) {
+        Log.d(
+            TAG,
+            "Requested clearTables with local=$localToClear firebase=$firebaseToClear preserveUserId=${preserveUserId ?: "-"}"
+        )
         viewModelScope.launch {
             _clearState.value = ClearState.Running(message = null)
             try {
                 val db = MySmartRouteDatabase.getInstance(context)
                 localToClear.forEach { table ->
                     _clearState.value = ClearState.Running(progressMessage(context, table))
-                    clearLocalTable(db, table, preserveUserId)
+                    try {
+                        clearLocalTable(db, table, preserveUserId)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to clear local table $table", e)
+                        throw e
+                    }
                 }
                 firebaseToClear.forEach { table ->
                     _clearState.value = ClearState.Running(progressMessage(context, table))
                     val definition = firebaseDefinitionsById[table] ?: FirebaseTableDefinition(collection = table)
-                    clearFirebaseCollection(definition, preserveUserId)
+                    try {
+                        clearFirebaseCollection(definition, preserveUserId)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to clear Firebase collection ${definition.collection}", e)
+                        throw e
+                    }
                 }
                 _localTables.update { tables -> tables.map { it.copy(selected = false) } }
                 _firebaseTables.update { tables -> tables.map { it.copy(selected = false) } }
                 _clearState.value = ClearState.Success(successMessage)
+                Log.d(TAG, "clearTables completed successfully")
             } catch (e: Exception) {
                 Log.e(TAG, "Error clearing tables", e)
                 val reason = e.localizedMessage ?: e.message ?: ""
@@ -360,16 +376,25 @@ class DatabaseViewModel : ViewModel() {
         withContext(Dispatchers.IO) {
             db.withTransaction {
                 val sqliteDb = db.openHelper.writableDatabase
-                Log.d(TAG, "Clearing local table $tableName")
+                val before = DatabaseUtils.queryNumEntries(sqliteDb, tableName)
+                Log.d(TAG, "Clearing local table $tableName (rowsBefore=$before)")
                 val shouldPreserveUser = tableName == "users" && !preserveUserId.isNullOrBlank()
                 if (shouldPreserveUser) {
                     sqliteDb.execSQL(
                         "DELETE FROM `$tableName` WHERE id != ?",
                         arrayOf(preserveUserId)
                     )
+                    val afterPreserve = DatabaseUtils.queryNumEntries(sqliteDb, tableName)
+                    Log.d(
+                        TAG,
+                        "Preserved user $preserveUserId in $tableName (rowsAfter=$afterPreserve)"
+                    )
                 } else {
                     sqliteDb.execSQL("DELETE FROM `$tableName`")
+                    Log.d(TAG, "Executed DELETE FROM `$tableName`")
                 }
+                val after = DatabaseUtils.queryNumEntries(sqliteDb, tableName)
+                Log.d(TAG, "Cleared local table $tableName (rowsAfter=$after)")
             }
         }
     }
@@ -381,13 +406,27 @@ class DatabaseViewModel : ViewModel() {
         withContext(Dispatchers.IO) {
             Log.d(TAG, "Clearing Firebase collection ${definition.collection}")
             val snapshot = firestore.collection(definition.collection).get().await()
+            Log.d(
+                TAG,
+                "Fetched ${snapshot.documents.size} documents from ${definition.collection} for clearing"
+            )
+            var deletedCount = 0
             for (doc in snapshot.documents) {
                 val preserveDocument = definition.collection == "users" && !preserveUserId.isNullOrBlank() && doc.id == preserveUserId
+                Log.d(
+                    TAG,
+                    "Processing document ${doc.id} in ${definition.collection} (preserve=$preserveDocument)"
+                )
                 deleteSubcollections(doc.reference, definition.subcollections)
                 if (!preserveDocument) {
                     doc.reference.delete().await()
+                    deletedCount++
+                    Log.d(TAG, "Deleted document ${doc.id} from ${definition.collection}")
+                } else {
+                    Log.d(TAG, "Skipping deletion for preserved document ${doc.id}")
                 }
             }
+            Log.d(TAG, "Deleted $deletedCount documents from ${definition.collection}")
         }
     }
 
@@ -398,9 +437,14 @@ class DatabaseViewModel : ViewModel() {
         if (subcollections.isEmpty()) return
         subcollections.forEach { subcollection ->
             val subSnapshot = document.collection(subcollection.name).get().await()
+            Log.d(
+                TAG,
+                "Clearing subcollection ${subcollection.name} for document ${document.id} with ${subSnapshot.documents.size} entries"
+            )
             for (doc in subSnapshot.documents) {
                 deleteSubcollections(doc.reference, subcollection.children)
                 doc.reference.delete().await()
+                Log.d(TAG, "Deleted document ${doc.id} from subcollection ${subcollection.name}")
             }
         }
     }
