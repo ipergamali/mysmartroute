@@ -118,8 +118,8 @@ class DatabaseViewModel : ViewModel() {
     private val localTableDefinitions = listOf(
         "users",
         "vehicles",
-        "poi_types",
         "pois",
+        "poi_types",
         "settings",
         "roles",
         "menus",
@@ -336,7 +336,7 @@ class DatabaseViewModel : ViewModel() {
                 localToClear.forEach { table ->
                     _clearState.value = ClearState.Running(progressMessage(context, table))
                     try {
-                        clearLocalTable(db, table, preserveUserId)
+                        clearLocalTable(context, db, table, preserveUserId)
                     } catch (e: Exception) {
                         Log.e(TAG, "Failed to clear local table $table", e)
                         throw e
@@ -373,6 +373,7 @@ class DatabaseViewModel : ViewModel() {
     }
 
     private suspend fun clearLocalTable(
+        context: Context,
         db: MySmartRouteDatabase,
         tableName: String,
         preserveUserId: String?
@@ -383,6 +384,22 @@ class DatabaseViewModel : ViewModel() {
                 val before = sqliteDb.countRows(tableName)
                 Log.d(TAG, "Clearing local table $tableName (rowsBefore=$before)")
                 val shouldPreserveUser = tableName == "users" && !preserveUserId.isNullOrBlank()
+                if (tableName == "poi_types") {
+                    val dependentCount = sqliteDb.countRows("pois")
+                    if (dependentCount > 0) {
+                        val target = tableNamesFor(tableName)
+                        val dependency = tableNamesFor("pois")
+                        val message = context.getString(
+                            R.string.clear_error_dependency,
+                            target.greek,
+                            target.english,
+                            dependency.greek,
+                            dependency.english,
+                            dependentCount
+                        )
+                        throw IllegalStateException(message)
+                    }
+                }
                 if (shouldPreserveUser) {
                     sqliteDb.execSQL(
                         "DELETE FROM `$tableName` WHERE id != ?",
