@@ -112,9 +112,11 @@ fun ViewRoutesScreen(navController: NavController, openDrawer: () -> Unit) {
                                 expanded = false
                                 scope.launch {
                                     pois = routeViewModel.getRoutePois(context, route.id)
+
                                     pathPoints = pois.map { LatLng(it.lat, it.lng) }
                                     newRouteName = route.name
                                     pathPoints.firstOrNull()?.let {
+
                                         cameraPositionState.move(
                                             CameraUpdateFactory.newLatLngZoom(it, 13f)
                                         )
