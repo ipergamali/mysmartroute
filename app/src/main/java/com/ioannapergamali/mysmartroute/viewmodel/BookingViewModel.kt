@@ -95,9 +95,8 @@ class BookingViewModel : ViewModel() {
 
         val totalCost = segments.sumOf { it.cost }
         val durationMinutes = if (segments.size > 1) {
-            val minStart = segments.minOf { it.startTime }
-            val maxStart = segments.maxOf { it.startTime }
-            ((maxStart - minStart) / 60000).toInt()
+            val startTimes = segments.map { it.startTime }.sorted()
+            startTimes.zipWithNext { a, b -> ((b - a) / 60000).toInt() }.sum()
         } else 0
 
         val reservation = SeatReservationEntity(
