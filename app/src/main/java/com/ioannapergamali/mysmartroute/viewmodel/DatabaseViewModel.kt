@@ -1173,6 +1173,8 @@ class DatabaseViewModel : ViewModel() {
         else -> tableId.replace('_', ' ').replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
     }
 
+}
+
 data class TableToggleState(
     val id: String,
     val title: String,
