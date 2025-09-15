@@ -60,6 +60,12 @@
     <string name="about_title">About</string>
     <string name="support_title">Support</string>
     <string name="databases_title">Databases</string>
+    <string name="room_tables">Room tables</string>
+    <string name="firebase_tables">Firebase collections</string>
+    <string name="clear_data">Clear</string>
+    <string name="clear_success">Data cleared successfully</string>
+    <string name="clear_error_no_selection">Select at least one table</string>
+    <string name="clear_error_generic">Failed to clear data: %1$s</string>
     <string name="local_db">Local DB</string>
     <string name="firebase_db">Firestore DB</string>
     <string name="sync_db">Synchronization</string>
