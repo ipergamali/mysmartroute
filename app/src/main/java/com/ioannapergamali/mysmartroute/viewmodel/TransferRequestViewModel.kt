@@ -118,6 +118,7 @@ class TransferRequestViewModel : ViewModel() {
         declSnap.documents.forEach { decl ->
             val dets = decl.reference.collection("details").get().await()
             dets.documents.forEach { doc ->
+
                 val start = when (val rawStart = doc.get("startPoiId")) {
                     is DocumentReference -> rawStart.id
                     is String -> rawStart
@@ -134,6 +135,7 @@ class TransferRequestViewModel : ViewModel() {
                     is String -> rawVehicle
                     else -> doc.getString("vehicleId")
                 } ?: ""
+
                 rawSegments += MovingDetailEntity(
                     id = UUID.randomUUID().toString(),
                     movingId = "",

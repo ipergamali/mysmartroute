@@ -485,11 +485,13 @@ fun RouteModeScreen(
                             val toId = routePois[toIdx].id
                             val cost = maxCostText.toDoubleOrNull()
                             val date = datePickerState.selectedDateMillis ?: 0L
+
                             val (routeId, poiChanged) = resolveRouteForRequest()
                             if (routeId.isBlank()) {
                                 message = context.getString(R.string.request_unsuccessful)
                                 return@launch
                             }
+
                             transferRequestViewModel.submitRequest(
                                 context,
                                 routeId,

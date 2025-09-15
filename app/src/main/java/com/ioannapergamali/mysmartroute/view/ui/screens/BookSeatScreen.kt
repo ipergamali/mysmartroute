@@ -583,11 +583,13 @@ fun BookSeatScreen(
                             val dateMillis = datePickerState.selectedDateMillis ?: return@launch
                             val startId = startIndex?.let { pois[it].id } ?: return@launch
                             val endId = endIndex?.let { pois[it].id } ?: return@launch
+
                             val (routeId, poiChanged) = resolveRouteForRequest()
                             if (routeId.isBlank()) {
                                 message = context.getString(R.string.request_unsuccessful)
                                 return@launch
                             }
+
                             transferRequestViewModel.submitRequest(
                                 context,
                                 routeId,

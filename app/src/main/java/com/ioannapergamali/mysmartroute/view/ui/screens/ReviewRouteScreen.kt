@@ -1,17 +1,11 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.DoneAll
-import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
@@ -35,9 +29,8 @@ import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.AdminRouteViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.UserViewModel
 import kotlinx.coroutines.launch
-import androidx.compose.runtime.rememberCoroutineScope
-import android.widget.Toast
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,6 +38,7 @@ fun ReviewRouteScreen(navController: NavController, openDrawer: () -> Unit) {
     val context = LocalContext.current
     val adminViewModel: AdminRouteViewModel = viewModel(factory = AdminRouteViewModel.Factory(context))
     val routeViewModel: RouteViewModel = viewModel()
+    val userViewModel: UserViewModel = viewModel()
     val duplicateGroups by adminViewModel.duplicateRoutes.collectAsState()
 
     var selectedRoute by remember { mutableStateOf<RouteEntity?>(null) }
@@ -80,159 +74,177 @@ fun ReviewRouteScreen(navController: NavController, openDrawer: () -> Unit) {
         )
     }) { padding ->
         ScreenContainer(modifier = Modifier.padding(padding)) {
-            if (duplicateGroups.isEmpty()) {
+            val nameGroups = duplicateGroups.sameName
+            val poiGroups = duplicateGroups.samePois
+            val allGroups = nameGroups + poiGroups
+
+            @Composable
+            fun RouteGroupView(group: List<RouteEntity>) {
+                Text(group.map { it.name }.distinct().joinToString(" / "))
+                Column {
+                    group.forEach { route ->
+                        var driverName by remember { mutableStateOf("") }
+                        LaunchedEffect(route.userId) {
+                            driverName = userViewModel.getUserName(context, route.userId)
+                        }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = selectedRoute?.id == route.id,
+                                onClick = {
+                                    selectedRoute = route
+                                    newRouteName = route.name
+                                    pois = emptyList()
+                                    pathPoints = emptyList()
+                                }
+                            )
+                            Column {
+                                Text(route.name)
+                                Text(driverName)
+                            }
+                        }
+                    }
+                }
+                Spacer(Modifier.height(16.dp))
+            }
+
+            if (allGroups.isEmpty()) {
                 Text(
                     text = stringResource(R.string.no_duplicate_routes),
                     modifier = Modifier.padding(16.dp)
                 )
             } else {
-                duplicateGroups.forEach { group ->
-                    Text(group.map { it.name }.distinct().joinToString(" / "))
-                    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        items(group) { route ->
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Button(
-                                    onClick = {
-                                        selectedRoute = route
-                                        newRouteName = route.name
-                                        pois = emptyList()
-                                        pathPoints = emptyList()
-                                    },
-                                    shape = CircleShape,
-                                    contentPadding = PaddingValues(0.dp),
-                                    modifier = Modifier.size(48.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Filled.DirectionsCar,
-                                        contentDescription = stringResource(R.string.route)
-                                    )
-                                }
-                                Text(route.name)
-                                Text(stringResource(R.string.registered_by, route.userId))
-                            }
-                        }
-                    }
-                    Spacer(Modifier.height(16.dp))
-                }
-
-                if (selectedRoute != null && pois.isNotEmpty() && !isKeyMissing) {
-                    GoogleMap(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(dimensionResource(id = R.dimen.map_height)),
-                        cameraPositionState = cameraPositionState
-                    ) {
-                        if (pathPoints.size > 1) {
-                            Polyline(points = pathPoints)
-                        }
-                        offsetPois(pois).forEach { (poi, position) ->
-                            Marker(state = MarkerState(position = position), title = poi.name)
-                        }
-                    }
-
-                    Spacer(Modifier.height(16.dp))
-                } else if (isKeyMissing) {
-                    Text(stringResource(R.string.map_api_key_missing))
-                    Spacer(Modifier.height(16.dp))
-                }
-
-                if (pois.isNotEmpty()) {
-                    Text(stringResource(R.string.stops_header))
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        Row(modifier = Modifier.fillMaxWidth()) {
-                            Text(
-                                stringResource(R.string.poi_name),
-                                modifier = Modifier.weight(1f),
-                                style = MaterialTheme.typography.labelMedium
-                            )
-                            Text(
-                                stringResource(R.string.poi_type),
-                                modifier = Modifier.weight(1f),
-                                style = MaterialTheme.typography.labelMedium
-                            )
-                        }
-                        Divider()
-                        pois.forEachIndexed { index, poi ->
-                            Row(modifier = Modifier.fillMaxWidth()) {
-                                Text("${index + 1}. ${poi.name}", modifier = Modifier.weight(1f))
-                                Text(poi.type.name, modifier = Modifier.weight(1f))
-                            }
-                        }
-                    }
-                }
-
-                Spacer(Modifier.height(16.dp))
-
-                if (selectedRoute != null && pois.isNotEmpty()) {
-                    OutlinedTextField(
-                        value = newRouteName,
-                        onValueChange = { newRouteName = it },
-                        label = { Text(stringResource(R.string.new_route_name)) },
-                        modifier = Modifier.fillMaxWidth()
+                if (nameGroups.isNotEmpty()) {
+                    Text(
+                        stringResource(R.string.duplicate_routes_same_name),
+                        style = MaterialTheme.typography.titleMedium
                     )
                     Spacer(Modifier.height(8.dp))
-                    Row {
-                        FilledIconButton(
-                            onClick = {
-                                selectedRoute?.let { route ->
-                                    val group = duplicateGroups.find { g -> g.any { it.id == route.id } } ?: emptyList()
-                                    val baseName = newRouteName.ifBlank { route.name }
-                                    scope.launch {
-                                        val updated = route.copy(name = baseName)
-                                        adminViewModel.updateRoute(updated)
-                                        group.filter { it.id != route.id }.forEach { other ->
-                                            adminViewModel.mergeRoutes(route.id, other.id)
-                                        }
-                                        Toast.makeText(
-                                            context,
-                                            context.getString(R.string.route_saved),
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                        selectedRoute = null
-                                        newRouteName = ""
-                                    }
-                                }
-                            },
-                            enabled = newRouteName.isNotBlank(),
-                            shape = CircleShape
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Check,
-                                contentDescription = stringResource(R.string.keep)
-                            )
+                    nameGroups.forEach { group -> RouteGroupView(group) }
+                }
+                if (poiGroups.isNotEmpty()) {
+                    Text(
+                        stringResource(R.string.duplicate_routes_same_pois),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    poiGroups.forEach { group -> RouteGroupView(group) }
+                }
+            }
+
+            if (selectedRoute != null && pois.isNotEmpty() && !isKeyMissing) {
+                GoogleMap(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(dimensionResource(id = R.dimen.map_height)),
+                    cameraPositionState = cameraPositionState
+                ) {
+                    if (pathPoints.size > 1) {
+                        Polyline(points = pathPoints)
+                    }
+                    offsetPois(pois).forEach { (poi, position) ->
+                        Marker(state = MarkerState(position = position), title = poi.name)
+                    }
+                }
+                Spacer(Modifier.height(16.dp))
+            } else if (isKeyMissing) {
+                Text(stringResource(R.string.map_api_key_missing))
+                Spacer(Modifier.height(16.dp))
+            }
+
+            if (pois.isNotEmpty()) {
+                Text(stringResource(R.string.stops_header))
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            stringResource(R.string.poi_name),
+                            modifier = Modifier.weight(1f),
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                        Text(
+                            stringResource(R.string.poi_type),
+                            modifier = Modifier.weight(1f),
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                    }
+                    Divider()
+                    pois.forEachIndexed { index, poi ->
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            Text("${index + 1}. ${poi.name}", modifier = Modifier.weight(1f))
+                            Text(poi.type.name, modifier = Modifier.weight(1f))
                         }
-                        Spacer(Modifier.width(8.dp))
-                        FilledIconButton(
-                            onClick = {
-                                selectedRoute?.let { route ->
-                                    val group = duplicateGroups.find { g -> g.any { it.id == route.id } } ?: emptyList()
-                                    val baseName = newRouteName.ifBlank { route.name }
-                                    scope.launch {
-                                        group.forEachIndexed { index, r ->
-                                            val newName = if (index == 0) baseName else "${baseName} ${index + 1}"
-                                            adminViewModel.updateRoute(r.copy(name = newName))
-                                        }
-                                        Toast.makeText(
-                                            context,
-                                            context.getString(R.string.route_saved),
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                        selectedRoute = null
-                                        newRouteName = ""
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            if (selectedRoute != null && pois.isNotEmpty()) {
+                OutlinedTextField(
+                    value = newRouteName,
+                    onValueChange = { newRouteName = it },
+                    label = { Text(stringResource(R.string.new_route_name)) },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(Modifier.height(8.dp))
+                Row {
+                    Button(
+                        onClick = {
+                            selectedRoute?.let { route ->
+                                val group = allGroups.find { g -> g.any { it.id == route.id } } ?: emptyList()
+                                val baseName = newRouteName.ifBlank { route.name }
+                                scope.launch {
+                                    val updated = route.copy(name = baseName)
+                                    adminViewModel.updateRoute(updated)
+                                    group.filter { it.id != route.id }.forEach { other ->
+                                        adminViewModel.mergeRoutes(route.id, other.id)
                                     }
+                                    Toast.makeText(
+                                        context,
+                                        context.getString(R.string.route_saved),
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                    selectedRoute = null
+                                    newRouteName = ""
                                 }
-                            },
-                            enabled = newRouteName.isNotBlank(),
-                            shape = CircleShape
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.DoneAll,
-                                contentDescription = stringResource(R.string.keep_all)
-                            )
-                        }
+                            }
+                        },
+                        enabled = newRouteName.isNotBlank()
+                    ) {
+                        Text(stringResource(R.string.keep))
+                    }
+                    Spacer(Modifier.width(8.dp))
+                    Button(
+                        onClick = {
+                            selectedRoute?.let { route ->
+                                val group = allGroups.find { g -> g.any { it.id == route.id } } ?: emptyList()
+                                val baseName = newRouteName.ifBlank { route.name }
+                                scope.launch {
+                                    group.forEachIndexed { index, r ->
+                                        val newName = if (index == 0) baseName else "${baseName} ${index + 1}"
+                                        adminViewModel.updateRoute(r.copy(name = newName))
+                                    }
+                                    Toast.makeText(
+                                        context,
+                                        context.getString(R.string.route_saved),
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                    selectedRoute = null
+                                    newRouteName = ""
+                                }
+                            }
+                        },
+                        enabled = newRouteName.isNotBlank()
+                    ) {
+                        Text(stringResource(R.string.keep_all))
                     }
                 }
             }
         }
     }
 }
+

@@ -4,7 +4,9 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.DocumentReference
 import android.util.Log
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.RouteEntity
@@ -110,23 +112,59 @@ class RouteViewModel : ViewModel() {
                 firestore.collection("routes").whereEqualTo("userId", userId)
             }
 
-            val snapshot = runCatching { query.get().await() }.getOrNull()
-            if (snapshot != null) {
-                val list = snapshot.documents.mapNotNull { it.toRouteWithStations() }
-                _routes.value = list.map { it.first }
-                list.forEach { (route, points, busStations) ->
-                    routeDao.insert(route)
-                    points.forEach { pointDao.insert(it) }
-                    busStations.forEach { busDao.insert(it) }
-                }
-            } else {
-                _routes.value = if (includeAll) {
+            val localRoutes = runCatching {
+                if (includeAll) {
                     routeDao.getAll().first()
                 } else if (userId != null) {
                     routeDao.getRoutesForUser(userId).first()
                 } else {
                     emptyList()
                 }
+            }.getOrDefault(emptyList())
+
+            val snapshot = runCatching { query.get().await() }.getOrNull()
+            if (snapshot != null) {
+                var list = snapshot.documents.mapNotNull { it.toRouteWithStations() }.toMutableList()
+                if (includeAll) {
+                    val declSnap = runCatching {
+                        firestore.collection("transport_declarations").get().await()
+                    }.getOrNull()
+                    val declaredIds = declSnap?.documents
+                        ?.mapNotNull { doc ->
+
+                            when (val value = doc.get("routeId")) {
+                                is String -> value
+                                is DocumentReference -> value.id
+                                else -> null
+
+                            }
+                        }
+                        ?.toSet() ?: emptySet()
+                    val existingIds = list.map { it.first.id }.toMutableSet()
+                    for (routeId in declaredIds) {
+                        if (existingIds.add(routeId)) {
+                            val doc = runCatching {
+                                firestore.collection("routes").document(routeId).get().await()
+                            }.getOrNull()
+                            doc?.toRouteWithStations()?.let { list.add(it) }
+                        }
+                    }
+                }
+
+                list.forEach { (route, points, busStations) ->
+                    routeDao.insert(route)
+                    points.forEach { pointDao.insert(it) }
+                    busStations.forEach { busDao.insert(it) }
+                }
+                val localRoutes = when {
+                    includeAll -> routeDao.getAll().first()
+                    userId != null -> routeDao.getRoutesForUser(userId).first()
+                    else -> emptyList()
+                }
+                val combined = (list.map { it.first } + localRoutes).distinctBy { it.id }
+                _routes.value = combined
+            } else {
+                _routes.value = localRoutes
             }
         }
     }
