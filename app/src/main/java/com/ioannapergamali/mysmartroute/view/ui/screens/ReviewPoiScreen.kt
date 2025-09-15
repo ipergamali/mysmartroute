@@ -1,5 +1,7 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -75,6 +77,9 @@ fun ReviewPoiScreen(navController: NavController, openDrawer: () -> Unit) {
                                         onClick = {
                                             selected = poi
                                             edited = poi.name
+                                            val uri = Uri.parse("geo:${poi.lat},${poi.lng}?q=" + Uri.encode(poi.name))
+                                            val intent = Intent(Intent.ACTION_VIEW, uri)
+                                            context.startActivity(intent)
                                         }
                                     )
                                     if (selected?.id == poi.id) {
@@ -136,6 +141,9 @@ fun ReviewPoiScreen(navController: NavController, openDrawer: () -> Unit) {
                                             onClick = {
                                                 selected = poi
                                                 edited = poi.name
+                                                val uri = Uri.parse("geo:${poi.lat},${poi.lng}?q=" + Uri.encode(poi.name))
+                                                val intent = Intent(Intent.ACTION_VIEW, uri)
+                                                context.startActivity(intent)
                                             }
                                         )
                                         if (selected?.id == poi.id) {
