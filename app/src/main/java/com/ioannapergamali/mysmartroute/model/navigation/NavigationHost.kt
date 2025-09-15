@@ -114,8 +114,16 @@ fun NavigationHost(
             DeclareRouteScreen(navController = navController, openDrawer = openDrawer)
         }
 
-        composable("announceAvailability") {
-            AnnounceTransportScreen(navController = navController, openDrawer = openDrawer)
+        composable(
+            route = "announceAvailability?routeId={routeId}",
+            arguments = listOf(navArgument("routeId") { defaultValue = "" })
+        ) { backStackEntry ->
+            val routeId = backStackEntry.arguments?.getString("routeId").orEmpty()
+            AnnounceTransportScreen(
+                navController = navController,
+                openDrawer = openDrawer,
+                initialRouteId = routeId.ifBlank { null }
+            )
         }
 
         composable("viewPois") {

@@ -332,6 +332,10 @@
     <string name="no_notifications">Καμία ειδοποίηση</string>
     <string name="no_scheduled_transports">Δεν βρέθηκαν προγραμματισμένες μεταφορές</string>
     <string name="request_number">Αριθμός αιτήματος</string>
+    <string name="transport_request_new_column">ΝΕΑ</string>
+    <string name="transport_request_new_yes">ναι</string>
+    <string name="transport_request_new_no">όχι</string>
+    <string name="transport_request_declaration_link">Δήλωση</string>
     <!-- Notification text -->
     <string name="app_started_notification">Η εφαρμογή ξεκίνησε</string>
     <string name="request_accepted">Το αίτημα έγινε αποδεκτό</string>
