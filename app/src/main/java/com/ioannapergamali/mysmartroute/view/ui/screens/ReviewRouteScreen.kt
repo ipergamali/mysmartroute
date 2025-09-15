@@ -76,7 +76,7 @@ fun ReviewRouteScreen(navController: NavController, openDrawer: () -> Unit) {
             onMenuClick = openDrawer
         )
     }) { padding ->
-        ScreenContainer(modifier = Modifier.padding(padding)) {
+        ScreenContainer(modifier = Modifier.padding(padding), scrollable = false) {
             if (duplicateGroups.isEmpty()) {
                 Text(
                     text = stringResource(R.string.no_duplicate_routes),
