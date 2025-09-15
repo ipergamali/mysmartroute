@@ -180,23 +180,33 @@ fun BookSeatScreen(
         }
     }
 
-    suspend fun saveEditedRouteIfChanged(): String {
+    suspend fun resolveRouteForRequest(): Pair<String, Boolean> {
+        val currentRouteId = selectedRouteId ?: return "" to false
         val current = poiIds.toSet()
         val original = originalPoiIds.toSet()
-        if (current == original) return selectedRouteId ?: ""
-        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return selectedRouteId ?: ""
+        if (current == original) return currentRouteId to false
+
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return "" to false
         val username = FirebaseFirestore.getInstance()
             .collection("users")
             .document(uid)
             .get()
             .await()
             .getString("username") ?: uid
-        val baseName = routes.find { it.id == selectedRouteId }?.name ?: "route"
-        return routeViewModel.addRoute(
+        val baseName = routes.find { it.id == currentRouteId }?.name ?: "route"
+        val newRouteId = routeViewModel.addRoute(
             context,
             poiIds.toList(),
             "${baseName}_edited_by_$username"
-        ) ?: selectedRouteId ?: ""
+        ) ?: return "" to false
+
+        selectedRouteId = newRouteId
+        originalPoiIds.clear()
+        originalPoiIds.addAll(poiIds)
+        viewModel.refreshRoutes()
+        routeViewModel.loadRoutes(context, includeAll = true)
+
+        return newRouteId to true
     }
 
     val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
@@ -573,8 +583,13 @@ fun BookSeatScreen(
                             val dateMillis = datePickerState.selectedDateMillis ?: return@launch
                             val startId = startIndex?.let { pois[it].id } ?: return@launch
                             val endId = endIndex?.let { pois[it].id } ?: return@launch
-                            val routeId = saveEditedRouteIfChanged()
-                            val poiChanged = poiIds.toSet() != originalPoiIds.toSet()
+
+                            val (routeId, poiChanged) = resolveRouteForRequest()
+                            if (routeId.isBlank()) {
+                                message = context.getString(R.string.request_unsuccessful)
+                                return@launch
+                            }
+
                             transferRequestViewModel.submitRequest(
                                 context,
                                 routeId,

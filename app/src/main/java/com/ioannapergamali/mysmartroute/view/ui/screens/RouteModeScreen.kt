@@ -144,23 +144,32 @@ fun RouteModeScreen(
             pathPoints = emptyList()
         }
     }
-    suspend fun saveEditedRouteAsNewRoute(): String {
+    suspend fun resolveRouteForRequest(): Pair<String, Boolean> {
+        val currentRouteId = selectedRouteId ?: return "" to false
         val current = routePoiIds.toSet()
         val original = originalPoiIds.toSet()
-        if (current == original) return selectedRouteId ?: ""
-        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return selectedRouteId ?: ""
+        if (current == original) return currentRouteId to false
+
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return "" to false
         val username = FirebaseFirestore.getInstance()
             .collection("users")
             .document(uid)
             .get()
             .await()
             .getString("username") ?: uid
-        val baseName = routes.find { it.id == selectedRouteId }?.name ?: "route"
-        return routeViewModel.addRoute(
+        val baseName = routes.find { it.id == currentRouteId }?.name ?: "route"
+        val newRouteId = routeViewModel.addRoute(
             context,
             routePoiIds.toList(),
             "${baseName}_edited_by_$username"
-        ) ?: selectedRouteId ?: ""
+        ) ?: return "" to false
+
+        selectedRouteId = newRouteId
+        originalPoiIds.clear()
+        originalPoiIds.addAll(routePoiIds)
+        routeViewModel.loadRoutes(context, includeAll = true)
+
+        return newRouteId to true
     }
 
 
@@ -476,8 +485,13 @@ fun RouteModeScreen(
                             val toId = routePois[toIdx].id
                             val cost = maxCostText.toDoubleOrNull()
                             val date = datePickerState.selectedDateMillis ?: 0L
-                            val routeId = saveEditedRouteAsNewRoute()
-                            val poiChanged = routePoiIds.toSet() != originalPoiIds.toSet()
+
+                            val (routeId, poiChanged) = resolveRouteForRequest()
+                            if (routeId.isBlank()) {
+                                message = context.getString(R.string.request_unsuccessful)
+                                return@launch
+                            }
+
                             transferRequestViewModel.submitRequest(
                                 context,
                                 routeId,

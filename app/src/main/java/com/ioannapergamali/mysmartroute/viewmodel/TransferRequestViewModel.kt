@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.MovingDetailEntity
 import com.ioannapergamali.mysmartroute.data.local.MovingEntity
@@ -117,10 +118,24 @@ class TransferRequestViewModel : ViewModel() {
         declSnap.documents.forEach { decl ->
             val dets = decl.reference.collection("details").get().await()
             dets.documents.forEach { doc ->
-                val start = doc.getString("startPoiId") ?: return@forEach
-                val end = doc.getString("endPoiId") ?: return@forEach
+
+                val start = when (val rawStart = doc.get("startPoiId")) {
+                    is DocumentReference -> rawStart.id
+                    is String -> rawStart
+                    else -> doc.getString("startPoiId")
+                } ?: return@forEach
+                val end = when (val rawEnd = doc.get("endPoiId")) {
+                    is DocumentReference -> rawEnd.id
+                    is String -> rawEnd
+                    else -> doc.getString("endPoiId")
+                } ?: return@forEach
                 val duration = (doc.getLong("durationMinutes") ?: 0L).toInt()
-                val vehicle = doc.getString("vehicleId") ?: ""
+                val vehicle = when (val rawVehicle = doc.get("vehicleId")) {
+                    is DocumentReference -> rawVehicle.id
+                    is String -> rawVehicle
+                    else -> doc.getString("vehicleId")
+                } ?: ""
+
                 rawSegments += MovingDetailEntity(
                     id = UUID.randomUUID().toString(),
                     movingId = "",
