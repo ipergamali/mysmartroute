@@ -78,6 +78,18 @@ fun DatabaseMenuScreen(navController: NavController, openDrawer: () -> Unit) {
             Spacer(modifier = Modifier.height(24.dp))
 
             if (isClearing) {
+                (clearState as? ClearState.Running)
+                    ?.message
+                    ?.takeIf { it.isNotBlank() }
+                    ?.let { message ->
+                        Text(
+                            text = message,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                 Spacer(modifier = Modifier.height(16.dp))
             }
@@ -101,16 +113,6 @@ fun DatabaseMenuScreen(navController: NavController, openDrawer: () -> Unit) {
             Spacer(modifier = Modifier.height(16.dp))
 
             when (val state = clearState) {
-                is ClearState.Running -> {
-                    state.message?.takeIf { it.isNotBlank() }?.let { message ->
-                        Text(
-                            text = message,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.secondary
-                        )
-                    }
-                }
-
                 is ClearState.Success -> {
                     Text(
                         text = state.message,
