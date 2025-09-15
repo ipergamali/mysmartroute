@@ -661,7 +661,7 @@ fun DeclareRouteScreen(navController: NavController, openDrawer: () -> Unit) {
                                 navController.previousBackStackEntry?.savedStateHandle?.set("newRouteId", newId)
                                 navController.popBackStack()
                             } else {
-                                Toast.makeText(context, context.getString(R.string.route_exists), Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, context.getString(R.string.route_save_failed), Toast.LENGTH_SHORT).show()
                             }
                         } else {
                             Toast.makeText(context, context.getString(R.string.fill_all_fields), Toast.LENGTH_SHORT).show()
