@@ -437,6 +437,7 @@ fun TransportDeclarationDetailEntity.toFirestoreMap(): Map<String, Any> = mapOf(
     "vehicleType" to vehicleType,
     "seats" to seats,
     "cost" to cost,
+    "durationMinutes" to durationMinutes,
     "startTime" to startTime
 )
 
@@ -459,8 +460,9 @@ fun DocumentSnapshot.toTransportDeclarationDetailEntity(declarationId: String): 
     val type = getString("vehicleType") ?: ""
     val seatsVal = (getLong("seats") ?: 0L).toInt()
     val costVal = getDouble("cost") ?: 0.0
+    val durationVal = (getLong("durationMinutes") ?: 0L).toInt()
     val timeVal = getLong("startTime") ?: 0L
-    return TransportDeclarationDetailEntity(id, declarationId, startPoi, endPoi, vehicle, type, seatsVal, costVal, timeVal)
+    return TransportDeclarationDetailEntity(id, declarationId, startPoi, endPoi, vehicle, type, seatsVal, costVal, durationVal, timeVal)
 }
 
 fun AvailabilityEntity.toFirestoreMap(): Map<String, Any> = mapOf(
