@@ -201,6 +201,7 @@
     <string name="lng">Μήκος</string>
     <string name="edit">Επεξεργασία</string>
     <string name="keep">Κράτησε</string>
+    <string name="keep_all">Κράτησε όλα</string>
     <string name="fill_all_fields">Συμπλήρωσε όλα τα πεδία</string>
     <string name="seat_booked">Η θέση κλείστηκε!</string>
     <string name="seat_unavailable">Δεν υπάρχουν διαθέσιμες θέσεις.</string>
