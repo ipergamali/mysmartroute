@@ -1,7 +1,6 @@
 package com.ioannapergamali.mysmartroute.repository
 
 import android.util.Log
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
@@ -9,6 +8,7 @@ import com.ioannapergamali.mysmartroute.data.local.VehicleEntity
 import com.ioannapergamali.mysmartroute.data.local.insertVehicleSafely
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.utils.toVehicleEntity
+import com.ioannapergamali.mysmartroute.utils.SessionManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.TimeoutCancellationException
@@ -40,7 +40,7 @@ class VehicleRepository @Inject constructor(
      * Αποθηκεύει όχημα στη Room και στη συνέχεια στο Firestore.
      */
     suspend fun addVehicle(vehicle: VehicleEntity) = withContext(Dispatchers.IO) {
-        val uid = FirebaseAuth.getInstance().currentUser?.uid
+        val uid = SessionManager.currentUserId()
             ?: throw IllegalStateException("User not logged in")
         val entity = vehicle.copy(userId = vehicle.userId.ifBlank { uid })
 
@@ -64,7 +64,7 @@ class VehicleRepository @Inject constructor(
      * Συγχρονίζει τα οχήματα του τρέχοντος χρήστη από το Firestore στη Room μία φορά.
      */
     suspend fun syncVehicles() = withContext(Dispatchers.IO) {
-        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@withContext
+        val uid = SessionManager.currentUserId() ?: return@withContext
         val userRef = firestore.collection("users").document(uid)
         try {
             val snapshot = withTimeout(10_000) {
@@ -85,7 +85,7 @@ class VehicleRepository @Inject constructor(
     /** Ροή με όλα τα οχήματα. Αν η Room είναι κενή, τα φέρνει από το Firestore. */
     val vehicles: Flow<List<VehicleEntity>> = vehicleDao.getVehicles().onStart {
         val local = vehicleDao.getVehicles().first()
-        val uid = FirebaseAuth.getInstance().currentUser?.uid
+        val uid = SessionManager.currentUserId()
         if (local.isEmpty() && uid != null) {
             Log.d(TAG, "Τοπικά οχήματα κενά, ανάκτηση από Firestore")
             val userRef = firestore.collection("users").document(uid)
@@ -110,7 +110,7 @@ class VehicleRepository @Inject constructor(
      */
     fun startSync(scope: CoroutineScope) {
         if (registration != null) return
-        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val uid = SessionManager.currentUserId() ?: return
         val userRef = firestore.collection("users").document(uid)
         registration = firestore.collection("vehicles")
             .whereEqualTo("userId", userRef)

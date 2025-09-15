@@ -39,7 +39,7 @@ import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.TransportDeclarationViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
-import com.google.firebase.auth.FirebaseAuth
+import com.ioannapergamali.mysmartroute.utils.SessionManager
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -58,7 +58,7 @@ fun PrintDeclarationsScreen(navController: NavController, openDrawer: () -> Unit
     }
 
     LaunchedEffect(role) {
-        val uid = FirebaseAuth.getInstance().currentUser?.uid
+        val uid = SessionManager.currentUserId()
         if (role == UserRole.ADMIN) {
             viewModel.loadDeclarations(context)
         } else if (role != null && uid != null) {

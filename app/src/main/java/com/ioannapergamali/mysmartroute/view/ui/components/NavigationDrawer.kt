@@ -37,6 +37,10 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.R
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
+import com.ioannapergamali.mysmartroute.utils.SessionManager
+import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
@@ -50,6 +54,7 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
         val userState = remember { mutableStateOf(FirebaseAuth.getInstance().currentUser) }
         val username = remember { mutableStateOf<String?>(null) }
         val role = remember { mutableStateOf<String?>(null) }
+        val offlineUid by SessionManager.userIdFlow.collectAsState()
 
         DisposableEffect(Unit) {
             val auth = FirebaseAuth.getInstance()
@@ -72,7 +77,24 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
             onDispose { auth.removeAuthStateListener(listener) }
         }
 
+        LaunchedEffect(offlineUid, userState.value) {
+            val activeUid = userState.value?.uid ?: offlineUid
+            if (activeUid == null) {
+                username.value = null
+                role.value = null
+            } else if (userState.value == null) {
+                val localUser = withContext(Dispatchers.IO) {
+                    MySmartRouteDatabase.getInstance(context).userDao().getUser(activeUid)
+                }
+                username.value = localUser?.username?.takeIf { !it.isNullOrBlank() }
+                    ?: listOfNotNull(localUser?.name, localUser?.surname)
+                        .joinToString(" ").trim().ifBlank { activeUid }
+                role.value = localUser?.role
+            }
+        }
+
         val user = userState.value
+        val isLoggedIn = user != null || offlineUid != null
 
         Row(
             modifier = Modifier.padding(16.dp),
@@ -86,7 +108,7 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
             )
             Spacer(Modifier.size(8.dp))
             Text(
-                text = username.value ?: if (user != null) user.email ?: "" else stringResource(R.string.guest),
+                text = username.value ?: user?.email ?: offlineUid ?: stringResource(R.string.guest),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
             )
         }
@@ -130,7 +152,7 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
             },
             icon = { Icon(Icons.Filled.AdminPanelSettings, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
         )
-        if (user != null) {
+        if (isLoggedIn) {
             NavigationDrawerItem(
                 label = { Text(stringResource(R.string.profile)) },
                 selected = false,
@@ -163,6 +185,9 @@ fun DrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
                 selected = false,
                 onClick = {
                     authViewModel.signOut(context)
+                    userState.value = null
+                    username.value = null
+                    role.value = null
                     navController.navigate("home") {
                         popUpTo("home") { inclusive = true }
                     }

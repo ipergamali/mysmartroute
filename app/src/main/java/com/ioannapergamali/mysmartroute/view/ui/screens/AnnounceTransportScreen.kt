@@ -46,7 +46,6 @@ import com.ioannapergamali.mysmartroute.data.local.VehicleEntity
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationDetailEntity
 import kotlinx.coroutines.launch
-import com.google.firebase.auth.FirebaseAuth
 import com.ioannapergamali.mysmartroute.model.classes.poi.PoiAddress
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.utils.offsetPois
@@ -64,6 +63,7 @@ import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.material3.FilledIconButton
 import com.google.android.libraries.places.api.model.Place
+import com.ioannapergamali.mysmartroute.utils.SessionManager
 
 private fun iconForVehicle(type: VehicleType): ImageVector = when (type) {
     VehicleType.CAR, VehicleType.TAXI -> Icons.Default.DirectionsCar
@@ -255,7 +255,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
             selectedDriverId = null
             selectedDriverName = ""
         } else {
-            val uid = FirebaseAuth.getInstance().currentUser?.uid
+            val uid = SessionManager.currentUserId()
             if (uid != null) {
                 selectedDriverId = uid
                 selectedDriverName = userViewModel.getUserName(context, uid)
@@ -271,7 +271,7 @@ fun AnnounceTransportScreen(navController: NavController, openDrawer: () -> Unit
 
     LaunchedEffect(role, drivers) {
         if (role != UserRole.ADMIN && selectedDriverName.isBlank()) {
-            val uid = FirebaseAuth.getInstance().currentUser?.uid
+            val uid = SessionManager.currentUserId()
             if (uid != null) {
                 selectedDriverId = uid
                 selectedDriverName = userViewModel.getUserName(context, uid)

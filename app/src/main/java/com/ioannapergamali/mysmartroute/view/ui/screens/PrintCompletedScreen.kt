@@ -16,7 +16,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.google.firebase.auth.FirebaseAuth
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
@@ -25,6 +24,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.TransportDeclarationViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.ioannapergamali.mysmartroute.utils.SessionManager
 
 @Composable
 fun PrintCompletedScreen(navController: NavController, openDrawer: () -> Unit) {
@@ -35,7 +35,7 @@ fun PrintCompletedScreen(navController: NavController, openDrawer: () -> Unit) {
     val routes by routeViewModel.routes.collectAsState()
 
     LaunchedEffect(Unit) {
-        val driverId = FirebaseAuth.getInstance().currentUser?.uid
+        val driverId = SessionManager.currentUserId()
         if (driverId != null) {
             declarationViewModel.loadDeclarations(context, driverId)
             routeViewModel.loadRoutes(context)

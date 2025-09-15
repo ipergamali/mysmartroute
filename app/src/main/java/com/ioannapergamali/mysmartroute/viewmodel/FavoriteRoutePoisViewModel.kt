@@ -3,13 +3,13 @@ package com.ioannapergamali.mysmartroute.viewmodel
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.data.local.UserEntity
 import com.ioannapergamali.mysmartroute.data.local.UserPoiEntity
+import com.ioannapergamali.mysmartroute.utils.SessionManager
 
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -21,7 +21,7 @@ import kotlinx.coroutines.tasks.await
 class FavoriteRoutePoisViewModel : ViewModel() {
     private val firestore = FirebaseFirestore.getInstance()
 
-    private fun userId(): String = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+    private fun userId(): String = SessionManager.currentUserId() ?: ""
 
     private fun userDoc(uid: String) = firestore.collection("users").document(uid)
 

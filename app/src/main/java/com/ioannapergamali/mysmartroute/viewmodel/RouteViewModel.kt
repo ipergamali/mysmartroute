@@ -3,7 +3,6 @@ package com.ioannapergamali.mysmartroute.viewmodel
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import android.util.Log
@@ -26,9 +25,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 import java.util.UUID
 import kotlin.math.abs
+import kotlinx.coroutines.tasks.await
+import com.ioannapergamali.mysmartroute.utils.SessionManager
 
 /**
  * ViewModel για διαχείριση διαδρομών στο Firestore και στη Room DB.
@@ -103,7 +103,7 @@ class RouteViewModel : ViewModel() {
             val routeDao = db.routeDao()
             val pointDao = db.routePointDao()
             val busDao = db.routeBusStationDao()
-            val userId = FirebaseAuth.getInstance().currentUser?.uid
+            val userId = SessionManager.currentUserId()
 
             val query = if (includeAll) {
                 firestore.collection("routes")
@@ -222,7 +222,7 @@ class RouteViewModel : ViewModel() {
      */
     fun loadUserWalkingRoutes() {
         viewModelScope.launch {
-            val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+            val userId = SessionManager.currentUserId() ?: return@launch
             val snapshot = runCatching {
                 firestore.collection("users")
                     .document(userId)
@@ -302,7 +302,7 @@ class RouteViewModel : ViewModel() {
 
         val pointDao = db.routePointDao()
         val busDao = db.routeBusStationDao()
-        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return null
+        val userId = SessionManager.currentUserId() ?: return null
         val id = UUID.randomUUID().toString()
         val entity = RouteEntity(id, userId, name, poiIds.first(), poiIds.last())
         val points = poiIds.mapIndexed { index, p -> RoutePointEntity(id, index, p) }

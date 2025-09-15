@@ -52,9 +52,9 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import kotlin.math.abs
 import android.widget.Toast
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
+import com.ioannapergamali.mysmartroute.utils.SessionManager
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -150,7 +150,7 @@ fun RouteModeScreen(
         val original = originalPoiIds.toSet()
         if (current == original) return currentRouteId to false
 
-        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return "" to false
+        val uid = SessionManager.currentUserId() ?: return "" to false
         val username = FirebaseFirestore.getInstance()
             .collection("users")
             .document(uid)

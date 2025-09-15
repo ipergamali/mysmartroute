@@ -18,7 +18,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.google.firebase.auth.FirebaseAuth
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
@@ -26,6 +25,7 @@ import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.UserViewModel
+import com.ioannapergamali.mysmartroute.utils.SessionManager
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,7 +36,7 @@ fun NotificationsScreen(navController: NavController, openDrawer: () -> Unit) {
     val userViewModel: UserViewModel = viewModel()
     val role by authViewModel.currentUserRole.collectAsState()
     val requests by requestViewModel.requests.collectAsState()
-    val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+    val userId = SessionManager.currentUserId() ?: ""
     val systemNotifications by userViewModel.getNotifications(context, userId).collectAsState(emptyList())
 
     LaunchedEffect(Unit) {

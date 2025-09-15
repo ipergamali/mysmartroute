@@ -13,8 +13,11 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.DocumentReference
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.ioannapergamali.mysmartroute.data.local.AuthenticationDao
+import com.ioannapergamali.mysmartroute.data.local.AuthenticationEntity
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.UserEntity
+import com.ioannapergamali.mysmartroute.data.local.UserDao
 import com.ioannapergamali.mysmartroute.data.local.MenuEntity
 import com.ioannapergamali.mysmartroute.data.local.MenuOptionEntity
 import com.ioannapergamali.mysmartroute.data.local.MenuWithOptions
@@ -25,12 +28,15 @@ import com.ioannapergamali.mysmartroute.data.local.RoleEntity
 import com.ioannapergamali.mysmartroute.model.classes.users.UserAddress
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
+import com.ioannapergamali.mysmartroute.utils.EncryptionManager
+import com.ioannapergamali.mysmartroute.utils.SessionManager
 import com.ioannapergamali.mysmartroute.model.menus.MenuConfig
 import com.ioannapergamali.mysmartroute.model.menus.RoleMenuConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import java.util.Locale
 import java.util.UUID
 import androidx.room.withTransaction
 
@@ -103,9 +109,10 @@ class AuthenticationViewModel : ViewModel() {
         viewModelScope.launch {
             _signUpState.value = SignUpState.Loading
 
+            val sanitizedEmail = email.trim()
             if (
                 name.isBlank() || surname.isBlank() || username.isBlank() ||
-                email.isBlank() || phoneNum.isBlank() || password.isBlank() ||
+                sanitizedEmail.isBlank() || phoneNum.isBlank() || password.isBlank() ||
                 address.city.isBlank() || address.streetName.isBlank()
             ) {
                 _signUpState.value = SignUpState.Error("All fields are required")
@@ -119,13 +126,14 @@ class AuthenticationViewModel : ViewModel() {
                 return@launch
             }
 
+            val normalizedEmail = sanitizedEmail.lowercase(Locale.ROOT)
             val userIdLocal = UUID.randomUUID().toString()
             val userEntity = UserEntity(
                 id = userIdLocal,
                 name = name,
                 surname = surname,
                 username = username,
-                email = email,
+                email = sanitizedEmail,
                 phoneNum = phoneNum,
                 role = role.name,
                 roleId = "",
@@ -136,10 +144,11 @@ class AuthenticationViewModel : ViewModel() {
             )
             val dbLocal = MySmartRouteDatabase.getInstance(context)
             val userDao = dbLocal.userDao()
+            val authDao = dbLocal.authenticationDao()
 
             if (NetworkUtils.isInternetAvailable(context)) {
                 try {
-                    val result = auth.createUserWithEmailAndPassword(email, password).await()
+                    val result = auth.createUserWithEmailAndPassword(sanitizedEmail, password).await()
                     val uid = result.user?.uid ?: userIdLocal
                     initializeRolesAndMenusIfNeeded(context)
                     val authRef = db.collection("Authedication").document(uid)
@@ -155,7 +164,7 @@ class AuthenticationViewModel : ViewModel() {
                         "name" to name,
                         "surname" to surname,
                         "username" to username,
-                        "email" to email,
+                        "email" to sanitizedEmail,
                         "phoneNum" to phoneNum,
                         "role" to role.name,
                         "roleId" to roleId,
@@ -189,6 +198,8 @@ class AuthenticationViewModel : ViewModel() {
 
                     batch.commit().await()
                     insertUserSafely(userDao, userEntity.copy(id = uid, roleId = roleId))
+                    storeCredentials(authDao, uid, normalizedEmail, password)
+                    SessionManager.setOfflineUser(uid)
                     _signUpState.value = SignUpState.Success
                     loadCurrentUserRole(context, loadMenus = true)
                 } catch (e: Exception) {
@@ -197,7 +208,10 @@ class AuthenticationViewModel : ViewModel() {
             } else {
                 val roleId = roleIds[role] ?: "role_passenger"
                 insertUserSafely(userDao, userEntity.copy(roleId = roleId))
+                storeCredentials(authDao, userIdLocal, normalizedEmail, password)
+                SessionManager.setOfflineUser(userIdLocal)
                 _signUpState.value = SignUpState.Success
+                loadCurrentUserRole(context, loadMenus = true)
             }
         }
     }
@@ -210,20 +224,87 @@ class AuthenticationViewModel : ViewModel() {
         viewModelScope.launch {
             _loginState.value = LoginState.Loading
 
-            if (email.isBlank() || password.isBlank()) {
+            val sanitizedEmail = email.trim()
+            if (sanitizedEmail.isBlank() || password.isBlank()) {
                 _loginState.value = LoginState.Error("Email and password are required")
                 return@launch
             }
 
-            auth.signInWithEmailAndPassword(email, password)
-                .addOnSuccessListener {
+            val normalizedEmail = sanitizedEmail.lowercase(Locale.ROOT)
+            val dbLocal = MySmartRouteDatabase.getInstance(context)
+            val authDao = dbLocal.authenticationDao()
+            val userDao = dbLocal.userDao()
+
+            var remoteError: String? = null
+            if (NetworkUtils.isInternetAvailable(context)) {
+                val result = runCatching {
+                    auth.signInWithEmailAndPassword(sanitizedEmail, password).await()
+                }.onFailure { e ->
+                    remoteError = e.localizedMessage
+                    Log.w(TAG, "Remote login failed, trying offline fallback", e)
+                }.getOrNull()
+
+                val uid = result?.user?.uid
+                if (uid != null) {
+                    storeCredentials(authDao, uid, normalizedEmail, password)
+                    SessionManager.setOfflineUser(uid)
                     _loginState.value = LoginState.Success
                     loadCurrentUserRole(context, loadMenus = true)
+                    return@launch
+                } else if (result != null) {
+                    remoteError = "Αποτυχία ανάκτησης αναγνωριστικού χρήστη"
                 }
-                .addOnFailureListener { e ->
-                    _loginState.value = LoginState.Error(e.localizedMessage ?: "Login failed")
-                }
+            }
+
+            val localSuccess = runCatching {
+                tryLocalLogin(authDao, userDao, normalizedEmail, password)
+            }.getOrDefault(false)
+
+            if (localSuccess) {
+                _loginState.value = LoginState.Success
+                loadCurrentUserRole(context, loadMenus = true)
+            } else {
+                _loginState.value = LoginState.Error(
+                    remoteError ?: "Μη έγκυρο email ή κωδικός"
+                )
+            }
         }
+    }
+
+    private suspend fun storeCredentials(
+        authenticationDao: AuthenticationDao,
+        userId: String,
+        email: String,
+        password: String
+    ) {
+        val encryptedPassword = EncryptionManager.encrypt(password)
+        val normalizedEmail = email.lowercase(Locale.ROOT)
+        authenticationDao.upsert(
+            AuthenticationEntity(
+                userId = userId,
+                email = normalizedEmail,
+                encryptedPassword = encryptedPassword
+            )
+        )
+    }
+
+    private suspend fun tryLocalLogin(
+        authenticationDao: AuthenticationDao,
+        userDao: UserDao,
+        email: String,
+        password: String
+    ): Boolean {
+        val normalizedEmail = email.lowercase(Locale.ROOT)
+        val entry = authenticationDao.findByEmail(normalizedEmail) ?: return false
+        val decrypted = runCatching { EncryptionManager.decrypt(entry.encryptedPassword) }
+            .getOrNull() ?: return false
+        if (decrypted != password) return false
+        SessionManager.setOfflineUser(entry.userId)
+        val user = userDao.getUser(entry.userId)
+        if (user == null) {
+            Log.w(TAG, "Local login succeeded but no user entity found for ${entry.userId}")
+        }
+        return true
     }
 
     /**
@@ -361,7 +442,7 @@ class AuthenticationViewModel : ViewModel() {
      */
     fun loadCurrentUserRole(context: Context, loadMenus: Boolean = false) {
         Log.i(TAG, "loadCurrentUserRole invoked")
-        val uid = auth.currentUser?.uid ?: run {
+        val uid = SessionManager.currentUserId(auth) ?: run {
             Log.w(TAG, "No authenticated user")
             return
         }
@@ -485,7 +566,7 @@ class AuthenticationViewModel : ViewModel() {
     fun loadCurrentUserMenus(context: Context) {
         viewModelScope.launch {
             Log.i(TAG, "loadCurrentUserMenus invoked")
-            val uid = auth.currentUser?.uid ?: run {
+            val uid = SessionManager.currentUserId(auth) ?: run {
                 Log.w(TAG, "No authenticated user")
                 return@launch
             }
@@ -569,6 +650,7 @@ class AuthenticationViewModel : ViewModel() {
             FirebaseFirestore.getInstance()
         ).stopSync()
         auth.signOut()
+        SessionManager.clear()
         _currentUserRole.value = null
         _currentMenus.value = emptyList()
     }

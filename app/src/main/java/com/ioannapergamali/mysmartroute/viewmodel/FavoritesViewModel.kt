@@ -7,8 +7,8 @@ import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.insertFavoriteSafely
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.ioannapergamali.mysmartroute.utils.SessionManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -28,7 +28,7 @@ class FavoritesViewModel : ViewModel() {
         .document("vehicles")
         .collection("items")
 
-    private fun userId() = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+    private fun userId() = SessionManager.currentUserId() ?: ""
 
     /**
      * Φορτώνει τα αγαπημένα οχήματα από το Firestore και τα συγχρονίζει με την τοπική βάση.

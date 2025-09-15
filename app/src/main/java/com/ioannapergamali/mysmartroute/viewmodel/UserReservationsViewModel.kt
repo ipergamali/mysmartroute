@@ -8,6 +8,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.SeatReservationEntity
 import com.ioannapergamali.mysmartroute.utils.NetworkUtils
+import com.ioannapergamali.mysmartroute.utils.SessionManager
 import com.ioannapergamali.mysmartroute.utils.toSeatReservationEntity
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -32,7 +33,7 @@ class UserReservationsViewModel : ViewModel() {
      */
     fun load(context: Context) {
         viewModelScope.launch {
-            val userId = auth.currentUser?.uid ?: return@launch
+            val userId = SessionManager.currentUserId(auth) ?: return@launch
             val dao = MySmartRouteDatabase.getInstance(context).seatReservationDao()
             _reservations.value = dao.getReservationsForUser(userId).first()
 

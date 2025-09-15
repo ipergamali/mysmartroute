@@ -4,6 +4,7 @@ import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.ioannapergamali.mysmartroute.utils.SessionManager
 import kotlinx.coroutines.tasks.await
 import java.util.Date
 
@@ -57,7 +58,7 @@ class WalkRepository(
      * Starts a walking session recording the time chosen by the user.
      */
     suspend fun startWalk(startTimeMillis: Long) {
-        val uid = auth.currentUser?.uid ?: return
+        val uid = SessionManager.currentUserId(auth) ?: return
 
         cleanupUserWalks(uid, startTimeMillis)
 
