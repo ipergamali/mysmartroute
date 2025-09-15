@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 
 class AdminRouteViewModel(private val repo: AdminRouteRepository) : ViewModel() {
     val duplicateRoutes: StateFlow<List<List<RouteEntity>>> =
-        repo.getRoutesWithSameName().stateIn(
+        repo.getDuplicateRoutes().stateIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
             initialValue = emptyList()

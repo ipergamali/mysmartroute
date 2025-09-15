@@ -250,6 +250,7 @@
     <string name="max_cost">Maximum cost</string>
     <string name="request_sent">Request saved</string>
     <string name="view_requests">View Requests</string>
+    <string name="registered_by">Registered by: %1$s</string>
     <string name="no_requests">No requests found</string>
     <string name="no_routes_available">No routes available</string>
     <string name="view_movings">View Movings</string>

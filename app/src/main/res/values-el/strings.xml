@@ -238,6 +238,7 @@
     <string name="max_cost">Μέγιστο κόστος</string>
     <string name="request_sent">Το αίτημα καταχωρήθηκε</string>
     <string name="view_requests">Προβολή αιτημάτων</string>
+    <string name="registered_by">Καταχωρήθηκε από: %1$s</string>
     <string name="view_movings">Προβολή μετακινήσεων</string>
     <string name="no_movings">Δεν βρέθηκαν μετακινήσεις</string>
     <string name="active_movings">Ενεργές μετακινήσεις</string>

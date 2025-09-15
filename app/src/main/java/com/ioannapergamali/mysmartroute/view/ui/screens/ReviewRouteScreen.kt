@@ -87,7 +87,7 @@ fun ReviewRouteScreen(navController: NavController, openDrawer: () -> Unit) {
                 )
             } else {
                 duplicateGroups.forEach { group ->
-                    Text(group.firstOrNull()?.name.orEmpty())
+                    Text(group.map { it.name }.distinct().joinToString(" / "))
                     LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         items(group) { route ->
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -108,6 +108,7 @@ fun ReviewRouteScreen(navController: NavController, openDrawer: () -> Unit) {
                                     )
                                 }
                                 Text(route.name)
+                                Text(stringResource(R.string.registered_by, route.userId))
                             }
                         }
                     }
