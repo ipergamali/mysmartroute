@@ -58,6 +58,18 @@ fun ViewRoutesScreen(navController: NavController, openDrawer: () -> Unit) {
         favViewModel.loadFavorites(context)
     }
 
+    LaunchedEffect(selectedRoute, routes) {
+        selectedRoute?.let { route ->
+            pois = routeViewModel.getRoutePois(context, route.id)
+            pathPoints = pois.map { LatLng(it.lat, it.lng) }
+            pathPoints.firstOrNull()?.let {
+                cameraPositionState.move(
+                    CameraUpdateFactory.newLatLngZoom(it, 13f)
+                )
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
             TopBar(
@@ -109,19 +121,11 @@ fun ViewRoutesScreen(navController: NavController, openDrawer: () -> Unit) {
                             text = { Text(route.name) },
                             onClick = {
                                 selectedRoute = route
+                                newRouteName = route.name
+                                pois = emptyList()
+                                pathPoints = emptyList()
                                 expanded = false
-                                scope.launch {
-                                    pois = routeViewModel.getRoutePois(context, route.id)
 
-                                    pathPoints = pois.map { LatLng(it.lat, it.lng) }
-                                    newRouteName = route.name
-                                    pathPoints.firstOrNull()?.let {
-
-                                        cameraPositionState.move(
-                                            CameraUpdateFactory.newLatLngZoom(it, 13f)
-                                        )
-                                    }
-                                }
                             }
                         )
                     }
