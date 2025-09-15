@@ -153,6 +153,28 @@
     <string name="role_driver">Driver</string>
     <string name="role_admin">Administrator</string>
     <string name="select_role">Select Role</string>
+    <string name="role_card_header">[%1$s] %2$s</string>
+    <string name="role_capabilities_section_title">What you can do</string>
+    <string name="role_capabilities_unavailable">Capabilities are not available for this role.</string>
+    <!-- Role capabilities -->
+    <string name="role_passenger_capability_search_title">Discover routes and transport options</string>
+    <string name="role_passenger_capability_search_desc">Browse routes, transport modes, points of interest, and walking suggestions that match your plans.</string>
+    <string name="role_passenger_capability_booking_title">Book and manage seats</string>
+    <string name="role_passenger_capability_booking_desc">Reserve seats or tickets, print confirmations, and cancel reservations whenever your schedule changes.</string>
+    <string name="role_passenger_capability_profile_title">Personalize your experience</string>
+    <string name="role_passenger_capability_profile_desc">Manage favourites, review transport requests, rate completed trips, sign out, or shut down the app when you finish.</string>
+    <string name="role_driver_capability_fleet_title">Manage fleet and availability</string>
+    <string name="role_driver_capability_fleet_desc">Register vehicles, declare transport routes, publish availability, and print the necessary declarations.</string>
+    <string name="role_driver_capability_passengers_title">Coordinate passengers</string>
+    <string name="role_driver_capability_passengers_desc">Find passengers, handle transport requests, and print passenger lists for upcoming or completed rides.</string>
+    <string name="role_driver_capability_routes_title">Complete planned routes</string>
+    <string name="role_driver_capability_routes_desc">Prepare route completion workflows so every journey is finalised with accurate booking updates.</string>
+    <string name="role_admin_capability_users_title">Administer users and roles</string>
+    <string name="role_admin_capability_users_desc">Create accounts, adjust privileges, inspect user performance, and keep the user registry organised.</string>
+    <string name="role_admin_capability_content_title">Curate routes and points of interest</string>
+    <string name="role_admin_capability_content_desc">Define or review points of interest, edit transport routes, assign pending tasks, and monitor available vehicles.</string>
+    <string name="role_admin_capability_system_title">Maintain platform operations</string>
+    <string name="role_admin_capability_system_desc">Initialise and synchronise system data, adjust the current date, and orchestrate maintenance or shutdown actions.</string>
     <!-- Dynamic menu titles -->
     <string name="passenger_menu_title">Passenger Menu</string>
     <string name="driver_menu_title">Driver Menu</string>

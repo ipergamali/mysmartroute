@@ -154,6 +154,28 @@
     <string name="role_driver">Οδηγός</string>
     <string name="role_admin">Διαχειριστής</string>
     <string name="select_role">Επιλογή ρόλου</string>
+    <string name="role_card_header">[%1$s] %2$s</string>
+    <string name="role_capabilities_section_title">Τι μπορείς να κάνεις</string>
+    <string name="role_capabilities_unavailable">Δεν υπάρχουν διαθέσιμες δυνατότητες για αυτόν τον ρόλο.</string>
+    <!-- Δυνατότητες ρόλων -->
+    <string name="role_passenger_capability_search_title">Αναζήτηση διαδρομών και μετακινήσεων</string>
+    <string name="role_passenger_capability_search_desc">Περιηγήσου σε διαθέσιμες διαδρομές, μέσα μεταφοράς, σημεία ενδιαφέροντος και προτάσεις πεζοπορίας που ταιριάζουν στα σχέδιά σου.</string>
+    <string name="role_passenger_capability_booking_title">Κράτηση και διαχείριση θέσεων</string>
+    <string name="role_passenger_capability_booking_desc">Κάνε κράτηση θέσεων ή εισιτηρίων, εκτύπωσε αποδείξεις και ακύρωσε κρατήσεις όταν αλλάζουν τα πλάνα σου.</string>
+    <string name="role_passenger_capability_profile_title">Προσωποποίηση εμπειρίας</string>
+    <string name="role_passenger_capability_profile_desc">Διαχειρίσου αγαπημένα, παρακολούθησε αιτήματα μεταφοράς, βαθμολόγησε ολοκληρωμένες διαδρομές και κλείσε τη συνεδρία σου.</string>
+    <string name="role_driver_capability_fleet_title">Διαχείριση στόλου και διαθεσιμότητας</string>
+    <string name="role_driver_capability_fleet_desc">Καταχώρησε οχήματα, δήλωσε διαδρομές μεταφοράς, ανακοίνωσε διαθεσιμότητες και εκτύπωσε τις απαιτούμενες δηλώσεις.</string>
+    <string name="role_driver_capability_passengers_title">Συντονισμός επιβατών</string>
+    <string name="role_driver_capability_passengers_desc">Εντόπισε επιβάτες, διαχειρίσου αιτήματα μεταφοράς και εκτύπωσε λίστες επιβατών για προγραμματισμένα ή ολοκληρωμένα δρομολόγια.</string>
+    <string name="role_driver_capability_routes_title">Ολοκλήρωση δρομολογίων</string>
+    <string name="role_driver_capability_routes_desc">Προετοίμασε τη διαδικασία ολοκλήρωσης και φρόντισε κάθε διαδρομή να ενημερώνει σωστά τις κρατήσεις.</string>
+    <string name="role_admin_capability_users_title">Διαχείριση χρηστών και ρόλων</string>
+    <string name="role_admin_capability_users_desc">Δημιούργησε λογαριασμούς, τροποποίησε προνόμια, αξιολόγησε την απόδοση χρηστών και κράτησε οργανωμένο το μητρώο.</string>
+    <string name="role_admin_capability_content_title">Επιμέλεια διαδρομών και σημείων</string>
+    <string name="role_admin_capability_content_desc">Όρισε ή έλεγξε σημεία ενδιαφέροντος, επεξεργάσου διαδρομές, ανάθεσε εκκρεμότητες και παρακολούθησε τα διαθέσιμα οχήματα.</string>
+    <string name="role_admin_capability_system_title">Συντήρηση πλατφόρμας</string>
+    <string name="role_admin_capability_system_desc">Αρχικοποίησε και συγχρόνισε δεδομένα, ρύθμισε την ημερομηνία συστήματος και οργάνωσε εργασίες συντήρησης ή τερματισμού.</string>
     <!-- Titles μενού δυναμικών επιλογών -->
     <string name="passenger_menu_title">Μενού Επιβάτη</string>
     <string name="driver_menu_title">Μενού Οδηγού</string>
