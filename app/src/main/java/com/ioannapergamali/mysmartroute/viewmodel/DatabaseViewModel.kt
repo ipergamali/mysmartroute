@@ -501,7 +501,7 @@ class DatabaseViewModel : ViewModel() {
      * Αντλεί δεδομένα από το Firebase Firestore για πλήρη εικόνα του συστήματος.
      * Retrieves data from Firebase Firestore for a complete system view.
      */
-    fun loadFirebaseData() {
+    fun loadFirebaseData(context: Context) {
         viewModelScope.launch {
             try {
                 Log.d(TAG, "Loading Firebase data")
