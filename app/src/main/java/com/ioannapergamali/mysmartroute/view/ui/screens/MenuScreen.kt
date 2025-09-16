@@ -74,12 +74,19 @@ fun MenuScreen(navController: NavController, openDrawer: () -> Unit) {
                         else -> route
                     }
 
+                    val normalizedTargetRoute = targetRoute.substringBefore("?")
                     val destinationExists = if (targetRoute.startsWith("definePoi")) {
                         navController.graph.any {
                             it.route == "definePoi?lat={lat}&lng={lng}&source={source}&view={view}&routeId={routeId}"
                         }
                     } else {
-                        navController.graph.any { it.route == targetRoute }
+                        navController.graph.any { destination ->
+                            val destinationRoute = destination.route ?: return@any false
+                            destinationRoute == targetRoute || (
+                                destinationRoute.contains("?") &&
+                                    destinationRoute.substringBefore("?") == normalizedTargetRoute
+                            )
+                        }
                     }
 
                     if (
