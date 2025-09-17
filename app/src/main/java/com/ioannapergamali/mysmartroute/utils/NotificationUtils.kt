@@ -71,17 +71,38 @@ object NotificationUtils {
                 CoroutineScope(Dispatchers.IO).launch {
                     runCatching {
                         val database = MySmartRouteDatabase.getInstance(context)
+                        val dao = database.notificationDao()
                         val now = runCatching { database.currentAppDateTime() }
                             .getOrElse { LocalDateTime.now(ATHENS_ZONE_ID) }
+                        val sentDate = now.toLocalDate().toString()
+                        val sentTime = now.toLocalTime().withSecond(0).withNano(0).toString()
+                        val existingId = dao.findIdForMessage(
+                            receiverId = targetReceiver,
+                            message = text,
+                            sentDate = sentDate,
+                            sentTime = sentTime
+                        )
+                        if (
+                            roomNotificationId != null &&
+                            !existingId.isNullOrBlank() &&
+                            existingId != roomNotificationId
+                        ) {
+                            dao.deleteById(existingId)
+                        }
+                        val resolvedId = when {
+                            roomNotificationId != null -> roomNotificationId
+                            !existingId.isNullOrBlank() -> existingId
+                            else -> UUID.randomUUID().toString()
+                        }
                         val entity = NotificationEntity(
-                            id = roomNotificationId ?: UUID.randomUUID().toString(),
+                            id = resolvedId,
                             senderId = senderId,
                             receiverId = targetReceiver,
                             message = text,
-                            sentDate = now.toLocalDate().toString(),
-                            sentTime = now.toLocalTime().withSecond(0).withNano(0).toString()
+                            sentDate = sentDate,
+                            sentTime = sentTime
                         )
-                        database.notificationDao().insert(entity)
+                        dao.insert(entity)
                     }.onFailure { error ->
                         Log.e(TAG, "Failed to store notification", error)
                     }
