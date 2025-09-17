@@ -82,7 +82,7 @@ import com.ioannapergamali.mysmartroute.data.local.AuthenticationDao
         AppDateTimeEntity::class
     ],
 
-    version = 78
+    version = 79
 
 )
 @TypeConverters(Converters::class)
@@ -1079,6 +1079,28 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_78_79 = object : Migration(78, 79) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "ALTER TABLE `transfer_requests` ADD COLUMN `movingId` TEXT NOT NULL DEFAULT ''"
+                )
+                database.execSQL(
+                    "UPDATE transfer_requests SET movingId = (" +
+                        "SELECT id FROM movings WHERE movings.requestNumber = transfer_requests.requestNumber " +
+                        "ORDER BY CASE WHEN movings.id = transfer_requests.firebaseId THEN 1 ELSE 0 END, movings.id " +
+                        "LIMIT 1" +
+                    ") WHERE movingId = ''"
+                )
+                database.execSQL(
+                    "DELETE FROM movings WHERE requestNumber IN (" +
+                        "SELECT requestNumber FROM transfer_requests WHERE movingId != ''" +
+                        ") AND id NOT IN (" +
+                        "SELECT movingId FROM transfer_requests WHERE movingId != ''" +
+                        ")"
+                )
+            }
+        }
+
         private fun prepopulate(db: SupportSQLiteDatabase) {
             Log.d(TAG, "Prepopulating database")
             db.execSQL(
@@ -1235,7 +1257,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_74_75,
                     MIGRATION_75_76,
                     MIGRATION_76_77,
-                    MIGRATION_77_78
+                    MIGRATION_77_78,
+                    MIGRATION_78_79
 
                 )
                     .addCallback(object : RoomDatabase.Callback() {

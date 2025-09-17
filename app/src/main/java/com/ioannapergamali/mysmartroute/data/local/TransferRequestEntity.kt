@@ -15,6 +15,7 @@ data class TransferRequestEntity(
     val driverId: String = "",
     val driverName: String = "",
     val firebaseId: String = "",
+    val movingId: String = "",
 
     /** Ημερομηνία σε millis */
     val date: Long = 0L,

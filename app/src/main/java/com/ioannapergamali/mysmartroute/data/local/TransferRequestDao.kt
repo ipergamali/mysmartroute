@@ -26,6 +26,9 @@ interface TransferRequestDao {
     @Query("UPDATE transfer_requests SET firebaseId = :firebaseId WHERE requestNumber = :requestNumber")
     suspend fun setFirebaseId(requestNumber: Int, firebaseId: String)
 
+    @Query("UPDATE transfer_requests SET movingId = :movingId WHERE requestNumber = :requestNumber")
+    suspend fun setMovingId(requestNumber: Int, movingId: String)
+
     @Query("SELECT * FROM transfer_requests WHERE requestNumber = :requestNumber")
     suspend fun getRequestByNumber(requestNumber: Int): TransferRequestEntity?
 
