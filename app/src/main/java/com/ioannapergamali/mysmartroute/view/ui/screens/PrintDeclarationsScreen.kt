@@ -43,6 +43,7 @@ import com.ioannapergamali.mysmartroute.utils.SessionManager
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.ioannapergamali.mysmartroute.utils.ATHENS_TIME_ZONE
 
 @Composable
 fun PrintDeclarationsScreen(navController: NavController, openDrawer: () -> Unit) {
@@ -149,7 +150,11 @@ private fun DeclarationItem(
         else -> Icons.Filled.DirectionsCar
     }
 
-    val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    val formatter = remember {
+        SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).apply {
+            timeZone = ATHENS_TIME_ZONE
+        }
+    }
     val dateText = formatter.format(Date(declaration.date))
 
     Card(

@@ -698,14 +698,24 @@ class VehicleRequestViewModel(
                         dao.getForRouteAndUser(current.routeId, current.userId)
                     }.getOrElse { emptyList() }
                     val uniqueMovings = (relatedMovings + current).distinctBy { it.id }
-                    val movingsWithoutDetails = uniqueMovings.filter { moving ->
-                        runCatching { detailDao.hasDetailsForMoving(moving.id) }
-                            .getOrDefault(false)
-                            .not()
-                    }
+                    val needsRouteDetails = runCatching {
+                        detailDao.hasDetailsForRoute(current.routeId, current.userId)
+                    }.getOrDefault(false).not()
+                    val movingsWithoutDetails =
+                        if (needsRouteDetails) {
+                            uniqueMovings.filter { moving ->
+                                runCatching { detailDao.hasDetailsForMoving(moving.id) }
+                                    .getOrDefault(false)
+                                    .not()
+                            }
+                        } else {
+                            emptyList()
+                        }
 
                     val shouldUploadRemoteDetails =
+
                         if (movingsWithoutDetails.any { it.id == current.id }) {
+
                             runCatching {
                                 movingRef.collection("details").limit(1).get().await().isEmpty()
                             }.getOrDefault(false)
@@ -749,29 +759,34 @@ class VehicleRequestViewModel(
                         }
                     }
 
-                    var declarationDetails = if (declaration != null) {
-                        runCatching { declarationDetailDao.getForDeclaration(declaration.id) }
-                            .getOrElse { emptyList() }
-                    } else {
-                        emptyList()
-                    }
+                    var declarationDetails: List<TransportDeclarationDetailEntity> = emptyList()
+                    if (needsRouteDetails && declaration != null) {
+                        declarationDetails = runCatching {
+                            declarationDetailDao.getForDeclaration(declaration.id)
+                        }.getOrElse { emptyList() }
 
-                    if (declarationDetails.isEmpty() && declaration != null) {
-                        declarationDetails = try {
-                            db.collection("transport_declarations")
-                                .document(declaration.id)
-                                .collection("details")
-                                .get()
-                                .await()
-                                .documents
-                                .mapNotNull { it.toTransportDeclarationDetailEntity(declaration.id) }
-                        } catch (e: Exception) {
-                            Log.e(TAG, "Failed to load declaration details", e)
-                            emptyList()
+                        if (declarationDetails.isEmpty()) {
+                            declarationDetails = try {
+                                db.collection("transport_declarations")
+                                    .document(declaration.id)
+                                    .collection("details")
+                                    .get()
+                                    .await()
+                                    .documents
+                                    .mapNotNull {
+                                        it.toTransportDeclarationDetailEntity(declaration.id)
+                                    }
+                            } catch (e: Exception) {
+                                Log.e(TAG, "Failed to load declaration details", e)
+                                emptyList()
+                            }
                         }
                     }
 
-                    if (declarationDetails.isNotEmpty() && movingsWithoutDetails.isNotEmpty()) {
+                    if (needsRouteDetails &&
+                        declarationDetails.isNotEmpty() &&
+                        movingsWithoutDetails.isNotEmpty()
+                    ) {
                         val detailsByMoving = movingsWithoutDetails.associate { moving ->
                             val generated = declarationDetails.map { detail ->
                                 val resolvedVehicleId =
@@ -813,6 +828,12 @@ class VehicleRequestViewModel(
                             vehicleIdFromDetails =
                                 currentDetails.firstOrNull { it.vehicleId.isNotBlank() }?.vehicleId
                         }
+                    }
+
+                    if (vehicleIdFromDetails.isNullOrBlank()) {
+                        vehicleIdFromDetails = runCatching {
+                            detailDao.findVehicleIdForRoute(current.routeId, current.userId)
+                        }.getOrNull()
                     }
 
                     if (vehicleIdFromDetails.isNullOrBlank()) {

@@ -12,10 +12,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.ioannapergamali.mysmartroute.utils.ATHENS_ZONE_ID
 import com.ioannapergamali.mysmartroute.viewmodel.MovingViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.AppDateTimeViewModel
 import java.time.Instant
-import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 private const val TAG = "MovingScreen"
@@ -57,5 +57,5 @@ fun MovingScreen(viewModel: MovingViewModel = hiltViewModel()) {
 
 private fun formatDate(epochMillis: Long): String =
     Instant.ofEpochMilli(epochMillis)
-        .atZone(ZoneId.systemDefault())
+        .atZone(ATHENS_ZONE_ID)
         .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))

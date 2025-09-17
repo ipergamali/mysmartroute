@@ -21,7 +21,9 @@ class ReservationPrinter(
 ) {
     suspend fun buildPrintText(): String = withContext(Dispatchers.IO) {
         val reservations = dao.getAllList()
-        val formatter = SimpleDateFormat("HH:mm", Locale.getDefault())
+        val formatter = SimpleDateFormat("HH:mm", Locale.getDefault()).apply {
+            timeZone = ATHENS_TIME_ZONE
+        }
         if (reservations.isEmpty()) {
             "Δεν βρέθηκαν κρατήσεις."
         } else {

@@ -24,6 +24,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.TransportDeclarationViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.ioannapergamali.mysmartroute.utils.ATHENS_TIME_ZONE
 import com.ioannapergamali.mysmartroute.utils.SessionManager
 
 @Composable
@@ -58,7 +59,11 @@ fun PrintCompletedScreen(navController: NavController, openDrawer: () -> Unit) {
             if (declarations.isEmpty()) {
                 Text(text = stringResource(R.string.no_completed_transports))
             } else {
-                val formatter = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
+                val formatter = remember {
+                    SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).apply {
+                        timeZone = ATHENS_TIME_ZONE
+                    }
+                }
                 LazyColumn {
                     items(declarations) { decl ->
                         val routeName = routeNames[decl.routeId] ?: ""

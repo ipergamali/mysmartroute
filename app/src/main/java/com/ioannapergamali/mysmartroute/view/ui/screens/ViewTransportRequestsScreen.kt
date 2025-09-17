@@ -40,6 +40,7 @@ import com.ioannapergamali.mysmartroute.utils.SessionManager
 import android.text.format.DateFormat
 import android.net.Uri
 import java.util.Date
+import com.ioannapergamali.mysmartroute.utils.ATHENS_TIME_ZONE
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,6 +59,12 @@ fun ViewTransportRequestsScreen(
     val pois by poiViewModel.pois.collectAsState()
     val userNames = remember { mutableStateMapOf<String, String>() }
     val selectedRequests = remember { mutableStateMapOf<String, Boolean>() }
+    val dateFormatter = remember(context) {
+        DateFormat.getDateFormat(context).apply { timeZone = ATHENS_TIME_ZONE }
+    }
+    val timeFormatter = remember(context) {
+        DateFormat.getTimeFormat(context).apply { timeZone = ATHENS_TIME_ZONE }
+    }
     val scrollState = rememberScrollState()
     val listState = rememberLazyListState()
     val columnWidth = 150.dp
@@ -199,8 +206,8 @@ fun ViewTransportRequestsScreen(
                             val userName = userNames[req.userId] ?: ""
                             val isChecked = selectedRequests[req.id] ?: false
                             val dateValue = req.date.takeIf { it > 0L }?.let { Date(it) }
-                            val dateText = dateValue?.let { DateFormat.getDateFormat(context).format(it) } ?: ""
-                            val timeText = dateValue?.let { DateFormat.getTimeFormat(context).format(it) } ?: ""
+                            val dateText = dateValue?.let { dateFormatter.format(it) } ?: ""
+                            val timeText = dateValue?.let { timeFormatter.format(it) } ?: ""
                             Row(
                                 modifier = Modifier.padding(vertical = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically

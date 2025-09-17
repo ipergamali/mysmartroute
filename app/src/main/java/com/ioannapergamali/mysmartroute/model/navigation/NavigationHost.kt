@@ -291,11 +291,16 @@ fun NavigationHost(
             SelectRoutePoisScreen(navController = navController, openDrawer = openDrawer)
         }
 
-        composable("viewRequests") {
+        composable(
+            route = "viewRequests?requestId={requestId}",
+            arguments = listOf(navArgument("requestId") { defaultValue = "" })
+        ) { backStackEntry ->
+            val argumentRequestId = backStackEntry.arguments?.getString("requestId")?.takeIf { it.isNotBlank() }
+            val initialId = argumentRequestId ?: requestId
             ViewRequestsScreen(
                 navController = navController,
                 openDrawer = openDrawer,
-                initialRequestId = requestId
+                initialRequestId = initialId
             )
         }
 
@@ -359,11 +364,16 @@ fun NavigationHost(
             PrepareCompleteRouteScreen(navController = navController, openDrawer = openDrawer)
         }
 
-        composable("viewTransportRequests") {
+        composable(
+            route = "viewTransportRequests?requestId={requestId}",
+            arguments = listOf(navArgument("requestId") { defaultValue = "" })
+        ) { backStackEntry ->
+            val argumentRequestId = backStackEntry.arguments?.getString("requestId")?.takeIf { it.isNotBlank() }
+            val initialId = argumentRequestId ?: requestId
             ViewTransportRequestsScreen(
                 navController = navController,
                 openDrawer = openDrawer,
-                initialRequestId = requestId
+                initialRequestId = initialId
             )
         }
 

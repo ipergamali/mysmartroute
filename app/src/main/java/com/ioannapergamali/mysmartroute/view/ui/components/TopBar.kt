@@ -37,6 +37,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.AppDateTimeViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.ioannapergamali.mysmartroute.utils.ATHENS_TIME_ZONE
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ioannapergamali.mysmartroute.viewmodel.SettingsViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
@@ -77,7 +78,12 @@ fun TopBar(
     LaunchedEffect(Unit) {
         dateTimeViewModel.load(context)
     }
-    val formattedDate = storedMillis?.let { SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date(it)) } ?: ""
+    val formatter = remember {
+        SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).apply {
+            timeZone = ATHENS_TIME_ZONE
+        }
+    }
+    val formattedDate = storedMillis?.let { formatter.format(Date(it)) } ?: ""
 
     LaunchedEffect(Unit) {
         authViewModel.loadCurrentUserRole(context)

@@ -72,7 +72,7 @@ object NotificationUtils {
                     runCatching {
                         val database = MySmartRouteDatabase.getInstance(context)
                         val now = runCatching { database.currentAppDateTime() }
-                            .getOrElse { LocalDateTime.now() }
+                            .getOrElse { LocalDateTime.now(ATHENS_ZONE_ID) }
                         val entity = NotificationEntity(
                             id = roomNotificationId ?: UUID.randomUUID().toString(),
                             senderId = senderId,

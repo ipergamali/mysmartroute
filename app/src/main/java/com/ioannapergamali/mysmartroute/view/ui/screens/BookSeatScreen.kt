@@ -59,6 +59,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
+import com.ioannapergamali.mysmartroute.utils.ATHENS_ZONE_ID
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.utils.offsetPois
 import com.ioannapergamali.mysmartroute.utils.combineDateAndTimeAsAthensInstant
@@ -72,7 +73,6 @@ import com.ioannapergamali.mysmartroute.viewmodel.TransportDeclarationViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.TransferRequestViewModel
 import kotlinx.coroutines.launch
 import java.time.Instant
-import java.time.ZoneId
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import kotlin.math.abs
@@ -129,7 +129,7 @@ fun BookSeatScreen(
         remember(declarations, selectedRouteId) {
             declarations.filter { it.routeId == selectedRouteId }
                 .map {
-                    Instant.ofEpochMilli(it.date).atZone(ZoneId.systemDefault()).toLocalDate()
+                    Instant.ofEpochMilli(it.date).atZone(ATHENS_ZONE_ID).toLocalDate()
                 }
                 .toSet()
         }
@@ -139,7 +139,7 @@ fun BookSeatScreen(
         rememberDatePickerState(
             selectableDates = object : SelectableDates {
                 override fun isSelectableDate(dateMillis: Long): Boolean {
-                    val date = Instant.ofEpochMilli(dateMillis).atZone(ZoneId.systemDefault()).toLocalDate()
+                    val date = Instant.ofEpochMilli(dateMillis).atZone(ATHENS_ZONE_ID).toLocalDate()
                     return availableDates.contains(date)
                 }
             }
@@ -161,7 +161,7 @@ fun BookSeatScreen(
     val dateFormatter = remember { DateTimeFormatter.ofPattern("dd/MM/yyyy") }
     val timeFormatter = remember { DateTimeFormatter.ofPattern("HH:mm") }
     val selectedDateText = datePickerState.selectedDateMillis?.let { millis ->
-        Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter)
+        Instant.ofEpochMilli(millis).atZone(ATHENS_ZONE_ID).toLocalDate().format(dateFormatter)
     } ?: stringResource(R.string.select_date)
     val selectedTimeText = selectedTimeMillis?.let { millis ->
         LocalTime.ofSecondOfDay(millis / 1000).format(timeFormatter)

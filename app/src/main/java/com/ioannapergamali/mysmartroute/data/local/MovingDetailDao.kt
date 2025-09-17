@@ -22,4 +22,22 @@ interface MovingDetailDao {
 
     @Query("DELETE FROM moving_details WHERE movingId = :movingId")
     suspend fun deleteForMoving(movingId: String)
+
+    @Query(
+        "SELECT EXISTS(" +
+            "SELECT 1 FROM moving_details md " +
+            "INNER JOIN movings m ON m.id = md.movingId " +
+            "WHERE m.routeId = :routeId AND m.userId = :userId " +
+            "LIMIT 1" +
+            ")"
+    )
+    suspend fun hasDetailsForRoute(routeId: String, userId: String): Boolean
+
+    @Query(
+        "SELECT md.vehicleId FROM moving_details md " +
+            "INNER JOIN movings m ON m.id = md.movingId " +
+            "WHERE m.routeId = :routeId AND m.userId = :userId " +
+            "AND md.vehicleId <> '' LIMIT 1"
+    )
+    suspend fun findVehicleIdForRoute(routeId: String, userId: String): String?
 }
