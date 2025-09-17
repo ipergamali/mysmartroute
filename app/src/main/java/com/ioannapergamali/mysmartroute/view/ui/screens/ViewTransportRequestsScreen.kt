@@ -245,8 +245,12 @@ fun ViewTransportRequestsScreen(
                                 TextButton(
                                     onClick = {
                                         if (req.routeId.isNotBlank()) {
-                                            val encoded = Uri.encode(req.routeId)
-                                            navController.navigate("announceAvailability?routeId=$encoded")
+                                            val encodedRouteId = Uri.encode(req.routeId)
+                                            val encodedRouteName = Uri.encode(routeName)
+                                            val dateParam = req.date.takeIf { it > 0L }?.toString().orEmpty()
+                                            val targetRoute =
+                                                "announceAvailability?routeId=$encodedRouteId&dateMillis=$dateParam&routeName=$encodedRouteName"
+                                            navController.navigate(targetRoute)
                                         }
                                     },
                                     modifier = Modifier.width(columnWidth),

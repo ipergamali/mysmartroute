@@ -1,7 +1,9 @@
 package com.ioannapergamali.mysmartroute.model.navigation
 
+import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
@@ -115,14 +117,25 @@ fun NavigationHost(
         }
 
         composable(
-            route = "announceAvailability?routeId={routeId}",
-            arguments = listOf(navArgument("routeId") { defaultValue = "" })
+            route = "announceAvailability?routeId={routeId}&dateMillis={dateMillis}&routeName={routeName}",
+            arguments = listOf(
+                navArgument("routeId") { defaultValue = "" },
+                navArgument("dateMillis") {
+                    type = NavType.LongType
+                    defaultValue = -1L
+                },
+                navArgument("routeName") { defaultValue = "" }
+            )
         ) { backStackEntry ->
             val routeId = backStackEntry.arguments?.getString("routeId").orEmpty()
+            val dateMillis = backStackEntry.arguments?.getLong("dateMillis") ?: -1L
+            val rawRouteName = backStackEntry.arguments?.getString("routeName").orEmpty()
             AnnounceTransportScreen(
                 navController = navController,
                 openDrawer = openDrawer,
-                initialRouteId = routeId.ifBlank { null }
+                initialRouteId = routeId.ifBlank { null },
+                initialRouteName = Uri.decode(rawRouteName).ifBlank { null },
+                initialDateTimeMillis = dateMillis.takeIf { it > 0L }
             )
         }
 
