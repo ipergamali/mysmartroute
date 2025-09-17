@@ -15,6 +15,9 @@ interface MovingDao {
     @Query("SELECT * FROM movings WHERE userId = :userId")
     fun getMovingsForUser(userId: String): kotlinx.coroutines.flow.Flow<List<MovingEntity>>
 
+    @Query("SELECT * FROM movings WHERE routeId = :routeId AND userId = :userId")
+    suspend fun getForRouteAndUser(routeId: String, userId: String): List<MovingEntity>
+
     @Query("SELECT * FROM movings")
     fun getAll(): kotlinx.coroutines.flow.Flow<List<MovingEntity>>
 

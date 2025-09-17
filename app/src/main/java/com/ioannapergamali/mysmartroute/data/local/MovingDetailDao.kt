@@ -17,6 +17,9 @@ interface MovingDetailDao {
     @Query("SELECT * FROM moving_details WHERE movingId = :movingId")
     fun getForMoving(movingId: String): Flow<List<MovingDetailEntity>>
 
+    @Query("SELECT EXISTS(SELECT 1 FROM moving_details WHERE movingId = :movingId LIMIT 1)")
+    suspend fun hasDetailsForMoving(movingId: String): Boolean
+
     @Query("DELETE FROM moving_details WHERE movingId = :movingId")
     suspend fun deleteForMoving(movingId: String)
 }
