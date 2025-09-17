@@ -61,6 +61,7 @@ import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.utils.offsetPois
+import com.ioannapergamali.mysmartroute.utils.combineDateAndTimeAsAthensInstant
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.view.ui.components.BookingStepsIndicator
@@ -640,12 +641,13 @@ fun BookSeatScreen(
                                 return@launch
                             }
 
+                            val requestDateTime = combineDateAndTimeAsAthensInstant(dateMillis, timeMillis)
                             transferRequestViewModel.submitRequest(
                                 context,
                                 routeId,
                                 startId,
                                 endId,
-                                dateMillis + timeMillis,
+                                requestDateTime,
                                 null,
                                 poiChanged
                             )

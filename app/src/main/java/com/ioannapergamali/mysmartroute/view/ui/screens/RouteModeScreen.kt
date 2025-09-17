@@ -44,6 +44,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.TransferRequestViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.utils.offsetPois
+import com.ioannapergamali.mysmartroute.utils.combineDateAndTimeAsAthensInstant
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -539,12 +540,13 @@ fun RouteModeScreen(
                                 return@launch
                             }
 
+                            val requestDateTime = combineDateAndTimeAsAthensInstant(date, time)
                             transferRequestViewModel.submitRequest(
                                 context,
                                 routeId,
                                 fromId,
                                 toId,
-                                date + time,
+                                requestDateTime,
                                 cost,
                                 poiChanged
                             )
