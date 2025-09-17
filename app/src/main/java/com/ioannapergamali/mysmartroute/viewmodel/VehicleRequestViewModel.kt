@@ -120,33 +120,33 @@ class VehicleRequestViewModel(
             }.getOrNull()
 
             val remoteRaw = snapshot?.documents?.mapNotNull { it.toTransferRequestEntity() }.orEmpty()
-            val remote: List<TransferRequestEntity> =
-                if (remoteRaw.isEmpty()) {
-                    emptyList()
-                } else {
-                    val deduped = mutableMapOf<Int, TransferRequestEntity>()
-                    for (request in remoteRaw) {
-                        val existing = deduped[request.requestNumber]
-                        val localMatch = localByNumber[request.requestNumber]
-                        val shouldReplace = when {
-                            existing == null -> true
-                            localMatch?.firebaseId?.isNotBlank() == true &&
-                                request.firebaseId == localMatch.firebaseId -> true
-                            existing.firebaseId.isBlank() && request.firebaseId.isNotBlank() -> true
-                            else -> false
-                        }
-                        if (shouldReplace) {
-                            deduped[request.requestNumber] = request
-                        }
+            val remoteMerged = linkedMapOf<Int, TransferRequestEntity>()
+            if (remoteRaw.isNotEmpty()) {
+                for (request in remoteRaw) {
+                    val localMatch = localByNumber[request.requestNumber]
+                    val candidate = localMatch?.let { request.withLocalFallback(it) } ?: request
+                    val existing = remoteMerged[request.requestNumber]
+                    val shouldReplace = when {
+                        existing == null -> true
+                        localMatch?.firebaseId?.isNotBlank() == true &&
+                            candidate.firebaseId == localMatch.firebaseId -> true
+                        existing.firebaseId.isBlank() && candidate.firebaseId.isNotBlank() -> true
+                        existing.movingId.isBlank() && candidate.movingId.isNotBlank() -> true
+                        else -> false
                     }
-                    deduped.values.toList()
+                    if (shouldReplace) {
+                        remoteMerged[request.requestNumber] = candidate
+                    }
                 }
-
-            val target = when {
-                remote.isNotEmpty() -> remote
-                local.isNotEmpty() -> local
-                else -> emptyList()
             }
+
+            val combinedByRequestNumber = linkedMapOf<Int, TransferRequestEntity>()
+            combinedByRequestNumber.putAll(remoteMerged)
+            for (localRequest in local) {
+                combinedByRequestNumber.putIfAbsent(localRequest.requestNumber, localRequest)
+            }
+
+            val target = combinedByRequestNumber.values.toList()
 
             val movings = mutableListOf<MovingEntity>()
             val declarations = runCatching { declarationDao.getAll().first() }.getOrElse { emptyList() }
@@ -208,9 +208,9 @@ class VehicleRequestViewModel(
 
             _requests.value = movings
 
-            if (remote.isNotEmpty()) {
+            if (remoteMerged.isNotEmpty()) {
                 val existingNumbers = local.map { it.requestNumber }.toSet()
-                remote.forEach { request ->
+                remoteMerged.values.forEach { request ->
                     if (request.requestNumber in existingNumbers) {
                         dao.insert(request)
                     }
@@ -248,6 +248,18 @@ class VehicleRequestViewModel(
                 showRejectedNotifications(context)
             }
         }
+    }
+
+    private fun TransferRequestEntity.withLocalFallback(local: TransferRequestEntity): TransferRequestEntity {
+        return copy(
+            routeId = routeId.ifBlank { local.routeId },
+            passengerId = passengerId.ifBlank { local.passengerId },
+            driverId = driverId.ifBlank { local.driverId },
+            driverName = driverName.ifBlank { local.driverName },
+            firebaseId = firebaseId.ifBlank { local.firebaseId },
+            movingId = movingId.ifBlank { local.movingId },
+            cost = cost ?: local.cost
+        )
     }
 
     /**
