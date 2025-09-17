@@ -291,19 +291,36 @@ class VehicleRequestViewModel(
                     .mapNotNull { it.toMovingEntity() }
             }
 
-            val target = if (remote.isNotEmpty()) remote else localMovings
+            val mergedMovings = mergeMovings(localMovings, remote)
 
-            target.forEach { m ->
+            mergedMovings.forEach { m ->
                 enrichMoving(m, routeDao, userDao, vehicleDao)
             }
 
-            _requests.value = target
+            _requests.value = mergedMovings
 
             if (remote.isNotEmpty()) {
                 remote.forEach { dao.insert(it) }
             }
         }
     }
+
+    private fun mergeMovings(
+        localMovings: List<MovingEntity>,
+        remoteMovings: List<MovingEntity>
+    ): List<MovingEntity> {
+        if (localMovings.isEmpty()) return remoteMovings
+        if (remoteMovings.isEmpty()) return localMovings
+        return (localMovings + remoteMovings)
+            .associateBy { it.deduplicationKey() }
+            .values
+            .toList()
+    }
+
+    private fun MovingEntity.deduplicationKey(): String =
+        id.takeIf { it.isNotBlank() }
+            ?: listOf(routeId, userId, driverId, date.toString(), requestNumber.toString())
+                .joinToString(separator = "|")
 
     private suspend fun enrichMoving(
         m: MovingEntity,
