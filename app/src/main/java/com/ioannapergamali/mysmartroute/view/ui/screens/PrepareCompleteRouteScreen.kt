@@ -104,13 +104,25 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
         }
     }
 
-    LaunchedEffect(routes, selectedDriverId) {
-        displayRoutes = selectedDriverId?.let { id ->
-            routes.filter { it.userId == id }
-        } ?: routes
+    LaunchedEffect(routes, declarations, selectedDriverId) {
+        val filteredRoutes = selectedDriverId?.takeIf { it.isNotBlank() }?.let { driverId ->
+            val declaredRouteIds = declarations
+                .asSequence()
+                .filter { it.driverId == driverId }
+                .map { it.routeId }
+                .toSet()
+            routes.filter { it.id in declaredRouteIds }
+        } ?: emptyList()
+
+        displayRoutes = filteredRoutes
+        if (selectedRoute?.id !in filteredRoutes.map { it.id }) {
+            selectedRoute = null
+            selectedDate = null
+            selectedDeclaration = null
+        }
     }
 
-    LaunchedEffect(selectedRoute, selectedDate, declarations) {
+    LaunchedEffect(selectedRoute, selectedDate, declarations, selectedDriverId) {
         selectedRoute?.let { route ->
             val (_, path) = routeViewModel.getRouteDirections(context, route.id, VehicleType.CAR)
             pathPoints = path
@@ -120,7 +132,12 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
             val dbLocal = MySmartRouteDatabase.getInstance(context)
             val count = dbLocal.movingDao().countPendingOrOpenForRoute(route.id, date)
             if (count > 0) {
-                val decl = declarations.find { it.routeId == route.id && it.date == date }
+                val driverId = selectedDriverId
+                val decl = declarations.find {
+                    it.routeId == route.id &&
+                        it.date == date &&
+                        (driverId == null || driverId.isBlank() || it.driverId == driverId)
+                }
                 selectedDeclaration = decl
                 val declId = decl?.id ?: ""
                 val startTime = decl?.startTime ?: 0L
