@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.ioannapergamali.mysmartroute.data.local.MovingDao
 import com.ioannapergamali.mysmartroute.data.local.MovingDetailEntity
 import com.ioannapergamali.mysmartroute.data.local.MovingEntity
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
@@ -17,6 +18,7 @@ import com.ioannapergamali.mysmartroute.data.local.NotificationEntity
 import com.ioannapergamali.mysmartroute.data.local.RouteDao
 import com.ioannapergamali.mysmartroute.data.local.UserDao
 import com.ioannapergamali.mysmartroute.data.local.VehicleDao
+import com.ioannapergamali.mysmartroute.data.local.TransferRequestDao
 import com.ioannapergamali.mysmartroute.data.local.TransferRequestEntity
 import com.ioannapergamali.mysmartroute.data.local.currentAppDateTime
 import com.ioannapergamali.mysmartroute.data.local.isAwaitingDriver
@@ -159,8 +161,13 @@ class VehicleRequestViewModel(
                     }
                     matched?.driverId.orEmpty()
                 }
+                val movingId = when {
+                    tr.movingId.isNotBlank() -> tr.movingId
+                    tr.firebaseId.isNotBlank() -> tr.firebaseId
+                    else -> "req_${tr.requestNumber}"
+                }
                 val moving = MovingEntity(
-                    id = tr.firebaseId.ifBlank { "req_${tr.requestNumber}" },
+                    id = movingId,
                     routeId = tr.routeId,
                     userId = tr.passengerId,
                     date = tr.date,
@@ -401,11 +408,24 @@ class VehicleRequestViewModel(
             val movingDao = dbInstance.movingDao()
             val transferDao = dbInstance.transferRequestDao()
 
-            val idsList = ids.toList()
-            val requestNumbers = _requests.value
-                .filter { it.id in ids }
+            val selectedRequests = _requests.value.filter { it.id in ids }
+            val requestNumbers = selectedRequests
                 .mapNotNull { it.requestNumber.takeIf { number -> number != 0 } }
             val transferRequests = mutableListOf<TransferRequestEntity>()
+
+            val idsToRemoveFromRoom = mutableSetOf<String>()
+            val firestoreIds = mutableSetOf<String>()
+
+            selectedRequests.forEach { request ->
+                val resolvedId = resolveMovingDocumentId(movingDao, transferDao, request)
+                if (resolvedId.isNotBlank()) {
+                    firestoreIds += resolvedId
+                }
+                idsToRemoveFromRoom += request.id
+                if (resolvedId != request.id) {
+                    idsToRemoveFromRoom += resolvedId
+                }
+            }
 
             requestNumbers.forEach { number ->
                 val request = runCatching { transferDao.getRequestByNumber(number) }
@@ -415,7 +435,9 @@ class VehicleRequestViewModel(
                 }
             }
 
-            movingDao.deleteByIds(idsList)
+            if (idsToRemoveFromRoom.isNotEmpty()) {
+                movingDao.deleteByIds(idsToRemoveFromRoom.toList())
+            }
             _requests.value = _requests.value.filterNot { it.id in ids }
             passengerRequests.clear()
             _requests.value.forEach {
@@ -434,7 +456,7 @@ class VehicleRequestViewModel(
                 transferDao.deleteByRequestNumbers(requestNumbers)
             }
 
-            idsList.forEach { id ->
+            firestoreIds.forEach { id ->
                 try {
                     db.collection("movings").document(id).delete().await()
                 } catch (e: Exception) {
@@ -553,6 +575,7 @@ class VehicleRequestViewModel(
         viewModelScope.launch {
             val dbInstance = MySmartRouteDatabase.getInstance(context)
             val movingDao = dbInstance.movingDao()
+            val transferDao = dbInstance.transferRequestDao()
             val driver = FirebaseAuth.getInstance().currentUser ?: return@launch
             val driverName = UserViewModel().getUserName(context, driver.uid)
             val current = _requests.value.find { it.id == requestId } ?: return@launch
@@ -567,20 +590,30 @@ class VehicleRequestViewModel(
             val list = _requests.value.toMutableList()
             val index = list.indexOfFirst { it.id == requestId }
             if (index != -1) {
-                val updated = list[index].copy(driverId = driver.uid, status = "pending").also {
+                var baseCurrent = list[index]
+                val movingDocId = resolveMovingDocumentId(movingDao, transferDao, baseCurrent)
+                if (movingDocId != baseCurrent.id) {
+                    baseCurrent = baseCurrent.copy(id = movingDocId)
+                }
+                val updated = baseCurrent.copy(driverId = driver.uid, status = "pending").also {
                     it.driverName = driverName
                 }
                 list[index] = updated
                 _requests.value = list
                 movingDao.insert(updated)
+                if (requestId != updated.id) {
+                    runCatching { movingDao.deleteByIds(listOf(requestId)) }
+                }
                 try {
-                    db.collection("movings").document(requestId).update(
-                        mapOf(
-                            "driverId" to FirebaseFirestore.getInstance().collection("users").document(driver.uid),
-                            "driverName" to driverName,
-                            "status" to "pending"
-                        )
-                    ).await()
+                    if (updated.id.isNotBlank()) {
+                        db.collection("movings").document(updated.id).update(
+                            mapOf(
+                                "driverId" to FirebaseFirestore.getInstance().collection("users").document(driver.uid),
+                                "driverName" to driverName,
+                                "status" to "pending"
+                            )
+                        ).await()
+                    }
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to send route notification", e)
                 }
@@ -641,10 +674,15 @@ class VehicleRequestViewModel(
         viewModelScope.launch {
             val dbInstance = MySmartRouteDatabase.getInstance(context)
             val dao = dbInstance.movingDao()
+            val transferDao = dbInstance.transferRequestDao()
             val list = _requests.value.toMutableList()
             val index = list.indexOfFirst { it.id == requestId }
             if (index != -1) {
-                val current = list[index]
+                var current = list[index]
+                val resolvedId = resolveMovingDocumentId(dao, transferDao, current).ifBlank { current.id }
+                if (resolvedId != current.id) {
+                    current = current.copy(id = resolvedId)
+                }
                 var declaration: TransportDeclarationEntity? = null
                 var vehicleIdFromDetails: String? = null
 
@@ -654,7 +692,7 @@ class VehicleRequestViewModel(
                     val detailDao = dbInstance.movingDetailDao()
                     val declarationDao = dbInstance.transportDeclarationDao()
                     val declarationDetailDao = dbInstance.transportDeclarationDetailDao()
-                    val movingRef = db.collection("movings").document(requestId)
+                    val movingRef = db.collection("movings").document(current.id)
 
                     val relatedMovings = runCatching {
                         dao.getForRouteAndUser(current.routeId, current.userId)
@@ -667,7 +705,7 @@ class VehicleRequestViewModel(
                     }
 
                     val shouldUploadRemoteDetails =
-                        if (movingsWithoutDetails.any { it.id == requestId }) {
+                        if (movingsWithoutDetails.any { it.id == current.id }) {
                             runCatching {
                                 movingRef.collection("details").limit(1).get().await().isEmpty()
                             }.getOrDefault(false)
@@ -758,7 +796,7 @@ class VehicleRequestViewModel(
                             }
                         }
 
-                        detailsByMoving[requestId]?.let { currentDetails ->
+                        detailsByMoving[current.id]?.let { currentDetails ->
                             if (shouldUploadRemoteDetails) {
                                 try {
                                     currentDetails.forEach { detail ->
@@ -832,6 +870,9 @@ class VehicleRequestViewModel(
                 list[index] = updated
                 _requests.value = list
                 dao.insert(updated)
+                if (requestId != updated.id) {
+                    runCatching { dao.deleteByIds(listOf(requestId)) }
+                }
                 try {
                     val updateMap = mutableMapOf<String, Any>(
                         "status" to status,
@@ -844,7 +885,9 @@ class VehicleRequestViewModel(
                         updateMap["vehicleId"] =
                             db.collection("vehicles").document(updatedVehicleId)
                     }
-                    db.collection("movings").document(requestId).update(updateMap).await()
+                    if (updated.id.isNotBlank()) {
+                        db.collection("movings").document(updated.id).update(updateMap).await()
+                    }
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to respond to offer", e)
                 }
@@ -874,6 +917,38 @@ class VehicleRequestViewModel(
                 }
             }
         }
+    }
+
+    private suspend fun resolveMovingDocumentId(
+        movingDao: MovingDao,
+        transferDao: TransferRequestDao,
+        request: MovingEntity
+    ): String {
+        if (request.requestNumber == 0) {
+            return request.id
+        }
+
+        val storedRequest = runCatching { transferDao.getRequestByNumber(request.requestNumber) }.getOrNull()
+        val storedMovingId = storedRequest?.movingId?.takeIf { it.isNotBlank() }
+        if (!storedMovingId.isNullOrBlank()) {
+            return storedMovingId
+        }
+
+        val relatedMovings = runCatching {
+            movingDao.getForRouteAndUser(request.routeId, request.userId)
+        }.getOrElse { emptyList() }
+
+        val resolvedId = relatedMovings.firstOrNull { candidate ->
+            candidate.requestNumber == request.requestNumber &&
+                candidate.id.isNotBlank() &&
+                candidate.id != request.id
+        }?.id ?: request.id
+
+        if (resolvedId != request.id && storedRequest != null && storedRequest.movingId.isBlank()) {
+            runCatching { transferDao.setMovingId(request.requestNumber, resolvedId) }
+        }
+
+        return resolvedId
     }
 
     private suspend fun showPassengerRequestNotifications(context: Context) {

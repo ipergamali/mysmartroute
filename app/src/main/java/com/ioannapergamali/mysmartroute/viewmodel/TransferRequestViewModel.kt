@@ -73,11 +73,15 @@ class TransferRequestViewModel : ViewModel() {
             try {
                 requestNumber = RequestNumberProvider.nextRequestNumber(transferDao, db)
 
+                val generatedMovingId = UUID.randomUUID().toString()
+                movingId = generatedMovingId
+
                 val requestEntity = TransferRequestEntity(
                     requestNumber = requestNumber,
                     routeId = routeId,
                     passengerId = passengerId,
                     driverId = "",
+                    movingId = generatedMovingId,
                     date = date,
                     cost = cost,
                     status = RequestStatus.OPEN
@@ -85,8 +89,7 @@ class TransferRequestViewModel : ViewModel() {
 
                 val baseSegments = if (poiChanged) emptyList() else fetchSegments(routeId, startPoiId, endPoiId)
                 val duration = baseSegments.sumOf { it.durationMinutes }
-                movingId = UUID.randomUUID().toString()
-                val currentMovingId = movingId!!
+                val currentMovingId = generatedMovingId
                 segments = baseSegments.map { it.copy(movingId = currentMovingId) }
                 val moving = MovingEntity(
                     id = currentMovingId,
