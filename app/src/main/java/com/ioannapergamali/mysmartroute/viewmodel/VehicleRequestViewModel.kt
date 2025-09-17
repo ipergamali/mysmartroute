@@ -361,9 +361,27 @@ class VehicleRequestViewModel(
      * Deletes movement requests from the database and Firestore.
      */
     fun deleteRequests(context: Context, ids: Set<String>) {
+        if (ids.isEmpty()) return
         viewModelScope.launch(Dispatchers.IO) {
-            val dao = MySmartRouteDatabase.getInstance(context).movingDao()
-            dao.deleteByIds(ids.toList())
+            val dbInstance = MySmartRouteDatabase.getInstance(context)
+            val movingDao = dbInstance.movingDao()
+            val transferDao = dbInstance.transferRequestDao()
+
+            val idsList = ids.toList()
+            val requestNumbers = _requests.value
+                .filter { it.id in ids }
+                .mapNotNull { it.requestNumber.takeIf { number -> number != 0 } }
+            val transferRequests = mutableListOf<TransferRequestEntity>()
+
+            requestNumbers.forEach { number ->
+                val request = runCatching { transferDao.getRequestByNumber(number) }
+                    .getOrNull()
+                if (request != null) {
+                    transferRequests += request
+                }
+            }
+
+            movingDao.deleteByIds(idsList)
             _requests.value = _requests.value.filterNot { it.id in ids }
             passengerRequests.clear()
             _requests.value.forEach {
@@ -377,8 +395,45 @@ class VehicleRequestViewModel(
                     )
                 )
             }
-            ids.forEach { id ->
-                db.collection("movings").document(id).delete()
+
+            if (requestNumbers.isNotEmpty()) {
+                transferDao.deleteByRequestNumbers(requestNumbers)
+            }
+
+            idsList.forEach { id ->
+                try {
+                    db.collection("movings").document(id).delete().await()
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to delete moving $id", e)
+                }
+            }
+
+            transferRequests.forEach { request ->
+                try {
+                    if (request.firebaseId.isNotBlank()) {
+                        db.collection("transfer_requests")
+                            .document(request.firebaseId)
+                            .delete()
+                            .await()
+                    } else {
+                        db.collection("transfer_requests")
+                            .whereEqualTo("requestNumber", request.requestNumber)
+                            .limit(1)
+                            .get()
+                            .await()
+                            .documents
+                            .firstOrNull()
+                            ?.reference
+                            ?.delete()
+                            ?.await()
+                    }
+                } catch (e: Exception) {
+                    Log.e(
+                        TAG,
+                        "Failed to delete transfer request ${request.requestNumber}",
+                        e
+                    )
+                }
             }
         }
     }
