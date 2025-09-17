@@ -103,6 +103,7 @@ class RouteViewModel : ViewModel() {
             val routeDao = db.routeDao()
             val pointDao = db.routePointDao()
             val busDao = db.routeBusStationDao()
+            val declarationDao = db.transportDeclarationDao()
             val userId = SessionManager.currentUserId()
 
             val query = if (includeAll) {
@@ -121,26 +122,56 @@ class RouteViewModel : ViewModel() {
                 }
             }.getOrDefault(emptyList())
 
-            _routes.value = localRoutes
+            val localDeclarationRoutes = if (!includeAll && userId != null) {
+                runCatching {
+                    declarationDao.getForDriver(userId)
+                        .first()
+                        .mapNotNull { routeDao.findById(it.routeId) }
+                }.getOrDefault(emptyList())
+            } else {
+                emptyList()
+            }
+
+            _routes.value = (localRoutes + localDeclarationRoutes).distinctBy { it.id }
 
             val snapshot = runCatching { query.get().await() }.getOrNull()
             if (snapshot != null) {
                 var list = snapshot.documents.mapNotNull { it.toRouteWithStations() }.toMutableList()
-                if (includeAll) {
-                    val declSnap = runCatching {
-                        firestore.collection("transport_declarations").get().await()
-                    }.getOrNull()
-                    val declaredIds = declSnap?.documents
-                        ?.mapNotNull { doc ->
-
-                            when (val value = doc.get("routeId")) {
-                                is String -> value
-                                is DocumentReference -> value.id
-                                else -> null
-
+                val declaredIds = when {
+                    includeAll -> {
+                        val declSnap = runCatching {
+                            firestore.collection("transport_declarations").get().await()
+                        }.getOrNull()
+                        declSnap?.documents
+                            ?.mapNotNull { doc ->
+                                when (val value = doc.get("routeId")) {
+                                    is String -> value
+                                    is DocumentReference -> value.id
+                                    else -> null
+                                }
                             }
-                        }
-                        ?.toSet() ?: emptySet()
+                            ?.toSet() ?: emptySet()
+                    }
+                    userId != null -> {
+                        val declSnap = runCatching {
+                            firestore.collection("transport_declarations")
+                                .whereEqualTo("driverId", userId)
+                                .get()
+                                .await()
+                        }.getOrNull()
+                        declSnap?.documents
+                            ?.mapNotNull { doc ->
+                                when (val value = doc.get("routeId")) {
+                                    is String -> value
+                                    is DocumentReference -> value.id
+                                    else -> null
+                                }
+                            }
+                            ?.toSet() ?: emptySet()
+                    }
+                    else -> emptySet()
+                }
+                if (declaredIds.isNotEmpty()) {
                     val existingIds = list.map { it.first.id }.toMutableSet()
                     for (routeId in declaredIds) {
                         if (existingIds.add(routeId)) {
@@ -162,7 +193,17 @@ class RouteViewModel : ViewModel() {
                     userId != null -> routeDao.getRoutesForUser(userId).first()
                     else -> emptyList()
                 }
-                val combined = (list.map { it.first } + updatedLocalRoutes).distinctBy { it.id }
+                val updatedDeclarationRoutes = if (!includeAll && userId != null) {
+                    runCatching {
+                        declarationDao.getForDriver(userId)
+                            .first()
+                            .mapNotNull { routeDao.findById(it.routeId) }
+                    }.getOrDefault(emptyList())
+                } else {
+                    emptyList()
+                }
+                val combined = (list.map { it.first } + updatedLocalRoutes + updatedDeclarationRoutes)
+                    .distinctBy { it.id }
                 _routes.value = combined
             }
         }
