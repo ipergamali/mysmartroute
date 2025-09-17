@@ -605,19 +605,27 @@ fun BookSeatScreen(
                     enabled = selectedRoute != null && startIndex != null && endIndex != null &&
                             datePickerState.selectedDateMillis != null && selectedTimeMillis != null,
                     onClick = {
-                        val r = selectedRoute ?: return@Button
-                        val dateMillis = datePickerState.selectedDateMillis ?: return@Button
-                        val startId = startIndex?.let { pois[it].id } ?: return@Button
-                        val endId = endIndex?.let { pois[it].id } ?: return@Button
-                        val timeMillis = selectedTimeMillis ?: return@Button
-                        navController.navigate(
-                            "availableTransports?routeId=" +
-                                    r.id +
-                                    "&startId=" + startId +
-                                    "&endId=" + endId +
-                                    "&maxCost=&date=" + dateMillis +
-                                    "&time=" + timeMillis
-                        )
+                        scope.launch {
+                            val dateMillis = datePickerState.selectedDateMillis ?: return@launch
+                            val startId = startIndex?.let { pois[it].id } ?: return@launch
+                            val endId = endIndex?.let { pois[it].id } ?: return@launch
+                            val timeMillis = selectedTimeMillis ?: return@launch
+
+                            val (resolvedRouteId, _) = resolveRouteForRequest()
+                            if (resolvedRouteId.isBlank()) {
+                                message = context.getString(R.string.request_unsuccessful)
+                                return@launch
+                            }
+
+                            navController.navigate(
+                                "availableTransports?routeId=" +
+                                        resolvedRouteId +
+                                        "&startId=" + startId +
+                                        "&endId=" + endId +
+                                        "&maxCost=&date=" + dateMillis +
+                                        "&time=" + timeMillis
+                            )
+                        }
                     }
                 ) {
                     Icon(Icons.Default.Search, contentDescription = null)

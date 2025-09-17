@@ -490,28 +490,35 @@ fun RouteModeScreen(
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(
                     onClick = {
-                        val fromIdx = startIndex ?: return@Button
-                        val toIdx = endIndex ?: return@Button
-                        if (fromIdx >= toIdx) {
-                            message = context.getString(R.string.invalid_stop_order)
-                            return@Button
-                        }
-                        val fromId = routePois[fromIdx].id
-                        val toId = routePois[toIdx].id
-                        val cost = maxCostText.toDoubleOrNull()
-                        val routeId = selectedRouteId ?: return@Button
-                        val date = datePickerState.selectedDateMillis ?: 0L
-                        val time = selectedTimeMillis
+                        coroutineScope.launch {
+                            val fromIdx = startIndex ?: return@launch
+                            val toIdx = endIndex ?: return@launch
+                            if (fromIdx >= toIdx) {
+                                message = context.getString(R.string.invalid_stop_order)
+                                return@launch
+                            }
+                            val fromId = routePois[fromIdx].id
+                            val toId = routePois[toIdx].id
+                            val cost = maxCostText.toDoubleOrNull()
+                            val date = datePickerState.selectedDateMillis ?: 0L
+                            val time = selectedTimeMillis
 
-                        navController.navigate(
-                            "availableTransports?routeId=" +
-                                routeId +
-                                "&startId=" + fromId +
-                                "&endId=" + toId +
-                                "&maxCost=" + (cost?.toString() ?: "") +
-                                "&date=" + date +
-                                "&time=" + (time?.toString() ?: "")
-                        )
+                            val (resolvedRouteId, _) = resolveRouteForRequest()
+                            if (resolvedRouteId.isBlank()) {
+                                message = context.getString(R.string.request_unsuccessful)
+                                return@launch
+                            }
+
+                            navController.navigate(
+                                "availableTransports?routeId=" +
+                                    resolvedRouteId +
+                                    "&startId=" + fromId +
+                                    "&endId=" + toId +
+                                    "&maxCost=" + (cost?.toString() ?: "") +
+                                    "&date=" + date +
+                                    "&time=" + (time?.toString() ?: "")
+                            )
+                        }
                     },
                     enabled = selectedRouteId != null && startIndex != null && endIndex != null,
                 ) {
