@@ -136,6 +136,20 @@ class UserViewModel : ViewModel() {
     }
 
     /**
+     * Διαγράφει μια συγκεκριμένη ειδοποίηση.
+     * Deletes a single notification.
+     */
+    fun deleteNotification(context: Context, notificationId: String) {
+        viewModelScope.launch {
+            val dao = MySmartRouteDatabase.getInstance(context).notificationDao()
+            dao.deleteById(notificationId)
+            runCatching {
+                db.collection("notifications").document(notificationId).delete().await()
+            }
+        }
+    }
+
+    /**
      * Αλλάζει τον ρόλο ενός χρήστη και ενημερώνει τα σχετικά δεδομένα.
      * Changes a user's role and updates related data.
      */
