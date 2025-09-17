@@ -152,7 +152,12 @@ class VehicleRequestViewModel(
             _requests.value = movings
 
             if (remote.isNotEmpty()) {
-                remote.forEach { dao.insert(it) }
+                val existingNumbers = local.map { it.requestNumber }.toSet()
+                remote.forEach { request ->
+                    if (request.requestNumber in existingNumbers) {
+                        dao.insert(request)
+                    }
+                }
             }
 
             passengerRequests.clear()
