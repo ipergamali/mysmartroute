@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import com.ioannapergamali.mysmartroute.data.local.MovingDetailEntity
 import com.ioannapergamali.mysmartroute.data.local.MovingEntity
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
@@ -17,6 +18,7 @@ import com.ioannapergamali.mysmartroute.utils.SessionManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import kotlin.math.max
 import java.util.ArrayDeque
 import java.util.UUID
 
@@ -52,18 +54,36 @@ class TransferRequestViewModel : ViewModel() {
             val movingDao = dbInstance.movingDao()
             val detailDao = dbInstance.movingDetailDao()
 
-            val requestEntity = TransferRequestEntity(
-                routeId = routeId,
-                passengerId = passengerId,
-                driverId = "",
-                date = date,
-                cost = cost,
-                status = RequestStatus.OPEN
-            )
-
             try {
-                val requestNumber = transferDao.insert(requestEntity).toInt()
-                val savedRequest = requestEntity.copy(requestNumber = requestNumber)
+                val localLastNumber = transferDao.getMaxRequestNumber() ?: 0
+                val remoteLastNumber = try {
+                    db.collection("transfer_requests")
+                        .orderBy("requestNumber", Query.Direction.DESCENDING)
+                        .limit(1)
+                        .get()
+                        .await()
+                        .documents
+                        .firstOrNull()
+                        ?.getLong("requestNumber")
+                        ?.toInt()
+                        ?: 0
+                } catch (e: Exception) {
+                    Log.w(TAG, "Αποτυχία ανάκτησης τελευταίου request number από Firestore", e)
+                    0
+                }
+                val requestNumber = max(localLastNumber, remoteLastNumber) + 1
+
+                val requestEntity = TransferRequestEntity(
+                    requestNumber = requestNumber,
+                    routeId = routeId,
+                    passengerId = passengerId,
+                    driverId = "",
+                    date = date,
+                    cost = cost,
+                    status = RequestStatus.OPEN
+                )
+
+                transferDao.insert(requestEntity)
 
                 val baseSegments = if (poiChanged) emptyList() else fetchSegments(routeId, startPoiId, endPoiId)
                 val duration = baseSegments.sumOf { it.durationMinutes }
@@ -87,7 +107,7 @@ class TransferRequestViewModel : ViewModel() {
                 segments.forEach { detailDao.insert(it) }
 
                 val reqRef = db.collection("transfer_requests")
-                    .add(savedRequest.toFirestoreMap())
+                    .add(requestEntity.toFirestoreMap())
                     .await()
                 transferDao.setFirebaseId(requestNumber, reqRef.id)
 
