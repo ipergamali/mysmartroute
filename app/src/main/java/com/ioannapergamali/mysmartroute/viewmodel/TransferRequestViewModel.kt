@@ -66,6 +66,7 @@ class TransferRequestViewModel : ViewModel() {
             var requestInserted = false
             var movingInserted = false
             var requestNumber = 0
+            var requestFirebaseId = ""
 
             var shouldNotifyDrivers = false
 
@@ -118,6 +119,7 @@ class TransferRequestViewModel : ViewModel() {
                 val requestWithFirebase = requestEntity.copy(firebaseId = currentRequestRef.id)
                 transferDao.insert(requestWithFirebase)
                 requestInserted = true
+                requestFirebaseId = requestWithFirebase.firebaseId
 
                 movingDao.insert(moving)
                 movingInserted = true
@@ -176,7 +178,8 @@ class TransferRequestViewModel : ViewModel() {
                         context = context,
                         routeId = routeId,
                         passengerId = passengerId,
-                        requestNumber = requestNumber
+                        requestNumber = requestNumber,
+                        requestId = requestFirebaseId
                     )
                 } catch (notifyError: Exception) {
                     Log.e(
@@ -251,7 +254,8 @@ class TransferRequestViewModel : ViewModel() {
         context: Context,
         routeId: String,
         passengerId: String,
-        requestNumber: Int
+        requestNumber: Int,
+        requestId: String
     ) {
         val database = MySmartRouteDatabase.getInstance(context)
         val userDao = database.userDao()
@@ -282,6 +286,8 @@ class TransferRequestViewModel : ViewModel() {
             passengerName,
             requestNumber
         )
+
+        val baseRequestId = requestId.ifBlank { "request_${requestNumber}" }
 
         val declarationsResult = runCatching {
             db.collection("transport_declarations")
@@ -336,8 +342,9 @@ class TransferRequestViewModel : ViewModel() {
             .filter { it != passengerId }
             .forEach { driverId ->
                 val now = database.currentAppDateTime()
+                val notificationId = "${baseRequestId}_${driverId}_awaiting_driver"
                 val notification = NotificationEntity(
-                    id = UUID.randomUUID().toString(),
+                    id = notificationId,
                     senderId = passengerId,
                     receiverId = driverId,
                     message = message,
