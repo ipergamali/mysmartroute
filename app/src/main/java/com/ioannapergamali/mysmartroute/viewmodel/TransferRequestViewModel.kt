@@ -10,6 +10,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.MovingDetailEntity
 import com.ioannapergamali.mysmartroute.data.local.MovingEntity
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
+import com.ioannapergamali.mysmartroute.data.local.TransferRequestDao
 import com.ioannapergamali.mysmartroute.data.local.TransferRequestEntity
 import com.ioannapergamali.mysmartroute.model.enumerations.RequestStatus
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
@@ -173,14 +174,17 @@ class TransferRequestViewModel : ViewModel() {
             val dbInstance = MySmartRouteDatabase.getInstance(context)
             val dao = dbInstance.transferRequestDao()
             val userDao = dbInstance.userDao()
-            val request = dao.getRequestByNumber(requestNumber) ?: return@launch
+            val request = runCatching { dao.getRequestByNumber(requestNumber) }.getOrNull()
             val driver = userDao.getUser(driverId)
             val driverName = driver?.let { "${it.name} ${it.surname}" } ?: ""
-            dao.assignDriver(requestNumber, driverId, driverName, RequestStatus.PENDING)
-            try {
-                if (request.firebaseId.isNotBlank()) {
+            if (request != null) {
+                dao.assignDriver(requestNumber, driverId, driverName, RequestStatus.PENDING)
+            }
+            val firebaseId = resolveFirebaseId(dao, request, requestNumber)
+            if (!firebaseId.isNullOrBlank()) {
+                try {
                     db.collection("transfer_requests")
-                        .document(request.firebaseId)
+                        .document(firebaseId)
                         .update(
                             mapOf(
                                 "driverId" to driverId,
@@ -189,9 +193,11 @@ class TransferRequestViewModel : ViewModel() {
                             )
                         )
                         .await()
+                } catch (e: Exception) {
+                    Log.e(TAG, "Αποτυχία ενημέρωσης οδηγού", e)
                 }
-            } catch (e: Exception) {
-                Log.e(TAG, "Αποτυχία ενημέρωσης οδηγού", e)
+            } else {
+                Log.w(TAG, "Δεν βρέθηκε Firebase id για αίτημα $requestNumber")
             }
         }
     }
@@ -203,18 +209,46 @@ class TransferRequestViewModel : ViewModel() {
     fun updateStatus(context: Context, requestNumber: Int, status: RequestStatus) {
         viewModelScope.launch(Dispatchers.IO) {
             val dao = MySmartRouteDatabase.getInstance(context).transferRequestDao()
-            val request = dao.getRequestByNumber(requestNumber) ?: return@launch
-            dao.updateStatus(requestNumber, status)
-            try {
-                if (request.firebaseId.isNotBlank()) {
+            val request = runCatching { dao.getRequestByNumber(requestNumber) }.getOrNull()
+            if (request != null) {
+                dao.updateStatus(requestNumber, status)
+            }
+            val firebaseId = resolveFirebaseId(dao, request, requestNumber)
+            if (!firebaseId.isNullOrBlank()) {
+                try {
                     db.collection("transfer_requests")
-                        .document(request.firebaseId)
+                        .document(firebaseId)
                         .update("status", status.name)
                         .await()
+                } catch (e: Exception) {
+                    Log.e(TAG, "Αποτυχία ενημέρωσης κατάστασης", e)
                 }
-            } catch (e: Exception) {
-                Log.e(TAG, "Αποτυχία ενημέρωσης κατάστασης", e)
+            } else {
+                Log.w(TAG, "Δεν βρέθηκε Firebase id για αίτημα $requestNumber")
             }
+        }
+    }
+
+    private suspend fun resolveFirebaseId(
+        dao: TransferRequestDao,
+        request: TransferRequestEntity?,
+        requestNumber: Int
+    ): String? {
+        request?.firebaseId?.takeIf { it.isNotBlank() }?.let { return it }
+        return try {
+            val snapshot = db.collection("transfer_requests")
+                .whereEqualTo("requestNumber", requestNumber)
+                .limit(1)
+                .get()
+                .await()
+            val firebaseId = snapshot.documents.firstOrNull()?.id
+            if (firebaseId != null && request != null && request.firebaseId.isBlank()) {
+                dao.setFirebaseId(requestNumber, firebaseId)
+            }
+            firebaseId
+        } catch (e: Exception) {
+            Log.e(TAG, "Αποτυχία εντοπισμού Firebase id για αίτημα $requestNumber", e)
+            null
         }
     }
 }
