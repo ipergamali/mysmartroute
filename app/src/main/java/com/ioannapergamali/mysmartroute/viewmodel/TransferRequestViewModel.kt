@@ -59,6 +59,14 @@ class TransferRequestViewModel : ViewModel() {
             val movingDao = dbInstance.movingDao()
             val detailDao = dbInstance.movingDetailDao()
 
+            var requestRef: DocumentReference? = null
+            var movingRef: DocumentReference? = null
+            var movingId: String? = null
+            var segments: List<MovingDetailEntity> = emptyList()
+            var requestInserted = false
+            var movingInserted = false
+            var requestNumber = 0
+
             try {
                 val localLastNumber = transferDao.getMaxRequestNumber() ?: 0
                 val remoteLastNumber = try {
@@ -76,7 +84,7 @@ class TransferRequestViewModel : ViewModel() {
                     Log.w(TAG, "Αποτυχία ανάκτησης τελευταίου request number από Firestore", e)
                     0
                 }
-                val requestNumber = max(localLastNumber, remoteLastNumber) + 1
+                requestNumber = max(localLastNumber, remoteLastNumber) + 1
 
                 val requestEntity = TransferRequestEntity(
                     requestNumber = requestNumber,
@@ -88,14 +96,13 @@ class TransferRequestViewModel : ViewModel() {
                     status = RequestStatus.OPEN
                 )
 
-                transferDao.insert(requestEntity)
-
                 val baseSegments = if (poiChanged) emptyList() else fetchSegments(routeId, startPoiId, endPoiId)
                 val duration = baseSegments.sumOf { it.durationMinutes }
-                val movingId = UUID.randomUUID().toString()
-                val segments = baseSegments.map { it.copy(movingId = movingId) }
+                movingId = UUID.randomUUID().toString()
+                val currentMovingId = movingId!!
+                segments = baseSegments.map { it.copy(movingId = currentMovingId) }
                 val moving = MovingEntity(
-                    id = movingId,
+                    id = currentMovingId,
                     routeId = routeId,
                     userId = passengerId,
                     date = date,
@@ -108,30 +115,71 @@ class TransferRequestViewModel : ViewModel() {
                     requestNumber = requestNumber
                 )
 
-                movingDao.insert(moving)
-                segments.forEach { detailDao.insert(it) }
+                val currentRequestRef = db.collection("transfer_requests").document()
+                requestRef = currentRequestRef
+                currentRequestRef.set(requestEntity.toFirestoreMap()).await()
 
-                val reqRef = db.collection("transfer_requests")
-                    .add(requestEntity.toFirestoreMap())
-                    .await()
-                transferDao.setFirebaseId(requestNumber, reqRef.id)
-
-                val movingRef = db.collection("movings").document(movingId)
-                movingRef.set(moving.toFirestoreMap()).await()
+                val currentMovingRef = db.collection("movings").document(currentMovingId)
+                movingRef = currentMovingRef
+                currentMovingRef.set(moving.toFirestoreMap()).await()
                 segments.forEach { seg ->
-                    movingRef.collection("details")
+                    currentMovingRef.collection("details")
                         .document(seg.id)
                         .set(seg.toFirestoreMap())
                         .await()
                 }
 
-                notifyDriversAboutRequest(
-                    context = context,
-                    routeId = routeId,
-                    passengerId = passengerId,
-                    requestNumber = requestNumber
-                )
+
+                val requestWithFirebase = requestEntity.copy(firebaseId = currentRequestRef.id)
+                transferDao.insert(requestWithFirebase)
+                requestInserted = true
+
+                movingDao.insert(moving)
+                movingInserted = true
+                segments.forEach { detailDao.insert(it) }
+
             } catch (e: Exception) {
+                if (movingInserted) {
+                    movingId?.let { id ->
+                        try {
+                            detailDao.deleteForMoving(id)
+                        } catch (_: Exception) {
+                        }
+                        try {
+                            movingDao.deleteByIds(listOf(id))
+                        } catch (_: Exception) {
+                        }
+                    }
+                }
+                if (requestInserted && requestNumber != 0) {
+                    try {
+                        transferDao.deleteByRequestNumbers(listOf(requestNumber))
+                    } catch (_: Exception) {
+                    }
+                }
+                if (segments.isNotEmpty()) {
+                    movingRef?.let { ref ->
+                        segments.forEach { seg ->
+                            try {
+                                ref.collection("details").document(seg.id).delete().await()
+                            } catch (_: Exception) {
+                            }
+                        }
+                    }
+                }
+                movingRef?.let { ref ->
+                    try {
+                        ref.delete().await()
+                    } catch (_: Exception) {
+                    }
+                }
+                requestRef?.let { ref ->
+                    try {
+                        ref.delete().await()
+                    } catch (_: Exception) {
+                    }
+                }
+
                 Log.e(TAG, "Αποτυχία υποβολής αιτήματος", e)
             }
         }
