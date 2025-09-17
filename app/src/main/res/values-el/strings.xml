@@ -357,6 +357,7 @@
     <string name="accept_offer">Αποδοχή</string>
     <string name="reject_offer">Απόρριψη</string>
     <string name="no_notifications">Καμία ειδοποίηση</string>
+    <string name="delete_notification">Διαγραφή ειδοποίησης</string>
     <string name="no_scheduled_transports">Δεν βρέθηκαν προγραμματισμένες μεταφορές</string>
     <string name="request_number">Αριθμός αιτήματος</string>
     <string name="transport_request_new_column">ΝΕΑ</string>

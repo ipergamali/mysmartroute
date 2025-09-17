@@ -379,6 +379,7 @@
     <string name="accept_offer">Accept</string>
     <string name="reject_offer">Reject</string>
     <string name="no_notifications">No notifications</string>
+    <string name="delete_notification">Delete notification</string>
     <string name="no_scheduled_transports">No scheduled transports</string>
 
     <string name="walking">Walking</string>
