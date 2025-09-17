@@ -154,6 +154,11 @@ fun ViewTransportRequestsScreen(
                                     style = MaterialTheme.typography.labelMedium
                                 )
                                 Text(
+                                    stringResource(R.string.stops_header),
+                                    modifier = Modifier.width(columnWidth),
+                                    style = MaterialTheme.typography.labelMedium
+                                )
+                                Text(
                                     stringResource(R.string.cost),
                                     modifier = Modifier.width(columnWidth),
                                     style = MaterialTheme.typography.labelMedium
@@ -184,7 +189,8 @@ fun ViewTransportRequestsScreen(
                         items(requests) { req ->
                             val fromName = poiNames[req.startPoiId] ?: ""
                             val toName = poiNames[req.endPoiId] ?: ""
-                            val routeName = if (fromName.isNotBlank() && toName.isNotBlank()) "$fromName - $toName" else ""
+                            val stationsText = if (fromName.isNotBlank() && toName.isNotBlank()) "$fromName - $toName" else ""
+                            val routeName = req.routeName.ifBlank { stationsText }
                             val userName = userNames[req.userId] ?: ""
                             val isChecked = selectedRequests[req.id] ?: false
                             val dateTimeText = if (req.date > 0L) {
@@ -208,6 +214,7 @@ fun ViewTransportRequestsScreen(
                                 )
                                 Text(userName, modifier = Modifier.width(columnWidth))
                                 Text(routeName, modifier = Modifier.width(columnWidth))
+                                Text(stationsText, modifier = Modifier.width(columnWidth))
                                 val costText = req.cost?.toString() ?: "∞"
                                 Text(costText, modifier = Modifier.width(columnWidth))
                                 Text(dateTimeText, modifier = Modifier.width(columnWidth))

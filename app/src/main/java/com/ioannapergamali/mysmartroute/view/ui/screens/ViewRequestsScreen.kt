@@ -148,6 +148,10 @@ fun ViewRequestsScreen(
                                     modifier = Modifier.width(columnWidth)
                                 )
                                 Text(
+                                    stringResource(R.string.stops_header),
+                                    modifier = Modifier.width(columnWidth)
+                                )
+                                Text(
                                     stringResource(R.string.cost),
                                     modifier = Modifier.width(columnWidth)
                                 )
@@ -169,8 +173,9 @@ fun ViewRequestsScreen(
                         items(sortedRequests) { req ->
                             val fromName = poiNames[req.startPoiId] ?: ""
                             val toName = poiNames[req.endPoiId] ?: ""
-                            val routeName = if (fromName.isNotBlank() && toName.isNotBlank())
+                            val stationsText = if (fromName.isNotBlank() && toName.isNotBlank())
                                 "$fromName → $toName" else ""
+                            val routeName = req.routeName.ifBlank { stationsText }
                             val dateTimeText = if (req.date > 0L) {
                                 val date = Date(req.date)
                                 val dateStr = DateFormat.getDateFormat(context).format(date)
@@ -187,6 +192,7 @@ fun ViewRequestsScreen(
                             ) {
                                 Text(req.requestNumber.toString(), modifier = Modifier.width(columnWidth))
                                 Text(routeName, modifier = Modifier.width(columnWidth))
+                                Text(stationsText, modifier = Modifier.width(columnWidth))
                                 Text(costText, modifier = Modifier.width(columnWidth))
                                 Text(dateTimeText, modifier = Modifier.width(columnWidth))
                                 Text(driverName, modifier = Modifier.width(columnWidth))
