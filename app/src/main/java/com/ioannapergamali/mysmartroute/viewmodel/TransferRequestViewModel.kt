@@ -67,6 +67,8 @@ class TransferRequestViewModel : ViewModel() {
             var movingInserted = false
             var requestNumber = 0
 
+            var shouldNotifyDrivers = false
+
             try {
                 val localLastNumber = transferDao.getMaxRequestNumber() ?: 0
                 val remoteLastNumber = try {
@@ -129,7 +131,6 @@ class TransferRequestViewModel : ViewModel() {
                         .await()
                 }
 
-
                 val requestWithFirebase = requestEntity.copy(firebaseId = currentRequestRef.id)
                 transferDao.insert(requestWithFirebase)
                 requestInserted = true
@@ -137,6 +138,8 @@ class TransferRequestViewModel : ViewModel() {
                 movingDao.insert(moving)
                 movingInserted = true
                 segments.forEach { detailDao.insert(it) }
+
+                shouldNotifyDrivers = true
 
             } catch (e: Exception) {
                 if (movingInserted) {
@@ -181,6 +184,23 @@ class TransferRequestViewModel : ViewModel() {
                 }
 
                 Log.e(TAG, "Αποτυχία υποβολής αιτήματος", e)
+            }
+
+            if (shouldNotifyDrivers && requestNumber > 0) {
+                try {
+                    notifyDriversAboutRequest(
+                        context = context,
+                        routeId = routeId,
+                        passengerId = passengerId,
+                        requestNumber = requestNumber
+                    )
+                } catch (notifyError: Exception) {
+                    Log.e(
+                        TAG,
+                        "Αποτυχία αποστολής ειδοποιήσεων για το αίτημα $requestNumber",
+                        notifyError
+                    )
+                }
             }
         }
     }
