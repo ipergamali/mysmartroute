@@ -752,7 +752,11 @@ class VehicleRequestViewModel(
                         req.requestNumber
                     ),
                     req.id.hashCode(),
-                    pending
+                    pending,
+                    storeInRoom = true,
+                    receiverId = SessionManager.currentUserId(),
+                    senderId = req.userId,
+                    roomNotificationId = "${req.id}_awaiting_driver"
                 )
                 notifiedRequests.add(req.id)
             }
@@ -786,7 +790,11 @@ class VehicleRequestViewModel(
                     req.requestNumber
                 ),
                 req.id.hashCode(),
-                pending
+                pending,
+                storeInRoom = true,
+                receiverId = SessionManager.currentUserId(),
+                senderId = req.driverId,
+                roomNotificationId = "${req.id}_pending"
             )
             notifiedRequests.add(req.id)
         }
@@ -811,7 +819,11 @@ class VehicleRequestViewModel(
                     context.getString(R.string.notifications),
                     context.getString(R.string.request_accepted_notification, req.requestNumber),
                     req.id.hashCode(),
-                    pending
+                    pending,
+                    storeInRoom = true,
+                    receiverId = userId,
+                    senderId = req.userId,
+                    roomNotificationId = "${req.id}_accepted"
                 )
                 notifiedRequests.add(req.id)
             }
@@ -839,7 +851,11 @@ class VehicleRequestViewModel(
                         req.requestNumber
                     ),
                     req.id.hashCode(),
-                    pending
+                    pending,
+                    storeInRoom = true,
+                    receiverId = userId,
+                    senderId = req.userId,
+                    roomNotificationId = "${req.id}_rejected"
                 )
                 notifiedRequests.add(req.id)
             }
