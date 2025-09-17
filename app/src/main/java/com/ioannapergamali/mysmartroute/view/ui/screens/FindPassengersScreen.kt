@@ -41,8 +41,12 @@ fun FindPassengersScreen(
     val transferViewModel: TransferRequestViewModel = viewModel()
     val userViewModel: UserViewModel = viewModel()
     val poiViewModel: PoIViewModel = viewModel()
+    val declarationViewModel: TransportDeclarationViewModel = viewModel()
+    val routeViewModel: RouteViewModel = viewModel()
     val requests by requestViewModel.requests.collectAsState()
     val pois by poiViewModel.pois.collectAsState()
+    val declarations by declarationViewModel.declarations.collectAsState()
+    val routes by routeViewModel.routes.collectAsState()
     val userNames = remember { mutableStateMapOf<String, String>() }
     val selectedRequests = remember { mutableStateMapOf<String, Boolean>() }
     var selectedRouteId by remember { mutableStateOf<String?>(null) }
@@ -58,6 +62,8 @@ fun FindPassengersScreen(
     LaunchedEffect(Unit) {
         requestViewModel.loadPassengerMovings(context, allUsers = true)
         poiViewModel.loadPois(context)
+        declarationViewModel.loadDeclarations(context)
+        routeViewModel.loadRoutes(context, includeAll = true)
     }
 
     LaunchedEffect(requests) {
@@ -104,7 +110,22 @@ fun FindPassengersScreen(
             )
         }
     ) { padding ->
-        val routeOptions = requests.associate { it.routeId to it.routeName }
+        val routeNames = routes.associate { it.id to it.name }
+        val declarationRouteIds = declarations.mapNotNull { it.routeId.takeIf(String::isNotBlank) }
+        val requestRouteIds = requests.mapNotNull { it.routeId.takeIf(String::isNotBlank) }
+        val routeOptions = (declarationRouteIds + requestRouteIds)
+            .distinct()
+            .associateWith { routeId ->
+                routeNames[routeId]
+                    ?: requests.firstOrNull { it.routeId == routeId }?.routeName
+                    ?: routeId
+            }
+
+        LaunchedEffect(routeOptions) {
+            if (selectedRouteId != null && selectedRouteId !in routeOptions) {
+                selectedRouteId = null
+            }
+        }
 
         ScreenContainer(modifier = Modifier.padding(padding), scrollable = false) {
             Button(onClick = { showDatePicker = true }) {
