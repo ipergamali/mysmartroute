@@ -13,7 +13,7 @@ interface NotificationDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(notification: NotificationEntity)
 
-    @Query("SELECT * FROM notifications WHERE userId = :userId")
+    @Query("SELECT * FROM notifications WHERE receiverId = :userId")
     fun getForUser(userId: String): Flow<List<NotificationEntity>>
 
     @Query("SELECT * FROM notifications")

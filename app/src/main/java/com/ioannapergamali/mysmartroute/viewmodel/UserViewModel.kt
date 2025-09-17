@@ -205,10 +205,14 @@ class UserViewModel : ViewModel() {
 
                 // ενημερώνουμε τον επιβάτη με ειδοποίηση
                 // notify the passenger with a notification
+                val now = java.time.LocalDateTime.now()
                 val notification = NotificationEntity(
                     id = java.util.UUID.randomUUID().toString(),
-                    userId = reservation.userId,
+                    senderId = driverId,
+                    receiverId = reservation.userId,
                     message = "Η κράτησή σας ακυρώθηκε λόγω αλλαγής οδηγού.",
+                    sentDate = now.toLocalDate().toString(),
+                    sentTime = now.toLocalTime().withSecond(0).withNano(0).toString(),
                 )
                 notifDao.insert(notification)
                 runCatching {

@@ -82,7 +82,7 @@ import com.ioannapergamali.mysmartroute.data.local.AuthenticationDao
         AppDateTimeEntity::class
     ],
 
-    version = 77
+    version = 78
 
 )
 @TypeConverters(Converters::class)
@@ -1057,6 +1057,28 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_77_78 = object : Migration(77, 78) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `notifications_new` (" +
+                        "`id` TEXT NOT NULL, " +
+                        "`senderId` TEXT NOT NULL, " +
+                        "`receiverId` TEXT NOT NULL, " +
+                        "`message` TEXT NOT NULL, " +
+                        "`sentDate` TEXT NOT NULL, " +
+                        "`sentTime` TEXT NOT NULL, " +
+                        "PRIMARY KEY(`id`)" +
+                        ")"
+                )
+                database.execSQL(
+                    "INSERT INTO `notifications_new` (`id`, `senderId`, `receiverId`, `message`, `sentDate`, `sentTime`) " +
+                        "SELECT `id`, '' AS senderId, `userId` AS receiverId, `message`, '' AS sentDate, '' AS sentTime FROM `notifications`"
+                )
+                database.execSQL("DROP TABLE `notifications`")
+                database.execSQL("ALTER TABLE `notifications_new` RENAME TO `notifications`")
+            }
+        }
+
         private fun prepopulate(db: SupportSQLiteDatabase) {
             Log.d(TAG, "Prepopulating database")
             db.execSQL(
@@ -1212,7 +1234,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_73_74,
                     MIGRATION_74_75,
                     MIGRATION_75_76,
-                    MIGRATION_76_77
+                    MIGRATION_76_77,
+                    MIGRATION_77_78
 
                 )
                     .addCallback(object : RoomDatabase.Callback() {

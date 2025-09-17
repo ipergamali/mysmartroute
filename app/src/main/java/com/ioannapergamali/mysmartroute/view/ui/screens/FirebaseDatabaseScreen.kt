@@ -158,7 +158,7 @@ fun FirebaseDatabaseScreen(navController: NavController, openDrawer: () -> Unit)
                 item { Spacer(modifier = Modifier.padding(8.dp)) }
                 item { Text("Notifications", style = MaterialTheme.typography.titleMedium) }
                 items(data!!.notifications) { n ->
-                    Text("${n.userId} -> ${n.message}")
+                    Text("${n.senderId} -> ${n.receiverId} (${n.sentDate} ${n.sentTime}): ${n.message}")
                 }
                 item { Spacer(modifier = Modifier.padding(8.dp)) }
                 item { Text("Authentication table δεν είναι διαθέσιμη από το client", color = MaterialTheme.colorScheme.error) }

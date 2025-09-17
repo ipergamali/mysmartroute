@@ -645,21 +645,42 @@ fun DocumentSnapshot.toTransferRequestEntity(): TransferRequestEntity? {
     return TransferRequestEntity(number, routeId, passengerId, driverId, driverName, id, dateVal, costVal, enumValueOf(statusStr))
 }
 
-fun NotificationEntity.toFirestoreMap(): Map<String, Any> = mapOf(
-    "id" to id,
-    "userId" to FirebaseFirestore.getInstance().collection("users").document(userId),
-    "message" to message
-)
+fun NotificationEntity.toFirestoreMap(): Map<String, Any> {
+    val usersCollection = FirebaseFirestore.getInstance().collection("users")
+    val senderValue: Any = senderId.takeIf { it.isNotBlank() }
+        ?.let { usersCollection.document(it) }
+        ?: senderId
+    val receiverValue: Any = receiverId.takeIf { it.isNotBlank() }
+        ?.let { usersCollection.document(it) }
+        ?: receiverId
+
+    return mapOf(
+        "id" to id,
+        "senderId" to senderValue,
+        "receiverId" to receiverValue,
+        "message" to message,
+        "sentDate" to sentDate,
+        "sentTime" to sentTime
+    )
+}
 
 fun DocumentSnapshot.toNotificationEntity(): NotificationEntity? {
     val idVal = getString("id") ?: id
-    val userId = when (val u = get("userId")) {
-        is DocumentReference -> u.id
-        is String -> u
-        else -> getString("userId")
+    val sender = when (val raw = get("senderId")) {
+        is DocumentReference -> raw.id
+        is String -> raw
+        else -> getString("senderId")
+    }.orEmpty()
+    val receiverRaw = get("receiverId") ?: get("userId")
+    val receiver = when (receiverRaw) {
+        is DocumentReference -> receiverRaw.id
+        is String -> receiverRaw
+        else -> getString("receiverId") ?: getString("userId")
     } ?: return null
     val msg = getString("message") ?: ""
-    return NotificationEntity(idVal, userId, msg)
+    val date = getString("sentDate") ?: ""
+    val time = getString("sentTime") ?: ""
+    return NotificationEntity(idVal, sender, receiver, msg, date, time)
 }
 
 fun TripRatingEntity.toFirestoreMap(): Map<String, Any> = mapOf(
