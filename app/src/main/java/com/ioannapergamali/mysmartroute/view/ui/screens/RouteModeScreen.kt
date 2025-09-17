@@ -163,9 +163,9 @@ fun RouteModeScreen(
     }
     suspend fun resolveRouteForRequest(): Pair<String, Boolean> {
         val currentRouteId = selectedRouteId ?: return "" to false
-        val current = routePoiIds.toSet()
-        val original = originalPoiIds.toSet()
-        if (current == original) return currentRouteId to false
+        val currentCounts = routePoiIds.groupingBy { it }.eachCount()
+        val originalCounts = originalPoiIds.groupingBy { it }.eachCount()
+        if (currentCounts == originalCounts) return currentRouteId to false
 
         val uid = SessionManager.currentUserId() ?: return "" to false
         val username = FirebaseFirestore.getInstance()
