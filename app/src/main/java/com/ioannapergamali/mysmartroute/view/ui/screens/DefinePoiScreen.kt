@@ -135,10 +135,6 @@ fun DefinePoiScreen(
                 viewModel.resetAddState()
                 navController.popBackStack()
             }
-            PoIViewModel.AddPoiState.Exists -> {
-                Toast.makeText(context, context.getString(R.string.poi_exists), Toast.LENGTH_SHORT).show()
-                viewModel.resetAddState()
-            }
             else -> {}
         }
     }
