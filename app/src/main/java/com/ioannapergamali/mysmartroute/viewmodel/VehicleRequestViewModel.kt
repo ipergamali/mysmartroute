@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.MovingDao
 import com.ioannapergamali.mysmartroute.data.local.MovingDetailEntity
@@ -712,16 +713,42 @@ class VehicleRequestViewModel(
                             emptyList()
                         }
 
-                    val shouldUploadRemoteDetails =
+                    val remoteMissingDetailsIds = mutableSetOf<String>()
+                    val remoteMovingRefs = mutableMapOf<String, DocumentReference>()
+                    val remoteVehicleFallbacks = mutableMapOf<String, String>()
 
-                        if (movingsWithoutDetails.any { it.id == current.id }) {
+                    if (current.routeId.isNotBlank() && current.userId.isNotBlank()) {
+                        val routeRef = db.collection("routes").document(current.routeId)
+                        val userRef = db.collection("users").document(current.userId)
+                        val remoteMovingsSnap = runCatching {
+                            db.collection("movings")
+                                .whereEqualTo("routeId", routeRef)
+                                .whereEqualTo("userId", userRef)
+                                .get()
+                                .await()
+                        }.onFailure { error ->
+                            Log.e(TAG, "Failed to load remote movings for route ${current.routeId}", error)
+                        }.getOrNull()
 
-                            runCatching {
-                                movingRef.collection("details").limit(1).get().await().isEmpty()
+                        remoteMovingsSnap?.documents?.forEach { doc ->
+                            val missingDetails = runCatching {
+                                doc.reference.collection("details").limit(1).get().await().isEmpty()
                             }.getOrDefault(false)
-                        } else {
-                            false
+                            if (missingDetails) {
+                                remoteMissingDetailsIds += doc.id
+                                remoteMovingRefs[doc.id] = doc.reference
+                                val remoteVehicle = runCatching {
+                                    doc.toMovingEntity()?.vehicleId
+                                }.getOrNull()
+                                if (!remoteVehicle.isNullOrBlank()) {
+                                    remoteVehicleFallbacks[doc.id] = remoteVehicle
+                                }
+                            }
                         }
+                    }
+
+                    val requiresDeclarationDetails =
+                        needsRouteDetails || remoteMissingDetailsIds.isNotEmpty()
 
                     declaration = runCatching {
                         if (current.driverId.isNotBlank()) {
@@ -759,8 +786,27 @@ class VehicleRequestViewModel(
                         }
                     }
 
+                    if (declaration == null && requiresDeclarationDetails) {
+                        declaration = try {
+                            db.collection("transport_declarations")
+                                .whereEqualTo(
+                                    "routeId",
+                                    db.collection("routes").document(current.routeId)
+                                )
+                                .limit(1)
+                                .get()
+                                .await()
+                                .documents
+                                .firstOrNull()
+                                ?.toTransportDeclarationEntity()
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Failed to fetch declaration by route", e)
+                            null
+                        }
+                    }
+
                     var declarationDetails: List<TransportDeclarationDetailEntity> = emptyList()
-                    if (needsRouteDetails && declaration != null) {
+                    if (requiresDeclarationDetails && declaration != null) {
                         declarationDetails = runCatching {
                             declarationDetailDao.getForDeclaration(declaration.id)
                         }.getOrElse { emptyList() }
@@ -783,27 +829,40 @@ class VehicleRequestViewModel(
                         }
                     }
 
-                    if (needsRouteDetails &&
-                        declarationDetails.isNotEmpty() &&
-                        movingsWithoutDetails.isNotEmpty()
-                    ) {
-                        val detailsByMoving = movingsWithoutDetails.associate { moving ->
-                            val generated = declarationDetails.map { detail ->
-                                val resolvedVehicleId =
-                                    detail.vehicleId.ifBlank { moving.vehicleId }
-                                MovingDetailEntity(
-                                    id = UUID.randomUUID().toString(),
-                                    movingId = moving.id,
-                                    startPoiId = detail.startPoiId,
-                                    endPoiId = detail.endPoiId,
-                                    durationMinutes = detail.durationMinutes,
-                                    vehicleId = resolvedVehicleId
-                                )
+                    if (requiresDeclarationDetails && declarationDetails.isNotEmpty()) {
+                        val localDetailsByMoving = mutableMapOf<String, List<MovingDetailEntity>>()
+                        val remoteDetailsByMoving = mutableMapOf<String, List<MovingDetailEntity>>()
+
+                        movingsWithoutDetails.forEach { moving ->
+                            val generated = buildDetailsFromDeclaration(
+                                movingId = moving.id,
+                                declarationDetails = declarationDetails,
+                                fallbackVehicleId = moving.vehicleId,
+                                defaultVehicleId = current.vehicleId
+                            )
+                            if (generated.isNotEmpty()) {
+                                localDetailsByMoving[moving.id] = generated
+                                if (remoteMissingDetailsIds.contains(moving.id)) {
+                                    remoteDetailsByMoving[moving.id] = generated
+                                }
                             }
-                            moving.id to generated
                         }
 
-                        detailsByMoving.values.flatten().forEach { detail ->
+                        val remoteOnlyMovings = remoteMissingDetailsIds.filterNot { remoteDetailsByMoving.containsKey(it) }
+                        remoteOnlyMovings.forEach { movingId ->
+                            val fallbackVehicle = remoteVehicleFallbacks[movingId] ?: current.vehicleId
+                            val generated = buildDetailsFromDeclaration(
+                                movingId = movingId,
+                                declarationDetails = declarationDetails,
+                                fallbackVehicleId = fallbackVehicle,
+                                defaultVehicleId = current.vehicleId
+                            )
+                            if (generated.isNotEmpty()) {
+                                remoteDetailsByMoving[movingId] = generated
+                            }
+                        }
+
+                        localDetailsByMoving.values.flatten().forEach { detail ->
                             try {
                                 detailDao.insert(detail)
                             } catch (e: Exception) {
@@ -811,22 +870,33 @@ class VehicleRequestViewModel(
                             }
                         }
 
-                        detailsByMoving[current.id]?.let { currentDetails ->
-                            if (shouldUploadRemoteDetails) {
+                        remoteDetailsByMoving.forEach { (movingId, details) ->
+                            val targetRef = when (movingId) {
+                                current.id -> movingRef
+                                else -> remoteMovingRefs[movingId]
+                                    ?: db.collection("movings").document(movingId)
+                            }
+                            details.forEach { detail ->
                                 try {
-                                    currentDetails.forEach { detail ->
-                                        movingRef
-                                            .collection("details")
-                                            .document(detail.id)
-                                            .set(detail.toFirestoreMap())
-                                            .await()
-                                    }
+                                    targetRef
+                                        .collection("details")
+                                        .document(detail.id)
+                                        .set(detail.toFirestoreMap())
+                                        .await()
                                 } catch (e: Exception) {
                                     Log.e(TAG, "Failed to store moving detail remotely", e)
                                 }
                             }
-                            vehicleIdFromDetails =
-                                currentDetails.firstOrNull { it.vehicleId.isNotBlank() }?.vehicleId
+                        }
+
+                        val chosenVehicleId = remoteDetailsByMoving[current.id]
+                            ?.firstOrNull { it.vehicleId.isNotBlank() }
+                            ?.vehicleId
+                            ?: localDetailsByMoving[current.id]
+                                ?.firstOrNull { it.vehicleId.isNotBlank() }
+                                ?.vehicleId
+                        if (!chosenVehicleId.isNullOrBlank()) {
+                            vehicleIdFromDetails = chosenVehicleId
                         }
                     }
 
@@ -970,6 +1040,35 @@ class VehicleRequestViewModel(
         }
 
         return resolvedId
+    }
+
+    private fun buildDetailsFromDeclaration(
+        movingId: String,
+        declarationDetails: List<TransportDeclarationDetailEntity>,
+        fallbackVehicleId: String,
+        defaultVehicleId: String
+    ): List<MovingDetailEntity> {
+        if (declarationDetails.isEmpty()) {
+            return emptyList()
+        }
+        val normalizedFallback = fallbackVehicleId.takeIf { it.isNotBlank() } ?: ""
+        val normalizedDefault = defaultVehicleId.takeIf { it.isNotBlank() } ?: ""
+        return declarationDetails.map { detail ->
+            val resolvedVehicleId = when {
+                detail.vehicleId.isNotBlank() -> detail.vehicleId
+                normalizedFallback.isNotBlank() -> normalizedFallback
+                normalizedDefault.isNotBlank() -> normalizedDefault
+                else -> ""
+            }
+            MovingDetailEntity(
+                id = UUID.randomUUID().toString(),
+                movingId = movingId,
+                startPoiId = detail.startPoiId,
+                endPoiId = detail.endPoiId,
+                durationMinutes = detail.durationMinutes,
+                vehicleId = resolvedVehicleId
+            )
+        }
     }
 
     private suspend fun showPassengerRequestNotifications(context: Context) {
