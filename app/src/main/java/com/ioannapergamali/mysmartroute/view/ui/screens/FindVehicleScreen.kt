@@ -1,6 +1,7 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Refresh
@@ -13,29 +14,29 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-
 import androidx.lifecycle.*
 import androidx.lifecycle.compose.LocalLifecycleOwner
-
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.maps.android.compose.*
-import kotlinx.coroutines.launch
-import kotlin.math.abs
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
+import com.ioannapergamali.mysmartroute.utils.SessionManager
 import com.ioannapergamali.mysmartroute.utils.offsetPois
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import kotlin.math.abs
 
 /**
  * Οθόνη εύρεσης οχήματος βάσει κόστους. Επαναχρησιμοποιεί την RouteModeScreen
@@ -91,6 +92,34 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
             saveEditedRouteIfChanged()
             message = context.getString(R.string.route_saved)
         }
+    }
+
+    suspend fun resolveRouteForVehicleSearch(): String {
+        val currentRouteId = selectedRouteId ?: return ""
+        val currentCounts = routePoiIds.groupingBy { it }.eachCount()
+        val originalCounts = originalPoiIds.groupingBy { it }.eachCount()
+        if (currentCounts == originalCounts) return currentRouteId
+
+        val uid = SessionManager.currentUserId() ?: return ""
+        val username = FirebaseFirestore.getInstance()
+            .collection("users")
+            .document(uid)
+            .get()
+            .await()
+            .getString("username") ?: uid
+        val baseName = routes.find { it.id == currentRouteId }?.name ?: "route"
+        val newRouteId = routeViewModel.addRoute(
+            context,
+            routePoiIds.toList(),
+            "${baseName}_edited_by_$username"
+        ) ?: return ""
+
+        selectedRouteId = newRouteId
+        originalPoiIds.clear()
+        originalPoiIds.addAll(routePoiIds)
+        routeViewModel.loadRoutes(context, includeAll = true)
+
+        return newRouteId
     }
 
     fun refreshRoute() {
@@ -412,26 +441,34 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(
                     onClick = {
-                        val fromIdx = startIndex ?: return@Button
-                        val toIdx = endIndex ?: return@Button
-                        if (fromIdx >= toIdx) {
-                            message = context.getString(R.string.invalid_stop_order)
-                            return@Button
-                        }
-                        val fromId = routePois[fromIdx].id
-                        val toId = routePois[toIdx].id
-                        val cost = maxCostText.toDoubleOrNull()
-                        val routeId = selectedRouteId ?: return@Button
+                        coroutineScope.launch {
+                            val fromIdx = startIndex ?: return@launch
+                            val toIdx = endIndex ?: return@launch
+                            if (fromIdx >= toIdx) {
+                                message = context.getString(R.string.invalid_stop_order)
+                                return@launch
+                            }
+                            val fromId = routePois.getOrNull(fromIdx)?.id ?: return@launch
+                            val toId = routePois.getOrNull(toIdx)?.id ?: return@launch
+                            val cost = maxCostText.toDoubleOrNull()
 
-                        navController.navigate(
-                            "availableTransports?routeId=" +
-                                routeId +
-                                "&startId=" + fromId +
-                                "&endId=" + toId +
-                                "&maxCost=" + (cost?.toString() ?: "") +
-                                "&date=" +
-                                "&time="
-                        )
+                            val routeId = resolveRouteForVehicleSearch()
+                            if (routeId.isBlank()) {
+                                message = context.getString(R.string.request_unsuccessful)
+                                return@launch
+                            }
+
+                            message = ""
+                            navController.navigate(
+                                "availableTransports?routeId=" +
+                                    routeId +
+                                    "&startId=" + fromId +
+                                    "&endId=" + toId +
+                                    "&maxCost=" + (cost?.toString() ?: "") +
+                                    "&date=" +
+                                    "&time="
+                            )
+                        }
                     },
                     enabled = selectedRouteId != null && startIndex != null && endIndex != null,
                 ) {
