@@ -17,6 +17,7 @@ import com.ioannapergamali.mysmartroute.data.local.RouteDao
 import com.ioannapergamali.mysmartroute.data.local.UserDao
 import com.ioannapergamali.mysmartroute.data.local.VehicleDao
 import com.ioannapergamali.mysmartroute.data.local.TransferRequestEntity
+import com.ioannapergamali.mysmartroute.data.local.currentAppDateTime
 import kotlinx.coroutines.Dispatchers
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.utils.toMovingEntity
@@ -561,7 +562,7 @@ class VehicleRequestViewModel(
                     driverName,
                     updated.requestNumber
                 )
-                val now = java.time.LocalDateTime.now()
+                val now = dbInstance.currentAppDateTime()
                 val notification = NotificationEntity(
                     id = UUID.randomUUID().toString(),
                     senderId = driver.uid,

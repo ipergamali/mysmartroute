@@ -8,6 +8,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.UserEntity
 import com.ioannapergamali.mysmartroute.data.local.NotificationEntity
+import com.ioannapergamali.mysmartroute.data.local.currentAppDateTime
 import com.ioannapergamali.mysmartroute.data.local.demoteDriverToPassenger
 import com.ioannapergamali.mysmartroute.data.local.promotePassengerToDriver
 import com.ioannapergamali.mysmartroute.data.local.insertUserSafely
@@ -205,7 +206,7 @@ class UserViewModel : ViewModel() {
 
                 // ενημερώνουμε τον επιβάτη με ειδοποίηση
                 // notify the passenger with a notification
-                val now = java.time.LocalDateTime.now()
+                val now = dbInstance.currentAppDateTime()
                 val notification = NotificationEntity(
                     id = java.util.UUID.randomUUID().toString(),
                     senderId = driverId,
