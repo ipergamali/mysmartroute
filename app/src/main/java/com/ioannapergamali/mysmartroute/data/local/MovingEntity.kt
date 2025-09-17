@@ -94,3 +94,13 @@ data class MovingEntity(
         this.vehicleName = vehicleName
     }
 }
+
+/**
+ * Επιστρέφει true όταν το αίτημα είναι ανοιχτό και δεν έχει ακόμη οδηγό.
+ * Returns true when the request is open and no driver has expressed interest yet.
+ */
+fun MovingEntity.isAwaitingDriver(): Boolean =
+    driverId.isBlank() && status.isOpenStatus()
+
+private fun String.isOpenStatus(): Boolean =
+    isBlank() || equals("open", ignoreCase = true)

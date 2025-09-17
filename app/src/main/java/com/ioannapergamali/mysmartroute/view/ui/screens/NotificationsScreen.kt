@@ -25,6 +25,7 @@ import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.UserViewModel
+import com.ioannapergamali.mysmartroute.data.local.isAwaitingDriver
 import com.ioannapergamali.mysmartroute.utils.SessionManager
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -63,11 +64,11 @@ fun NotificationsScreen(navController: NavController, openDrawer: () -> Unit) {
 
     val requestMessages = when (role) {
         UserRole.DRIVER -> requests.filter {
-            (it.driverId.isBlank() && it.status.isBlank()) ||
+            it.isAwaitingDriver() ||
                 (it.driverId == userId && (it.status == "accepted" || it.status == "rejected"))
         }.map { req ->
             when {
-                req.driverId.isBlank() -> stringResource(
+                req.isAwaitingDriver() -> stringResource(
                     R.string.passenger_request_notification,
                     req.createdByName,
                     req.requestNumber
