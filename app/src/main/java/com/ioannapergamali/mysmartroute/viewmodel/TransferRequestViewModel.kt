@@ -7,7 +7,6 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.data.local.MovingDetailEntity
 import com.ioannapergamali.mysmartroute.data.local.MovingEntity
@@ -18,6 +17,7 @@ import com.ioannapergamali.mysmartroute.data.local.TransferRequestEntity
 import com.ioannapergamali.mysmartroute.data.local.currentAppDateTime
 import com.ioannapergamali.mysmartroute.model.enumerations.RequestStatus
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
+import com.ioannapergamali.mysmartroute.utils.RequestNumberProvider
 import com.ioannapergamali.mysmartroute.utils.SessionManager
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import kotlinx.coroutines.Dispatchers
@@ -26,7 +26,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.util.ArrayDeque
 import java.util.UUID
-import kotlin.math.max
 
 /**
  * ViewModel για υποβολή και διαχείριση αιτημάτων μεταφοράς.
@@ -71,23 +70,7 @@ class TransferRequestViewModel : ViewModel() {
             var shouldNotifyDrivers = false
 
             try {
-                val localLastNumber = transferDao.getMaxRequestNumber() ?: 0
-                val remoteLastNumber = try {
-                    db.collection("transfer_requests")
-                        .orderBy("requestNumber", Query.Direction.DESCENDING)
-                        .limit(1)
-                        .get()
-                        .await()
-                        .documents
-                        .firstOrNull()
-                        ?.getLong("requestNumber")
-                        ?.toInt()
-                        ?: 0
-                } catch (e: Exception) {
-                    Log.w(TAG, "Αποτυχία ανάκτησης τελευταίου request number από Firestore", e)
-                    0
-                }
-                requestNumber = max(localLastNumber, remoteLastNumber) + 1
+                requestNumber = RequestNumberProvider.nextRequestNumber(transferDao, db)
 
                 val requestEntity = TransferRequestEntity(
                     requestNumber = requestNumber,

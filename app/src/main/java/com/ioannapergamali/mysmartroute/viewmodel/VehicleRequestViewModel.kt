@@ -45,6 +45,7 @@ import java.util.UUID
 import com.google.android.gms.maps.model.LatLng
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
+import com.ioannapergamali.mysmartroute.utils.RequestNumberProvider
 import com.ioannapergamali.mysmartroute.utils.SessionManager
 
 data class PassengerRequest(
@@ -80,13 +81,6 @@ class VehicleRequestViewModel(
     companion object {
         private const val TAG = "VehicleRequestVM"
         const val WALKING_ID = "WALK"
-    }
-
-    private fun getNextRequestNumber(context: Context): Int {
-        val prefs = context.getSharedPreferences("vehicle_requests", Context.MODE_PRIVATE)
-        val next = prefs.getInt("next_request_number", 1)
-        prefs.edit().putInt("next_request_number", next + 1).apply()
-        return next
     }
 
     /**
@@ -494,6 +488,7 @@ class VehicleRequestViewModel(
         viewModelScope.launch {
             val dbInstance = MySmartRouteDatabase.getInstance(context)
             val dao = dbInstance.movingDao()
+            val transferDao = dbInstance.transferRequestDao()
             val routeName = dbInstance.routeDao().findById(routeId)?.name ?: ""
             val creator = FirebaseAuth.getInstance().currentUser
             val creatorId = creator?.uid ?: ""
@@ -505,7 +500,7 @@ class VehicleRequestViewModel(
                 return@launch
             }
             val id = UUID.randomUUID().toString()
-            val requestNumber = getNextRequestNumber(context)
+            val requestNumber = RequestNumberProvider.nextRequestNumber(transferDao, db)
 
             val routePoints = dbInstance.routePointDao().getPointsForRoute(routeId).first()
             val poiDao = dbInstance.poIDao()
