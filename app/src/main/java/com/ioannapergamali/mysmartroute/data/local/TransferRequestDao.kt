@@ -35,6 +35,9 @@ interface TransferRequestDao {
     @Query("SELECT * FROM transfer_requests WHERE driverId = :driverId")
     fun getRequestsForDriver(driverId: String): Flow<List<TransferRequestEntity>>
 
+    @Query("SELECT MAX(requestNumber) FROM transfer_requests")
+    suspend fun getMaxRequestNumber(): Int?
+
     @Query("DELETE FROM transfer_requests WHERE driverId = :driverId")
     suspend fun deleteForDriver(driverId: String)
 
