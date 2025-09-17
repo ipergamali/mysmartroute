@@ -35,6 +35,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.UserReservationsViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.ioannapergamali.mysmartroute.utils.ATHENS_TIME_ZONE
 
 @Composable
 fun PrintTicketScreen(navController: NavController, openDrawer: () -> Unit) {
@@ -82,7 +83,11 @@ fun ReservationItem(
     navController: NavController,
     onDelete: (SeatReservationEntity) -> Unit
 ) {
-    val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    val formatter = remember {
+        SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).apply {
+            timeZone = ATHENS_TIME_ZONE
+        }
+    }
     val dateText = formatter.format(Date(reservation.date))
     var checked by remember { mutableStateOf(false) }
     Card(

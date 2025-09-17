@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.first
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.ioannapergamali.mysmartroute.utils.ATHENS_TIME_ZONE
 import com.ioannapergamali.mysmartroute.utils.SessionManager
 
 @Composable
@@ -83,7 +84,11 @@ fun PrintScheduledScreen(navController: NavController, openDrawer: () -> Unit) {
             if (scheduled.isEmpty()) {
                 Text(text = stringResource(R.string.no_scheduled_transports))
             } else {
-                val formatter = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
+                val formatter = remember {
+                    SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).apply {
+                        timeZone = ATHENS_TIME_ZONE
+                    }
+                }
                 LazyColumn {
                     items(scheduled) { decl ->
                         val routeName = routeNames[decl.routeId] ?: ""

@@ -38,6 +38,7 @@ import androidx.lifecycle.LifecycleOwner
 import kotlin.math.abs
 
 import com.ioannapergamali.mysmartroute.R
+import com.ioannapergamali.mysmartroute.utils.ATHENS_TIME_ZONE
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
@@ -75,7 +76,7 @@ fun WalkingScreen(navController: NavController, openDrawer: () -> Unit) {
     var timeText by rememberSaveable { mutableStateOf("") }
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
-    val calendar = remember { Calendar.getInstance() }
+    val calendar = remember { Calendar.getInstance(ATHENS_TIME_ZONE) }
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     var calculating by remember { mutableStateOf(false) }
     var pendingPoi by remember { mutableStateOf<Triple<String, Double, Double>?>(null) }

@@ -28,6 +28,7 @@ import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.*
 import java.util.Date
 import android.text.format.DateFormat
+import com.ioannapergamali.mysmartroute.utils.ATHENS_TIME_ZONE
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,7 +71,9 @@ fun FindPassengersScreen(
     val datePickerState = rememberDatePickerState()
     var showDatePicker by remember { mutableStateOf(false) }
     val selectedDateMillis = datePickerState.selectedDateMillis
-    val dateFormatter = remember { DateFormat.getDateFormat(context) }
+    val dateFormatter = remember(context) {
+        DateFormat.getDateFormat(context).apply { timeZone = ATHENS_TIME_ZONE }
+    }
     val selectedDateText = selectedDateMillis?.let { dateFormatter.format(Date(it)) }
         ?: stringResource(R.string.select_date)
 

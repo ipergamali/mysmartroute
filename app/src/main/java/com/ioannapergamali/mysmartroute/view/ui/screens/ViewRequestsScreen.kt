@@ -43,6 +43,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import android.text.format.DateFormat
 import java.util.Date
+import com.ioannapergamali.mysmartroute.utils.ATHENS_TIME_ZONE
 
 private enum class SortOption { COST, DATE }
 
@@ -64,6 +65,12 @@ fun ViewRequestsScreen(
     val pois by poiViewModel.pois.collectAsState()
     val role by authViewModel.currentUserRole.collectAsState()
     val driverNames = remember { mutableStateMapOf<String, String>() }
+    val dateFormatter = remember(context) {
+        DateFormat.getDateFormat(context).apply { timeZone = ATHENS_TIME_ZONE }
+    }
+    val timeFormatter = remember(context) {
+        DateFormat.getTimeFormat(context).apply { timeZone = ATHENS_TIME_ZONE }
+    }
     val scrollState = rememberScrollState()
     val listState = rememberLazyListState()
     val columnWidth = 150.dp
@@ -181,8 +188,8 @@ fun ViewRequestsScreen(
                                 "$fromName → $toName" else ""
                             val routeName = req.routeName.ifBlank { stationsText }
                             val dateValue = req.date.takeIf { it > 0L }?.let { Date(it) }
-                            val dateText = dateValue?.let { DateFormat.getDateFormat(context).format(it) } ?: ""
-                            val timeText = dateValue?.let { DateFormat.getTimeFormat(context).format(it) } ?: ""
+                            val dateText = dateValue?.let { dateFormatter.format(it) } ?: ""
+                            val timeText = dateValue?.let { timeFormatter.format(it) } ?: ""
                             val costText = req.cost?.toString() ?: "-"
                             val isExpired = req.date > 0L && now > req.date && req.status != "completed"
                             val statusText = if (isExpired) stringResource(R.string.request_unsuccessful) else req.status
