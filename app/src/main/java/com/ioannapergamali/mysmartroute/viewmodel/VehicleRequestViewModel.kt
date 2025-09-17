@@ -638,7 +638,8 @@ class VehicleRequestViewModel(
      */
     fun respondToOffer(context: Context, requestId: String, accept: Boolean) {
         viewModelScope.launch {
-            val dao = MySmartRouteDatabase.getInstance(context).movingDao()
+            val dbInstance = MySmartRouteDatabase.getInstance(context)
+            val dao = dbInstance.movingDao()
             val list = _requests.value.toMutableList()
             val index = list.indexOfFirst { it.id == requestId }
             if (index != -1) {
@@ -647,79 +648,119 @@ class VehicleRequestViewModel(
                 var vehicleIdFromDetails: String? = null
 
                 if (accept) {
-                    val dbInstance = MySmartRouteDatabase.getInstance(context)
                     val resDao = dbInstance.seatReservationDao()
                     val resDetailDao = dbInstance.seatReservationDetailDao()
                     val detailDao = dbInstance.movingDetailDao()
+                    val declarationDao = dbInstance.transportDeclarationDao()
+                    val declarationDetailDao = dbInstance.transportDeclarationDetailDao()
                     val movingRef = db.collection("movings").document(requestId)
 
-                    declaration = try {
-                        db.collection("transport_declarations")
-                            .whereEqualTo(
-                                "routeId",
-                                db.collection("routes").document(current.routeId)
-                            )
-                            .whereEqualTo(
-                                "driverId",
-                                db.collection("users").document(current.driverId)
-                            )
-                            .whereEqualTo("date", current.date)
-                            .limit(1)
-                            .get()
-                            .await()
-                            .documents
-                            .firstOrNull()
-                            ?.toTransportDeclarationEntity()
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Failed to fetch declaration", e)
-                        null
+                    val relatedMovings = runCatching {
+                        dao.getForRouteAndUser(current.routeId, current.userId)
+                    }.getOrElse { emptyList() }
+                    val uniqueMovings = (relatedMovings + current).distinctBy { it.id }
+                    val movingsWithoutDetails = uniqueMovings.filter { moving ->
+                        runCatching { detailDao.hasDetailsForMoving(moving.id) }
+                            .getOrDefault(false)
+                            .not()
                     }
 
-                    if (declaration != null) {
-                        val declarationId = declaration.id
-                        val hasLocalDetails = runCatching {
-                            detailDao.getForMoving(requestId).first().isNotEmpty()
-                        }.getOrElse { false }
-                        val hasRemoteDetails = runCatching {
-                            movingRef.collection("details").limit(1).get().await().documents.isNotEmpty()
-                        }.getOrElse { false }
+                    val shouldUploadRemoteDetails =
+                        if (movingsWithoutDetails.any { it.id == requestId }) {
+                            runCatching {
+                                movingRef.collection("details").limit(1).get().await().isEmpty()
+                            }.getOrDefault(false)
+                        } else {
+                            false
+                        }
 
-                        if (!hasLocalDetails && !hasRemoteDetails) {
-                            val declarationDetails = try {
-                                db.collection("transport_declarations")
-                                    .document(declarationId)
-                                    .collection("details")
-                                    .get()
-                                    .await()
-                                    .documents
-                                    .mapNotNull { it.toTransportDeclarationDetailEntity(declarationId) }
-                            } catch (e: Exception) {
-                                Log.e(TAG, "Failed to load declaration details", e)
-                                emptyList()
+                    declaration = runCatching {
+                        if (current.driverId.isNotBlank()) {
+                            declarationDao.findByRouteDriverAndDate(
+                                current.routeId,
+                                current.driverId,
+                                current.date
+                            )
+                        } else {
+                            null
+                        }
+                    }.getOrNull()
+
+                    if (declaration == null) {
+                        declaration = try {
+                            db.collection("transport_declarations")
+                                .whereEqualTo(
+                                    "routeId",
+                                    db.collection("routes").document(current.routeId)
+                                )
+                                .whereEqualTo(
+                                    "driverId",
+                                    db.collection("users").document(current.driverId)
+                                )
+                                .whereEqualTo("date", current.date)
+                                .limit(1)
+                                .get()
+                                .await()
+                                .documents
+                                .firstOrNull()
+                                ?.toTransportDeclarationEntity()
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Failed to fetch declaration", e)
+                            null
+                        }
+                    }
+
+                    var declarationDetails = if (declaration != null) {
+                        runCatching { declarationDetailDao.getForDeclaration(declaration.id) }
+                            .getOrElse { emptyList() }
+                    } else {
+                        emptyList()
+                    }
+
+                    if (declarationDetails.isEmpty() && declaration != null) {
+                        declarationDetails = try {
+                            db.collection("transport_declarations")
+                                .document(declaration.id)
+                                .collection("details")
+                                .get()
+                                .await()
+                                .documents
+                                .mapNotNull { it.toTransportDeclarationDetailEntity(declaration.id) }
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Failed to load declaration details", e)
+                            emptyList()
+                        }
+                    }
+
+                    if (declarationDetails.isNotEmpty() && movingsWithoutDetails.isNotEmpty()) {
+                        val detailsByMoving = movingsWithoutDetails.associate { moving ->
+                            val generated = declarationDetails.map { detail ->
+                                val resolvedVehicleId =
+                                    detail.vehicleId.ifBlank { moving.vehicleId }
+                                MovingDetailEntity(
+                                    id = UUID.randomUUID().toString(),
+                                    movingId = moving.id,
+                                    startPoiId = detail.startPoiId,
+                                    endPoiId = detail.endPoiId,
+                                    durationMinutes = detail.durationMinutes,
+                                    vehicleId = resolvedVehicleId
+                                )
                             }
+                            moving.id to generated
+                        }
 
-                            if (declarationDetails.isNotEmpty()) {
-                                val movingDetails = declarationDetails.map { detail ->
-                                    MovingDetailEntity(
-                                        id = UUID.randomUUID().toString(),
-                                        movingId = requestId,
-                                        startPoiId = detail.startPoiId,
-                                        endPoiId = detail.endPoiId,
-                                        durationMinutes = detail.durationMinutes,
-                                        vehicleId = detail.vehicleId
-                                    )
-                                }
+                        detailsByMoving.values.flatten().forEach { detail ->
+                            try {
+                                detailDao.insert(detail)
+                            } catch (e: Exception) {
+                                Log.e(TAG, "Failed to store moving detail locally", e)
+                            }
+                        }
 
-                                movingDetails.forEach { detail ->
-                                    try {
-                                        detailDao.insert(detail)
-                                    } catch (e: Exception) {
-                                        Log.e(TAG, "Failed to store moving detail locally", e)
-                                    }
-                                }
-
+                        detailsByMoving[requestId]?.let { currentDetails ->
+                            if (shouldUploadRemoteDetails) {
                                 try {
-                                    movingDetails.forEach { detail ->
+                                    currentDetails.forEach { detail ->
                                         movingRef
                                             .collection("details")
                                             .document(detail.id)
@@ -729,11 +770,18 @@ class VehicleRequestViewModel(
                                 } catch (e: Exception) {
                                     Log.e(TAG, "Failed to store moving detail remotely", e)
                                 }
-
-                                vehicleIdFromDetails =
-                                    movingDetails.firstOrNull { it.vehicleId.isNotBlank() }?.vehicleId
                             }
+                            vehicleIdFromDetails =
+                                currentDetails.firstOrNull { it.vehicleId.isNotBlank() }?.vehicleId
                         }
+                    }
+
+                    if (vehicleIdFromDetails.isNullOrBlank()) {
+                        vehicleIdFromDetails = runCatching {
+                            detailDao.getForMoving(requestId).first()
+                                .firstOrNull { it.vehicleId.isNotBlank() }
+                                ?.vehicleId
+                        }.getOrNull()
                     }
 
                     val reservation = SeatReservationEntity(
