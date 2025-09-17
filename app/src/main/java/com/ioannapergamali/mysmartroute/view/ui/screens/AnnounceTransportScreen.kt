@@ -47,10 +47,10 @@ import com.ioannapergamali.mysmartroute.data.local.PoIEntity
 import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationDetailEntity
 import kotlinx.coroutines.launch
 import com.ioannapergamali.mysmartroute.model.classes.poi.PoiAddress
+import com.ioannapergamali.mysmartroute.utils.ATHENS_ZONE_ID
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.utils.offsetPois
 import java.time.Instant
-import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -161,9 +161,9 @@ fun AnnounceTransportScreen(
         }
     }
     var calculating by remember { mutableStateOf(false) }
-    val now = LocalDateTime.now()
+    val now = LocalDateTime.now(ATHENS_ZONE_ID)
     val todayMillis = remember {
-        LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        LocalDate.now(ATHENS_ZONE_ID).atStartOfDay(ATHENS_ZONE_ID).toInstant().toEpochMilli()
     }
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = todayMillis,
@@ -175,7 +175,7 @@ fun AnnounceTransportScreen(
     var showDatePicker by remember { mutableStateOf(false) }
     val dateFormatter = remember { DateTimeFormatter.ofPattern("dd/MM/yyyy") }
     val selectedDateText = datePickerState.selectedDateMillis?.let { millis ->
-        Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter)
+        Instant.ofEpochMilli(millis).atZone(ATHENS_ZONE_ID).toLocalDate().format(dateFormatter)
     } ?: stringResource(R.string.select_date)
     val timePickerState = rememberTimePickerState(
         initialHour = now.hour,
@@ -185,7 +185,7 @@ fun AnnounceTransportScreen(
     val selectedTimeText = String.format("%02d:%02d", timePickerState.hour, timePickerState.minute)
     LaunchedEffect(datePickerState.selectedDateMillis) {
         if (datePickerState.selectedDateMillis == todayMillis) {
-            val currentTime = LocalTime.now()
+            val currentTime = LocalTime.now(ATHENS_ZONE_ID)
             timePickerState.hour = currentTime.hour
             timePickerState.minute = currentTime.minute
         }
@@ -691,10 +691,10 @@ fun AnnounceTransportScreen(
                         TextButton(onClick = {
                             val selectedDateMillis = datePickerState.selectedDateMillis ?: todayMillis
                             val selectedDate = Instant.ofEpochMilli(selectedDateMillis)
-                                .atZone(ZoneId.systemDefault()).toLocalDate()
+                                .atZone(ATHENS_ZONE_ID).toLocalDate()
                             val selectedTime = LocalTime.of(timePickerState.hour, timePickerState.minute)
                             val chosenDateTime = LocalDateTime.of(selectedDate, selectedTime)
-                            if (chosenDateTime.isBefore(LocalDateTime.now())) {
+                            if (chosenDateTime.isBefore(LocalDateTime.now(ATHENS_ZONE_ID))) {
                                 Toast.makeText(
                                     context,
                                     R.string.invalid_datetime,
@@ -758,12 +758,12 @@ fun AnnounceTransportScreen(
                 onClick = {
                     val routeId = selectedRouteId
                     val date = datePickerState.selectedDateMillis ?: 0L
-                    val selectedDate = Instant.ofEpochMilli(date).atZone(ZoneId.systemDefault()).toLocalDate()
+                    val selectedDate = Instant.ofEpochMilli(date).atZone(ATHENS_ZONE_ID).toLocalDate()
                     val selectedTime = LocalTime.of(timePickerState.hour, timePickerState.minute)
                     val chosenDateTime = LocalDateTime.of(selectedDate, selectedTime)
                     val driverId = selectedDriverId ?: ""
                     if (routeId != null) {
-                        if (chosenDateTime.isBefore(LocalDateTime.now())) {
+                        if (chosenDateTime.isBefore(LocalDateTime.now(ATHENS_ZONE_ID))) {
                             Toast.makeText(
                                 context,
                                 R.string.invalid_datetime,

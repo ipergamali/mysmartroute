@@ -31,6 +31,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.UserViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.AppDateTimeViewModel
+import com.ioannapergamali.mysmartroute.utils.ATHENS_ZONE_ID
 import com.ioannapergamali.mysmartroute.utils.matchesFavorites
 import com.ioannapergamali.mysmartroute.utils.isUpcoming
 import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationDetailEntity
@@ -38,7 +39,6 @@ import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationEntity
 import kotlinx.coroutines.launch
 import kotlin.math.max
 import java.time.Instant
-import java.time.ZoneId
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.LocalDate
@@ -178,8 +178,8 @@ fun AvailableTransportsScreen(
     }
 
     val today = remember(appTime) {
-        val currentDate = Instant.ofEpochMilli(now).atZone(ZoneId.systemDefault()).toLocalDate()
-        currentDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        val currentDate = Instant.ofEpochMilli(now).atZone(ATHENS_ZONE_ID).toLocalDate()
+        currentDate.atStartOfDay(ATHENS_ZONE_ID).toInstant().toEpochMilli()
     }
     val sortedDecls = declarations.filter { decl ->
         if (routeId != null && decl.routeId != routeId) return@filter false
@@ -231,7 +231,7 @@ fun AvailableTransportsScreen(
                         val routeName = routeNames[decl.routeId] ?: ""
 
                         val dateText = Instant.ofEpochMilli(decl.date)
-                            .atZone(ZoneId.systemDefault())
+                            .atZone(ATHENS_ZONE_ID)
                             .toLocalDate()
                             .format(formatter)
                         val timeText = LocalTime.ofSecondOfDay(decl.startTime / 1000)

@@ -7,8 +7,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import com.ioannapergamali.mysmartroute.data.local.MovingEntity
 import com.ioannapergamali.mysmartroute.data.local.categorizeMovings
+import com.ioannapergamali.mysmartroute.utils.ATHENS_ZONE_ID
 import java.time.Instant
-import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -42,13 +42,13 @@ fun MovingListScreen(movings: List<MovingEntity>, now: Long = System.currentTime
 
 private fun formatDate(epochMillis: Long): String =
     Instant.ofEpochMilli(epochMillis)
-        .atZone(ZoneId.systemDefault())
+        .atZone(ATHENS_ZONE_ID)
         .toLocalDate()
         .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
 
 private fun formatTime(epochMillis: Long): String =
     Instant.ofEpochMilli(epochMillis)
-        .atZone(ZoneId.systemDefault())
+        .atZone(ATHENS_ZONE_ID)
         .toLocalTime()
         .format(DateTimeFormatter.ofPattern("HH:mm"))
 

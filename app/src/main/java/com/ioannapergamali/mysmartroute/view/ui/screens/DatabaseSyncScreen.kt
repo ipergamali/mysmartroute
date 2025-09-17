@@ -65,6 +65,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.SyncState
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.ioannapergamali.mysmartroute.utils.ATHENS_TIME_ZONE
 
 @Composable
 fun DatabaseSyncScreen(navController: NavController, openDrawer: () -> Unit) {
@@ -601,7 +602,10 @@ private fun DatabaseData.toTableDisplays(context: Context): List<TableDisplay> {
 private fun formatTimestamp(timestamp: Long, includeTime: Boolean = false): String {
     if (timestamp == 0L) return "-"
     val pattern = if (includeTime) "dd/MM/yyyy HH:mm" else "dd/MM/yyyy"
-    return SimpleDateFormat(pattern, Locale.getDefault()).format(Date(timestamp))
+    val formatter = SimpleDateFormat(pattern, Locale.getDefault()).apply {
+        timeZone = ATHENS_TIME_ZONE
+    }
+    return formatter.format(Date(timestamp))
 }
 
 private fun formatDate(timestamp: Long): String = formatTimestamp(timestamp, includeTime = false)

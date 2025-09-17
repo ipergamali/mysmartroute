@@ -30,6 +30,7 @@ import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.ioannapergamali.mysmartroute.utils.ATHENS_TIME_ZONE
 
 @Composable
 fun ReservationDetailsScreen(
@@ -47,6 +48,16 @@ fun ReservationDetailsScreen(
     var driverName by remember { mutableStateOf("") }
     var passengerName by remember { mutableStateOf("") }
     var detailInfos by remember { mutableStateOf<List<DetailInfo>>(emptyList()) }
+    val dateFormatter = remember {
+        SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).apply {
+            timeZone = ATHENS_TIME_ZONE
+        }
+    }
+    val timeFormatter = remember {
+        SimpleDateFormat("HH:mm", Locale.getDefault()).apply {
+            timeZone = ATHENS_TIME_ZONE
+        }
+    }
 
     LaunchedEffect(reservation) {
         reservation?.let { res ->
@@ -123,8 +134,6 @@ fun ReservationDetailsScreen(
         }
     ) { paddingValues ->
         reservation?.let { res ->
-            val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-            val timeFormatter = SimpleDateFormat("HH:mm", Locale.getDefault())
             Card(
                 modifier = Modifier
                     .padding(paddingValues)
@@ -142,7 +151,7 @@ fun ReservationDetailsScreen(
                         Text(stringResource(R.string.ticket))
                     }
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("${stringResource(R.string.date)}: ${formatter.format(Date(res.date))}")
+                    Text("${stringResource(R.string.date)}: ${dateFormatter.format(Date(res.date))}")
                     Text("${stringResource(R.string.route)}: $routeName")
                     Text("${stringResource(R.string.driver)}: $driverName")
                     Text("${stringResource(R.string.passenger)}: $passengerName")

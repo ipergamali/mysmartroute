@@ -44,6 +44,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Star
 import android.text.format.DateFormat
 import java.util.Date
+import com.ioannapergamali.mysmartroute.utils.ATHENS_TIME_ZONE
 import androidx.compose.ui.graphics.Color
 import android.widget.Toast
 
@@ -108,8 +109,11 @@ private fun TripRatingItem(
 
 
     val context = LocalContext.current
+    val dateFormatter = remember(context) {
+        DateFormat.getDateFormat(context).apply { timeZone = ATHENS_TIME_ZONE }
+    }
     val dateText = if (trip.moving.date > 0L) {
-        DateFormat.getDateFormat(context).format(Date(trip.moving.date))
+        dateFormatter.format(Date(trip.moving.date))
     } else ""
     val headerText = listOf(dateText, trip.moving.routeName)
         .filter { it.isNotBlank() }

@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.R
+import com.ioannapergamali.mysmartroute.utils.ATHENS_ZONE_ID
 import com.ioannapergamali.mysmartroute.data.local.MovingEntity
 import com.ioannapergamali.mysmartroute.data.local.MovingStatus
 import com.ioannapergamali.mysmartroute.data.local.categorizeMovings
@@ -36,7 +37,6 @@ import com.ioannapergamali.mysmartroute.viewmodel.VehicleRequestViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import java.time.Instant
-import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -149,7 +149,7 @@ private fun MovingTable(list: List<MovingEntity>) {
 
 private fun formatDate(epochMillis: Long): String =
     Instant.ofEpochMilli(epochMillis)
-        .atZone(ZoneId.systemDefault())
+        .atZone(ATHENS_ZONE_ID)
         .toLocalDate()
         .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
 
