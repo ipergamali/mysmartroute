@@ -109,7 +109,8 @@ fun AvailableTransportsScreen(
     startId: String?,
     endId: String?,
     maxCost: Double?,
-    date: Long?
+    date: Long?,
+    time: Long?
 ) {
     val context = LocalContext.current
     val declarationViewModel: TransportDeclarationViewModel = viewModel()
@@ -193,6 +194,7 @@ fun AvailableTransportsScreen(
         if (availableSeats <= 0) return@filter false
         if (decl.date < today) return@filter false
         if (date != null && date >= today && decl.date != date) return@filter false
+        if (time != null && decl.startTime != time) return@filter false
         if (!decl.matchesFavorites(preferred, nonPreferred)) return@filter false
         if (!decl.isUpcoming(now)) return@filter false
         true

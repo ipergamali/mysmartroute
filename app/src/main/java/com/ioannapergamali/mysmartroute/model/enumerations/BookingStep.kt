@@ -20,8 +20,10 @@ enum class BookingStep(@StringRes val titleRes: Int, val position: Int) {
     RECALCULATE_ROUTE(R.string.recalculate_route, 4),
     /** Επιλογή ημερομηνίας / Select date */
     SELECT_DATE(R.string.select_date, 5),
+    /** Επιλογή ώρας / Select time */
+    SELECT_TIME(R.string.select_time, 6),
     /** Εύρεση τώρα / Reserve seat */
-    RESERVE_SEAT(R.string.find_now, 6);
+    RESERVE_SEAT(R.string.find_now, 7);
 
     companion object {
         /** Βήματα στη σωστή σειρά. / Steps in proper order. */

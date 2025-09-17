@@ -8,20 +8,24 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.data.local.MovingDetailEntity
 import com.ioannapergamali.mysmartroute.data.local.MovingEntity
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
+import com.ioannapergamali.mysmartroute.data.local.NotificationEntity
 import com.ioannapergamali.mysmartroute.data.local.TransferRequestDao
 import com.ioannapergamali.mysmartroute.data.local.TransferRequestEntity
 import com.ioannapergamali.mysmartroute.model.enumerations.RequestStatus
-import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
+import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import com.ioannapergamali.mysmartroute.utils.SessionManager
+import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-import kotlin.math.max
 import java.util.ArrayDeque
 import java.util.UUID
+import kotlin.math.max
 
 /**
  * ViewModel για υποβολή και διαχείριση αιτημάτων μεταφοράς.
@@ -125,6 +129,7 @@ class TransferRequestViewModel : ViewModel() {
                         .await()
                 }
 
+
                 val requestWithFirebase = requestEntity.copy(firebaseId = currentRequestRef.id)
                 transferDao.insert(requestWithFirebase)
                 requestInserted = true
@@ -132,6 +137,7 @@ class TransferRequestViewModel : ViewModel() {
                 movingDao.insert(moving)
                 movingInserted = true
                 segments.forEach { detailDao.insert(it) }
+
             } catch (e: Exception) {
                 if (movingInserted) {
                     movingId?.let { id ->
@@ -235,6 +241,109 @@ class TransferRequestViewModel : ViewModel() {
             }
         }
         return emptyList()
+    }
+
+    private suspend fun notifyDriversAboutRequest(
+        context: Context,
+        routeId: String,
+        passengerId: String,
+        requestNumber: Int
+    ) {
+        val database = MySmartRouteDatabase.getInstance(context)
+        val userDao = database.userDao()
+
+        val localPassenger = runCatching { userDao.getUser(passengerId) }.getOrNull()
+        val passengerName = localPassenger?.let { passenger ->
+            listOf(passenger.name, passenger.surname)
+                .filter { it.isNotBlank() }
+                .joinToString(" ")
+        }.takeUnless { it.isNullOrBlank() } ?: run {
+            val remoteUser = runCatching {
+                db.collection("users")
+                    .document(passengerId)
+                    .get()
+                    .await()
+            }.getOrNull()
+            val name = remoteUser?.getString("name").orEmpty()
+            val surname = remoteUser?.getString("surname").orEmpty()
+            listOf(name, surname)
+                .filter { it.isNotBlank() }
+                .joinToString(" ")
+                .ifBlank { context.getString(R.string.passenger) }
+        }
+
+        val message = context.getString(
+            R.string.passenger_request_notification,
+            passengerName,
+            requestNumber
+        )
+
+        val declarationsResult = runCatching {
+            db.collection("transport_declarations")
+                .whereEqualTo("routeId", db.collection("routes").document(routeId))
+                .get()
+                .await()
+        }
+
+        val declarationDrivers = declarationsResult.getOrNull()
+            ?.documents
+            ?.mapNotNull { doc ->
+                when (val rawDriver = doc.get("driverId")) {
+                    is DocumentReference -> rawDriver.id
+                    is String -> rawDriver
+                    else -> doc.getString("driverId")
+                }
+            }
+            ?.filter { it.isNotBlank() && it != passengerId }
+            ?.toSet()
+            .orEmpty()
+
+        val targetDrivers: Set<String> = if (declarationDrivers.isNotEmpty()) {
+            declarationDrivers
+        } else {
+            val remoteDrivers = runCatching {
+                db.collection("users")
+                    .whereEqualTo("role", UserRole.DRIVER.name)
+                    .get()
+                    .await()
+                    .documents
+                    .map { it.id }
+            }.getOrNull().orEmpty()
+
+            if (remoteDrivers.isNotEmpty()) {
+                remoteDrivers.toSet()
+            } else {
+                runCatching {
+                    userDao.getAllUsers().first()
+                        .filter { it.role == UserRole.DRIVER.name }
+                        .map { it.id }
+                        .toSet()
+                }.getOrNull().orEmpty()
+            }
+        }
+
+        if (targetDrivers.isEmpty()) {
+            Log.w(TAG, "Δεν βρέθηκαν οδηγοί για ειδοποίηση στο αίτημα $requestNumber")
+            return
+        }
+
+        targetDrivers
+            .filter { it != passengerId }
+            .forEach { driverId ->
+                val notification = NotificationEntity(
+                    id = UUID.randomUUID().toString(),
+                    userId = driverId,
+                    message = message
+                )
+                runCatching {
+                    db.collection("notifications")
+                        .document(notification.id)
+                        .set(notification.toFirestoreMap())
+                        .await()
+                }.onFailure { error ->
+                    Log.e(TAG, "Αποτυχία αποστολής ειδοποίησης στον οδηγό $driverId", error)
+                }
+            }
     }
 
     /**

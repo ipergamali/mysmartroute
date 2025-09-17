@@ -463,7 +463,8 @@ fun RouteModeScreen(
                                 "&startId=" + fromId +
                                 "&endId=" + toId +
                                 "&maxCost=" + (cost?.toString() ?: "") +
-                                "&date=" + date
+                                "&date=" + date +
+                                "&time="
                         )
                     },
                     enabled = selectedRouteId != null && startIndex != null && endIndex != null,
