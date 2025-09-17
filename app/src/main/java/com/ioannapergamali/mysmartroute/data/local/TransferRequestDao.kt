@@ -29,6 +29,9 @@ interface TransferRequestDao {
     @Query("SELECT * FROM transfer_requests WHERE requestNumber = :requestNumber")
     suspend fun getRequestByNumber(requestNumber: Int): TransferRequestEntity?
 
+    @Query("DELETE FROM transfer_requests WHERE requestNumber IN (:requestNumbers)")
+    suspend fun deleteByRequestNumbers(requestNumbers: List<Int>)
+
     @Query("SELECT * FROM transfer_requests WHERE passengerId = :passengerId")
     fun getRequestsForPassenger(passengerId: String): Flow<List<TransferRequestEntity>>
 
