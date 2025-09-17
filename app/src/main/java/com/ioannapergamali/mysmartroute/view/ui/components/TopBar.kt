@@ -90,7 +90,8 @@ fun TopBar(
     }
     LaunchedEffect(role) {
         role?.let {
-            requestViewModel.loadRequests(context, allUsers = it == UserRole.DRIVER)
+            val shouldLoadAll = it == UserRole.DRIVER || it == UserRole.ADMIN
+            requestViewModel.loadRequests(context, allUsers = shouldLoadAll)
         }
     }
 
