@@ -15,6 +15,7 @@ import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.NotificationEntity
 import com.ioannapergamali.mysmartroute.data.local.TransferRequestDao
 import com.ioannapergamali.mysmartroute.data.local.TransferRequestEntity
+import com.ioannapergamali.mysmartroute.data.local.currentAppDateTime
 import com.ioannapergamali.mysmartroute.model.enumerations.RequestStatus
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import com.ioannapergamali.mysmartroute.utils.SessionManager
@@ -351,7 +352,7 @@ class TransferRequestViewModel : ViewModel() {
         targetDrivers
             .filter { it != passengerId }
             .forEach { driverId ->
-                val now = java.time.LocalDateTime.now()
+                val now = database.currentAppDateTime()
                 val notification = NotificationEntity(
                     id = UUID.randomUUID().toString(),
                     senderId = passengerId,
