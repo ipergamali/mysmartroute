@@ -564,7 +564,8 @@ class VehicleRequestViewModel(
                 val notification = NotificationEntity(
                     id = UUID.randomUUID().toString(),
                     userId = updated.userId,
-                    message = message
+                    message = message,
+                    actionRoute = "viewRequests"
                 )
                 try {
                     dbInstance.notificationDao().insert(notification)

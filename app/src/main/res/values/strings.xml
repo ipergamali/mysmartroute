@@ -404,6 +404,8 @@
 
     <string name="request_accepted_notification">Your request with number %1$d was accepted</string>
 
+    <string name="transfer_keyword">transfer</string>
+
 
     
     <string name="find_now">Find now</string>

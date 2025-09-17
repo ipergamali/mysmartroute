@@ -305,18 +305,31 @@ class TransferRequestViewModel : ViewModel() {
                 .await()
         }
 
-        val declarationDrivers = declarationsResult.getOrNull()
-            ?.documents
-            ?.mapNotNull { doc ->
+        val declarationDocs = when (val snapshot = declarationsResult.getOrNull()) {
+            null -> emptyList()
+            else -> if (snapshot.isEmpty) {
+                runCatching {
+                    db.collection("transport_declarations")
+                        .whereEqualTo("routeId", routeId)
+                        .get()
+                        .await()
+                        .documents
+                }.getOrNull().orEmpty()
+            } else {
+                snapshot.documents
+            }
+        }
+
+        val declarationDrivers = declarationDocs
+            .mapNotNull { doc ->
                 when (val rawDriver = doc.get("driverId")) {
                     is DocumentReference -> rawDriver.id
                     is String -> rawDriver
                     else -> doc.getString("driverId")
                 }
             }
-            ?.filter { it.isNotBlank() && it != passengerId }
-            ?.toSet()
-            .orEmpty()
+            .filter { it.isNotBlank() && it != passengerId }
+            .toSet()
 
         val targetDrivers: Set<String> = if (declarationDrivers.isNotEmpty()) {
             declarationDrivers
@@ -353,7 +366,8 @@ class TransferRequestViewModel : ViewModel() {
                 val notification = NotificationEntity(
                     id = UUID.randomUUID().toString(),
                     userId = driverId,
-                    message = message
+                    message = message,
+                    actionRoute = "viewTransportRequests"
                 )
                 runCatching {
                     db.collection("notifications")

@@ -645,11 +645,17 @@ fun DocumentSnapshot.toTransferRequestEntity(): TransferRequestEntity? {
     return TransferRequestEntity(number, routeId, passengerId, driverId, driverName, id, dateVal, costVal, enumValueOf(statusStr))
 }
 
-fun NotificationEntity.toFirestoreMap(): Map<String, Any> = mapOf(
-    "id" to id,
-    "userId" to FirebaseFirestore.getInstance().collection("users").document(userId),
-    "message" to message
-)
+fun NotificationEntity.toFirestoreMap(): Map<String, Any> {
+    val map = mutableMapOf<String, Any>(
+        "id" to id,
+        "userId" to FirebaseFirestore.getInstance().collection("users").document(userId),
+        "message" to message
+    )
+    if (actionRoute.isNotBlank()) {
+        map["actionRoute"] = actionRoute
+    }
+    return map
+}
 
 fun DocumentSnapshot.toNotificationEntity(): NotificationEntity? {
     val idVal = getString("id") ?: id
@@ -659,7 +665,8 @@ fun DocumentSnapshot.toNotificationEntity(): NotificationEntity? {
         else -> getString("userId")
     } ?: return null
     val msg = getString("message") ?: ""
-    return NotificationEntity(idVal, userId, msg)
+    val actionRoute = getString("actionRoute") ?: ""
+    return NotificationEntity(idVal, userId, msg, actionRoute)
 }
 
 fun TripRatingEntity.toFirestoreMap(): Map<String, Any> = mapOf(

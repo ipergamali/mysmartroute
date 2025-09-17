@@ -374,6 +374,8 @@
 
     <string name="passenger_request_notification">Ο επιβάτης %1$s ζήτησε μεταφορά. Αίτημα αριθμός %2$d</string>
     <string name="driver_offer_notification">Ο οδηγός %1$s ενδιαφέρεται να εξυπηρετήσει το αίτημά σας. Αίτημα αριθμός %2$d</string>
+
+    <string name="transfer_keyword">μεταφορά</string>
     <string name="available_transports">Διαθέσιμες μεταφορές</string>
     <string name="no_transports_found">Δεν βρέθηκαν μεταφορές</string>
     <string name="rating_label">Βαθμολογία: %1$d</string>

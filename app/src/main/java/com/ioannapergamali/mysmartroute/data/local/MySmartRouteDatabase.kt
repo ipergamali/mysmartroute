@@ -82,7 +82,7 @@ import com.ioannapergamali.mysmartroute.data.local.AuthenticationDao
         AppDateTimeEntity::class
     ],
 
-    version = 77
+    version = 78
 
 )
 @TypeConverters(Converters::class)
@@ -1057,6 +1057,14 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_77_78 = object : Migration(77, 78) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "ALTER TABLE `notifications` ADD COLUMN `actionRoute` TEXT NOT NULL DEFAULT ''"
+                )
+            }
+        }
+
         private fun prepopulate(db: SupportSQLiteDatabase) {
             Log.d(TAG, "Prepopulating database")
             db.execSQL(
@@ -1212,7 +1220,8 @@ abstract class MySmartRouteDatabase : RoomDatabase() {
                     MIGRATION_73_74,
                     MIGRATION_74_75,
                     MIGRATION_75_76,
-                    MIGRATION_76_77
+                    MIGRATION_76_77,
+                    MIGRATION_77_78
 
                 )
                     .addCallback(object : RoomDatabase.Callback() {

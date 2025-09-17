@@ -209,6 +209,7 @@ class UserViewModel : ViewModel() {
                     id = java.util.UUID.randomUUID().toString(),
                     userId = reservation.userId,
                     message = "Η κράτησή σας ακυρώθηκε λόγω αλλαγής οδηγού.",
+                    actionRoute = "viewRequests"
                 )
                 notifDao.insert(notification)
                 runCatching {
