@@ -1007,7 +1007,18 @@ class DatabaseViewModel : ViewModel() {
                     updateSyncTable(context, "seat_reservation_details")
                     seatResDetails.forEach { db.seatReservationDetailDao().insert(it) }
                     updateSyncTable(context, "transfer_requests")
-                    transferRequests.forEach { db.transferRequestDao().insert(it) }
+                    if (transferRequests.isNotEmpty()) {
+                        val existingRequestNumbers = db.transferRequestDao()
+                            .getAll()
+                            .first()
+                            .map { it.requestNumber }
+                            .toSet()
+                        transferRequests.forEach { request ->
+                            if (request.requestNumber in existingRequestNumbers) {
+                                db.transferRequestDao().insert(request)
+                            }
+                        }
+                    }
                     updateSyncTable(context, "trip_ratings")
                     tripRatings.forEach { db.tripRatingDao().upsert(it) }
                     Log.d(TAG, "Inserted remote data to local DB")
