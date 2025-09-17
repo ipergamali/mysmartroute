@@ -68,6 +68,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
     var message by remember { mutableStateOf("") }
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     var calculating by remember { mutableStateOf(false) }
+    var routeDuration by remember { mutableStateOf<Int?>(null) }
     var pendingPoi by remember { mutableStateOf<Triple<String, Double, Double>?>(null) }
 
     val cameraPositionState = rememberCameraPositionState()
@@ -96,6 +97,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
         if (routePois.size >= 2) {
             coroutineScope.launch {
                 calculating = true
+                routeDuration = null
                 val origin = LatLng(routePois.first().lat, routePois.first().lng)
                 val destination = LatLng(routePois.last().lat, routePois.last().lng)
                 val waypoints = routePois.drop(1).dropLast(1).map { LatLng(it.lat, it.lng) }
@@ -107,6 +109,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                     waypoints
                 )
                 pathPoints = data.points
+                routeDuration = data.duration.takeIf { it > 0 }
                 data.points.firstOrNull()?.let {
                     MapsInitializer.initialize(context)
                     cameraPositionState.move(
@@ -117,6 +120,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
             }
         } else {
             pathPoints = emptyList()
+            routeDuration = null
         }
     }
 
@@ -353,6 +357,35 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                     trailingIcon = {
                         IconButton(onClick = { endIndex = null }) {
                             Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.clear_selection))
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.small,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                    )
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                OutlinedTextField(
+                    value = routeDuration?.toString() ?: "",
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text(stringResource(R.string.duration)) },
+                    placeholder = {
+                        Text(
+                            if (calculating) {
+                                stringResource(R.string.calculating_route)
+                            } else {
+                                stringResource(R.string.duration_not_available)
+                            }
+                        )
+                    },
+                    trailingIcon = {
+                        if (routeDuration != null) {
+                            Text(stringResource(R.string.minutes_suffix))
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),

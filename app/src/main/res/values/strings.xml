@@ -262,6 +262,8 @@
     <string name="vehicle">Vehicle</string>
     <string name="cost">Cost</string>
     <string name="duration">Duration</string>
+    <string name="duration_not_available">Not available</string>
+    <string name="minutes_suffix">min</string>
     <string name="date">Date</string>
     <string name="status">Status</string>
     <string name="time">Time</string>
