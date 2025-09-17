@@ -51,8 +51,8 @@ class PoIViewModel : ViewModel() {
     }
 
     /**
-     * Προσθέτει νέο σημείο ενδιαφέροντος αν δεν υπάρχει με το ίδιο όνομα.
-     * Adds a new point of interest if no point with the same name exists.
+     * Προσθέτει νέο σημείο ενδιαφέροντος χωρίς περιορισμό ονόματος ή συντεταγμένων.
+     * Adds a new point of interest without enforcing unique name or coordinates.
      */
     fun addPoi(
         context: Context,
@@ -64,13 +64,6 @@ class PoIViewModel : ViewModel() {
     ) {
         viewModelScope.launch {
             val dao = MySmartRouteDatabase.getInstance(context).poIDao()
-            // Επιτρέπουμε αποθήκευση ίδιου σημείου αν έχει διαφορετικό όνομα.
-            // Allow saving the same location if it has a different name.
-            val exists = dao.findByName(name) != null
-            if (exists) {
-                _addState.value = AddPoiState.Exists
-                return@launch
-            }
 
             val id = UUID.randomUUID().toString()
             val poi = PoIEntity(
@@ -100,7 +93,6 @@ class PoIViewModel : ViewModel() {
     sealed class AddPoiState {
         object Idle : AddPoiState()
         data class Success(val id: String) : AddPoiState()
-        object Exists : AddPoiState()
         data class Error(val message: String) : AddPoiState()
     }
 
