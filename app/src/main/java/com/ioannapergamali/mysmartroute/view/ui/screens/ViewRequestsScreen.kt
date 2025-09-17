@@ -160,6 +160,10 @@ fun ViewRequestsScreen(
                                     modifier = Modifier.width(columnWidth)
                                 )
                                 Text(
+                                    stringResource(R.string.time),
+                                    modifier = Modifier.width(columnWidth)
+                                )
+                                Text(
                                     stringResource(R.string.driver),
                                     modifier = Modifier.width(columnWidth)
                                 )
@@ -176,12 +180,9 @@ fun ViewRequestsScreen(
                             val stationsText = if (fromName.isNotBlank() && toName.isNotBlank())
                                 "$fromName → $toName" else ""
                             val routeName = req.routeName.ifBlank { stationsText }
-                            val dateTimeText = if (req.date > 0L) {
-                                val date = Date(req.date)
-                                val dateStr = DateFormat.getDateFormat(context).format(date)
-                                val timeStr = DateFormat.format("HH:mm", date).toString()
-                                "$dateStr $timeStr"
-                            } else ""
+                            val dateValue = req.date.takeIf { it > 0L }?.let { Date(it) }
+                            val dateText = dateValue?.let { DateFormat.getDateFormat(context).format(it) } ?: ""
+                            val timeText = dateValue?.let { DateFormat.getTimeFormat(context).format(it) } ?: ""
                             val costText = req.cost?.toString() ?: "-"
                             val isExpired = req.date > 0L && now > req.date && req.status != "completed"
                             val statusText = if (isExpired) stringResource(R.string.request_unsuccessful) else req.status
@@ -194,7 +195,8 @@ fun ViewRequestsScreen(
                                 Text(routeName, modifier = Modifier.width(columnWidth))
                                 Text(stationsText, modifier = Modifier.width(columnWidth))
                                 Text(costText, modifier = Modifier.width(columnWidth))
-                                Text(dateTimeText, modifier = Modifier.width(columnWidth))
+                                Text(dateText, modifier = Modifier.width(columnWidth))
+                                Text(timeText, modifier = Modifier.width(columnWidth))
                                 Text(driverName, modifier = Modifier.width(columnWidth))
                                 if (req.status == "pending" && req.driverId.isNotBlank() && !isExpired) {
                                     Button(onClick = {

@@ -169,6 +169,11 @@ fun ViewTransportRequestsScreen(
                                     style = MaterialTheme.typography.labelMedium
                                 )
                                 Text(
+                                    stringResource(R.string.time),
+                                    modifier = Modifier.width(columnWidth),
+                                    style = MaterialTheme.typography.labelMedium
+                                )
+                                Text(
                                     stringResource(R.string.request_number),
                                     modifier = Modifier.width(columnWidth),
                                     style = MaterialTheme.typography.labelMedium
@@ -193,10 +198,9 @@ fun ViewTransportRequestsScreen(
                             val routeName = req.routeName.ifBlank { stationsText }
                             val userName = userNames[req.userId] ?: ""
                             val isChecked = selectedRequests[req.id] ?: false
-                            val dateTimeText = if (req.date > 0L) {
-                                val date = Date(req.date)
-                                DateFormat.getDateFormat(context).format(date)
-                            } else ""
+                            val dateValue = req.date.takeIf { it > 0L }?.let { Date(it) }
+                            val dateText = dateValue?.let { DateFormat.getDateFormat(context).format(it) } ?: ""
+                            val timeText = dateValue?.let { DateFormat.getTimeFormat(context).format(it) } ?: ""
                             Row(
                                 modifier = Modifier.padding(vertical = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically
@@ -217,7 +221,8 @@ fun ViewTransportRequestsScreen(
                                 Text(stationsText, modifier = Modifier.width(columnWidth))
                                 val costText = req.cost?.toString() ?: "∞"
                                 Text(costText, modifier = Modifier.width(columnWidth))
-                                Text(dateTimeText, modifier = Modifier.width(columnWidth))
+                                Text(dateText, modifier = Modifier.width(columnWidth))
+                                Text(timeText, modifier = Modifier.width(columnWidth))
                                 Text(req.requestNumber.toString(), modifier = Modifier.width(columnWidth))
                                 val isNewRequest = req.routeId.isBlank() || req.routeId !in declaredRouteIds
                                 Text(
