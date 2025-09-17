@@ -591,8 +591,9 @@ class VehicleRequestViewModel(
                     updated.requestNumber
                 )
                 val now = dbInstance.currentAppDateTime()
+                val notificationId = "${updated.id}_${updated.userId}_pending"
                 val notification = NotificationEntity(
-                    id = UUID.randomUUID().toString(),
+                    id = notificationId,
                     senderId = driver.uid,
                     receiverId = updated.userId,
                     message = message,
@@ -828,6 +829,7 @@ class VehicleRequestViewModel(
     }
 
     private suspend fun showPassengerRequestNotifications(context: Context) {
+        val receiverId = SessionManager.currentUserId() ?: return
         _requests.value.filter { it.isAwaitingDriver() && it.id !in notifiedRequests }
             .forEach { req ->
                 val passengerName = UserViewModel().getUserName(context, req.userId)
@@ -852,15 +854,16 @@ class VehicleRequestViewModel(
                     req.id.hashCode(),
                     pending,
                     storeInRoom = true,
-                    receiverId = SessionManager.currentUserId(),
+                    receiverId = receiverId,
                     senderId = req.userId,
-                    roomNotificationId = "${req.id}_awaiting_driver"
+                    roomNotificationId = "${req.id}_${receiverId}_awaiting_driver"
                 )
                 notifiedRequests.add(req.id)
             }
     }
 
     private suspend fun showPendingNotifications(context: Context) {
+        val receiverId = SessionManager.currentUserId() ?: return
         _requests.value.filter {
             it.status == "pending" && it.driverId.isNotBlank() && it.id !in notifiedRequests
         }.forEach { req ->
@@ -890,9 +893,9 @@ class VehicleRequestViewModel(
                 req.id.hashCode(),
                 pending,
                 storeInRoom = true,
-                receiverId = SessionManager.currentUserId(),
+                receiverId = receiverId,
                 senderId = req.driverId,
-                roomNotificationId = "${req.id}_pending"
+                roomNotificationId = "${req.id}_${receiverId}_pending"
             )
             notifiedRequests.add(req.id)
         }
@@ -921,7 +924,7 @@ class VehicleRequestViewModel(
                     storeInRoom = true,
                     receiverId = userId,
                     senderId = req.userId,
-                    roomNotificationId = "${req.id}_accepted"
+                    roomNotificationId = "${req.id}_${userId}_accepted"
                 )
                 notifiedRequests.add(req.id)
             }
@@ -953,7 +956,7 @@ class VehicleRequestViewModel(
                     storeInRoom = true,
                     receiverId = userId,
                     senderId = req.userId,
-                    roomNotificationId = "${req.id}_rejected"
+                    roomNotificationId = "${req.id}_${userId}_rejected"
                 )
                 notifiedRequests.add(req.id)
             }
