@@ -250,7 +250,7 @@ fun LocalDatabaseScreen(navController: NavController, openDrawer: () -> Unit) {
                     item { Text("Ο πίνακας είναι άδειος") }
                 } else {
                     items(data!!.notifications) { n ->
-                        Text("${n.userId} -> ${n.message}")
+                        Text("${n.senderId} -> ${n.receiverId} (${n.sentDate} ${n.sentTime}): ${n.message}")
                     }
                 }
                 }

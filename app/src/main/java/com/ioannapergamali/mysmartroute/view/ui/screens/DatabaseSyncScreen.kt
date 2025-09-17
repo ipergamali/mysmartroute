@@ -586,7 +586,10 @@ private fun DatabaseData.toTableDisplays(context: Context): List<TableDisplay> {
             context.getString(
                 R.string.table_notifications_row,
                 notification.id.ifBlankDash(),
-                notification.userId.ifBlankDash(),
+                notification.senderId.ifBlankDash(),
+                notification.receiverId.ifBlankDash(),
+                notification.sentDate.ifBlankDash(),
+                notification.sentTime.ifBlankDash(),
                 notification.message.ifBlankDash()
             )
         }

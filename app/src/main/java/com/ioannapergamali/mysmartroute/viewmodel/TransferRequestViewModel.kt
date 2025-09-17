@@ -271,6 +271,7 @@ class TransferRequestViewModel : ViewModel() {
     ) {
         val database = MySmartRouteDatabase.getInstance(context)
         val userDao = database.userDao()
+        val notificationDao = database.notificationDao()
 
         val localPassenger = runCatching { userDao.getUser(passengerId) }.getOrNull()
         val passengerName = localPassenger?.let { passenger ->
@@ -350,11 +351,20 @@ class TransferRequestViewModel : ViewModel() {
         targetDrivers
             .filter { it != passengerId }
             .forEach { driverId ->
+                val now = java.time.LocalDateTime.now()
                 val notification = NotificationEntity(
                     id = UUID.randomUUID().toString(),
-                    userId = driverId,
-                    message = message
+                    senderId = passengerId,
+                    receiverId = driverId,
+                    message = message,
+                    sentDate = now.toLocalDate().toString(),
+                    sentTime = now.toLocalTime().withSecond(0).withNano(0).toString()
                 )
+                try {
+                    notificationDao.insert(notification)
+                } catch (error: Exception) {
+                    Log.e(TAG, "Αποτυχία αποθήκευσης ειδοποίησης στον οδηγό $driverId", error)
+                }
                 runCatching {
                     db.collection("notifications")
                         .document(notification.id)

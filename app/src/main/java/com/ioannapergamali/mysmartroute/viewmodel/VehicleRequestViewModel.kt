@@ -561,10 +561,14 @@ class VehicleRequestViewModel(
                     driverName,
                     updated.requestNumber
                 )
+                val now = java.time.LocalDateTime.now()
                 val notification = NotificationEntity(
                     id = UUID.randomUUID().toString(),
-                    userId = updated.userId,
-                    message = message
+                    senderId = driver.uid,
+                    receiverId = updated.userId,
+                    message = message,
+                    sentDate = now.toLocalDate().toString(),
+                    sentTime = now.toLocalTime().withSecond(0).withNano(0).toString()
                 )
                 try {
                     dbInstance.notificationDao().insert(notification)

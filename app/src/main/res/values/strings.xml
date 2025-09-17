@@ -139,7 +139,7 @@
     <string name="table_seat_reservations_row">[%1$s] διαδρομή %2$s, χρήστης %3$s, ημερομηνία %4$s, ώρα %5$s</string>
     <string name="table_transfer_requests_row">Αίτημα #%1$d, διαδρομή %2$s, επιβάτης %3$s, οδηγός %4$s, κατάσταση %5$s</string>
     <string name="table_trip_ratings_row">Μετακίνηση %1$s, χρήστης %2$s, βαθμολογία %3$d, σχόλιο: %4$s</string>
-    <string name="table_notifications_row">[%1$s] χρήστης %2$s, μήνυμα: %3$s</string>
+    <string name="table_notifications_row">[%1$s] %2$s → %3$s (%4$s %5$s): %6$s</string>
     <string name="user_points">User Points</string>
     <string name="admin_option">Admin Option</string>
     <string name="profile">Profile</string>
