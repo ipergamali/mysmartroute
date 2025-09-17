@@ -23,6 +23,9 @@ import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TimePickerDialog
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.menuAnchor
@@ -69,6 +72,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.TransferRequestViewModel
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import kotlin.math.abs
 import androidx.compose.ui.graphics.Color
@@ -143,10 +147,24 @@ fun BookSeatScreen(
         rememberDatePickerState()
     }
     var showDatePicker by remember { mutableStateOf(false) }
+    val timePickerState = rememberTimePickerState()
+    var showTimePicker by remember { mutableStateOf(false) }
+    var selectedTimeMillis by rememberSaveable { mutableStateOf<Long?>(null) }
+    LaunchedEffect(selectedTimeMillis) {
+        selectedTimeMillis?.let {
+            val totalMinutes = (it / 60000L).toInt()
+            timePickerState.hour = (totalMinutes / 60) % 24
+            timePickerState.minute = totalMinutes % 60
+        }
+    }
     val dateFormatter = remember { DateTimeFormatter.ofPattern("dd/MM/yyyy") }
+    val timeFormatter = remember { DateTimeFormatter.ofPattern("HH:mm") }
     val selectedDateText = datePickerState.selectedDateMillis?.let { millis ->
         Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter)
     } ?: stringResource(R.string.select_date)
+    val selectedTimeText = selectedTimeMillis?.let { millis ->
+        LocalTime.ofSecondOfDay(millis / 1000).format(timeFormatter)
+    } ?: stringResource(R.string.select_time)
     val cameraPositionState = rememberCameraPositionState()
     val context = LocalContext.current
     val apiKey = MapsUtils.getApiKey(context)
@@ -307,6 +325,7 @@ fun BookSeatScreen(
                 poiIds.size < 2 -> BookingStep.ADD_POI
                 pathPoints.isEmpty() -> BookingStep.RECALCULATE_ROUTE
                 datePickerState.selectedDateMillis == null -> BookingStep.SELECT_DATE
+                selectedTimeMillis == null -> BookingStep.SELECT_TIME
                 else -> BookingStep.RESERVE_SEAT
             }
 
@@ -552,21 +571,51 @@ fun BookSeatScreen(
 
             Spacer(Modifier.height(16.dp))
 
+            Text(stringResource(R.string.departure_time))
+            Button(onClick = { showTimePicker = true }) { Text(selectedTimeText) }
+            if (showTimePicker) {
+                TimePickerDialog(
+                    onDismissRequest = { showTimePicker = false },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                selectedTimeMillis =
+                                    ((timePickerState.hour * 60) + timePickerState.minute) * 60_000L
+                                showTimePicker = false
+                            }
+                        ) {
+                            Text(stringResource(android.R.string.ok))
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showTimePicker = false }) {
+                            Text(stringResource(android.R.string.cancel))
+                        }
+                    }
+                ) {
+                    TimePicker(state = timePickerState)
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(
                     enabled = selectedRoute != null && startIndex != null && endIndex != null &&
-                            datePickerState.selectedDateMillis != null,
+                            datePickerState.selectedDateMillis != null && selectedTimeMillis != null,
                     onClick = {
                         val r = selectedRoute ?: return@Button
                         val dateMillis = datePickerState.selectedDateMillis ?: return@Button
                         val startId = startIndex?.let { pois[it].id } ?: return@Button
                         val endId = endIndex?.let { pois[it].id } ?: return@Button
+                        val timeMillis = selectedTimeMillis ?: return@Button
                         navController.navigate(
                             "availableTransports?routeId=" +
                                     r.id +
                                     "&startId=" + startId +
                                     "&endId=" + endId +
-                                    "&maxCost=&date=" + dateMillis
+                                    "&maxCost=&date=" + dateMillis +
+                                    "&time=" + timeMillis
                         )
                     }
                 ) {
@@ -576,13 +625,14 @@ fun BookSeatScreen(
                 }
                 Button(
                     enabled = selectedRoute != null && startIndex != null && endIndex != null &&
-                            datePickerState.selectedDateMillis != null,
+                            datePickerState.selectedDateMillis != null && selectedTimeMillis != null,
                     onClick = {
                         scope.launch {
                             val r = selectedRoute ?: return@launch
                             val dateMillis = datePickerState.selectedDateMillis ?: return@launch
                             val startId = startIndex?.let { pois[it].id } ?: return@launch
                             val endId = endIndex?.let { pois[it].id } ?: return@launch
+                            val timeMillis = selectedTimeMillis ?: return@launch
 
                             val (routeId, poiChanged) = resolveRouteForRequest()
                             if (routeId.isBlank()) {
@@ -595,7 +645,7 @@ fun BookSeatScreen(
                                 routeId,
                                 startId,
                                 endId,
-                                dateMillis,
+                                dateMillis + timeMillis,
                                 null,
                                 poiChanged
                             )

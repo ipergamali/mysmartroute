@@ -396,7 +396,8 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                                 "&startId=" + fromId +
                                 "&endId=" + toId +
                                 "&maxCost=" + (cost?.toString() ?: "") +
-                                "&date="
+                                "&date=" +
+                                "&time="
                         )
                     },
                     enabled = selectedRouteId != null && startIndex != null && endIndex != null,
