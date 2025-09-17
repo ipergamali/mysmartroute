@@ -1066,7 +1066,8 @@ class DatabaseViewModel : ViewModel() {
                     val seatReservations = db.seatReservationDao().getAll().first()
                     Log.d(TAG, "Fetched ${seatReservations.size} local seat reservations")
 
-                    val transferRequests = db.transferRequestDao().getAll().first()
+                    val transferRequestDao = db.transferRequestDao()
+                    val transferRequests = transferRequestDao.getAll().first()
                     Log.d(TAG, "Fetched ${transferRequests.size} local transfer requests")
 
                     val tripRatings = db.tripRatingDao().getAll().first()
@@ -1193,10 +1194,52 @@ class DatabaseViewModel : ViewModel() {
                     }
 
                     updateSyncTable(context, "transfer_requests")
-                    transferRequests.forEach {
-                        firestore.collection("transfer_requests")
-                            .document(it.requestNumber.toString())
-                            .set(it.toFirestoreMap()).await()
+                    val transferRequestsCollection = firestore.collection("transfer_requests")
+                    transferRequests.forEach { request ->
+                        val remoteDocs = runCatching {
+                            transferRequestsCollection
+                                .whereEqualTo("requestNumber", request.requestNumber)
+                                .get()
+                                .await()
+                                .documents
+                        }.getOrElse { emptyList() }
+
+                        val primaryDocId = when {
+                            request.firebaseId.isNotBlank() &&
+                                remoteDocs.any { it.id == request.firebaseId } -> request.firebaseId
+                            remoteDocs.isNotEmpty() -> remoteDocs.first().id
+                            else -> transferRequestsCollection.document().id
+                        }
+
+                        remoteDocs
+                            .filter { it.id != primaryDocId }
+                            .forEach { duplicate ->
+                                runCatching { duplicate.reference.delete().await() }
+                                    .onFailure { error ->
+                                        Log.w(
+                                            TAG,
+                                            "Αποτυχία διαγραφής διπλού transfer request ${'$'}{duplicate.id}",
+                                            error
+                                        )
+                                    }
+                            }
+
+                        transferRequestsCollection
+                            .document(primaryDocId)
+                            .set(request.toFirestoreMap())
+                            .await()
+
+                        if (request.firebaseId != primaryDocId) {
+                            runCatching {
+                                transferRequestDao.setFirebaseId(request.requestNumber, primaryDocId)
+                            }.onFailure { error ->
+                                Log.w(
+                                    TAG,
+                                    "Αποτυχία ενημέρωσης firebaseId για αίτημα ${'$'}{request.requestNumber}",
+                                    error
+                                )
+                            }
+                        }
                     }
 
                     updateSyncTable(context, "trip_ratings")

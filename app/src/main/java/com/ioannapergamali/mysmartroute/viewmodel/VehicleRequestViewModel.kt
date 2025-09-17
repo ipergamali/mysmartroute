@@ -106,6 +106,7 @@ class VehicleRequestViewModel(
             } else {
                 userId?.let { dao.getRequestsForPassenger(it).first() } ?: emptyList()
             }
+            val localByNumber = local.associateBy { it.requestNumber }
 
             val snapshot = runCatching {
                 if (allUsers) {
@@ -118,8 +119,28 @@ class VehicleRequestViewModel(
                 } else null
             }.getOrNull()
 
+            val remoteRaw = snapshot?.documents?.mapNotNull { it.toTransferRequestEntity() }.orEmpty()
             val remote: List<TransferRequestEntity> =
-                snapshot?.documents?.mapNotNull { it.toTransferRequestEntity() }.orEmpty()
+                if (remoteRaw.isEmpty()) {
+                    emptyList()
+                } else {
+                    val deduped = mutableMapOf<Int, TransferRequestEntity>()
+                    for (request in remoteRaw) {
+                        val existing = deduped[request.requestNumber]
+                        val localMatch = localByNumber[request.requestNumber]
+                        val shouldReplace = when {
+                            existing == null -> true
+                            localMatch?.firebaseId?.isNotBlank() == true &&
+                                request.firebaseId == localMatch.firebaseId -> true
+                            existing.firebaseId.isBlank() && request.firebaseId.isNotBlank() -> true
+                            else -> false
+                        }
+                        if (shouldReplace) {
+                            deduped[request.requestNumber] = request
+                        }
+                    }
+                    deduped.values.toList()
+                }
 
             val target = when {
                 remote.isNotEmpty() -> remote
