@@ -40,6 +40,7 @@ import com.ioannapergamali.mysmartroute.utils.SessionManager
 import android.text.format.DateFormat
 import android.net.Uri
 import java.util.Date
+import java.util.Locale
 import com.ioannapergamali.mysmartroute.utils.ATHENS_TIME_ZONE
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -226,7 +227,9 @@ fun ViewTransportRequestsScreen(
                                 Text(userName, modifier = Modifier.width(columnWidth))
                                 Text(routeName, modifier = Modifier.width(columnWidth))
                                 Text(stationsText, modifier = Modifier.width(columnWidth))
-                                val costText = req.cost?.toString() ?: "∞"
+                                val costText = req.cost?.let { costValue ->
+                                    String.format(Locale.getDefault(), "%.2f€", costValue)
+                                } ?: "-"
                                 Text(costText, modifier = Modifier.width(columnWidth))
                                 Text(dateText, modifier = Modifier.width(columnWidth))
                                 Text(timeText, modifier = Modifier.width(columnWidth))
