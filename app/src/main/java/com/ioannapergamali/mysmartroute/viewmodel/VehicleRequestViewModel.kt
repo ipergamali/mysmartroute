@@ -12,6 +12,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ioannapergamali.mysmartroute.data.local.MovingEntity
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
+import com.ioannapergamali.mysmartroute.data.local.NotificationEntity
 import com.ioannapergamali.mysmartroute.data.local.RouteDao
 import com.ioannapergamali.mysmartroute.data.local.UserDao
 import com.ioannapergamali.mysmartroute.data.local.VehicleDao
@@ -461,12 +462,17 @@ class VehicleRequestViewModel(
      */
     fun notifyRoute(context: Context, requestId: String) {
         viewModelScope.launch {
-            val dao = MySmartRouteDatabase.getInstance(context).movingDao()
+            val dbInstance = MySmartRouteDatabase.getInstance(context)
+            val movingDao = dbInstance.movingDao()
             val driver = FirebaseAuth.getInstance().currentUser ?: return@launch
             val driverName = UserViewModel().getUserName(context, driver.uid)
             val current = _requests.value.find { it.id == requestId } ?: return@launch
             if (current.date > 0L && System.currentTimeMillis() > current.date) {
                 Toast.makeText(context, R.string.request_expired, Toast.LENGTH_SHORT).show()
+                return@launch
+            }
+            if (current.driverId == driver.uid && current.status == "pending") {
+                Toast.makeText(context, R.string.request_already_pending, Toast.LENGTH_SHORT).show()
                 return@launch
             }
             val list = _requests.value.toMutableList()
@@ -477,7 +483,7 @@ class VehicleRequestViewModel(
                 }
                 list[index] = updated
                 _requests.value = list
-                dao.insert(updated)
+                movingDao.insert(updated)
                 try {
                     db.collection("movings").document(requestId).update(
                         mapOf(
@@ -488,6 +494,46 @@ class VehicleRequestViewModel(
                     ).await()
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to send route notification", e)
+                }
+
+                val message = context.getString(
+                    R.string.request_pending_notification,
+                    driverName,
+                    updated.requestNumber
+                )
+                val notification = NotificationEntity(
+                    id = UUID.randomUUID().toString(),
+                    userId = updated.userId,
+                    message = message
+                )
+                try {
+                    dbInstance.notificationDao().insert(notification)
+                    db.collection("notifications")
+                        .document(notification.id)
+                        .set(notification.toFirestoreMap())
+                        .await()
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to persist passenger notification", e)
+                }
+
+                if (SessionManager.currentUserId() == updated.userId) {
+                    val intent = Intent(context, MainActivity::class.java).apply {
+                        putExtra("startDestination", "viewRequests")
+                        putExtra("requestId", updated.id)
+                    }
+                    val pending = PendingIntent.getActivity(
+                        context,
+                        updated.id.hashCode(),
+                        intent,
+                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                    )
+                    NotificationUtils.showNotification(
+                        context,
+                        context.getString(R.string.notifications),
+                        message,
+                        updated.id.hashCode(),
+                        pending
+                    )
                 }
             }
         }
