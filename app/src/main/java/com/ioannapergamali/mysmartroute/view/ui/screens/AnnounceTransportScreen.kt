@@ -119,7 +119,9 @@ private fun canSend(
 fun AnnounceTransportScreen(
     navController: NavController,
     openDrawer: () -> Unit,
-    initialRouteId: String? = null
+    initialRouteId: String? = null,
+    initialRouteName: String? = null,
+    initialDateTimeMillis: Long? = null
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -142,6 +144,9 @@ fun AnnounceTransportScreen(
     var expandedRoute by remember { mutableStateOf(false) }
     var selectedRouteId by remember(initialRouteId) {
         mutableStateOf(initialRouteId?.takeIf { it.isNotBlank() })
+    }
+    val fallbackRouteName by remember(initialRouteName) {
+        mutableStateOf(initialRouteName.orEmpty())
     }
     var expandedVehicle by remember { mutableStateOf(false) }
     var selectedVehicle by remember { mutableStateOf<VehicleType?>(null) }
@@ -183,8 +188,23 @@ fun AnnounceTransportScreen(
     )
     var showTimePicker by remember { mutableStateOf(false) }
     val selectedTimeText = String.format("%02d:%02d", timePickerState.hour, timePickerState.minute)
-    LaunchedEffect(datePickerState.selectedDateMillis) {
-        if (datePickerState.selectedDateMillis == todayMillis) {
+    var autoUpdateTimeToNow by remember(initialDateTimeMillis) {
+        mutableStateOf(initialDateTimeMillis == null || initialDateTimeMillis <= 0L)
+    }
+    LaunchedEffect(initialDateTimeMillis) {
+        val millis = initialDateTimeMillis
+        if (millis != null && millis > 0L) {
+            val zonedDateTime = Instant.ofEpochMilli(millis).atZone(ATHENS_ZONE_ID)
+            val dateStartMillis = zonedDateTime.toLocalDate()
+                .atStartOfDay(ATHENS_ZONE_ID).toInstant().toEpochMilli()
+            datePickerState.selectedDateMillis = dateStartMillis
+            timePickerState.hour = zonedDateTime.hour
+            timePickerState.minute = zonedDateTime.minute
+            autoUpdateTimeToNow = false
+        }
+    }
+    LaunchedEffect(datePickerState.selectedDateMillis, autoUpdateTimeToNow) {
+        if (autoUpdateTimeToNow && datePickerState.selectedDateMillis == todayMillis) {
             val currentTime = LocalTime.now(ATHENS_ZONE_ID)
             timePickerState.hour = currentTime.hour
             timePickerState.minute = currentTime.minute
@@ -346,8 +366,13 @@ fun AnnounceTransportScreen(
             }
 
             ExposedDropdownMenuBox(expanded = expandedRoute, onExpandedChange = { expandedRoute = !expandedRoute }) {
+                val routeFieldValue = if (selectedRouteId != null) {
+                    displayRoutes.firstOrNull { it.id == selectedRouteId }?.name ?: fallbackRouteName
+                } else {
+                    ""
+                }
                 OutlinedTextField(
-                    value = displayRoutes.firstOrNull { it.id == selectedRouteId }?.name ?: "",
+                    value = routeFieldValue,
                     onValueChange = {},
                     label = { Text(stringResource(R.string.route)) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedRoute) },
@@ -401,7 +426,8 @@ fun AnnounceTransportScreen(
             Spacer(Modifier.height(16.dp))
 
             if (selectedRouteId != null && selectedVehicle != null) {
-                val routeName = displayRoutes.firstOrNull { it.id == selectedRouteId }?.name ?: ""
+                val routeName = displayRoutes.firstOrNull { it.id == selectedRouteId }?.name
+                    ?: fallbackRouteName
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = iconForVehicle(selectedVehicle!!),
@@ -701,6 +727,7 @@ fun AnnounceTransportScreen(
                                     Toast.LENGTH_SHORT
                                 ).show()
                             } else {
+                                autoUpdateTimeToNow = false
                                 showTimePicker = false
                             }
                         }) {
