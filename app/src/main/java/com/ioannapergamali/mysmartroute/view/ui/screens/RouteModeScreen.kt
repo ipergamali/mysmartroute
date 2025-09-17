@@ -9,7 +9,9 @@ import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.annotation.StringRes
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.*
@@ -50,8 +52,8 @@ import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.time.LocalTime
 import kotlin.math.abs
-import android.widget.Toast
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import com.ioannapergamali.mysmartroute.utils.SessionManager
@@ -86,10 +88,24 @@ fun RouteModeScreen(
     var message by remember { mutableStateOf("") }
     val datePickerState = rememberDatePickerState(System.currentTimeMillis())
     var showDatePicker by remember { mutableStateOf(false) }
+    val timePickerState = rememberTimePickerState()
+    var showTimePicker by remember { mutableStateOf(false) }
+    var selectedTimeMillis by rememberSaveable { mutableStateOf<Long?>(null) }
+    LaunchedEffect(selectedTimeMillis) {
+        selectedTimeMillis?.let {
+            val totalMinutes = (it / 60000L).toInt()
+            timePickerState.hour = (totalMinutes / 60) % 24
+            timePickerState.minute = totalMinutes % 60
+        }
+    }
     val dateFormatter = remember { DateTimeFormatter.ofPattern("dd/MM/yyyy") }
+    val timeFormatter = remember { DateTimeFormatter.ofPattern("HH:mm") }
     val selectedDateText = datePickerState.selectedDateMillis?.let { millis ->
         Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter)
     } ?: stringResource(R.string.select_date)
+    val selectedTimeText = selectedTimeMillis?.let { millis ->
+        LocalTime.ofSecondOfDay(millis / 1000).format(timeFormatter)
+    } ?: stringResource(R.string.select_time)
 
     val cameraPositionState = rememberCameraPositionState()
     val coroutineScope = rememberCoroutineScope()
@@ -428,6 +444,34 @@ fun RouteModeScreen(
 
             Spacer(Modifier.height(16.dp))
 
+            Button(onClick = { showTimePicker = true }) { Text(selectedTimeText) }
+
+            if (showTimePicker) {
+                TimePickerDialog(
+                    onDismissRequest = { showTimePicker = false },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                selectedTimeMillis =
+                                    ((timePickerState.hour * 60) + timePickerState.minute) * 60_000L
+                                showTimePicker = false
+                            }
+                        ) {
+                            Text(stringResource(android.R.string.ok))
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showTimePicker = false }) {
+                            Text(stringResource(android.R.string.cancel))
+                        }
+                    }
+                ) {
+                    TimePicker(state = timePickerState)
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+
             if (includeCost) {
                 OutlinedTextField(
                     value = maxCostText,
@@ -456,6 +500,7 @@ fun RouteModeScreen(
                         val cost = maxCostText.toDoubleOrNull()
                         val routeId = selectedRouteId ?: return@Button
                         val date = datePickerState.selectedDateMillis ?: 0L
+                        val time = selectedTimeMillis
 
                         navController.navigate(
                             "availableTransports?routeId=" +
@@ -464,7 +509,7 @@ fun RouteModeScreen(
                                 "&endId=" + toId +
                                 "&maxCost=" + (cost?.toString() ?: "") +
                                 "&date=" + date +
-                                "&time="
+                                "&time=" + (time?.toString() ?: "")
                         )
                     },
                     enabled = selectedRouteId != null && startIndex != null && endIndex != null,
@@ -486,6 +531,7 @@ fun RouteModeScreen(
                             val toId = routePois[toIdx].id
                             val cost = maxCostText.toDoubleOrNull()
                             val date = datePickerState.selectedDateMillis ?: 0L
+                            val time = selectedTimeMillis ?: 0L
 
                             val (routeId, poiChanged) = resolveRouteForRequest()
                             if (routeId.isBlank()) {
@@ -498,7 +544,7 @@ fun RouteModeScreen(
                                 routeId,
                                 fromId,
                                 toId,
-                                date,
+                                date + time,
                                 cost,
                                 poiChanged
                             )
@@ -519,5 +565,20 @@ fun RouteModeScreen(
             }
         }
     }
+}
+
+@Composable
+private fun TimePickerDialog(
+    onDismissRequest: () -> Unit,
+    confirmButton: @Composable () -> Unit,
+    dismissButton: @Composable (() -> Unit)? = null,
+    content: @Composable () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        confirmButton = confirmButton,
+        dismissButton = dismissButton,
+        text = content
+    )
 }
 
