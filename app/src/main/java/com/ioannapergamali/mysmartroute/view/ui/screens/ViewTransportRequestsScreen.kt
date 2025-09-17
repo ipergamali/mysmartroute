@@ -239,12 +239,16 @@ fun ViewTransportRequestsScreen(
                                 }
                                 val isExpired = req.date > 0L && now > req.date && req.status != "completed"
                                 if (req.status == "open" && !isExpired) {
+                                    val canNotifyRoute = !isNewRequest && req.routeId.isNotBlank()
                                     Button(
                                         onClick = {
-                                            viewModel.notifyRoute(context, req.id)
-                                            transferViewModel.notifyDriver(context, req.requestNumber)
+                                            if (canNotifyRoute) {
+                                                viewModel.notifyRoute(context, req.id)
+                                                transferViewModel.notifyDriver(context, req.requestNumber)
+                                            }
                                         },
-                                        modifier = Modifier.width(columnWidth)
+                                        modifier = Modifier.width(columnWidth),
+                                        enabled = canNotifyRoute
                                     ) {
                                         Text(stringResource(R.string.notify_route))
                                     }
