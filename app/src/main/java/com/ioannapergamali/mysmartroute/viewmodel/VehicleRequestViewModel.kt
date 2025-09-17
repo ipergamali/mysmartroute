@@ -28,6 +28,7 @@ import com.ioannapergamali.mysmartroute.utils.toTransferRequestEntity
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.data.local.SeatReservationEntity
 import com.ioannapergamali.mysmartroute.data.local.SeatReservationDetailEntity
+import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationDetailEntity
 import com.ioannapergamali.mysmartroute.data.local.TransportDeclarationEntity
 import com.ioannapergamali.mysmartroute.viewmodel.MainActivity
 import com.ioannapergamali.mysmartroute.repository.WalkRepository
@@ -97,6 +98,8 @@ class VehicleRequestViewModel(
             val routeDao = dbInstance.routeDao()
             val userDao = dbInstance.userDao()
             val vehicleDao = dbInstance.vehicleDao()
+            val declarationDao = dbInstance.transportDeclarationDao()
+            val declarationDetailDao = dbInstance.transportDeclarationDetailDao()
             val userId = SessionManager.currentUserId()
 
             val local: List<TransferRequestEntity> = if (allUsers) {
@@ -126,6 +129,9 @@ class VehicleRequestViewModel(
             }
 
             val movings = mutableListOf<MovingEntity>()
+            val declarations = runCatching { declarationDao.getAll().first() }.getOrElse { emptyList() }
+            val declarationsByRouteDate = declarations.groupBy { it.routeId to it.date }
+            val declarationDetailsCache = mutableMapOf<String, List<TransportDeclarationDetailEntity>>()
             for (tr in target) {
                 val route = routeDao.findById(tr.routeId)
                 val routeDoc = if (route == null) {
@@ -133,6 +139,30 @@ class VehicleRequestViewModel(
                 } else null
                 val startPoiId = route?.startPoiId ?: routeDoc?.getString("startPoiId").orEmpty()
                 val endPoiId = route?.endPoiId ?: routeDoc?.getString("endPoiId").orEmpty()
+                val resolvedDriverId = if (tr.driverId.isNotBlank()) {
+                    tr.driverId
+                } else {
+                    val candidates = declarationsByRouteDate[tr.routeId to tr.date].orEmpty()
+                    val matched = when {
+                        candidates.isEmpty() -> null
+                        candidates.size == 1 -> candidates.first()
+                        startPoiId.isBlank() && endPoiId.isBlank() -> candidates.firstOrNull()
+                        else -> {
+                            candidates.firstOrNull { decl ->
+                                val details = declarationDetailsCache.getOrPut(decl.id) {
+                                    runCatching {
+                                        declarationDetailDao.getForDeclaration(decl.id)
+                                    }.getOrElse { emptyList() }
+                                }
+                                details.any { detail ->
+                                    (startPoiId.isBlank() || detail.startPoiId == startPoiId) &&
+                                        (endPoiId.isBlank() || detail.endPoiId == endPoiId)
+                                }
+                            } ?: candidates.firstOrNull()
+                        }
+                    }
+                    matched?.driverId.orEmpty()
+                }
                 val moving = MovingEntity(
                     id = tr.firebaseId.ifBlank { "req_${tr.requestNumber}" },
                     routeId = tr.routeId,
@@ -143,7 +173,7 @@ class VehicleRequestViewModel(
                     durationMinutes = 0,
                     startPoiId = startPoiId,
                     endPoiId = endPoiId,
-                    driverId = tr.driverId,
+                    driverId = resolvedDriverId,
                     status = tr.status.name.lowercase(),
                     requestNumber = tr.requestNumber
                 ).also { it.driverName = tr.driverName }
