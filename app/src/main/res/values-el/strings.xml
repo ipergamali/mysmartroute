@@ -261,6 +261,8 @@
     <string name="vehicle">Όχημα</string>
     <string name="cost">Κόστος</string>
     <string name="duration">Διάρκεια</string>
+    <string name="duration_not_available">Μη διαθέσιμο</string>
+    <string name="minutes_suffix">λεπτά</string>
     <string name="date">Ημερομηνία</string>
     <string name="status">Κατάσταση</string>
     <string name="time">Ώρα</string>
