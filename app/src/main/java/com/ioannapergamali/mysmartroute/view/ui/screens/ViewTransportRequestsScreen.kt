@@ -189,9 +189,7 @@ fun ViewTransportRequestsScreen(
                             val isChecked = selectedRequests[req.id] ?: false
                             val dateTimeText = if (req.date > 0L) {
                                 val date = Date(req.date)
-                                val dateStr = DateFormat.getDateFormat(context).format(date)
-                                val timeStr = DateFormat.format("HH:mm", date).toString()
-                                "$dateStr $timeStr"
+                                DateFormat.getDateFormat(context).format(date)
                             } else ""
                             Row(
                                 modifier = Modifier.padding(vertical = 8.dp),
