@@ -7,8 +7,8 @@ import android.util.Log
 /**
  * Περιγράφει την κατάσταση μιας μετακίνησης όπως εμφανίζεται στην εφαρμογή.
  *
- * - [PENDING]   Μετακινήσεις "open" ή "pending" πριν την προγραμματισμένη ώρα.
- * - [UNSUCCESSFUL] Μετακινήσεις "open" ή "pending" μετά την προγραμματισμένη ώρα.
+ * - [PENDING]   Μετακινήσεις "open", "pending" ή "accepted" πριν την προγραμματισμένη ώρα.
+ * - [UNSUCCESSFUL] Μετακινήσεις που δεν ολοκληρώθηκαν εγκαίρως ή απορρίφθηκαν/ακυρώθηκαν.
  * - [COMPLETED] Μετακινήσεις με status "completed", δηλαδή όταν ο οδηγός έχει πατήσει ολοκλήρωση.
  */
 enum class MovingStatus {
@@ -18,21 +18,25 @@ enum class MovingStatus {
 }
 
 private const val TAG = "MovingStatus"
+private val ACTIVE_STATUSES = setOf("open", "pending", "accepted")
+private val CANCELED_STATUSES = setOf("rejected", "canceled", "cancelled")
 
 /**
  * Υπολογίζει την [MovingStatus] μιας [MovingEntity] με βάση την κατάσταση αποδοχής
  * και τη χρονική στιγμή της μετακίνησης.
  */
 fun MovingEntity.movingStatus(now: Long = System.currentTimeMillis()): MovingStatus {
-    val result = when (status.lowercase()) {
-        "completed" -> MovingStatus.COMPLETED
-        // Τα statuses "open" και "pending" αντιμετωπίζονται το ίδιο:
-        // αν η ημερομηνία είναι μελλοντική θεωρούνται εκκρεμείς, αλλιώς ανεπιτυχείς.
-        "open", "pending" -> if (date > now) {
-            MovingStatus.PENDING
-        } else {
-            MovingStatus.UNSUCCESSFUL
-        }
+    val normalizedStatus = status.trim().lowercase()
+    val result = when {
+        normalizedStatus == "completed" -> MovingStatus.COMPLETED
+        normalizedStatus.isEmpty() || normalizedStatus in ACTIVE_STATUSES ->
+            if (date > now) {
+                MovingStatus.PENDING
+            } else {
+                MovingStatus.UNSUCCESSFUL
+            }
+        normalizedStatus in CANCELED_STATUSES -> MovingStatus.UNSUCCESSFUL
+        date > now -> MovingStatus.PENDING
         else -> MovingStatus.UNSUCCESSFUL
     }
 
