@@ -1,5 +1,6 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
+import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -108,7 +109,17 @@ fun NotificationsScreen(navController: NavController, openDrawer: () -> Unit) {
         else -> emptyList()
     }
 
+    val requestIdByNumber = requests
+        .filter { it.requestNumber > 0 }
+        .associate { it.requestNumber to it.id }
+
+    val storedRequestNumbers = systemNotifications
+        .mapNotNull { extractRequestNumber(it.message) }
+        .toSet()
+
     val storedNotificationItems = systemNotifications.map { notification ->
+        val requestNumber = extractRequestNumber(notification.message)
+        val requestId = requestNumber?.let { requestIdByNumber[it] }
         NotificationListItem(
             key = notification.id,
             message = notification.message,
@@ -116,20 +127,28 @@ fun NotificationsScreen(navController: NavController, openDrawer: () -> Unit) {
             sentTime = notification.sentTime,
             canDelete = true,
             notificationId = notification.id,
-            navigateToRequests = false
+            navigateToRequests = requestId != null,
+            requestId = requestId
         )
     }
 
-    val requestNotificationItems = requestMessages.mapIndexed { index, message ->
-        NotificationListItem(
-            key = "request_$index",
-            message = message,
-            sentDate = "",
-            sentTime = "",
-            canDelete = false,
-            notificationId = null,
-            navigateToRequests = true
-        )
+    val requestNotificationItems = requestMessages.mapIndexedNotNull { index, message ->
+        val requestNumber = extractRequestNumber(message)
+        val requestId = requestNumber?.let { requestIdByNumber[it] }
+        if (requestNumber != null && requestNumber in storedRequestNumbers) {
+            null
+        } else {
+            NotificationListItem(
+                key = "request_$index",
+                message = message,
+                sentDate = "",
+                sentTime = "",
+                canDelete = false,
+                notificationId = null,
+                navigateToRequests = requestId != null,
+                requestId = requestId
+            )
+        }
     }
 
     val notificationItems = storedNotificationItems + requestNotificationItems
@@ -154,11 +173,18 @@ fun NotificationsScreen(navController: NavController, openDrawer: () -> Unit) {
             } else {
                 LazyColumn {
                     items(notificationItems, key = { it.key }) { item ->
+                        val onClick = when {
+                            item.requestId != null -> {
+                                { navController.navigate("$requestScreen?requestId=${Uri.encode(item.requestId)}") }
+                            }
+                            item.navigateToRequests -> {
+                                { navController.navigate(requestScreen) }
+                            }
+                            else -> null
+                        }
                         NotificationRow(
                             item = item,
-                            onClick = if (item.navigateToRequests) {
-                                { navController.navigate(requestScreen) }
-                            } else null,
+                            onClick = onClick,
                             onDelete = item.notificationId?.let { id ->
                                 { userViewModel.deleteNotification(context, id) }
                             }
@@ -178,7 +204,8 @@ private data class NotificationListItem(
     val sentTime: String,
     val canDelete: Boolean,
     val notificationId: String?,
-    val navigateToRequests: Boolean
+    val navigateToRequests: Boolean,
+    val requestId: String?
 )
 
 @Composable
@@ -229,3 +256,8 @@ private fun NotificationRow(
         }
     }
 }
+
+private val requestNumberRegex = Regex("(\\d+)(?!.*\\d)")
+
+private fun extractRequestNumber(message: String): Int? =
+    requestNumberRegex.find(message)?.value?.toIntOrNull()
