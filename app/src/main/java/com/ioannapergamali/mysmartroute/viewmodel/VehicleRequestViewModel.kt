@@ -18,6 +18,7 @@ import com.ioannapergamali.mysmartroute.data.local.UserDao
 import com.ioannapergamali.mysmartroute.data.local.VehicleDao
 import com.ioannapergamali.mysmartroute.data.local.TransferRequestEntity
 import com.ioannapergamali.mysmartroute.data.local.currentAppDateTime
+import com.ioannapergamali.mysmartroute.data.local.isAwaitingDriver
 import kotlinx.coroutines.Dispatchers
 import com.ioannapergamali.mysmartroute.utils.toFirestoreMap
 import com.ioannapergamali.mysmartroute.utils.toMovingEntity
@@ -176,7 +177,7 @@ class VehicleRequestViewModel(
 
             val notifications = if (allUsers) {
                 _requests.value.filter {
-                    (it.driverId.isBlank() && it.status.isBlank()) ||
+                    it.isAwaitingDriver() ||
                         (it.driverId == userId && it.status == "accepted")
                 }
             } else {
@@ -353,7 +354,7 @@ class VehicleRequestViewModel(
         val userId = SessionManager.currentUserId()
         val notifications = if (allUsers) {
             _requests.value.filter {
-                (it.driverId.isBlank() && it.status.isBlank()) ||
+                it.isAwaitingDriver() ||
                     (it.driverId == userId && it.status == "accepted")
             }
         } else {
@@ -729,7 +730,7 @@ class VehicleRequestViewModel(
     }
 
     private suspend fun showPassengerRequestNotifications(context: Context) {
-        _requests.value.filter { it.driverId.isBlank() && it.status.isBlank() && it.id !in notifiedRequests }
+        _requests.value.filter { it.isAwaitingDriver() && it.id !in notifiedRequests }
             .forEach { req ->
                 val passengerName = UserViewModel().getUserName(context, req.userId)
                 val intent = Intent(context, MainActivity::class.java).apply {
