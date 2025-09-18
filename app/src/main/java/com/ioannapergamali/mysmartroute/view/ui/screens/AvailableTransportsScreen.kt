@@ -145,6 +145,7 @@ fun AvailableTransportsScreen(
         userViewModel.loadDrivers(context)
         poiViewModel.loadPois(context)
         routeViewModel.loadRoutes(context, includeAll = true)
+        favoritesViewModel.loadFavorites(context)
     }
 
     val driverNames = drivers.associate { it.id to "${it.name} ${it.surname}" }
