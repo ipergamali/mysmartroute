@@ -5,10 +5,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.model.classes.users.PassengerSatisfaction
+import com.ioannapergamali.mysmartroute.utils.TripRatingSyncManager
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class PassengerSatisfactionViewModel : ViewModel() {
     private val _mostSatisfied = MutableStateFlow<List<PassengerSatisfaction>>(emptyList())
@@ -20,9 +24,17 @@ class PassengerSatisfactionViewModel : ViewModel() {
     fun loadRatings(context: Context) {
         val db = MySmartRouteDatabase.getInstance(context)
         viewModelScope.launch {
+            val dao = db.tripRatingDao()
+            val hasLocalRatings = withContext(Dispatchers.IO) {
+                dao.getAll().first().isNotEmpty()
+            }
+            if (!hasLocalRatings) {
+                TripRatingSyncManager.sync(context)
+            }
+
             combine(
-                db.tripRatingDao().getMostSatisfiedPassengers(),
-                db.tripRatingDao().getLeastSatisfiedPassengers()
+                dao.getMostSatisfiedPassengers(),
+                dao.getLeastSatisfiedPassengers()
             ) { top, bottom ->
                 val topIds = top.map { it.passengerId }.toSet()
                 _mostSatisfied.value = top
