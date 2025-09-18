@@ -5,6 +5,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -31,8 +32,10 @@ import com.ioannapergamali.mysmartroute.utils.offsetPois
 import com.ioannapergamali.mysmartroute.utils.havePoiMembershipChanged
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
+import com.ioannapergamali.mysmartroute.viewmodel.AppDateTimeViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.TransferRequestViewModel
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
@@ -48,8 +51,11 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
     val context = LocalContext.current
     val routeViewModel: RouteViewModel = viewModel()
     val poiViewModel: PoIViewModel = viewModel()
+    val transferRequestViewModel: TransferRequestViewModel = viewModel()
+    val dateViewModel: AppDateTimeViewModel = viewModel()
     val routes by routeViewModel.routes.collectAsState()
     val allPois by poiViewModel.pois.collectAsState()
+    val appTime by dateViewModel.dateTime.collectAsState()
 
     var routeExpanded by remember { mutableStateOf(false) }
     var selectedRouteId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -96,20 +102,20 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
         }
     }
 
-    suspend fun resolveRouteForVehicleSearch(): String {
-        val currentRouteId = selectedRouteId ?: return ""
-        if (!hasPoiChanges) return currentRouteId
+    suspend fun resolveRouteForVehicleSearch(): Pair<String, Boolean> {
+        val currentRouteId = selectedRouteId ?: return "" to false
+        if (!hasPoiChanges) return currentRouteId to false
 
         val routeName = editedRouteName.trim()
         if (routeName.isEmpty()) {
             message = context.getString(R.string.route_name_required)
-            return ""
+            return "" to false
         }
         val newRouteId = routeViewModel.addRoute(
             context,
             routePoiIds.toList(),
             routeName
-        ) ?: return ""
+        ) ?: return "" to false
 
         selectedRouteId = newRouteId
         originalPoiIds.clear()
@@ -117,7 +123,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
         editedRouteName = ""
         routeViewModel.loadRoutes(context, includeAll = true)
 
-        return newRouteId
+        return newRouteId to true
     }
 
     fun refreshRoute() {
@@ -154,6 +160,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
     LaunchedEffect(Unit) {
         routeViewModel.loadRoutes(context, includeAll = true)
         poiViewModel.loadPois(context)
+        dateViewModel.load(context)
     }
     LaunchedEffect(selectedRouteId) {
         selectedRouteId?.let { id ->
@@ -467,7 +474,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                             val toId = routePois.getOrNull(toIdx)?.id ?: return@launch
                             val cost = maxCostText.toDoubleOrNull()
 
-                            val routeId = resolveRouteForVehicleSearch()
+                            val (routeId, _) = resolveRouteForVehicleSearch()
                             if (routeId.isBlank()) {
                                 if (message.isBlank()) {
                                     message = context.getString(R.string.request_unsuccessful)
@@ -492,6 +499,46 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                     Icon(Icons.Default.Search, contentDescription = null)
                     Spacer(Modifier.width(8.dp))
                     Text(stringResource(R.string.find_now))
+                }
+                Button(
+                    onClick = {
+                        coroutineScope.launch {
+                            val fromIdx = startIndex ?: return@launch
+                            val toIdx = endIndex ?: return@launch
+                            if (fromIdx >= toIdx) {
+                                message = context.getString(R.string.invalid_stop_order)
+                                return@launch
+                            }
+                            val fromId = routePois.getOrNull(fromIdx)?.id ?: return@launch
+                            val toId = routePois.getOrNull(toIdx)?.id ?: return@launch
+                            val cost = maxCostText.toDoubleOrNull()
+
+                            val (routeId, poiChanged) = resolveRouteForVehicleSearch()
+                            if (routeId.isBlank()) {
+                                if (message.isBlank()) {
+                                    message = context.getString(R.string.request_unsuccessful)
+                                }
+                                return@launch
+                            }
+
+                            val requestDateTime = appTime ?: System.currentTimeMillis()
+                            transferRequestViewModel.submitRequest(
+                                context,
+                                routeId,
+                                fromId,
+                                toId,
+                                requestDateTime,
+                                cost,
+                                poiChanged
+                            )
+                            message = context.getString(R.string.request_sent)
+                        }
+                    },
+                    enabled = selectedRouteId != null && startIndex != null && endIndex != null,
+                ) {
+                    Icon(Icons.Default.Save, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(R.string.save_request))
                 }
             }
             if (message.isNotBlank()) {
