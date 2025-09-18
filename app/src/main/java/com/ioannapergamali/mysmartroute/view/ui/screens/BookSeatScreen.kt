@@ -63,6 +63,7 @@ import com.ioannapergamali.mysmartroute.utils.ATHENS_ZONE_ID
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.utils.offsetPois
 import com.ioannapergamali.mysmartroute.utils.combineDateAndTimeAsAthensInstant
+import com.ioannapergamali.mysmartroute.utils.havePoiMembershipChanged
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.view.ui.components.BookingStepsIndicator
@@ -201,9 +202,7 @@ fun BookSeatScreen(
 
     suspend fun resolveRouteForRequest(): Pair<String, Boolean> {
         val currentRouteId = selectedRouteId ?: return "" to false
-        val currentCounts = poiIds.groupingBy { it }.eachCount()
-        val originalCounts = originalPoiIds.groupingBy { it }.eachCount()
-        if (currentCounts == originalCounts) return currentRouteId to false
+        if (!havePoiMembershipChanged(originalPoiIds, poiIds)) return currentRouteId to false
 
         val uid = SessionManager.currentUserId() ?: return "" to false
         val username = FirebaseFirestore.getInstance()
