@@ -17,10 +17,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.R
+import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.TransportDeclarationViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -32,14 +34,26 @@ fun PrintCompletedScreen(navController: NavController, openDrawer: () -> Unit) {
     val context = LocalContext.current
     val declarationViewModel: TransportDeclarationViewModel = viewModel()
     val routeViewModel: RouteViewModel = viewModel()
+    val authViewModel: AuthenticationViewModel = viewModel()
     val declarations by declarationViewModel.completedDeclarations.collectAsState()
     val routes by routeViewModel.routes.collectAsState()
+    val role by authViewModel.currentUserRole.collectAsState()
 
     LaunchedEffect(Unit) {
-        val driverId = SessionManager.currentUserId()
-        if (driverId != null) {
-            declarationViewModel.loadDeclarations(context, driverId)
-            routeViewModel.loadRoutes(context)
+        authViewModel.loadCurrentUserRole(context)
+    }
+
+    LaunchedEffect(role) {
+        val admin = role == UserRole.ADMIN
+        if (admin) {
+            declarationViewModel.loadDeclarations(context)
+            routeViewModel.loadRoutes(context, includeAll = true)
+        } else {
+            val driverId = SessionManager.currentUserId()
+            if (role != null && driverId != null) {
+                declarationViewModel.loadDeclarations(context, driverId)
+                routeViewModel.loadRoutes(context)
+            }
         }
     }
 
