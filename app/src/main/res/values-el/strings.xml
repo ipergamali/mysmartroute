@@ -237,6 +237,9 @@
     <string name="no_driver_ratings">Δεν υπάρχουν βαθμολογίες οδηγών</string>
     <string name="average_rating_label">Μέση βαθμολογία: %1$.1f/5</string>
     <string name="rank_passengers">Προβολή 10 πιο και λιγότερο ικανοποιημένων επιβατών</string>
+    <string name="most_satisfied_passengers">Οι 10 πιο ικανοποιημένοι επιβάτες</string>
+    <string name="least_satisfied_passengers">Οι 10 λιγότερο ικανοποιημένοι επιβάτες</string>
+    <string name="no_passenger_ratings">Δεν υπάρχουν διαθέσιμες αξιολογήσεις επιβατών</string>
     <string name="view_vehicles">Προβολή διαθέσιμων οχημάτων</string>
     <string name="vehicles_empty">Δεν βρέθηκαν οχήματα</string>
     <string name="view_pois">Προβολή σημείων ενδιαφέροντος</string>

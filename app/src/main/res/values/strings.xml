@@ -237,6 +237,9 @@
     <string name="no_driver_ratings">No driver ratings found</string>
     <string name="average_rating_label">Avg rating: %1$.1f/5</string>
     <string name="rank_passengers">View 10 Happiest/Least Happy Passengers</string>
+    <string name="most_satisfied_passengers">Top 10 most satisfied passengers</string>
+    <string name="least_satisfied_passengers">Bottom 10 least satisfied passengers</string>
+    <string name="no_passenger_ratings">No passenger ratings available</string>
     <string name="view_vehicles">View Available Vehicles</string>
     <string name="vehicles_empty">No vehicles found</string>
     <string name="view_pois">View PoIs</string>

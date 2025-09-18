@@ -8,6 +8,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 import com.ioannapergamali.mysmartroute.model.classes.users.DriverRating
+import com.ioannapergamali.mysmartroute.model.classes.users.PassengerSatisfaction
 
 @Dao
 interface TripRatingDao {
@@ -47,4 +48,30 @@ interface TripRatingDao {
         """
     )
     fun getWorstDrivers(): Flow<List<DriverRating>>
+
+    @Query(
+        """
+            SELECT u.id AS passengerId, u.name AS name, u.surname AS surname, AVG(r.rating) AS averageRating
+            FROM trip_ratings r
+            INNER JOIN users u ON u.id = r.userId
+            WHERE r.userId <> ''
+            GROUP BY u.id
+            ORDER BY averageRating DESC, COUNT(r.rating) DESC
+            LIMIT 10
+        """
+    )
+    fun getMostSatisfiedPassengers(): Flow<List<PassengerSatisfaction>>
+
+    @Query(
+        """
+            SELECT u.id AS passengerId, u.name AS name, u.surname AS surname, AVG(r.rating) AS averageRating
+            FROM trip_ratings r
+            INNER JOIN users u ON u.id = r.userId
+            WHERE r.userId <> ''
+            GROUP BY u.id
+            ORDER BY averageRating ASC, COUNT(r.rating) DESC
+            LIMIT 10
+        """
+    )
+    fun getLeastSatisfiedPassengers(): Flow<List<PassengerSatisfaction>>
 }
