@@ -41,6 +41,8 @@ import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import com.ioannapergamali.mysmartroute.utils.SessionManager
 import java.text.SimpleDateFormat
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 import com.ioannapergamali.mysmartroute.utils.ATHENS_TIME_ZONE
@@ -156,6 +158,21 @@ private fun DeclarationItem(
         }
     }
     val dateText = formatter.format(Date(declaration.date))
+    val timeFormatter = remember {
+        DateTimeFormatter.ofPattern("HH:mm", Locale.getDefault())
+    }
+    val timeText = remember(declaration.startTime) {
+        if (declaration.startTime <= 0L) {
+            null
+        } else {
+            val millisPerDay = 24L * 60L * 60L * 1000L
+            val normalized = declaration.startTime % millisPerDay
+            val positive = if (normalized >= 0) normalized else normalized + millisPerDay
+            runCatching {
+                LocalTime.ofNanoOfDay(positive * 1_000_000).format(timeFormatter)
+            }.getOrNull()
+        }
+    }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -180,6 +197,9 @@ private fun DeclarationItem(
                 }
                 Text(text = "${stringResource(R.string.cost)}: ${declaration.cost}")
                 Text(text = "${stringResource(R.string.date)}: $dateText")
+                Text(
+                    text = "${stringResource(R.string.time)}: ${timeText ?: stringResource(R.string.duration_not_available)}"
+                )
             }
         }
     }
