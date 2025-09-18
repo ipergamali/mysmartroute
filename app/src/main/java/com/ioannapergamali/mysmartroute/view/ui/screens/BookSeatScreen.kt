@@ -32,6 +32,7 @@ import androidx.compose.material3.menuAnchor
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.*
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.ui.Modifier
@@ -79,9 +80,6 @@ import java.time.format.DateTimeFormatter
 import kotlin.math.abs
 import androidx.compose.ui.graphics.Color
 import androidx.annotation.StringRes
-import com.google.firebase.firestore.FirebaseFirestore
-import com.ioannapergamali.mysmartroute.utils.SessionManager
-import kotlinx.coroutines.tasks.await
 
 private const val MARKER_ORANGE = BitmapDescriptorFactory.HUE_ORANGE
 private const val MARKER_BLUE = BitmapDescriptorFactory.HUE_BLUE
@@ -125,6 +123,10 @@ fun BookSeatScreen(
     var pathPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     var calculating by remember { mutableStateOf(false) }
     var pendingPoi by remember { mutableStateOf<Triple<String, Double, Double>?>(null) }
+    var editedRouteName by rememberSaveable { mutableStateOf("") }
+    val hasPoiChanges by remember {
+        derivedStateOf { havePoiMembershipChanged(originalPoiIds, poiIds) }
+    }
 
     val availableDates = if (restrictToAvailableDates) {
         remember(declarations, selectedRouteId) {
@@ -202,25 +204,24 @@ fun BookSeatScreen(
 
     suspend fun resolveRouteForRequest(): Pair<String, Boolean> {
         val currentRouteId = selectedRouteId ?: return "" to false
-        if (!havePoiMembershipChanged(originalPoiIds, poiIds)) return currentRouteId to false
+        if (!hasPoiChanges) return currentRouteId to false
 
-        val uid = SessionManager.currentUserId() ?: return "" to false
-        val username = FirebaseFirestore.getInstance()
-            .collection("users")
-            .document(uid)
-            .get()
-            .await()
-            .getString("username") ?: uid
-        val baseName = routes.find { it.id == currentRouteId }?.name ?: "route"
+        val routeName = editedRouteName.trim()
+        if (routeName.isEmpty()) {
+            message = context.getString(R.string.route_name_required)
+            return "" to false
+        }
+
         val newRouteId = routeViewModel.addRoute(
             context,
             poiIds.toList(),
-            "${baseName}_edited_by_$username"
+            routeName
         ) ?: return "" to false
 
         selectedRouteId = newRouteId
         originalPoiIds.clear()
         originalPoiIds.addAll(poiIds)
+        editedRouteName = ""
         viewModel.refreshRoutes()
         routeViewModel.loadRoutes(context, includeAll = true)
 
@@ -244,6 +245,7 @@ fun BookSeatScreen(
                 if (newRoute != null) {
                     savedStateHandle.remove<String>("newRouteId")
                     selectedRouteId = newRoute
+                    editedRouteName = ""
                     viewModel.refreshRoutes()
                     routeViewModel.loadRoutes(context, includeAll = true)
                     scope.launch {
@@ -298,6 +300,12 @@ fun BookSeatScreen(
         routeViewModel.loadRoutes(context, includeAll = true)
         poiViewModel.loadPois(context)
         declarationViewModel.loadDeclarations(context)
+    }
+
+    LaunchedEffect(hasPoiChanges) {
+        if (!hasPoiChanges) {
+            editedRouteName = ""
+        }
     }
 
     LaunchedEffect(selectedRouteId, poiIds, allPois) {
@@ -372,6 +380,7 @@ fun BookSeatScreen(
                             onClick = {
                                 selectedRouteId = route.id
                                 routeMenuExpanded = false
+                                editedRouteName = ""
                                 scope.launch {
                                     val (_, path) = routeViewModel.getRouteDirections(
                                         context,
@@ -510,6 +519,16 @@ fun BookSeatScreen(
                 }
 
                 Spacer(Modifier.height(16.dp))
+
+                OutlinedTextField(
+                    value = editedRouteName,
+                    onValueChange = { editedRouteName = it },
+                    label = { Text(stringResource(R.string.route_name)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = hasPoiChanges
+                )
+
+                Spacer(Modifier.height(8.dp))
 
                 OutlinedTextField(
                     value = startIndex?.let { "${it + 1}. ${pois[it].name}" } ?: "",
