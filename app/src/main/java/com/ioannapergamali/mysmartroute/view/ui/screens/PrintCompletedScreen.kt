@@ -20,12 +20,12 @@ import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.R
 
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
-
+import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
+import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.TransportDeclarationViewModel
-
 import com.ioannapergamali.mysmartroute.viewmodel.UserViewModel
 
 import java.text.SimpleDateFormat
@@ -41,10 +41,11 @@ fun PrintCompletedScreen(navController: NavController, openDrawer: () -> Unit) {
     val routeViewModel: RouteViewModel = viewModel()
 
     val userViewModel: UserViewModel = viewModel()
+    val authViewModel: AuthenticationViewModel = viewModel()
     val declarations by declarationViewModel.completedDeclarations.collectAsState()
     val routes by routeViewModel.routes.collectAsState()
+    val role by authViewModel.currentUserRole.collectAsState()
     val passengerNames = remember { mutableStateMapOf<String, List<String>>() }
-
 
     LaunchedEffect(Unit) {
         authViewModel.loadCurrentUserRole(context)
