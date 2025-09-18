@@ -325,6 +325,7 @@
     <string name="select_pois_screen_title">Save interesting points of interest</string>
     <string name="choose_pois">Choose points of interest</string>
     <string name="route_saved">Route saved</string>
+    <string name="route_name_required">Please provide a route name</string>
     <string name="route_save_failed">Unable to save route</string>
     <string name="recalculate_route">Recalculate route</string>
     <string name="departure_date">Departure date</string>
