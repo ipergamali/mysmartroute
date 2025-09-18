@@ -58,6 +58,7 @@ import kotlin.math.abs
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import com.ioannapergamali.mysmartroute.utils.SessionManager
+import com.ioannapergamali.mysmartroute.utils.havePoiMembershipChanged
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -163,9 +164,7 @@ fun RouteModeScreen(
     }
     suspend fun resolveRouteForRequest(): Pair<String, Boolean> {
         val currentRouteId = selectedRouteId ?: return "" to false
-        val currentCounts = routePoiIds.groupingBy { it }.eachCount()
-        val originalCounts = originalPoiIds.groupingBy { it }.eachCount()
-        if (currentCounts == originalCounts) return currentRouteId to false
+        if (!havePoiMembershipChanged(originalPoiIds, routePoiIds)) return currentRouteId to false
 
         val uid = SessionManager.currentUserId() ?: return "" to false
         val username = FirebaseFirestore.getInstance()

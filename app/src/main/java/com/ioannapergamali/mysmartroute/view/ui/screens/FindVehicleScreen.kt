@@ -30,6 +30,7 @@ import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
 import com.ioannapergamali.mysmartroute.utils.SessionManager
 import com.ioannapergamali.mysmartroute.utils.offsetPois
+import com.ioannapergamali.mysmartroute.utils.havePoiMembershipChanged
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
@@ -96,9 +97,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
 
     suspend fun resolveRouteForVehicleSearch(): String {
         val currentRouteId = selectedRouteId ?: return ""
-        val currentCounts = routePoiIds.groupingBy { it }.eachCount()
-        val originalCounts = originalPoiIds.groupingBy { it }.eachCount()
-        if (currentCounts == originalCounts) return currentRouteId
+        if (!havePoiMembershipChanged(originalPoiIds, routePoiIds)) return currentRouteId
 
         val uid = SessionManager.currentUserId() ?: return ""
         val username = FirebaseFirestore.getInstance()
