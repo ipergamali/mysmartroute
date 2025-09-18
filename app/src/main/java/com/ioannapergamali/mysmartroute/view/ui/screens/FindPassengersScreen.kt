@@ -29,7 +29,6 @@ import com.ioannapergamali.mysmartroute.viewmodel.*
 import java.util.Date
 import android.text.format.DateFormat
 import com.ioannapergamali.mysmartroute.utils.ATHENS_TIME_ZONE
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -88,11 +87,9 @@ fun FindPassengersScreen(
     val filteredMovings = movings.filter { req ->
         val reqDate = req.date - (req.date % dayMillis)
         val reqTime = req.date % dayMillis
-        val status = req.status.lowercase(Locale.ROOT)
         (selectedRouteId == null || req.routeId == selectedRouteId) &&
             (selectedDateMillis == null || reqDate == selectedDateMillis) &&
-            (selectedTimeMillis == null || reqTime == selectedTimeMillis) &&
-            (status == "pending" || status == "accepted")
+            (selectedTimeMillis == null || reqTime == selectedTimeMillis)
     }
 
     LaunchedEffect(selectedDateMillis, selectedTimeMillis, selectedRouteId) {
