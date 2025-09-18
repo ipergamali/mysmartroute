@@ -64,6 +64,7 @@ import com.ioannapergamali.mysmartroute.view.ui.screens.NotificationsScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.ReservationDetailsScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.RankTransportsScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.RankDriversScreen
+import com.ioannapergamali.mysmartroute.view.ui.screens.RankPassengersScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.ReviewRouteScreen
 import com.ioannapergamali.mysmartroute.view.ui.screens.PassengerRoutesScreen
 import com.ioannapergamali.mysmartroute.R
@@ -343,6 +344,10 @@ fun NavigationHost(
 
         composable("rankDrivers") {
             RankDriversScreen(navController = navController, openDrawer = openDrawer)
+        }
+
+        composable("rankPassengers") {
+            RankPassengersScreen(navController = navController, openDrawer = openDrawer)
         }
 
         composable("printTicket") {
