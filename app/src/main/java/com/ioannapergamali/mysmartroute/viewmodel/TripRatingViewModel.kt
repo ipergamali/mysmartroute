@@ -1,7 +1,6 @@
 package com.ioannapergamali.mysmartroute.viewmodel
 
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
@@ -11,18 +10,17 @@ import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.data.local.TripRatingEntity
 import com.ioannapergamali.mysmartroute.model.classes.transports.TripWithRating
 import com.ioannapergamali.mysmartroute.repository.TripRatingRepository
+import com.ioannapergamali.mysmartroute.repository.TripRatingSaveResult
 import com.ioannapergamali.mysmartroute.utils.SessionManager
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class TripRatingViewModel : ViewModel() {
 
-    private val repository = TripRatingRepository()
+    private var repository: TripRatingRepository? = null
     private val auth = FirebaseAuth.getInstance()
 
     private val _trips = MutableStateFlow<List<TripWithRating>>(emptyList())
@@ -39,12 +37,13 @@ class TripRatingViewModel : ViewModel() {
             }
 
             val db = MySmartRouteDatabase.getInstance(context)
+            val repo = getRepository(context)
             try {
                 val movings = db.movingDao().getMovingsForUser(userId).first()
                 movings.forEach { moving ->
                     val local = db.tripRatingDao().get(moving.id, moving.userId)
                     if (local == null) {
-                        repository.getTripRating(moving.id, moving.userId)?.let { remote ->
+                        repo.getTripRating(moving.id, moving.userId)?.let { remote ->
                             db.tripRatingDao().upsert(
                                 TripRatingEntity(
                                     moving.id,
@@ -79,33 +78,18 @@ class TripRatingViewModel : ViewModel() {
 
     fun saveTripRating(context: Context, moving: MovingEntity, rating: Int, comment: String) {
         viewModelScope.launch {
-            val db = MySmartRouteDatabase.getInstance(context)
-            val entity = TripRatingEntity(moving.id, moving.userId, rating, comment)
+            val repo = getRepository(context)
 
-            val localResult = runCatching {
-                withContext(Dispatchers.IO) {
-                    db.tripRatingDao().upsert(entity)
-                }
-            }
-            localResult.exceptionOrNull()?.let {
-                Log.e(TAG, "Αποτυχία αποθήκευσης βαθμολογίας στη Room", it)
-            }
-
-            val remoteSuccess = try {
-                repository.saveTripRating(
-                    moving.id,
-                    moving.userId,
-                    rating,
-                    comment,
-                )
-            } catch (e: Exception) {
-                Log.e(TAG, "Αποτυχία αποθήκευσης βαθμολογίας στο Firestore", e)
-                false
-            }
+            val result: TripRatingSaveResult = repo.saveTripRating(
+                moving.id,
+                moving.userId,
+                rating,
+                comment,
+            )
 
             _message.value = when {
-                remoteSuccess -> context.getString(R.string.rating_saved_success)
-                localResult.isSuccess -> context.getString(R.string.rating_saved_offline)
+                result.remoteSaved -> context.getString(R.string.rating_saved_success)
+                result.localSaved -> context.getString(R.string.rating_saved_offline)
                 else -> context.getString(R.string.rating_save_failed)
             }
         }
@@ -115,8 +99,14 @@ class TripRatingViewModel : ViewModel() {
         _message.value = null
     }
 
-    companion object {
-        private const val TAG = "TripRatingViewModel"
+    private fun getRepository(context: Context): TripRatingRepository {
+        val current = repository
+        if (current != null) {
+            return current
+        }
+
+        val db = MySmartRouteDatabase.getInstance(context)
+        return TripRatingRepository(db.tripRatingDao()).also { repository = it }
     }
 }
 

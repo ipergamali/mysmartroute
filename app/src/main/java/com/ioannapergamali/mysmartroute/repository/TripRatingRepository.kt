@@ -2,13 +2,23 @@ package com.ioannapergamali.mysmartroute.repository
 
 import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
+import com.ioannapergamali.mysmartroute.data.local.TripRatingDao
+import com.ioannapergamali.mysmartroute.data.local.TripRatingEntity
 import com.ioannapergamali.mysmartroute.model.classes.transports.TripRating
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.tasks.await
 
 data class TripRatingDetails(
     val tripRating: TripRating,
     val moving: MovingInfo?,
     val user: UserInfo?
+)
+
+data class TripRatingSaveResult(
+    val localSaved: Boolean,
+    val remoteSaved: Boolean
 )
 
 data class MovingInfo(
@@ -22,12 +32,20 @@ data class UserInfo(
 )
 
 /**
- * Repository για αποθήκευση βαθμολογιών ταξιδιών στο Firestore.
+ * Repository για αποθήκευση βαθμολογιών ταξιδιών σε Firestore και Room.
  */
-class TripRatingRepository {
+class TripRatingRepository(
+    private val tripRatingDao: TripRatingDao,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+) {
     private val db = FirebaseFirestore.getInstance()
 
-    suspend fun saveTripRating(movingId: String, userId: String, rating: Int, comment: String?): Boolean {
+    suspend fun saveTripRating(
+        movingId: String,
+        userId: String,
+        rating: Int,
+        comment: String?,
+    ): TripRatingSaveResult {
         val docId = "${movingId}_${userId}"
         val movingRef = db.collection("movings").document(movingId)
         val userRef = db.collection("users").document(userId)
@@ -37,13 +55,33 @@ class TripRatingRepository {
             "rating" to rating,
             "comment" to comment
         )
-        return try {
+
+        val localSaved = try {
+            withContext(ioDispatcher) {
+                tripRatingDao.upsert(
+                    TripRatingEntity(
+                        movingId = movingId,
+                        userId = userId,
+                        rating = rating,
+                        comment = comment.orEmpty(),
+                    )
+                )
+            }
+            true
+        } catch (e: Exception) {
+            Log.e("TripRatingRepo", "Αποτυχία αποθήκευσης βαθμολογίας στη Room", e)
+            false
+        }
+
+        val remoteSaved = try {
             db.collection("trip_ratings").document(docId).set(data).await()
             true
         } catch (e: Exception) {
             Log.e("TripRatingRepo", "Αποτυχία αποθήκευσης", e)
             false
         }
+
+        return TripRatingSaveResult(localSaved, remoteSaved)
     }
 
 
