@@ -1,6 +1,6 @@
 package com.ioannapergamali.mysmartroute.view.ui.screens
 
-import androidx.compose.foundation.layout.Arrangement
+
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,12 +15,14 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
@@ -35,7 +37,8 @@ import com.ioannapergamali.mysmartroute.model.enumerations.UserRole
 import com.ioannapergamali.mysmartroute.model.enumerations.capabilities
 import com.ioannapergamali.mysmartroute.model.enumerations.localizedDescription
 import com.ioannapergamali.mysmartroute.model.enumerations.localizedName
-import com.ioannapergamali.mysmartroute.model.enumerations.localizedTitle
+import com.ioannapergamali.mysmartroute.model.enumerations.descriptionRes
+
 import android.widget.Toast
 import androidx.compose.ui.unit.dp
 
@@ -96,12 +99,26 @@ fun RolesScreen(navController: NavController, openDrawer: () -> Unit) {
                                 null
                             }
                             val displayName = roleEnum?.localizedName() ?: role.name
-                            RoleCard(
-                                roleId = role.id,
-                                displayName = displayName,
-                                capabilities = roleEnum?.capabilities(),
-                                fallbackMessage = stringResource(R.string.role_capabilities_unavailable)
-                            )
+
+                            val description = roleEnum?.let {
+                                stringResource(id = it.descriptionRes())
+                            } ?: stringResource(R.string.role_unknown_description, displayName)
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 12.dp)
+                            ) {
+                                Text(
+                                    text = "${role.id} - $displayName",
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = description,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
+
                         }
                     }
                 }

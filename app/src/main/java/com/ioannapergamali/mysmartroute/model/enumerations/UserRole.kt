@@ -23,6 +23,14 @@ fun UserRole.titleRes(): Int = when (this) {
     UserRole.ADMIN -> R.string.role_admin
 }
 
+/** Επιστρέφει το resource id της περιγραφής του ρόλου. / Returns the description resource id for the role. */
+@StringRes
+fun UserRole.descriptionRes(): Int = when (this) {
+    UserRole.PASSENGER -> R.string.role_passenger_description
+    UserRole.DRIVER -> R.string.role_driver_description
+    UserRole.ADMIN -> R.string.role_admin_description
+}
+
 /** Επιστρέφει την τοπικοποιημένη ονομασία του ρόλου. / Returns the localized role name. */
 @Composable
 fun UserRole.localizedName(): String = stringResource(id = titleRes())
