@@ -69,7 +69,7 @@ fun PrintListScreen(navController: NavController, openDrawer: () -> Unit) {
                     items(routeEntries, key = { it.key }) { entry ->
                         val routeMovings = entry.value
                         val firstMoving = routeMovings.firstOrNull()
-                        val routeLabel = firstMoving?.routeName.takeIf { it.isNotBlank() }
+                        val routeLabel = firstMoving?.routeName?.takeIf { it.isNotBlank() }
                             ?: entry.key.ifBlank { stringResource(R.string.route) }
                         Text(routeLabel)
                         val passengers = routeMovings.map { moving ->
