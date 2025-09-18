@@ -47,4 +47,9 @@ interface MovingDao {
         "SELECT COUNT(*) FROM movings WHERE routeId = :routeId AND date = :date AND status = 'completed'"
     )
     suspend fun countCompletedForRoute(routeId: String, date: Long): Int
+
+    @Query(
+        "SELECT * FROM movings WHERE routeId = :routeId AND date = :date AND status = 'completed'"
+    )
+    suspend fun getCompletedForRouteAndDate(routeId: String, date: Long): List<MovingEntity>
 }
