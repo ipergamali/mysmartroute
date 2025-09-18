@@ -55,9 +55,6 @@ import java.time.Instant
 import java.time.format.DateTimeFormatter
 import java.time.LocalTime
 import kotlin.math.abs
-import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.tasks.await
-import com.ioannapergamali.mysmartroute.utils.SessionManager
 import com.ioannapergamali.mysmartroute.utils.havePoiMembershipChanged
 
 
@@ -85,6 +82,8 @@ fun RouteModeScreen(
         allPois.find { it.id == id }
     }
     val originalPoiIds = remember { mutableStateListOf<String>() }
+    var editedRouteName by rememberSaveable { mutableStateOf("") }
+    val hasPoiChanges by remember { derivedStateOf { havePoiMembershipChanged(originalPoiIds, routePoiIds) } }
     var startIndex by rememberSaveable { mutableStateOf<Int?>(null) }
     var endIndex by rememberSaveable { mutableStateOf<Int?>(null) }
     var message by remember { mutableStateOf("") }
@@ -121,9 +120,11 @@ fun RouteModeScreen(
     suspend fun saveEditedRouteIfChanged(): String {
         val routeId = selectedRouteId ?: return ""
         if (routePoiIds != originalPoiIds) {
-            routeViewModel.updateRoute(context, routeId, routePoiIds)
+            val newName = editedRouteName.trim().takeIf { it.isNotEmpty() }
+            routeViewModel.updateRoute(context, routeId, routePoiIds, newName)
             originalPoiIds.clear()
             originalPoiIds.addAll(routePoiIds)
+            routeViewModel.loadRoutes(context, includeAll = true)
         }
         return routeId
     }
@@ -164,25 +165,23 @@ fun RouteModeScreen(
     }
     suspend fun resolveRouteForRequest(): Pair<String, Boolean> {
         val currentRouteId = selectedRouteId ?: return "" to false
-        if (!havePoiMembershipChanged(originalPoiIds, routePoiIds)) return currentRouteId to false
+        if (!hasPoiChanges) return currentRouteId to false
 
-        val uid = SessionManager.currentUserId() ?: return "" to false
-        val username = FirebaseFirestore.getInstance()
-            .collection("users")
-            .document(uid)
-            .get()
-            .await()
-            .getString("username") ?: uid
-        val baseName = routes.find { it.id == currentRouteId }?.name ?: "route"
+        val routeName = editedRouteName.trim()
+        if (routeName.isEmpty()) {
+            message = context.getString(R.string.route_name_required)
+            return "" to false
+        }
         val newRouteId = routeViewModel.addRoute(
             context,
             routePoiIds.toList(),
-            "${baseName}_edited_by_$username"
+            routeName
         ) ?: return "" to false
 
         selectedRouteId = newRouteId
         originalPoiIds.clear()
         originalPoiIds.addAll(routePoiIds)
+        editedRouteName = ""
         routeViewModel.loadRoutes(context, includeAll = true)
 
         return newRouteId to true
@@ -203,6 +202,13 @@ fun RouteModeScreen(
             startIndex = null
             endIndex = null
             refreshRoute()
+            editedRouteName = ""
+        }
+    }
+
+    LaunchedEffect(hasPoiChanges) {
+        if (!hasPoiChanges) {
+            editedRouteName = ""
         }
     }
 
@@ -385,6 +391,16 @@ fun RouteModeScreen(
                 Spacer(Modifier.height(16.dp))
 
                 OutlinedTextField(
+                    value = editedRouteName,
+                    onValueChange = { editedRouteName = it },
+                    label = { Text(stringResource(R.string.route_name)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = hasPoiChanges
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                OutlinedTextField(
                     value = startIndex?.let { "${it + 1}. ${routePois[it].name}" } ?: "",
                     onValueChange = {},
                     readOnly = true,
@@ -504,7 +520,9 @@ fun RouteModeScreen(
 
                             val (resolvedRouteId, _) = resolveRouteForRequest()
                             if (resolvedRouteId.isBlank()) {
-                                message = context.getString(R.string.request_unsuccessful)
+                                if (message.isBlank()) {
+                                    message = context.getString(R.string.request_unsuccessful)
+                                }
                                 return@launch
                             }
 
@@ -542,7 +560,9 @@ fun RouteModeScreen(
 
                             val (routeId, poiChanged) = resolveRouteForRequest()
                             if (routeId.isBlank()) {
-                                message = context.getString(R.string.request_unsuccessful)
+                                if (message.isBlank()) {
+                                    message = context.getString(R.string.request_unsuccessful)
+                                }
                                 return@launch
                             }
 
