@@ -5,10 +5,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
 import com.ioannapergamali.mysmartroute.model.classes.users.DriverRating
+import com.ioannapergamali.mysmartroute.utils.TripRatingSyncManager
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * ViewModel που παρέχει κορυφαίους και χειρότερους οδηγούς βάσει αξιολογήσεων.
@@ -28,9 +32,17 @@ class DriverRatingViewModel : ViewModel() {
     fun loadRatings(context: Context) {
         val db = MySmartRouteDatabase.getInstance(context)
         viewModelScope.launch {
+            val dao = db.tripRatingDao()
+            val hasLocalRatings = withContext(Dispatchers.IO) {
+                dao.getAll().first().isNotEmpty()
+            }
+            if (!hasLocalRatings) {
+                TripRatingSyncManager.sync(context)
+            }
+
             combine(
-                db.tripRatingDao().getTopDrivers(),
-                db.tripRatingDao().getWorstDrivers()
+                dao.getTopDrivers(),
+                dao.getWorstDrivers()
             ) { top, worst ->
                 val topIds = top.map { it.driverId }.toSet()
                 _bestDrivers.value = top
