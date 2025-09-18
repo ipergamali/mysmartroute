@@ -6,9 +6,9 @@ import com.ioannapergamali.mysmartroute.BuildConfig
 import com.ioannapergamali.mysmartroute.utils.LanguagePreferenceManager
 import com.ioannapergamali.mysmartroute.utils.LocaleUtils
 import com.ioannapergamali.mysmartroute.utils.ShortcutUtils
-import com.ioannapergamali.mysmartroute.utils.TripRatingSyncManager
 import com.ioannapergamali.mysmartroute.utils.populatePoiTypes
 import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
+import com.ioannapergamali.mysmartroute.viewmodel.DatabaseViewModel
 import com.ioannapergamali.mysmartroute.work.SyncWorker
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
@@ -78,9 +78,9 @@ class MySmartRouteApplication : Application() {
             .build()
         WorkManager.getInstance(this).enqueue(syncRequest)
 
-        // 7. Άμεσος συγχρονισμός αξιολογήσεων μετακινήσεων
+        // 7. Άμεσος συγχρονισμός όλων των πινάκων βάσης
         applicationScope.launch {
-            TripRatingSyncManager.sync(this@MySmartRouteApplication)
+            DatabaseViewModel().syncDatabasesSuspend(this@MySmartRouteApplication)
         }
     }
 }
