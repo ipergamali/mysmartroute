@@ -29,6 +29,7 @@ import com.ioannapergamali.mysmartroute.viewmodel.*
 import java.util.Date
 import android.text.format.DateFormat
 import com.ioannapergamali.mysmartroute.utils.ATHENS_TIME_ZONE
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,7 +44,7 @@ fun FindPassengersScreen(
     val poiViewModel: PoIViewModel = viewModel()
     val declarationViewModel: TransportDeclarationViewModel = viewModel()
     val routeViewModel: RouteViewModel = viewModel()
-    val requests by requestViewModel.requests.collectAsState()
+    val movings by requestViewModel.movings.collectAsState()
     val pois by poiViewModel.pois.collectAsState()
     val declarations by declarationViewModel.declarations.collectAsState()
     val routes by routeViewModel.routes.collectAsState()
@@ -66,8 +67,8 @@ fun FindPassengersScreen(
         routeViewModel.loadRoutes(context, includeAll = true)
     }
 
-    LaunchedEffect(requests) {
-        requests.forEach { req ->
+    LaunchedEffect(movings) {
+        movings.forEach { req ->
             if (userNames[req.userId] == null) {
                 userNames[req.userId] = userViewModel.getUserName(context, req.userId)
             }
@@ -84,13 +85,14 @@ fun FindPassengersScreen(
         ?: stringResource(R.string.select_date)
 
     val dayMillis = 24 * 60 * 60 * 1000L
-    val filteredRequests = requests.filter { req ->
+    val filteredMovings = movings.filter { req ->
         val reqDate = req.date - (req.date % dayMillis)
         val reqTime = req.date % dayMillis
+        val status = req.status.lowercase(Locale.ROOT)
         (selectedRouteId == null || req.routeId == selectedRouteId) &&
             (selectedDateMillis == null || reqDate == selectedDateMillis) &&
             (selectedTimeMillis == null || reqTime == selectedTimeMillis) &&
-            req.status != "completed"
+            (status == "pending" || status == "accepted")
     }
 
     LaunchedEffect(selectedDateMillis, selectedTimeMillis, selectedRouteId) {
@@ -112,12 +114,12 @@ fun FindPassengersScreen(
     ) { padding ->
         val routeNames = routes.associate { it.id to it.name }
         val declarationRouteIds = declarations.mapNotNull { it.routeId.takeIf(String::isNotBlank) }
-        val requestRouteIds = requests.mapNotNull { it.routeId.takeIf(String::isNotBlank) }
+        val requestRouteIds = movings.mapNotNull { it.routeId.takeIf(String::isNotBlank) }
         val routeOptions = (declarationRouteIds + requestRouteIds)
             .distinct()
             .associateWith { routeId ->
                 routeNames[routeId]
-                    ?: requests.firstOrNull { it.routeId == routeId }?.routeName
+                    ?: movings.firstOrNull { it.routeId == routeId }?.routeName
                     ?: routeId
             }
 
@@ -192,11 +194,11 @@ fun FindPassengersScreen(
             }
             Spacer(modifier = Modifier.height(8.dp))
             if (showResults) {
-                if (filteredRequests.isEmpty()) {
+                if (filteredMovings.isEmpty()) {
                     Text(stringResource(R.string.no_requests))
                 } else {
                     LazyColumn {
-                        items(filteredRequests) { req ->
+                        items(filteredMovings) { req ->
                             val passengerName = userNames[req.userId] ?: ""
                             val routeName = listOfNotNull(
                                 poiNames[req.startPoiId],
@@ -227,7 +229,7 @@ fun FindPassengersScreen(
                         onClick = {
                             val ids = selectedRequests.filterValues { it }.keys
                             ids.forEach { id ->
-                                val req = filteredRequests.find { it.id == id }
+                                val req = filteredMovings.find { it.id == id }
                                 if (req != null) {
                                     requestViewModel.notifyRoute(context, id)
                                     transferViewModel.notifyDriver(context, req.requestNumber)
