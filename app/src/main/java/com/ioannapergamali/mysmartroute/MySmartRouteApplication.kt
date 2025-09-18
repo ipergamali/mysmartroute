@@ -6,10 +6,15 @@ import com.ioannapergamali.mysmartroute.BuildConfig
 import com.ioannapergamali.mysmartroute.utils.LanguagePreferenceManager
 import com.ioannapergamali.mysmartroute.utils.LocaleUtils
 import com.ioannapergamali.mysmartroute.utils.ShortcutUtils
+import com.ioannapergamali.mysmartroute.utils.TripRatingSyncManager
 import com.ioannapergamali.mysmartroute.utils.populatePoiTypes
 import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 import com.ioannapergamali.mysmartroute.work.SyncWorker
 import dagger.hilt.android.HiltAndroidApp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.acra.config.mailSender
 import org.acra.data.StringFormat
@@ -26,6 +31,8 @@ import androidx.work.WorkManager
  */
 @HiltAndroidApp
 class MySmartRouteApplication : Application() {
+
+    private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onCreate() {
         super.onCreate()
@@ -70,5 +77,10 @@ class MySmartRouteApplication : Application() {
             )
             .build()
         WorkManager.getInstance(this).enqueue(syncRequest)
+
+        // 7. Άμεσος συγχρονισμός αξιολογήσεων μετακινήσεων
+        applicationScope.launch {
+            TripRatingSyncManager.sync(this@MySmartRouteApplication)
+        }
     }
 }
