@@ -23,12 +23,10 @@ import androidx.navigation.NavController
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.model.LatLng
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.maps.android.compose.*
 import com.ioannapergamali.mysmartroute.R
 import com.ioannapergamali.mysmartroute.model.enumerations.VehicleType
 import com.ioannapergamali.mysmartroute.utils.MapsUtils
-import com.ioannapergamali.mysmartroute.utils.SessionManager
 import com.ioannapergamali.mysmartroute.utils.offsetPois
 import com.ioannapergamali.mysmartroute.utils.havePoiMembershipChanged
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
@@ -36,7 +34,6 @@ import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.viewmodel.PoIViewModel
 import com.ioannapergamali.mysmartroute.viewmodel.RouteViewModel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 import kotlin.math.abs
 
 /**
@@ -64,6 +61,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
     ) { mutableStateListOf<String>() }
     val routePois = routePoiIds.mapNotNull { id -> allPois.find { it.id == id } }
     val originalPoiIds = remember { mutableStateListOf<String>() }
+    var editedRouteName by rememberSaveable { mutableStateOf("") }
     var startIndex by rememberSaveable { mutableStateOf<Int?>(null) }
     var endIndex by rememberSaveable { mutableStateOf<Int?>(null) }
     var maxCostText by rememberSaveable { mutableStateOf("") }
@@ -72,6 +70,7 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
     var calculating by remember { mutableStateOf(false) }
     var routeDuration by remember { mutableStateOf<Int?>(null) }
     var pendingPoi by remember { mutableStateOf<Triple<String, Double, Double>?>(null) }
+    val hasPoiChanges by remember { derivedStateOf { havePoiMembershipChanged(originalPoiIds, routePoiIds) } }
 
     val cameraPositionState = rememberCameraPositionState()
     val coroutineScope = rememberCoroutineScope()
@@ -81,9 +80,11 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
     suspend fun saveEditedRouteIfChanged(): String {
         val routeId = selectedRouteId ?: return ""
         if (routePoiIds != originalPoiIds) {
-            routeViewModel.updateRoute(context, routeId, routePoiIds)
+            val newName = editedRouteName.trim().takeIf { it.isNotEmpty() }
+            routeViewModel.updateRoute(context, routeId, routePoiIds, newName)
             originalPoiIds.clear()
             originalPoiIds.addAll(routePoiIds)
+            routeViewModel.loadRoutes(context, includeAll = true)
         }
         return routeId
     }
@@ -97,25 +98,23 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
 
     suspend fun resolveRouteForVehicleSearch(): String {
         val currentRouteId = selectedRouteId ?: return ""
-        if (!havePoiMembershipChanged(originalPoiIds, routePoiIds)) return currentRouteId
+        if (!hasPoiChanges) return currentRouteId
 
-        val uid = SessionManager.currentUserId() ?: return ""
-        val username = FirebaseFirestore.getInstance()
-            .collection("users")
-            .document(uid)
-            .get()
-            .await()
-            .getString("username") ?: uid
-        val baseName = routes.find { it.id == currentRouteId }?.name ?: "route"
+        val routeName = editedRouteName.trim()
+        if (routeName.isEmpty()) {
+            message = context.getString(R.string.route_name_required)
+            return ""
+        }
         val newRouteId = routeViewModel.addRoute(
             context,
             routePoiIds.toList(),
-            "${baseName}_edited_by_$username"
+            routeName
         ) ?: return ""
 
         selectedRouteId = newRouteId
         originalPoiIds.clear()
         originalPoiIds.addAll(routePoiIds)
+        editedRouteName = ""
         routeViewModel.loadRoutes(context, includeAll = true)
 
         return newRouteId
@@ -165,6 +164,13 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
             startIndex = null
             endIndex = null
             refreshRoute()
+            editedRouteName = ""
+        }
+    }
+
+    LaunchedEffect(hasPoiChanges) {
+        if (!hasPoiChanges) {
+            editedRouteName = ""
         }
     }
 
@@ -356,6 +362,16 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                 Spacer(Modifier.height(16.dp))
 
                 OutlinedTextField(
+                    value = editedRouteName,
+                    onValueChange = { editedRouteName = it },
+                    label = { Text(stringResource(R.string.route_name)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = hasPoiChanges
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                OutlinedTextField(
                     value = startIndex?.let { "${it + 1}. ${routePois[it].name}" } ?: "",
                     onValueChange = {},
                     readOnly = true,
@@ -453,7 +469,9 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
 
                             val routeId = resolveRouteForVehicleSearch()
                             if (routeId.isBlank()) {
-                                message = context.getString(R.string.request_unsuccessful)
+                                if (message.isBlank()) {
+                                    message = context.getString(R.string.request_unsuccessful)
+                                }
                                 return@launch
                             }
 

@@ -316,6 +316,7 @@
     <string name="select_pois_screen_title">Αποθήκευση ενδιαφερόντων σημείων ενδιαφέροντος</string>
     <string name="choose_pois">Επιλογή σημείων ενδιαφέροντος</string>
     <string name="route_saved">Η διαδρομή αποθηκεύτηκε</string>
+    <string name="route_name_required">Παρακαλώ δώστε όνομα διαδρομής</string>
     <string name="route_saved_success">Η διαδρομή αποθηκεύτηκε με επιτυχία</string>
     <string name="route_save_failed">Η αποθήκευση διαδρομής απέτυχε</string>
     <string name="route_exists">Υπάρχει ήδη διαδρομή με αυτό το όνομα</string>
