@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.Gravity
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
@@ -16,10 +18,26 @@ class GameFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         val context = requireContext()
-        val rootLayout = LinearLayout(context).apply {
+        val rootLayout = FrameLayout(context)
+
+        val fallingView = FallingBinaryView(context).apply {
+            layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
+            )
+        }
+        rootLayout.addView(fallingView)
+
+        val contentLayout = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(32, 32, 32, 32)
         }
+        val contentParams = FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.MATCH_PARENT,
+            FrameLayout.LayoutParams.WRAP_CONTENT,
+            Gravity.TOP
+        )
+        rootLayout.addView(contentLayout, contentParams)
 
         val questionTextView = TextView(context).apply {
             textSize = 20f
@@ -43,8 +61,8 @@ class GameFragment : Fragment() {
             }
         }
 
-        rootLayout.addView(questionTextView)
-        optionViews.forEach(rootLayout::addView)
+        contentLayout.addView(questionTextView)
+        optionViews.forEach(contentLayout::addView)
 
         val question = Question(
             text = "Ποιο είναι το αποτέλεσμα του 2 + 2;",
