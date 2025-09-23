@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">mysmartroute</string>
+    <string name="game_progress_title">Πρόοδος χαρακτήρα</string>
+    <string name="game_score_format">Σκορ: %1$d</string>
     <string name="invalid_coordinates">Invalid coordinates</string>
     <string name="no_internet">No internet connection</string>
     <string name="directions">Get Directions</string>
