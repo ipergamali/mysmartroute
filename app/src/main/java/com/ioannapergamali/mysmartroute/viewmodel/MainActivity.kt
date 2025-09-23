@@ -1,5 +1,6 @@
 package com.ioannapergamali.mysmartroute.viewmodel
 
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.Manifest
@@ -51,6 +52,11 @@ import com.ioannapergamali.mysmartroute.data.local.MySmartRouteDatabase
  */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    private companion object {
+        private const val LOCATION_PERMISSION_REQUEST_CODE = 0
+        private const val NOTIFICATION_PERMISSION_REQUEST_CODE = 1
+    }
+
     private val settingsViewModel: SettingsViewModel by viewModels()
     private val requestViewModel: VehicleRequestViewModel by viewModels()
     private val vehicleRepository by lazy {
@@ -74,8 +80,13 @@ class MainActivity : ComponentActivity() {
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            ActivityCompat.requestPermissions(this, locationPermissions, 0)
+            ActivityCompat.requestPermissions(
+                this,
+                locationPermissions,
+                LOCATION_PERMISSION_REQUEST_CODE
+            )
         }
+        requestNotificationPermissionIfNeeded()
         // Προαιρετικός έλεγχος ύπαρξης του MIUI Service Delivery provider
         // Optional check for MIUI Service Delivery provider
         MiuiUtils.callServiceDelivery(this, "ping")
@@ -164,5 +175,21 @@ class MainActivity : ComponentActivity() {
     override fun onDestroy() {
         SoundManager.release()
         super.onDestroy()
+    }
+
+    private fun requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val hasPermission = ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+            if (!hasPermission) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    NOTIFICATION_PERMISSION_REQUEST_CODE
+                )
+            }
+        }
     }
 }
