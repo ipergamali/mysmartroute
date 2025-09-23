@@ -44,6 +44,7 @@ class MySmartRouteApplication : Application() {
             reportFormat = StringFormat.JSON
             mailSender {
                 mailTo = "ioannapergamali@gmail.com"
+                subject = "MySmartRoute crash v${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})"
                 reportAsFile = false
             }
         }
