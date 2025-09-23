@@ -518,7 +518,8 @@ fun RouteModeScreen(
                             val date = datePickerState.selectedDateMillis ?: 0L
                             val time = selectedTimeMillis
 
-                            val (resolvedRouteId, _) = resolveRouteForRequest()
+                            val resolvedRouteInfo = resolveRouteForRequest()
+                            val resolvedRouteId = resolvedRouteInfo.first
                             if (resolvedRouteId.isBlank()) {
                                 if (message.isBlank()) {
                                     message = context.getString(R.string.request_unsuccessful)

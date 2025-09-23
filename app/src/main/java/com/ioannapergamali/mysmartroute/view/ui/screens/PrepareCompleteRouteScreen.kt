@@ -124,7 +124,8 @@ fun PrepareCompleteRouteScreen(navController: NavController, openDrawer: () -> U
 
     LaunchedEffect(selectedRoute, selectedDate, declarations, selectedDriverId) {
         selectedRoute?.let { route ->
-            val (_, path) = routeViewModel.getRouteDirections(context, route.id, VehicleType.CAR)
+            val directions = routeViewModel.getRouteDirections(context, route.id, VehicleType.CAR)
+            val path = directions.second
             pathPoints = path
             pois = routeViewModel.getRoutePois(context, route.id)
 

@@ -80,11 +80,12 @@ fun SelectRoutePoisScreen(navController: NavController, openDrawer: () -> Unit) 
                                 selectedRoute = route
                                 expanded = false
                                 scope.launch {
-                                    val (_, path) = routeViewModel.getRouteDirections(
+                                    val directions = routeViewModel.getRouteDirections(
                                         context,
                                         route.id,
                                         VehicleType.CAR
                                     )
+                                    val path = directions.second
                                     pathPoints = path
                                     pois = routeViewModel.getRoutePois(context, route.id)
                                     selectedPoiIds.clear()

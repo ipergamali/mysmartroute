@@ -34,8 +34,8 @@ class AdminRouteRepository(private val db: MySmartRouteDatabase) {
                 .groupBy { it.value }
                 .values
                 .map { group ->
-                    group.mapNotNull { (routeId, _) ->
-                        routes.find { it.id == routeId }
+                    group.mapNotNull { entry ->
+                        routes.find { it.id == entry.key }
                     }
                 }
                 .filter { it.size > 1 }
