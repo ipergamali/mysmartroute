@@ -474,7 +474,8 @@ fun FindVehicleScreen(navController: NavController, openDrawer: () -> Unit) {
                             val toId = routePois.getOrNull(toIdx)?.id ?: return@launch
                             val cost = maxCostText.toDoubleOrNull()
 
-                            val (routeId, _) = resolveRouteForVehicleSearch()
+                            val routeInfo = resolveRouteForVehicleSearch()
+                            val routeId = routeInfo.first
                             if (routeId.isBlank()) {
                                 if (message.isBlank()) {
                                     message = context.getString(R.string.request_unsuccessful)

@@ -306,7 +306,8 @@ fun AvailableTransportsScreen(
                                     Button(
                                         onClick = {
                                             scope.launch {
-                                                val segments = selectedForDecl.map { (_, detail) ->
+                                                val segments = selectedForDecl.map { selection ->
+                                                    val detail = selection.second
                                                     ReservationSegment(
                                                         detail.startPoiId,
                                                         detail.endPoiId,
@@ -327,7 +328,8 @@ fun AvailableTransportsScreen(
                                                 )
                                                 result.onSuccess {
                                                     val map = detailReservationCounts.getOrPut(decl.id) { mutableMapOf() }
-                                                    selectedForDecl.forEach { (_, detail) ->
+                                                    selectedForDecl.forEach { selection ->
+                                                        val detail = selection.second
                                                         val reservedSeg = map[detail.id] ?: 0
                                                         map[detail.id] = reservedSeg + 1
                                                         selectedDetails.remove(detail.id)

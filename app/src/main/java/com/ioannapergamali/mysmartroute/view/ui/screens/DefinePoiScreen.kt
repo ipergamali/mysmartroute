@@ -106,11 +106,12 @@ fun DefinePoiScreen(
             routeViewModel.loadRoutes(context, includeAll = true)
             val pois = routeViewModel.getRoutePois(context, routeId)
             routePois = pois
-            val (_, points) = routeViewModel.getRouteDirections(
+            val directions = routeViewModel.getRouteDirections(
                 context,
                 routeId,
                 VehicleType.CAR
             )
+            val points = directions.second
             pathPoints = points
             points.firstOrNull()?.let {
                 cameraPositionState.move(CameraUpdateFactory.newLatLngZoom(it, 13f))

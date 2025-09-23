@@ -249,11 +249,12 @@ fun BookSeatScreen(
                     viewModel.refreshRoutes()
                     routeViewModel.loadRoutes(context, includeAll = true)
                     scope.launch {
-                        val (_, path) = routeViewModel.getRouteDirections(
+                        val directions = routeViewModel.getRouteDirections(
                             context,
                             newRoute,
                             VehicleType.CAR
                         )
+                        val path = directions.second
                         pathPoints = path
                         poiIds.clear()
                         userPoiIds.clear()
@@ -382,11 +383,12 @@ fun BookSeatScreen(
                                 routeMenuExpanded = false
                                 editedRouteName = ""
                                 scope.launch {
-                                    val (_, path) = routeViewModel.getRouteDirections(
+                                    val directions = routeViewModel.getRouteDirections(
                                         context,
                                         route.id,
                                         VehicleType.CAR
                                     )
+                                    val path = directions.second
                                     pathPoints = path
                                     poiIds.clear()
                                     userPoiIds.clear()
@@ -629,7 +631,8 @@ fun BookSeatScreen(
                             val endId = endIndex?.let { pois[it].id } ?: return@launch
                             val timeMillis = selectedTimeMillis ?: return@launch
 
-                            val (resolvedRouteId, _) = resolveRouteForRequest()
+                            val resolvedRouteInfo = resolveRouteForRequest()
+                            val resolvedRouteId = resolvedRouteInfo.first
                             if (resolvedRouteId.isBlank()) {
                                 message = context.getString(R.string.request_unsuccessful)
                                 return@launch
