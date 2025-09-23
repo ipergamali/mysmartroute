@@ -2,4 +2,8 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="progress_high">#FF26A69A</color>
+    <color name="progress_medium">#FFFFC107</color>
+    <color name="progress_low">#FFF44336</color>
+    <color name="progress_track">#1F000000</color>
 </resources>
