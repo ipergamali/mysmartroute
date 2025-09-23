@@ -12,6 +12,7 @@ import androidx.compose.ui.res.dimensionResource
 import com.ioannapergamali.mysmartroute.view.ui.util.rememberWindowInfo
 import com.ioannapergamali.mysmartroute.view.ui.util.WindowOrientation
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.ioannapergamali.mysmartroute.view.ui.components.TopBar
 import com.ioannapergamali.mysmartroute.view.ui.components.LogoImage
@@ -26,6 +27,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ioannapergamali.mysmartroute.viewmodel.AuthenticationViewModel
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import com.ioannapergamali.mysmartroute.view.ui.components.ScreenContainer
+import com.ioannapergamali.mysmartroute.view.ui.components.FallingObjectsBackground
 import com.google.firebase.auth.FirebaseAuth
 import com.ioannapergamali.mysmartroute.view.ui.util.observeBubble
 import com.ioannapergamali.mysmartroute.view.ui.util.LocalKeyboardBubbleState
@@ -50,6 +52,7 @@ fun HomeScreen(
     ) { paddingValues ->
 
         val windowInfo = rememberWindowInfo()
+        val isLarge = windowInfo.width > 600.dp && windowInfo.orientation == WindowOrientation.Landscape
 
         val (logoScale, logoAlpha) = rememberBreathingAnimation()
         val (textOffset, textAlpha) = rememberSlideFadeInAnimation()
@@ -60,55 +63,69 @@ fun HomeScreen(
         var email by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
 
-        ScreenContainer(modifier = Modifier.padding(paddingValues)) {
-            val isLarge = windowInfo.width > 600.dp && windowInfo.orientation == WindowOrientation.Landscape
-            val containerModifier = if (isLarge) Modifier.fillMaxWidth() else Modifier.fillMaxSize()
-            val arrangement: Arrangement.Vertical = if (isLarge) Arrangement.Center else Arrangement.Top
-            val alignment: Alignment.Horizontal = Alignment.CenterHorizontally
-            if (isLarge) {
-                Row(
-                    modifier = containerModifier,
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    HomeContent(
-                        logoScale = logoScale,
-                        logoAlpha = logoAlpha,
-                        textOffset = textOffset,
-                        textAlpha = textAlpha,
-                        email = email,
-                        onEmailChange = { email = it },
-                        password = password,
-                        onPasswordChange = { password = it },
-                        uiState = uiState,
-                        onLogin = { viewModel.login(context, email, password) },
-                        onNavigateToSignUp = onNavigateToSignUp,
-                        onForgotPassword = { navController.navigate("resetPassword") },
-                        onLogout = { viewModel.signOut(context) },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            } else {
-                Column(
-                    modifier = containerModifier,
-                    verticalArrangement = arrangement,
-                    horizontalAlignment = alignment
-                ) {
-                    HomeContent(
-                        logoScale = logoScale,
-                        logoAlpha = logoAlpha,
-                        textOffset = textOffset,
-                        textAlpha = textAlpha,
-                        email = email,
-                        onEmailChange = { email = it },
-                        password = password,
-                        onPasswordChange = { password = it },
-                        uiState = uiState,
-                        onLogin = { viewModel.login(context, email, password) },
-                        onNavigateToSignUp = onNavigateToSignUp,
-                        onForgotPassword = { navController.navigate("resetPassword") },
-                        onLogout = { viewModel.signOut(context) }
-                    )
+        Box(
+            modifier = Modifier
+                .padding(paddingValues)
+                .fillMaxSize()
+        ) {
+            FallingObjectsBackground(
+                modifier = Modifier.matchParentSize(),
+                objectCount = if (isLarge) 28 else 18,
+                minSpeed = 24.dp,
+                maxSpeed = 78.dp,
+                minSize = 16.sp,
+                maxSize = 28.sp,
+                baseAlpha = 0.28f
+            )
+            ScreenContainer(modifier = Modifier.matchParentSize()) {
+                val containerModifier = if (isLarge) Modifier.fillMaxWidth() else Modifier.fillMaxSize()
+                val arrangement: Arrangement.Vertical = if (isLarge) Arrangement.Center else Arrangement.Top
+                val alignment: Alignment.Horizontal = Alignment.CenterHorizontally
+                if (isLarge) {
+                    Row(
+                        modifier = containerModifier,
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        HomeContent(
+                            logoScale = logoScale,
+                            logoAlpha = logoAlpha,
+                            textOffset = textOffset,
+                            textAlpha = textAlpha,
+                            email = email,
+                            onEmailChange = { email = it },
+                            password = password,
+                            onPasswordChange = { password = it },
+                            uiState = uiState,
+                            onLogin = { viewModel.login(context, email, password) },
+                            onNavigateToSignUp = onNavigateToSignUp,
+                            onForgotPassword = { navController.navigate("resetPassword") },
+                            onLogout = { viewModel.signOut(context) },
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                } else {
+                    Column(
+                        modifier = containerModifier,
+                        verticalArrangement = arrangement,
+                        horizontalAlignment = alignment
+                    ) {
+                        HomeContent(
+                            logoScale = logoScale,
+                            logoAlpha = logoAlpha,
+                            textOffset = textOffset,
+                            textAlpha = textAlpha,
+                            email = email,
+                            onEmailChange = { email = it },
+                            password = password,
+                            onPasswordChange = { password = it },
+                            uiState = uiState,
+                            onLogin = { viewModel.login(context, email, password) },
+                            onNavigateToSignUp = onNavigateToSignUp,
+                            onForgotPassword = { navController.navigate("resetPassword") },
+                            onLogout = { viewModel.signOut(context) }
+                        )
+                    }
                 }
             }
         }
