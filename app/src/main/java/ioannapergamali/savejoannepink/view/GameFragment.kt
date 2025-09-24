@@ -8,7 +8,9 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.ColorUtils
 import androidx.fragment.app.Fragment
+import com.google.android.material.card.MaterialCardView
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.ioannapergamali.mysmartroute.R
 import kotlin.math.roundToInt
@@ -36,6 +38,22 @@ class GameFragment : Fragment() {
             )
         }
 
+        val progressCardPadding = 20.dp(context)
+
+        val progressContent = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+            )
+            setPadding(
+                progressCardPadding,
+                progressCardPadding,
+                progressCardPadding,
+                progressCardPadding,
+            )
+        }
+
         val progressTitleView = TextView(context).apply {
             text = getString(R.string.game_progress_title)
             textSize = 18f
@@ -47,20 +65,26 @@ class GameFragment : Fragment() {
             }
         }
 
+        progressContent.addView(progressTitleView)
+
+        val indicatorThickness = 16.dp(context)
+
         scoreIndicator = LinearProgressIndicator(context).apply {
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT,
             ).apply {
-                bottomMargin = 12.dp(context)
+                topMargin = 12.dp(context)
             }
             min = MIN_SCORE
             max = MAX_SCORE
             isIndeterminate = false
-            trackThickness = 12.dp(context)
-            trackCornerRadius = 6.dp(context)
-            setTrackColor(ContextCompat.getColor(context, R.color.progress_track))
+            trackThickness = indicatorThickness
+            trackCornerRadius = indicatorThickness / 2
+            showAnimationBehavior = LinearProgressIndicator.SHOW_OUTWARD
         }
+
+        progressContent.addView(scoreIndicator)
 
         scoreTextView = TextView(context).apply {
             textSize = 20f
@@ -68,13 +92,26 @@ class GameFragment : Fragment() {
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT,
             ).apply {
-                bottomMargin = 24.dp(context)
+                topMargin = 16.dp(context)
             }
         }
 
-        rootLayout.addView(progressTitleView)
-        rootLayout.addView(scoreIndicator)
-        rootLayout.addView(scoreTextView)
+        progressContent.addView(scoreTextView)
+
+        val progressCard = MaterialCardView(context).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+            ).apply {
+                bottomMargin = 24.dp(context)
+            }
+            radius = 18.dp(context).toFloat()
+            cardElevation = 6.dp(context).toFloat()
+            setCardBackgroundColor(ContextCompat.getColor(context, R.color.white))
+            addView(progressContent)
+        }
+
+        rootLayout.addView(progressCard)
 
         val questionTextView = TextView(context).apply {
             textSize = 20f
@@ -171,14 +208,33 @@ class GameFragment : Fragment() {
     }
 
     private fun updateIndicatorColor() {
-        val colorRes = when {
-            score >= HIGH_SCORE_THRESHOLD -> R.color.progress_high
-            score >= MEDIUM_SCORE_THRESHOLD -> R.color.progress_medium
-            else -> R.color.progress_low
+        val context = scoreIndicator.context
+
+        val lowColor = ContextCompat.getColor(context, R.color.progress_low)
+        val mediumColor = ContextCompat.getColor(context, R.color.progress_medium)
+        val highColor = ContextCompat.getColor(context, R.color.progress_high)
+
+        val indicatorColor = if (score <= MEDIUM_SCORE_THRESHOLD) {
+            val fractionToMedium = (score - MIN_SCORE).toFloat() /
+                (MEDIUM_SCORE_THRESHOLD - MIN_SCORE)
+            ColorUtils.blendARGB(
+                lowColor,
+                mediumColor,
+                fractionToMedium.coerceIn(0f, 1f),
+            )
+        } else {
+            val fractionToHigh = (score - MEDIUM_SCORE_THRESHOLD).toFloat() /
+                (MAX_SCORE - MEDIUM_SCORE_THRESHOLD)
+            ColorUtils.blendARGB(
+                mediumColor,
+                highColor,
+                fractionToHigh.coerceIn(0f, 1f),
+            )
         }
 
-        val context = scoreIndicator.context
-        scoreIndicator.setIndicatorColor(ContextCompat.getColor(context, colorRes))
+        scoreIndicator.setIndicatorColor(indicatorColor)
+        scoreIndicator.setTrackColor(ColorUtils.setAlphaComponent(indicatorColor, TRACK_COLOR_ALPHA))
+        scoreTextView.setTextColor(indicatorColor)
     }
 
     private fun Int.dp(context: Context): Int =
@@ -191,6 +247,7 @@ class GameFragment : Fragment() {
         const val MAX_SCORE = 200
         const val MEDIUM_SCORE_THRESHOLD = 90
         const val HIGH_SCORE_THRESHOLD = 140
+        const val TRACK_COLOR_ALPHA = 60
     }
 }
 
