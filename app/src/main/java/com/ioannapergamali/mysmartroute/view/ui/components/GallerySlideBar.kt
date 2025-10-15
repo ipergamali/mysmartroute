@@ -22,6 +22,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 
 /**
  * Απλός αναπαραστάτης ενός φακέλου πολυμέσων.
@@ -84,6 +87,28 @@ fun rememberGallerySlideBarState(
  */
 @Composable
 fun GallerySlideBar(
+    folders: List<GalleryFolder>,
+    onFolderSelected: (GalleryFolder) -> Unit,
+    modifier: Modifier = Modifier,
+    initialSelection: GalleryFolder? = folders.firstOrNull(),
+) {
+    val state = rememberGallerySlideBarState(
+        folders = folders,
+        initialSelection = initialSelection,
+    )
+
+    GallerySlideBar(
+        state = state,
+        onFolderSelected = onFolderSelected,
+        modifier = modifier,
+    )
+}
+
+/**
+ * Παραλλαγή που λαμβάνει ήδη απομνημονευμένη κατάσταση ώστε να επαναχρησιμοποιείται σε σύνθετες διατάξεις.
+ */
+@Composable
+fun GallerySlideBar(
     state: GallerySlideBarState,
     onFolderSelected: (GalleryFolder) -> Unit,
     modifier: Modifier = Modifier,
@@ -127,5 +152,28 @@ fun GallerySlideBar(
 
             Spacer(modifier = Modifier.height(4.dp))
         }
+    }
+}
+
+private class FakeGalleryFoldersProvider : PreviewParameterProvider<List<GalleryFolder>> {
+    override val values: Sequence<List<GalleryFolder>> = sequenceOf(
+        listOf(
+            GalleryFolder(id = 1L, name = "Κάμερα"),
+            GalleryFolder(id = 2L, name = "Λήψεις"),
+            GalleryFolder(id = 3L, name = "Screenshots"),
+        ),
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun GallerySlideBarPreview(
+    @PreviewParameter(FakeGalleryFoldersProvider::class) folders: List<GalleryFolder>,
+) {
+    MaterialTheme {
+        GallerySlideBar(
+            folders = folders,
+            onFolderSelected = {},
+        )
     }
 }
